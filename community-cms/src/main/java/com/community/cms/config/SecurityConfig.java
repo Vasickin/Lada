@@ -21,13 +21,13 @@ import org.springframework.security.web.SecurityFilterChain;
  * <p>Основные функции конфигурации:
  * <ul>
  *   <li>Защита административных URL от несанкционированного доступа</li>
- *   <li>Настройка кас томной формы аутентификации</li>
+ *   <li>Настройка кастомной формы аутентификации</li>
  *   <li>Управление ролями и правами пользователей</li>
  *   <li>Обработка выхода из системы</li>
  *   <li>Настройка исключений безопасности</li>
  * </ul>
  *
- * @author Vasickin
+ * @author Your Name
  * @version 1.0
  * @since 2025
  * @see org.springframework.security.config.annotation.web.configuration.EnableWebSecurity
@@ -54,25 +54,40 @@ public class SecurityConfig {
                 // Define URL access rules / Определяем правила доступа к URL
                 //
                 .authorizeHttpRequests(authorize -> authorize
-                        // Public endpoints - accessible without authentication /
-                        // Публичные endpoints - доступны без аутентификации
-                        .requestMatchers("/", "/pages/**", "/h2-console/**", "/css/**", "/js/**", "/images/**").permitAll()
+                        //
+                        // PUBLIC ENDPOINTS / ПУБЛИЧНЫЕ ENDPOINTS
+                        // Accessible without authentication / Доступны без аутентификации
+                        //
+                        .requestMatchers("/", "/h2-console/**", "/css/**", "/js/**", "/images/**").permitAll()
 
-                        // Admin endpoints - require authentication /
-                        // Административные endpoints - требуют аутентификации
-                        .requestMatchers("/pages", "/pages/**").authenticated()
+                        //
+                        // PUBLIC PAGE VIEWING / ПУБЛИЧНЫЙ ПРОСМОТР СТРАНИЦ
+                        // Page viewing by slug is public / Просмотр страниц по slug доступен всем
+                        //
+                        .requestMatchers("/pages/{slug}").permitAll()
 
-                        // All other requests require authentication /
-                        // Все остальные запросы требуют аутентификации
+                        //
+                        // ADMIN ENDPOINTS / АДМИНИСТРАТИВНЫЕ ENDPOINTS
+                        // Require authentication / Требуют аутентификации
+                        // These URLs manage content and require login /
+                        // Эти URL управляют контентом и требуют входа в систему
+                        //
+                        .requestMatchers("/pages", "/pages/create", "/pages/edit/**",
+                                "/pages/delete/**", "/pages/publish/**", "/pages/unpublish/**").authenticated()
+
+                        //
+                        // ALL OTHER REQUESTS / ВСЕ ОСТАЛЬНЫЕ ЗАПРОСЫ
+                        // Require authentication / Требуют аутентификации
+                        //
                         .anyRequest().authenticated()
                 )
 
                 //
                 // LOGIN CONFIGURATION / КОНФИГУРАЦИЯ ЛОГИНА
-                // Custom login page and processing / Кас томная страница логина и обработка
+                // Custom login page and processing / Кастомная страница логина и обработка
                 //
                 .formLogin(form -> form
-                        .loginPage("/login")          // Custom login page URL / URL кас томной страницы логина
+                        .loginPage("/login")          // Custom login page URL / URL кастомной страницы логина
                         .loginProcessingUrl("/login") // URL for processing login / URL для обработки логина
                         .defaultSuccessUrl("/pages")  // Redirect after successful login / Перенаправление после успешного логина
                         .failureUrl("/login?error")   // Redirect after failed login / Перенаправление после неудачного логина
@@ -93,10 +108,10 @@ public class SecurityConfig {
 
                 //
                 // EXCEPTION HANDLING / ОБРАБОТКА ИСКЛЮЧЕНИЙ
-                // Custom access denied page / Кас томная страница отказа в доступе
+                // Custom access denied page / Кастомная страница отказа в доступе
                 //
                 .exceptionHandling(exception -> exception
-                        .accessDeniedPage("/access-denied") // Custom access denied page / Кас томная страница отказа в доступе
+                        .accessDeniedPage("/access-denied") // Custom access denied page / Кастомная страница отказа в доступе
                 );
 
         //
