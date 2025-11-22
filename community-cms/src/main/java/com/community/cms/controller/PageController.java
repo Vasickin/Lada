@@ -203,7 +203,7 @@ public class PageController {
     @GetMapping("/{slug}")
     public String showPublicPage(@PathVariable String slug, Model model) {
         Optional<Page> page = pageService.findPageBySlug(slug);
-        if (page.isPresent() && page.get().getPublished()) {
+        if (page.isPresent() && page.get().getIsPublished()) {
             model.addAttribute("page", page.get());
             return "pages/view";
         } else {

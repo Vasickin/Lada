@@ -10,73 +10,64 @@ import java.util.List;
 import java.util.Optional;
 
 /**
- * Репозиторий для работы с сущностью Page в базе данных.
- * Предоставляет методы для выполнения CRUD операций и пользовательских запросов.
- *
- * <p>Наследует {@link JpaRepository} который предоставляет стандартные методы:
- * <ul>
- *   <li>{@code save()} - сохранение сущности</li>
- *   <li>{@code findById()} - поиск по идентификатору</li>
- *   <li>{@code findAll()} - получение всех записей</li>
- *   <li>{@code delete()} - удаление сущности</li>
- * </ul>
+ * Repository for managing Page entities in the database.
+ * Provides methods for retrieving pages by various criteria.
+ * Репозиторий для управления сущностями Page в базе данных.
+ * Предоставляет методы для получения страниц по различным критериям.
  *
  * @author Vasickin
- * @version 1.0
- * @since 2025
+ * @version 2.0
+ * @since 2024
  * @see Page
- * @see org.springframework.data.jpa.repository.JpaRepository
  */
 @Repository
 public interface PageRepository extends JpaRepository<Page, Long> {
 
     /**
-     * Находит страницу по уникальному slug.
+     * Finds a page by its unique URL slug.
+     * Used for retrieving pages by their URL identifier.
+     * Находит страницу по её уникальному URL-идентификатору.
+     * Используется для получения страниц по их URL-идентификатору.
      *
-     * @param slug уникальный идентификатор страницы для URL
-     * @return Optional содержащий страницу если найдена, иначе empty
-     * @throws org.springframework.dao.DataAccessException при ошибках доступа к данным
+     * @param slug the URL slug to search for / URL-идентификатор для поиска
+     * @return optional containing the page if found / опциональный объект со страницей, если найдена
      */
     Optional<Page> findBySlug(String slug);
 
     /**
-     * Находит все опубликованные страницы, отсортированные по дате создания (сначала новые).
+     * Finds all published pages ordered by sort order.
+     * Used for navigation menus and page listings.
+     * Находит все опубликованные страницы, отсортированные по порядку.
+     * Используется для навигационных меню и списков страниц.
      *
-     * @return список опубликованных страниц
+     * @return list of published pages / список опубликованных страниц
      */
-    List<Page> findByPublishedTrueOrderByCreatedAtDesc();
+    List<Page> findByIsPublishedTrueOrderBySortOrderAsc();
 
     /**
-     * Находит все страницы по статусу публикации.
+     * Checks if a page with the given slug exists.
+     * Useful for validation when creating new pages.
+     * Проверяет, существует ли страница с данным идентификатором.
+     * Полезно для проверки при создании новых страниц.
      *
-     * @param published true для опубликованных, false для черновиков
-     * @return список страниц с указанным статусом публикации
-     */
-    List<Page> findByPublished(Boolean published);
-
-    /**
-     * Проверяет существование страницы с указанным slug.
-     *
-     * @param slug slug для проверки
-     * @return true если страница с таким slug существует, иначе false
+     * @param slug the URL slug to check / URL-идентификатор для проверки
+     * @return true if page exists / true если страница существует
      */
     boolean existsBySlug(String slug);
 
     /**
-     * Находит страницы по заголовку (поиск с учетом регистра).
+     * Finds pages by slug containing the given string (case-insensitive).
+     * Used for search functionality.
+     * Находит страницы по идентификатору, содержащему данную строку (без учета регистра).
+     * Используется для функциональности поиска.
      *
-     * @param title заголовок для поиска
-     * @return список страниц с указанным заголовком
+     * @param slug the slug fragment to search for / фрагмент идентификатора для поиска
+     * @return list of matching pages / список соответствующих страниц
      */
-    List<Page> findByTitleContainingIgnoreCase(String title);
+    List<Page> findBySlugContainingIgnoreCase(String slug);
 
-    /**
-     * Пользовательский запрос для поиска страниц по содержимому.
-     * Использует Native SQL запрос для полнотекстового поиска.
-     *
-     * @param content фрагмент содержимого для поиска
-     * @return список страниц содержащих указанный текст
-     */
-    @Query("SELECT p FROM Page p WHERE LOWER(p.content) LIKE LOWER(CONCAT('%', :content, '%'))")
-    List<Page> findByContentContaining(@Param("content") String content);
+    // УДАЛЯЕМ старые методы, которые ссылаются на несуществующие поля:
+    // - findByContentContaining
+    // - findByTitleContaining
+    // - findByTitle
 }
