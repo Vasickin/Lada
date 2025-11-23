@@ -1,5 +1,6 @@
 package com.community.cms.service;
 
+import com.community.cms.dto.PageStatistics;
 import com.community.cms.model.Page;
 import com.community.cms.repository.PageRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -160,5 +161,41 @@ public class PageService {
      */
     public boolean pageExistsBySlug(String slug) {
         return pageRepository.existsBySlug(slug);
+    }
+
+    // В PageService.java добавляем методы:
+
+    /**
+     * Возвращает статистику по страницам для дашборда.
+     * Использует эффективные запросы к базе данных.
+     *
+     * @return DTO со статистикой страниц
+     */
+    public PageStatistics getPageStatistics() {
+        long totalPages = pageRepository.count();
+        long publishedCount = pageRepository.countByPublished(true);
+        long draftCount = pageRepository.countByPublished(false);
+
+        return new PageStatistics(totalPages, publishedCount, draftCount);
+    }
+
+    /**
+     * Находит последние страницы с ограничением по количеству.
+     * Использует эффективный запрос к базе данных.
+     *
+     * @param limit максимальное количество возвращаемых страниц
+     * @return список последних страниц
+     */
+    public List<Page> findRecentPages(int limit) {
+        return pageRepository.findRecentPages(limit);
+    }
+
+    /**
+     * Находит последние 5 страниц (по умолчанию для дашборда).
+     *
+     * @return список последних 5 страниц
+     */
+    public List<Page> findRecentPages() {
+        return findRecentPages(5);
     }
 }
