@@ -61,6 +61,9 @@ public class CustomErrorController implements ErrorController {
             if (statusCode == HttpStatus.INTERNAL_SERVER_ERROR.value()) {
                 return "error/500";
             }
+            if (statusCode == HttpStatus.FORBIDDEN.value()) {
+                return "error/403";
+            }
         }
 
         // Default fallback - will be improved later
