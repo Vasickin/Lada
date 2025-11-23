@@ -54,37 +54,44 @@ public class SecurityConfig {
                 // Define URL access rules / Определяем правила доступа к URL
                 //
                 .authorizeHttpRequests(authorize -> authorize
-                                //
-                                // PUBLIC ENDPOINTS / ПУБЛИЧНЫЕ ENDPOINTS
-                                // Accessible without authentication / Доступны без аутентификации
-                                //
-                                .requestMatchers("/", "/h2-console/**", "/css/**", "/js/**", "/images/**", "/error").permitAll()
+                        //
+                        // PUBLIC ENDPOINTS / ПУБЛИЧНЫЕ ENDPOINTS
+                        // Accessible without authentication / Доступны без аутентификации
+                        //
+                        .requestMatchers("/", "/h2-console/**", "/css/**", "/js/**", "/images/**", "/error").permitAll()
 
-                                //
-                                // PUBLIC PAGE VIEWING / ПУБЛИЧНЫЙ ПРОСМОТР СТРАНИЦ
-                                // Page viewing by slug is public / Просмотр страниц по slug доступен всем
-                                //
-                                .requestMatchers("/pages/{slug}").permitAll()
+                        //
+                        // PUBLIC PAGES / ПУБЛИЧНЫЕ СТРАНИЦЫ  ✅ FIX
+                        // About and Contact pages are public / Страницы "О нас" и "Контакты" публичные
+                        //
+                        .requestMatchers("/about", "/contact").permitAll()
 
-                                //
-                                // ADMIN ENDPOINTS / АДМИНИСТРАТИВНЫЕ ENDPOINTS
-                                // Require authentication / Требуют аутентификации
-                                // These URLs manage content and require login /
-                                // Эти URL управляют контентом и требуют входа в систему
-                                //
-                                .requestMatchers("/pages", "/pages/create", "/pages/edit/**",
-                                        "/pages/delete/**", "/pages/publish/**", "/pages/unpublish/**").authenticated()
+                        //
+                        // PUBLIC PAGE VIEWING / ПУБЛИЧНЫЙ ПРОСМОТР СТРАНИЦ
+                        // Page viewing by slug is public / Просмотр страниц по slug доступен всем
+                        //
+                        .requestMatchers("/pages/{slug}").permitAll()
 
-                                //
-                                // ADMIN DASHBOARD / АДМИНИСТРАТИВНЫЙ ДАШБОРД  ✅ NEW
-                                // Dashboard and admin panel access / Доступ к дашборду и админ панели
-                                //
-                                .requestMatchers("/admin", "/admin/**").authenticated()
-                                //
-                                // ALL OTHER REQUESTS / ВСЕ ОСТАЛЬНЫЕ ЗАПРОСЫ
-                                // Require authentication / Требуют аутентификации
-                                //
-                                .anyRequest().authenticated()
+                        //
+                        // ADMIN ENDPOINTS / АДМИНИСТРАТИВНЫЕ ENDPOINTS
+                        // Require authentication / Требуют аутентификации
+                        // These URLs manage content and require login /
+                        // Эти URL управляют контентом и требуют входа в систему
+                        //
+                        .requestMatchers("/pages", "/pages/create", "/pages/edit/**",
+                                "/pages/delete/**", "/pages/publish/**", "/pages/unpublish/**").authenticated()
+
+                        //
+                        // ADMIN DASHBOARD / АДМИНИСТРАТИВНЫЙ ДАШБОРД
+                        // Dashboard and admin panel access / Доступ к дашборду и админ панели
+                        //
+                        .requestMatchers("/admin", "/admin/**").authenticated()
+
+                        //
+                        // ALL OTHER REQUESTS / ВСЕ ОСТАЛЬНЫЕ ЗАПРОСЫ
+                        // Require authentication / Требуют аутентификации
+                        //
+                        .anyRequest().authenticated()
                 )
 
                 //
