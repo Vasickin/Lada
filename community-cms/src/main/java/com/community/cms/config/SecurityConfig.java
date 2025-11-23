@@ -29,8 +29,8 @@ import org.springframework.security.web.SecurityFilterChain;
  *
  * @author Your Name
  * @version 1.0
- * @since 2025
  * @see org.springframework.security.config.annotation.web.configuration.EnableWebSecurity
+ * @since 2025
  */
 @Configuration
 @EnableWebSecurity
@@ -61,6 +61,12 @@ public class SecurityConfig {
                         .requestMatchers("/", "/h2-console/**", "/css/**", "/js/**", "/images/**", "/error").permitAll()
 
                         //
+                        // PUBLIC PAGES / ПУБЛИЧНЫЕ СТРАНИЦЫ  ✅ FIX
+                        // About and Contact pages are public / Страницы "О нас" и "Контакты" публичные
+                        //
+                        .requestMatchers("/about", "/contact").permitAll()
+
+                        //
                         // PUBLIC PAGE VIEWING / ПУБЛИЧНЫЙ ПРОСМОТР СТРАНИЦ
                         // Page viewing by slug is public / Просмотр страниц по slug доступен всем
                         //
@@ -76,6 +82,12 @@ public class SecurityConfig {
                                 "/pages/delete/**", "/pages/publish/**", "/pages/unpublish/**").authenticated()
 
                         //
+                        // ADMIN DASHBOARD / АДМИНИСТРАТИВНЫЙ ДАШБОРД
+                        // Dashboard and admin panel access / Доступ к дашборду и админ панели
+                        //
+                        .requestMatchers("/admin", "/admin/**").authenticated()
+
+                        //
                         // ALL OTHER REQUESTS / ВСЕ ОСТАЛЬНЫЕ ЗАПРОСЫ
                         // Require authentication / Требуют аутентификации
                         //
@@ -89,7 +101,7 @@ public class SecurityConfig {
                 .formLogin(form -> form
                         .loginPage("/login")          // Custom login page URL / URL кастомной страницы логина
                         .loginProcessingUrl("/login") // URL for processing login / URL для обработки логина
-                        .defaultSuccessUrl("/pages")  // Redirect after successful login / Перенаправление после успешного логина
+                        .defaultSuccessUrl("/admin")  // Redirect after successful login / Перенаправление после успешного логина
                         .failureUrl("/login?error")   // Redirect after failed login / Перенаправление после неудачного логина
                         .permitAll()                  // Login page is accessible to all / Страница логина доступна всем
                 )

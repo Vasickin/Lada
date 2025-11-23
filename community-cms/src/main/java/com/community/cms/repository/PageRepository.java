@@ -79,4 +79,31 @@ public interface PageRepository extends JpaRepository<Page, Long> {
      */
     @Query("SELECT p FROM Page p WHERE LOWER(p.content) LIKE LOWER(CONCAT('%', :content, '%'))")
     List<Page> findByContentContaining(@Param("content") String content);
+
+
+    // В PageRepository.java добавляем методы:
+
+    /**
+     * Подсчитывает количество страниц по статусу публикации.
+     *
+     * @param published true для опубликованных, false для черновиков
+     * @return количество страниц с указанным статусом
+     */
+    long countByPublished(Boolean published);
+
+    /**
+     * Находит последние N страниц, отсортированных по дате создания (сначала новые).
+     *
+     * @return список последних страниц
+     */
+    List<Page> findTop5ByOrderByCreatedAtDesc();
+
+    /**
+     * Находит последние страницы с ограничением по количеству.
+     *
+     * @param limit максимальное количество страниц
+     * @return список последних страниц
+     */
+    @Query("SELECT p FROM Page p ORDER BY p.createdAt DESC LIMIT :limit")
+    List<Page> findRecentPages(@Param("limit") int limit);
 }
