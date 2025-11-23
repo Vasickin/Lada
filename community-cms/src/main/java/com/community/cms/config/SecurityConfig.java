@@ -1,15 +1,14 @@
 package com.community.cms.config;
 
+import com.community.cms.service.UserService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.core.userdetails.User;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
 
 /**
@@ -61,7 +60,7 @@ public class SecurityConfig {
                         .requestMatchers("/", "/h2-console/**", "/css/**", "/js/**", "/images/**", "/error").permitAll()
 
                         //
-                        // PUBLIC PAGES / ПУБЛИЧНЫЕ СТРАНИЦЫ  ✅ FIX
+                        // PUBLIC PAGES / ПУБЛИЧНЫЕ СТРАНИЦЫ
                         // About and Contact pages are public / Страницы "О нас" и "Контакты" публичные
                         //
                         .requestMatchers("/about", "/contact").permitAll()
@@ -138,44 +137,33 @@ public class SecurityConfig {
     }
 
     /**
-     * Создает сервис для работы с пользователями, хранящимися в памяти.
+     * Создает сервис для работы с пользователями из базы данных.
+     * Заменяет InMemory аутентификацию на работу с реальной БД.
      *
-     * <p>ВНИМАНИЕ: Это решение только для разработки и демонстрации.
-     * В production окружении необходимо заменить на реализацию,
-     * использующую базу данных.</p>
-     *
+     * @param userService сервис для работы с пользователями
      * @param passwordEncoder кодировщик паролей для безопасного хранения
-     * @return сервис деталей пользователя с предустановленными учетными записями
+     * @return сервис деталей пользователя с загрузкой из базы данных
      */
     @Bean
-    public UserDetailsService userDetailsService(PasswordEncoder passwordEncoder) {
-        //
-        // IN-MEMORY USER STORAGE / ХРАНИЛИЩЕ ПОЛЬЗОВАТЕЛЕЙ В ПАМЯТИ
-        // For development only - replace with database in production /
-        // Только для разработки - заменить на базу данных в продакшене
-        //
+    public UserDetailsService userDetailsService(UserService userService, PasswordEncoder passwordEncoder) {
+        return username -> {
+            // Ищем пользователя в базе данных по имени пользователя
+            com.community.cms.model.User user = userService.findUserByUsername(username)
+                    .orElseThrow(() -> new UsernameNotFoundException("Пользователь не найден: " + username));
 
-        /**
-         * Администратор системы с полными правами доступа.
-         * Имеет роли ADMIN и USER.
-         */
-        UserDetails admin = User.builder()
-                .username("admin")
-                .password(passwordEncoder.encode("admin123"))
-                .roles("ADMIN", "USER")
-                .build();
+            // Проверяем, активна ли учетная запись
+            if (!user.isEnabled()) {
+                throw new UsernameNotFoundException("Учетная запись заблокирована: " + username);
+            }
 
-        /**
-         * Редактор контента с ограниченными правами.
-         * Имеет роли EDITOR и USER.
-         */
-        UserDetails editor = User.builder()
-                .username("editor")
-                .password(passwordEncoder.encode("editor123"))
-                .roles("EDITOR", "USER")
-                .build();
-
-        return new InMemoryUserDetailsManager(admin, editor);
+            // Преобразуем нашего User в Spring Security UserDetails
+            return org.springframework.security.core.userdetails.User.builder()
+                    .username(user.getUsername())
+                    .password(user.getPassword())
+                    .roles(user.getRoles().toArray(new String[0]))
+                    .disabled(!user.isEnabled())
+                    .build();
+        };
     }
 
     /**
