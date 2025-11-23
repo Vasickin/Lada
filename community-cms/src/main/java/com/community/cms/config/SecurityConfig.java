@@ -101,7 +101,7 @@ public class SecurityConfig {
                 .formLogin(form -> form
                         .loginPage("/login")          // Custom login page URL / URL кастомной страницы логина
                         .loginProcessingUrl("/login") // URL for processing login / URL для обработки логина
-                        .defaultSuccessUrl("/pages")  // Redirect after successful login / Перенаправление после успешного логина
+                        .defaultSuccessUrl("/admin")  // Redirect after successful login / Перенаправление после успешного логина
                         .failureUrl("/login?error")   // Redirect after failed login / Перенаправление после неудачного логина
                         .permitAll()                  // Login page is accessible to all / Страница логина доступна всем
                 )

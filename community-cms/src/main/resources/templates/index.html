@@ -129,7 +129,7 @@
                     Only show if user is authenticated / Показывать только если пользователь аутентифицирован
                 -->
                 <li class="nav-item" sec:authorize="isAuthenticated()">
-                    <a class="nav-link fw-medium text-success" href="/pages" th:href="@{/pages}">⚙️ Управление</a>
+                    <a class="nav-link fw-medium text-success" href="/admin" th:href="@{/admin}">⚙️ Управление</a>
                 </li>
                 <!--
                     LOGIN/LOGOUT BUTTONS / КНОПКИ ВХОДА/ВЫХОДА
@@ -286,7 +286,7 @@
                     Здесь будут отображаться новости и материалы организации
                 </p>
                 <div sec:authorize="isAuthenticated()">
-                    <a href="/pages/create" th:href="@{/pages/create}" class="btn btn-primary-custom">
+                    <a href="/admin" th:href="@{/admin}" class="btn btn-primary-custom">
                         Создать первую публикацию
                     </a>
                 </div>
