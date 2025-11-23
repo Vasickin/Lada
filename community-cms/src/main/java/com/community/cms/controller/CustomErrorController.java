@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
  * Пользовательский контроллер для обработки HTTP ошибок и отображения пользовательских страниц ошибок.
  * Реализует интерфейс ErrorController Spring Boot для переопределения стандартных страниц ошибок.
  *
- * @author Community CMS Team
+ * @author Vasickin
  * @version 1.0
  * @since 2024
  * @see org.springframework.boot.web.servlet.error.ErrorController
@@ -58,8 +58,9 @@ public class CustomErrorController implements ErrorController {
             if (statusCode == HttpStatus.NOT_FOUND.value()) {
                 return "error/404";
             }
-            // Other error handlers will be added later
-            // Другие обработчики ошибок будут добавлены позже
+            if (statusCode == HttpStatus.INTERNAL_SERVER_ERROR.value()) {
+                return "error/500";
+            }
         }
 
         // Default fallback - will be improved later
