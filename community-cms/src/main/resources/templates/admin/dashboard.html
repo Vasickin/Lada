@@ -207,19 +207,29 @@
                 <div class="card-body">
                     <div class="mb-2">
                         <strong>Пользователь:</strong>
-                        <span sec:authentication="name" class="badge bg-info ms-2">admin</span>
+                        <span sec:authentication="name" class="badge bg-info ms-2">
+                <!-- Thymeleaf автоматически подставит текущее имя пользователя -->
+            </span>
                     </div>
                     <div class="mb-2">
                         <strong>Роли:</strong>
-                        <span sec:authentication="principal.authorities"
-                              class="badge bg-secondary ms-2">ROLE_ADMIN, ROLE_USER</span>
+                        <span class="badge bg-secondary ms-2">
+                <!-- Правильное отображение ролей -->
+                <span sec:authentication="principal.authorities"></span>
+            </span>
+                    </div>
+                    <div class="mb-2">
+                        <strong>Имя пользователя:</strong>
+                        <span class="badge bg-primary ms-2" sec:authentication="principal.username">
+                <!-- Имя пользователя из principal -->
+            </span>
                     </div>
                     <div>
-                        <strong>Время:</strong>
+                        <strong>Время сервера:</strong>
                         <span th:text="${#temporals.format(#temporals.createNow(), 'dd.MM.yyyy HH:mm')}"
                               class="badge bg-light text-dark ms-2">
-                              01.01.2025 12:00
-                        </span>
+                  01.01.2025 12:00
+            </span>
                     </div>
                 </div>
             </div>
