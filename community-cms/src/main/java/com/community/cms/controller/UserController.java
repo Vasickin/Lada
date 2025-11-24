@@ -5,12 +5,14 @@ import com.community.cms.service.UserService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -27,7 +29,6 @@ import java.util.Set;
  *   <li>Редактирование существующих пользователей</li>
  *   <li>Управление активностью учетных записей</li>
  *   <li>Назначение и снятие ролей</li>
- *   <li>Удаление пользователей (с ограничениями)</li>
  * </ul>
  *
  * <p>Доступ к функциям управления пользователями ограничен ролью ADMIN.
@@ -157,29 +158,44 @@ public class UserController {
      *
      * @param id идентификатор редактируемого пользователя
      * @param user обновленные данные пользователя
-     * @param bindingResult результаты валидации формы
+     * @param roles выбранные роли пользователя
      * @param redirectAttributes атрибуты для перенаправления
      * @param model модель для передачи данных в представление
      * @return перенаправление на список пользователей или возврат к форме при ошибках
      */
     @PostMapping("/edit/{id}")
     public String updateUser(@PathVariable Long id,
-                             @Valid @ModelAttribute User user,
-                             BindingResult bindingResult,
+                             @ModelAttribute User user,
+                             @RequestParam(value = "roles", required = false) Set<String> roles,
                              RedirectAttributes redirectAttributes,
                              Model model) {
-        // Проверяем ошибки валидации
-        if (bindingResult.hasErrors()) {
-            model.addAttribute("availableRoles", getAvailableRoles());
-            return "admin/users/edit";
-        }
 
         try {
-            // Сохраняем пользователя (UserService обработает шифрование пароля если нужно)
-            userService.saveUser(user);
+            // Находим существующего пользователя
+            User existingUser = userService.findUserById(id)
+                    .orElseThrow(() -> new IllegalArgumentException("Пользователь не найден: " + id));
+
+            // Обновляем только разрешенные поля
+            existingUser.setEmail(user.getEmail());
+            existingUser.setEnabled(user.isEnabled());
+
+            // Обновляем роли если переданы
+            if (roles != null) {
+                existingUser.setRoles(new HashSet<>(roles));
+            } else {
+                existingUser.setRoles(new HashSet<>());
+            }
+
+            // Обновляем пароль только если указан новый
+            if (user.getPassword() != null && !user.getPassword().trim().isEmpty()) {
+                existingUser.setPassword(user.getPassword());
+            }
+
+            userService.saveUser(existingUser);
             redirectAttributes.addFlashAttribute("success",
-                    "Пользователь " + user.getUsername() + " успешно обновлен");
+                    "Пользователь " + existingUser.getUsername() + " успешно обновлен");
             return "redirect:/admin/users";
+
         } catch (IllegalArgumentException e) {
             model.addAttribute("error", e.getMessage());
             model.addAttribute("availableRoles", getAvailableRoles());
@@ -222,9 +238,24 @@ public class UserController {
     @PostMapping("/disable/{id}")
     public String disableUser(@PathVariable Long id, RedirectAttributes redirectAttributes) {
         try {
+            User userToDisable = userService.findUserById(id)
+                    .orElseThrow(() -> new IllegalArgumentException("Пользователь не найден"));
+
+            // Проверяем можно ли заблокировать пользователя
+            if (!canDisableUser(userToDisable)) {
+                if (userToDisable.getId().equals(getCurrentUser().getId())) {
+                    redirectAttributes.addFlashAttribute("error",
+                            "Нельзя заблокировать собственную учетную запись");
+                } else {
+                    redirectAttributes.addFlashAttribute("error",
+                            "Нельзя заблокировать последнего администратора");
+                }
+                return "redirect:/admin/users";
+            }
+
             User user = userService.disableUser(id);
             redirectAttributes.addFlashAttribute("success",
-                    "Пользователь " + user.getUsername() + " деактивирован");
+                    "Пользователь " + user.getUsername() + " заблокирован");
         } catch (IllegalArgumentException e) {
             redirectAttributes.addFlashAttribute("error", e.getMessage());
         }
@@ -279,6 +310,43 @@ public class UserController {
             redirectAttributes.addFlashAttribute("error", e.getMessage());
         }
         return "redirect:/admin/users";
+    }
+
+    /**
+     * Получает текущего аутентифицированного пользователя.
+     *
+     * @return текущий пользователь
+     */
+    private User getCurrentUser() {
+        String username = SecurityContextHolder.getContext().getAuthentication().getName();
+        return userService.findUserByUsername(username)
+                .orElseThrow(() -> new IllegalArgumentException("Текущий пользователь не найден"));
+    }
+
+    /**
+     * Проверяет, можно ли заблокировать пользователя.
+     * Запрещает блокировку самого себя и последнего администратора.
+     *
+     * @param user пользователь для проверки
+     * @return true если блокировка разрешена, false если запрещена
+     */
+    private boolean canDisableUser(User user) {
+        User currentUser = getCurrentUser();
+
+        // Запрещаем блокировку самого себя
+        if (user.getId().equals(currentUser.getId())) {
+            return false;
+        }
+
+        // Запрещаем блокировку последнего активного администратора
+        if (user.hasRole("ADMIN")) {
+            long activeAdminCount = userService.findUsersByRole("ADMIN").stream()
+                    .filter(User::isEnabled)
+                    .count();
+            return activeAdminCount > 1;
+        }
+
+        return true;
     }
 
     /**
