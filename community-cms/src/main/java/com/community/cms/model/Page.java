@@ -6,6 +6,7 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
+import jakarta.validation.constraints.Pattern;
 
 import java.time.LocalDateTime;
 
@@ -51,6 +52,8 @@ public class Page {
      * Используется для построения SEO-дружественных URL.
      * Пример: "o-nas" вместо "page?id=1"
      */
+    @NotBlank(message = "Slug не может быть пустым")
+    @Pattern(regexp = "^[a-z0-9-]+$", message = "Slug может содержать только латинские буквы в нижнем регистре, цифры и дефисы")
     @Column(unique = true, nullable = false)
     private String slug;
 
