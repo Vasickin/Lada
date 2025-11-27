@@ -1,269 +1,404 @@
 <!DOCTYPE html>
 <html lang="ru" xmlns:th="http://www.thymeleaf.org">
 <head>
-    <!--
-        META AND BASIC SETUP / МЕТАДАННЫЕ И БАЗОВАЯ НАСТРОЙКА
-        Character set, viewport, and page title / Кодировка, вьюпорт и заголовок страницы
-    -->
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Общественная организация Лада - Главная</title>
 
-    <!--
-        BOOTSTRAP 5 CSS / БИБЛИОТЕКА BOOTSTRAP 5
-        Using CDN for consistent styling / Используем CDN для единообразного стиля
-    -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
-
-    <!--
-        GOOGLE FONTS / ШРИФТЫ GOOGLE
-        Using Roboto font for better typography / Используем шрифт Roboto для лучшей типографики
-    -->
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
     <style>
-        /* Custom styles for home page / Пользовательские стили для главной страницы */
         :root {
-            --primary-color: #2c5aa0;
+            --primary-50: #eff6ff;
+            --primary-100: #dbeafe;
+            --primary-500: #3b82f6;
+            --primary-600: #2563eb;
+            --primary-700: #1d4ed8;
+            --primary-800: #1e40af;
+            --primary-900: #1e3a8a;
+            --primary-color: var(--primary-700);
             --secondary-color: #f8f9fa;
-            --accent-color: #ff6b35;
+            --accent-color: #f59e0b;
+            --success-color: #10b981;
+            --warning-color: #f59e0b;
+            --error-color: #ef4444;
+            --text-primary: #1f2937;
+            --text-secondary: #6b7280;
+            --text-tertiary: #9ca3af;
+            --background: #ffffff;
+            --surface: #f9fafb;
+            --border: #e5e7eb;
+            --font-heading: 'Inter', sans-serif;
+            --font-body: 'Inter', sans-serif;
+            --font-accent: 'Inter', sans-serif;
+            --space-xs: 0.25rem;
+            --space-sm: 0.5rem;
+            --space-md: 1rem;
+            --space-lg: 1.5rem;
+            --space-xl: 2rem;
+            --space-2xl: 3rem;
+            --radius-sm: 0.375rem;
+            --radius-md: 0.5rem;
+            --radius-lg: 0.75rem;
+            --radius-xl: 1rem;
+            --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+            --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+            --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
         }
 
         body {
-            font-family: 'Roboto', sans-serif;
+            font-family: var(--font-body);
             line-height: 1.6;
+            color: var(--text-primary);
+            background-color: var(--background);
         }
 
-        .hero-section {
-            background: linear-gradient(135deg, var(--primary-color) 0%, #1e3a8a 100%);
-            color: white;
-            padding: 100px 0;
+        .navbar-custom {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            box-shadow: var(--shadow-sm);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+            transition: all 0.3s ease;
+            margin-bottom: 0 !important;
+            padding-bottom: 0;
+        }
+
+        .navbar-custom.scrolled {
+            background: rgba(255, 255, 255, 0.98);
+            box-shadow: var(--shadow-md);
+            margin-bottom: 0;
+        }
+
+        .logo-brand {
+            display: flex;
+            align-items: center;
+            gap: var(--space-sm);
+            text-decoration: none;
+            font-weight: 700;
+            font-size: 1.5rem;
+        }
+
+        .logo-image {
+            height: 40px;
+            width: auto;
+            transition: transform 0.3s ease;
+        }
+
+        .logo-brand:hover .logo-image {
+            transform: scale(1.05);
+        }
+
+        .header-banner-section {
+            margin-top: 76px;
+            padding: 0;
+            background: transparent;
+            margin-bottom: 0;
+        }
+
+        .header-banner-wrapper {
+            width: 100%;
+            position: relative;
+        }
+
+        .desktop-banner {
+            display: block;
+            width: 100%;
+            height: 400px;
+            object-fit: cover;
+            object-position: center center;
+            border-radius: var(--radius-md);
+            box-shadow: 0 20px 40px -8px rgba(0, 0, 0, 0.25);
+            margin: 0;
+        }
+
+        .mobile-banner {
+            display: none;
+            width: 100%;
+            height: auto;
+            max-height: 200px;
+            object-fit: contain;
+            border-radius: 0;
+            margin: 0;
+            box-shadow: none;
+        }
+
+        .header-banner-section .container {
+            max-width: 1400px;
+            padding: 0;
         }
 
         .section-title {
-            color: var(--primary-color);
+            color: var(--primary-800);
+            font-family: var(--font-heading);
             font-weight: 700;
-            margin-bottom: 2rem;
+            font-size: 2.25rem;
+            margin-bottom: var(--space-2xl);
             position: relative;
+            line-height: 1.2;
         }
 
         .section-title:after {
             content: '';
             position: absolute;
-            bottom: -10px;
+            bottom: -12px;
             left: 0;
-            width: 60px;
-            height: 3px;
-            background: var(--accent-color);
+            width: 80px;
+            height: 4px;
+            background: linear-gradient(90deg, var(--accent-color), var(--primary-500));
+            border-radius: 2px;
         }
 
         .card-hover {
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            background: var(--background);
         }
 
         .card-hover:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            transform: translateY(-8px);
+            box-shadow: var(--shadow-lg);
+            border-color: var(--primary-200);
         }
 
         .btn-primary-custom {
-            background: var(--primary-color);
+            background: linear-gradient(135deg, var(--primary-600), var(--primary-700));
             border: none;
-            padding: 12px 30px;
-            font-weight: 500;
+            padding: 12px 32px;
+            font-weight: 600;
+            border-radius: var(--radius-md);
+            color: white;
+            transition: all 0.3s ease;
+            box-shadow: var(--shadow-sm);
         }
 
         .btn-primary-custom:hover {
-            background: #1e3a8a;
+            background: linear-gradient(135deg, var(--primary-700), var(--primary-800));
             transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+            color: white;
         }
 
-        .navbar-custom {
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(10px);
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        .btn-outline-custom {
+            border: 2px solid var(--primary-600);
+            color: var(--primary-600);
+            padding: 10px 30px;
+            font-weight: 600;
+            border-radius: var(--radius-md);
+            transition: all 0.3s ease;
+            background: transparent;
+        }
+
+        .btn-outline-custom:hover {
+            background: var(--primary-600);
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .icon-large {
+            font-size: 3rem;
+            margin-bottom: var(--space-md);
+            background: linear-gradient(135deg, var(--primary-500), var(--accent-color));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .footer-custom {
+            background: linear-gradient(135deg, var(--primary-900), #1e1b4b);
+            color: white;
+            position: relative;
+        }
+
+        .footer-custom::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, var(--accent-color), var(--primary-500));
+        }
+
+        @media (max-width: 768px) {
+            .navbar-custom {
+                min-height: 48px !important;
+                padding-top: 0.5rem !important;
+                padding-bottom: 0.5rem !important;
+            }
+
+            .header-banner-section {
+                margin-top: 48px !important;
+                margin-bottom: 0 !important;
+                padding: 0 !important;
+            }
+
+            .desktop-banner {
+                display: none;
+            }
+
+            .mobile-banner {
+                display: block;
+            }
+
+            body {
+                padding-top: 48px !important;
+            }
+
+            .header-banner-section .container {
+                padding: 0 !important;
+            }
+
+            .container.my-5.py-4 {
+                margin-top: 0 !important;
+                padding-top: var(--space-md) !important;
+                margin-bottom: 0 !important;
+                padding-bottom: 0 !important;
+            }
+
+            .section-title {
+                font-size: 1.75rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .navbar-custom {
+                min-height: 44px !important;
+            }
+
+            .header-banner-section {
+                margin-top: 44px !important;
+            }
+
+            body {
+                padding-top: 44px !important;
+            }
+
+            .mobile-banner {
+                max-height: 180px;
+            }
         }
     </style>
 </head>
 <body>
-<!--
-    NAVIGATION HEADER / НАВИГАЦИОННЫЙ ЗАГОЛОВОК
-    Main navigation menu with logo and links /
-    Главное навигационное меню с логотипом и ссылками
--->
 <nav class="navbar navbar-expand-lg navbar-light navbar-custom fixed-top">
     <div class="container">
-        <!--
-            BRAND LOGO / ЛОГОТИП БРЕНДА
-            Organization name and logo / Название организации и логотип
-        -->
-        <a class="navbar-brand fw-bold" href="/" th:href="@{/}">
-            <span style="color: var(--primary-color);">🏛️ Лада</span>
+        <a class="navbar-brand logo-brand" href="/" th:href="@{/}">
+            <img src="/images/optimized/logo.png"
+                 alt="Лада - Общественная организация"
+                 class="logo-image"
+                 onerror="this.style.display='none'; this.nextElementSibling.style.display='inline-block'">
+            <span style="color: var(--primary-800); display: none;">🏛️ Лада</span>
         </a>
 
-        <!--
-            MOBILE MENU BUTTON / КНОПКА МОБИЛЬНОГО МЕНЮ
-            Toggle button for mobile navigation / Кнопка переключения для мобильной навигации
-        -->
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
+                aria-controls="navbarNav" aria-expanded="false" aria-label="Переключить навигацию">
             <span class="navbar-toggler-icon"></span>
         </button>
 
-        <!--
-            NAVIGATION MENU / НАВИГАЦИОННОЕ МЕНЮ
-            Main navigation links / Основные навигационные ссылки
-        -->
         <div class="collapse navbar-collapse" id="navbarNav">
             <ul class="navbar-nav ms-auto">
                 <li class="nav-item">
-                    <a class="nav-link active fw-medium" href="/" th:href="@{/}">Главная</a>
+                    <a class="nav-link active fw-semibold" href="/" th:href="@{/}">Главная</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link fw-medium" href="/about" th:href="@{/about}">О нас</a>
+                    <a class="nav-link fw-semibold" href="/about" th:href="@{/about}">О нас</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link fw-medium" href="/contact" th:href="@{/contact}">Контакты</a>
+                    <a class="nav-link fw-semibold" href="/contact" th:href="@{/}">Наши проекты</a>
                 </li>
-                <!--
-                    ADMIN LINK / ССЫЛКА НА АДМИНКУ
-                    Only show if user is authenticated / Показывать только если пользователь аутентифицирован
-                -->
-                <li class="nav-item" sec:authorize="isAuthenticated()">
-                    <a class="nav-link fw-medium text-success" href="/admin" th:href="@{/admin}">⚙️ Управление</a>
+                <li class="nav-item">
+                    <a class="nav-link fw-semibold" href="/contact" th:href="@{/}">Галерея</a>
                 </li>
-                <!--
-                    LOGIN/LOGOUT BUTTONS / КНОПКИ ВХОДА/ВЫХОДА
-                    Conditional display based on authentication status /
-                    Условное отображение на основе статуса аутентификации
-                -->
-                <li class="nav-item" sec:authorize="isAnonymous()">
-                    <a class="btn btn-outline-primary btn-sm ms-2" href="/login" th:href="@{/login}">Войти</a>
+                <li class="nav-item">
+                    <a class="nav-link fw-semibold" href="/contact" th:href="@{/}">Меценатам</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link fw-semibold" href="/contact" th:href="@{/contact}">Контакты</a>
                 </li>
                 <li class="nav-item" sec:authorize="isAuthenticated()">
-                    <form th:action="@{/logout}" method="post" class="d-inline ms-2">
-                        <button type="submit" class="btn btn-outline-danger btn-sm">Выйти</button>
-                    </form>
+                    <a class="nav-link fw-semibold text-success" href="/admin" th:href="@{/admin}">
+                        <span class="me-1">⚙️</span>Управление
+                    </a>
                 </li>
             </ul>
         </div>
     </div>
 </nav>
 
-<!--
-    HERO SECTION / ГЕРОЙ СЕКЦИЯ
-    Main banner with organization introduction /
-    Главный баннер с представлением организации
--->
-<section class="hero-section">
+<section class="header-banner-section">
     <div class="container">
-        <div class="row align-items-center">
-            <div class="col-lg-6">
-                <h1 class="display-4 fw-bold mb-4">Общественная организация "Лада"</h1>
-                <p class="lead mb-4">
-                    Мы объединяем людей для создания позитивных изменений в нашем сообществе.
-                    Наша миссия - развитие гражданского общества и поддержка социальных инициатив.
-                </p>
-                <div class="d-flex gap-3 flex-wrap">
-                    <a href="/about" th:href="@{/about}" class="btn btn-light btn-lg fw-medium">
-                        📖 Узнать больше
-                    </a>
-                    <a href="/contact" th:href="@{/contact}" class="btn btn-outline-light btn-lg fw-medium">
-                        📞 Связаться с нами
-                    </a>
-                </div>
-            </div>
-            <div class="col-lg-6 text-center">
-                <!--
-                    HERO IMAGE PLACEHOLDER / ЗАГОЛУШКА ДЛЯ ГЕРОЙ ИЗОБРАЖЕНИЯ
-                    Can be replaced with actual organization photo /
-                    Можно заменить на реальное фото организации
-                -->
-                <div class="bg-light rounded-3 p-5 d-inline-block">
-                    <span class="display-1">🏛️</span>
-                    <p class="text-muted mt-3">Ваше изображение здесь</p>
-                </div>
-            </div>
+        <div class="header-banner-wrapper">
+            <img src="/images/optimized/header-bg.jpg"
+                 alt="Общественная организация Лада - баннер"
+                 class="desktop-banner">
+            <img src="/images/optimized/logo.png"
+                 alt="Общественная организация Лада - логотип"
+                 class="mobile-banner">
         </div>
     </div>
 </section>
 
-<!--
-    MAIN CONTENT SECTION / СЕКЦИЯ ОСНОВНОГО КОНТЕНТА
-    Organization information and published pages /
-    Информация об организации и опубликованные страницы
--->
-<div class="container my-5">
-
-    <!--
-        ABOUT ORGANIZATION SECTION / СЕКЦИЯ ОБ ОРГАНИЗАЦИИ
-        Brief information about the organization / Краткая информация об организации
-    -->
+<div class="container my-5 py-4">
     <section class="row mb-5">
         <div class="col-12">
             <h2 class="section-title">О нашей деятельности</h2>
         </div>
         <div class="col-md-4 mb-4">
-            <div class="card border-0 card-hover h-100">
-                <div class="card-body text-center p-4">
-                    <div class="display-4 text-primary mb-3">🎯</div>
-                    <h5 class="card-title fw-bold">Наша миссия</h5>
-                    <p class="card-text">
-                        Содействие развитию гражданского общества и поддержка социально значимых инициатив.
+            <div class="card border-0 card-hover h-100 text-center">
+                <div class="card-body p-4">
+                    <div class="icon-large">🎯</div>
+                    <h5 class="card-title fw-bold mb-3">О нас</h5>
+                    <p class="card-text text-muted">
+                        Содействие развитию гражданского общества и поддержка социально значимых инициатив через образование и сотрудничество.
                     </p>
                 </div>
             </div>
         </div>
         <div class="col-md-4 mb-4">
-            <div class="card border-0 card-hover h-100">
-                <div class="card-body text-center p-4">
-                    <div class="display-4 text-primary mb-3">🤝</div>
-                    <h5 class="card-title fw-bold">Направления работы</h5>
-                    <p class="card-text">
-                        Образовательные программы, волонтерство, социальные проекты и общественные мероприятия.
+            <div class="card border-0 card-hover h-100 text-center">
+                <div class="card-body p-4">
+                    <div class="icon-large">🤝</div>
+                    <h5 class="card-title fw-bold mb-3">Наши проекты</h5>
+                    <p class="card-text text-muted">
+                        Образовательные программы, волонтерство, социальные проекты, общественные мероприятия и поддержка местных инициатив.
                     </p>
                 </div>
             </div>
         </div>
         <div class="col-md-4 mb-4">
-            <div class="card border-0 card-hover h-100">
-                <div class="card-body text-center p-4">
-                    <div class="display-4 text-primary mb-3">🌱</div>
-                    <h5 class="card-title fw-bold">Наши ценности</h5>
-                    <p class="card-text">
-                        Открытость, сотрудничество, инновации и устойчивое развитие сообщества.
+            <div class="card border-0 card-hover h-100 text-center">
+                <div class="card-body p-4">
+                    <div class="icon-large">🌱</div>
+                    <h5 class="card-title fw-bold mb-3">Галерея</h5>
+                    <p class="card-text text-muted">
+                        Открытость, сотрудничество, инновации, устойчивое развитие и социальная ответственность перед сообществом.
                     </p>
                 </div>
             </div>
         </div>
     </section>
 
-    <!--
-        PUBLISHED PAGES SECTION / СЕКЦИЯ ОПУБЛИКОВАННЫХ СТРАНИЦ
-        Display published pages from CMS / Отображение опубликованных страниц из CMS
-    -->
     <section class="mb-5" th:if="${not #lists.isEmpty(publishedPages)}">
         <div class="row">
             <div class="col-12">
                 <h2 class="section-title">Публикации и материалы</h2>
             </div>
-
-            <!--
-                PUBLISHED PAGES LIST / СПИСОК ОПУБЛИКОВАННЫХ СТРАНИЦ
-                Iterate through published pages / Перебор опубликованных страниц
-            -->
             <div th:each="page : ${publishedPages}" class="col-lg-6 mb-4">
                 <div class="card card-hover h-100">
-                    <div class="card-body">
-                        <h5 class="card-title fw-bold" th:text="${page.title}">Заголовок страницы</h5>
-                        <p class="card-text text-muted" th:text="${#strings.abbreviate(page.content, 150)}">
+                    <div class="card-body d-flex flex-column">
+                        <h5 class="card-title fw-bold mb-3" th:text="${page.title}">Заголовок страницы</h5>
+                        <p class="card-text text-muted flex-grow-1" th:text="${#strings.abbreviate(page.content, 200)}">
                             Краткое описание содержимого страницы...
                         </p>
-                        <div class="d-flex justify-content-between align-items-center">
+                        <div class="d-flex justify-content-between align-items-center mt-3 pt-3 border-top">
                             <small class="text-muted" th:text="${#temporals.format(page.createdAt, 'dd.MM.yyyy')}">
                                 01.01.2025
                             </small>
                             <a th:href="@{/pages/{slug}(slug=${page.slug})}"
-                               class="btn btn-outline-primary btn-sm">
+                               class="btn btn-outline-custom btn-sm">
                                 Читать далее →
                             </a>
                         </div>
@@ -273,21 +408,17 @@
         </div>
     </section>
 
-    <!--
-        EMPTY STATE FOR PAGES / СОСТОЯНИЕ ПУСТОГО СПИСКА СТРАНИЦ
-        Show when no published pages exist / Показывать когда нет опубликованных страниц
-    -->
     <section class="mb-5" th:if="${#lists.isEmpty(publishedPages)}">
         <div class="row">
             <div class="col-12 text-center py-5">
-                <div class="display-1 text-muted mb-3">📝</div>
-                <h3 class="text-muted">Публикаций пока нет</h3>
-                <p class="text-muted">
-                    Здесь будут отображаться новости и материалы организации
+                <div class="icon-large mb-4">📝</div>
+                <h3 class="text-muted mb-3">Публикаций пока нет</h3>
+                <p class="text-muted mb-4 lead">
+                    Здесь будут отображаться новости, статьи и материалы нашей организации
                 </p>
                 <div sec:authorize="isAuthenticated()">
-                    <a href="/admin" th:href="@{/admin}" class="btn btn-primary-custom">
-                        Создать первую публикацию
+                    <a href="/admin/pages/create" th:href="@{/admin/pages/create}" class="btn btn-primary-custom btn-lg">
+                        ✨ Создать первую публикацию
                     </a>
                 </div>
             </div>
@@ -295,39 +426,59 @@
     </section>
 </div>
 
-<!--
-    FOOTER SECTION / СЕКЦИЯ ФУТЕРА
-    Organization footer with contact information and copyright /
-    Футер организации с контактной информацией и авторскими правами
--->
-<footer class="bg-dark text-light py-5 mt-5">
+<footer class="footer-custom py-5 mt-5">
     <div class="container">
         <div class="row">
             <div class="col-lg-4 mb-4">
-                <h5 class="fw-bold mb-3">🏛️ Общественная организация "Лада"</h5>
-                <p class="text-light-emphasis">
+                <h5 class="fw-bold mb-3">
+                    <img src="/images/optimized/logo.png"
+                         alt="Лада"
+                         height="30"
+                         class="me-2"
+                         onerror="this.style.display='none'">
+                    Общественная организация "Лада"
+                </h5>
+                <p class="text-light-emphasis mb-3">
                     Создаем позитивные изменения вместе с сообществом.
-                    Развиваем гражданское общество через образование и сотрудничество.
+                    Развиваем гражданское общество через образование, сотрудничество и социальные инициативы.
                 </p>
+                <div class="d-flex gap-3">
+                    <a href="#" class="text-light-emphasis text-decoration-none">📘 Facebook</a>
+                    <a href="#" class="text-light-emphasis text-decoration-none">📷 Instagram</a>
+                    <a href="#" class="text-light-emphasis text-decoration-none">🐦 Twitter</a>
+                </div>
             </div>
             <div class="col-lg-4 mb-4">
                 <h6 class="fw-bold mb-3">Быстрые ссылки</h6>
                 <ul class="list-unstyled">
-                    <li><a href="/" th:href="@{/}" class="text-light-emphasis text-decoration-none">Главная</a></li>
-                    <li><a href="/about" th:href="@{/about}" class="text-light-emphasis text-decoration-none">О нас</a></li>
-                    <li><a href="/contact" th:href="@{/contact}" class="text-light-emphasis text-decoration-none">Контакты</a></li>
+                    <li class="mb-2">
+                        <a href="/" th:href="@{/}" class="text-light-emphasis text-decoration-none hover-text-white">
+                            🏠 Главная
+                        </a>
+                    </li>
+                    <li class="mb-2">
+                        <a href="/about" th:href="@{/about}" class="text-light-emphasis text-decoration-none hover-text-white">
+                            👥 О нас
+                        </a>
+                    </li>
+                    <li class="mb-2">
+                        <a href="/contact" th:href="@{/contact}" class="text-light-emphasis text-decoration-none hover-text-white">
+                            📞 Контакты
+                        </a>
+                    </li>
                 </ul>
             </div>
             <div class="col-lg-4 mb-4">
                 <h6 class="fw-bold mb-3">Контакты</h6>
                 <ul class="list-unstyled text-light-emphasis">
-                    <li>📧 Email: info@lada-org.ru</li>
-                    <li>📞 Телефон: +7 (XXX) XXX-XX-XX</li>
-                    <li>📍 Адрес: [Ваш адрес]</li>
+                    <li class="mb-2">📧 Email: info@lada-org.ru</li>
+                    <li class="mb-2">📞 Телефон: +7 (XXX) XXX-XX-XX</li>
+                    <li class="mb-2">📍 Адрес: [Ваш юридический адрес]</li>
+                    <li class="mb-2">🕒 Время работы: Пн-Пт 9:00-18:00</li>
                 </ul>
             </div>
         </div>
-        <hr class="my-4 bg-secondary">
+        <hr class="my-4 bg-primary-600">
         <div class="row">
             <div class="col-12 text-center">
                 <p class="mb-0 text-light-emphasis">
@@ -338,35 +489,34 @@
     </div>
 </footer>
 
-<!--
-    BOOTSTRAP JAVASCRIPT / JAVASCRIPT БИБЛИОТЕКИ BOOTSTRAP
-    Required for interactive components / Необходим для интерактивных компонентов
--->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
 
-<!--
-    CUSTOM JAVASCRIPT / ПОЛЬЗОВАТЕЛЬСКИЙ JAVASCRIPT
-    Smooth scrolling and other interactions /
-    Плавная прокрутка и другие взаимодействия
--->
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        // Smooth scrolling for navigation links / Плавная прокрутка для навигационных ссылок
-        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-            anchor.addEventListener('click', function (e) {
-                e.preventDefault();
-                const target = document.querySelector(this.getAttribute('href'));
-                if (target) {
-                    target.scrollIntoView({
-                        behavior: 'smooth',
-                        block: 'start'
-                    });
-                }
-            });
-        });
+        const navbar = document.querySelector('.navbar-custom');
 
-        // Add padding to body for fixed navbar / Добавляем отступ для фиксированной навигации
-        document.body.style.paddingTop = document.querySelector('.navbar').offsetHeight + 'px';
+        function updateNavbar() {
+            if (window.scrollY > 100) {
+                navbar.classList.add('scrolled');
+            } else {
+                navbar.classList.remove('scrolled');
+            }
+        }
+
+        window.addEventListener('scroll', updateNavbar);
+        updateNavbar();
+
+        const navbarHeight = document.querySelector('.navbar').offsetHeight;
+        document.body.style.paddingTop = navbarHeight + 'px';
+
+        const style = document.createElement('style');
+        style.textContent = `
+            .hover-text-white:hover {
+                color: white !important;
+                transition: color 0.3s ease;
+            }
+        `;
+        document.head.appendChild(style);
     });
 </script>
 </body>
