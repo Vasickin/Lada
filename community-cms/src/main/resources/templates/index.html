@@ -1,15 +1,33 @@
 <!DOCTYPE html>
 <html lang="ru" xmlns:th="http://www.thymeleaf.org">
 <head>
+    <!--
+        META AND BASIC SETUP / МЕТАДАННЫЕ И БАЗОВАЯ НАСТРОЙКА
+        Character set, viewport, and page title / Кодировка, вьюпорт и заголовок страницы
+    -->
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Общественная организация Лада - Главная</title>
 
+    <!--
+        BOOTSTRAP 5 CSS / БИБЛИОТЕКА BOOTSTRAP 5
+        Using CDN for consistent styling / Используем CDN для единообразного стиля
+    -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <!--
+        GOOGLE FONTS / ШРИФТЫ GOOGLE
+        Using Inter font for modern typography / Используем шрифт Inter для современной типографики
+    -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
     <style>
+        /*
+            DESIGN SYSTEM VARIABLES / ПЕРЕМЕННЫЕ ДИЗАЙН-СИСТЕМЫ
+            Comprehensive design tokens for consistent styling / Комплексные токены дизайна для единообразной стилизации
+        */
         :root {
+            /* Primary Color Scale / Шкала основных цветов */
             --primary-50: #eff6ff;
             --primary-100: #dbeafe;
             --primary-500: #3b82f6;
@@ -17,36 +35,52 @@
             --primary-700: #1d4ed8;
             --primary-800: #1e40af;
             --primary-900: #1e3a8a;
+
+            /* Semantic Colors / Семантические цвета */
             --primary-color: var(--primary-700);
             --secondary-color: #f8f9fa;
             --accent-color: #f59e0b;
             --success-color: #10b981;
             --warning-color: #f59e0b;
             --error-color: #ef4444;
+
+            /* Neutral Colors / Нейтральные цвета */
             --text-primary: #1f2937;
             --text-secondary: #6b7280;
             --text-tertiary: #9ca3af;
             --background: #ffffff;
             --surface: #f9fafb;
             --border: #e5e7eb;
+
+            /* Typography Scale / Типографическая шкала */
             --font-heading: 'Inter', sans-serif;
             --font-body: 'Inter', sans-serif;
             --font-accent: 'Inter', sans-serif;
+
+            /* Spacing Scale / Шкала отступов */
             --space-xs: 0.25rem;
             --space-sm: 0.5rem;
             --space-md: 1rem;
             --space-lg: 1.5rem;
             --space-xl: 2rem;
             --space-2xl: 3rem;
+
+            /* Border Radius Scale / Шкала скруглений */
             --radius-sm: 0.375rem;
             --radius-md: 0.5rem;
             --radius-lg: 0.75rem;
             --radius-xl: 1rem;
+
+            /* Shadow System / Система теней */
             --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
             --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
             --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
         }
 
+        /*
+            BASE STYLES / БАЗОВЫЕ СТИЛИ
+            Fundamental element styles and reset / Основные стили элементов и сброс
+        */
         body {
             font-family: var(--font-body);
             line-height: 1.6;
@@ -54,13 +88,17 @@
             background-color: var(--background);
         }
 
+        /*
+            NAVIGATION BAR STYLES / СТИЛИ НАВИГАЦИОННОЙ ПАНЕЛИ
+            Glass morphism effect with scroll behavior / Эффект стеклянной морфологии с поведением при скролле
+        */
         .navbar-custom {
             background: rgba(255, 255, 255, 0.95);
             backdrop-filter: blur(20px);
             box-shadow: var(--shadow-sm);
             border-bottom: 1px solid rgba(255, 255, 255, 0.2);
             transition: all 0.3s ease;
-            margin-bottom: 0 !important;
+            margin-bottom: 0 !important; /* Remove bottom margin for tight layout / Убираем нижний отступ для плотного макета */
             padding-bottom: 0;
         }
 
@@ -70,6 +108,10 @@
             margin-bottom: 0;
         }
 
+        /*
+            LOGO BRAND STYLES / СТИЛИ ЛОГОТИПА БРЕНДА
+            Professional logo presentation with hover effects / Профессиональное представление логотипа с эффектами наведения
+        */
         .logo-brand {
             display: flex;
             align-items: center;
@@ -89,8 +131,12 @@
             transform: scale(1.05);
         }
 
+        /*
+            HEADER BANNER SECTION / СЕКЦИЯ БАННЕРА ШАПКИ
+            Dual image system for desktop and mobile / Система двух изображений для десктопа и мобильных
+        */
         .header-banner-section {
-            margin-top: 76px;
+            margin-top: 76px; /* Fixed navbar height / Высота фиксированного навбара */
             padding: 0;
             background: transparent;
             margin-bottom: 0;
@@ -101,6 +147,10 @@
             position: relative;
         }
 
+        /*
+            DESKTOP BANNER STYLES / СТИЛИ ДЕСКТОПНОГО БАННЕРА
+            Full-width image with shadows and radius / Полноширинное изображение с тенями и скруглением
+        */
         .desktop-banner {
             display: block;
             width: 100%;
@@ -110,24 +160,40 @@
             border-radius: var(--radius-md);
             box-shadow: 0 20px 40px -8px rgba(0, 0, 0, 0.25);
             margin: 0;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
+        /*
+            MOBILE BANNER STYLES / СТИЛИ МОБИЛЬНОГО БАННЕРА
+            Logo image with shadows and proper spacing / Изображение логотипа с тенями и правильными отступами
+        */
         .mobile-banner {
-            display: none;
+            display: none; /* Hidden on desktop by default / Скрыто на десктопе по умолчанию */
             width: 100%;
             height: auto;
             max-height: 200px;
             object-fit: contain;
             border-radius: 0;
             margin: 0;
-            box-shadow: none;
+            /* Shadow effects for mobile logo / Эффекты теней для мобильного логотипа */
+            box-shadow:
+                0 8px 25px -6px rgba(0, 0, 0, 0.15),
+                0 2px 8px -2px rgba(0, 0, 0, 0.1);
+            padding: var(--space-sm);
+            background: var(--background);
+            border: 1px solid var(--border);
         }
 
+        /* Banner container styling / Стилизация контейнера баннера */
         .header-banner-section .container {
             max-width: 1400px;
             padding: 0;
         }
 
+        /*
+            SECTION TITLE STYLES / СТИЛИ ЗАГОЛОВКОВ СЕКЦИЙ
+            Consistent section headings with gradient underline / Единообразные заголовки с градиентным подчеркиванием
+        */
         .section-title {
             color: var(--primary-800);
             font-family: var(--font-heading);
@@ -149,6 +215,10 @@
             border-radius: 2px;
         }
 
+        /*
+            CARD COMPONENT STYLES / СТИЛИ КОМПОНЕНТОВ КАРТОЧЕК
+            Reusable card styles with hover interactions / Переиспользуемые стили карточек с интерактивными эффектами
+        */
         .card-hover {
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             border: 1px solid var(--border);
@@ -162,6 +232,10 @@
             border-color: var(--primary-200);
         }
 
+        /*
+            BUTTON COMPONENT STYLES / СТИЛИ КОМПОНЕНТОВ КНОПОК
+            Primary and secondary button variants with states / Варианты основных и второстепенных кнопок с состояниями
+        */
         .btn-primary-custom {
             background: linear-gradient(135deg, var(--primary-600), var(--primary-700));
             border: none;
@@ -197,6 +271,10 @@
             box-shadow: var(--shadow-md);
         }
 
+        /*
+            ICON STYLES / СТИЛИ ИКОНОК
+            Large icons with gradient text effect / Крупные иконки с градиентным текстовым эффектом
+        */
         .icon-large {
             font-size: 3rem;
             margin-bottom: var(--space-md);
@@ -206,6 +284,10 @@
             background-clip: text;
         }
 
+        /*
+            FOOTER STYLES / СТИЛИ ФУТЕРА
+            Professional footer with gradient background and accent border / Профессиональный футер с градиентным фоном и акцентной рамкой
+        */
         .footer-custom {
             background: linear-gradient(135deg, var(--primary-900), #1e1b4b);
             color: white;
@@ -222,19 +304,27 @@
             background: linear-gradient(90deg, var(--accent-color), var(--primary-500));
         }
 
+        /*
+            MOBILE RESPONSIVE STYLES / АДАПТИВНЫЕ СТИЛИ ДЛЯ МОБИЛЬНЫХ
+            Optimized styles for mobile devices and tablets / Оптимизированные стили для мобильных устройств и планшетов
+        */
         @media (max-width: 768px) {
+            /* Mobile navbar adjustments / Настройки мобильного навбара */
             .navbar-custom {
                 min-height: 48px !important;
                 padding-top: 0.5rem !important;
                 padding-bottom: 0.5rem !important;
             }
 
+            /* Mobile banner section adjustments / Настройки мобильной секции баннера */
             .header-banner-section {
                 margin-top: 48px !important;
                 margin-bottom: 0 !important;
-                padding: 0 !important;
+                padding: var(--space-md) 0 !important;
+                background: var(--surface);
             }
 
+            /* Switch to mobile banner image / Переключение на мобильное изображение баннера */
             .desktop-banner {
                 display: none;
             }
@@ -243,14 +333,17 @@
                 display: block;
             }
 
+            /* Body padding adjustment for fixed navbar / Настройка отступа body для фиксированного навбара */
             body {
                 padding-top: 48px !important;
             }
 
+            /* Container padding adjustments / Настройки отступов контейнера */
             .header-banner-section .container {
-                padding: 0 !important;
+                padding: 0 var(--space-md) !important;
             }
 
+            /* Main content container adjustments / Настройки основного контейнера контента */
             .container.my-5.py-4 {
                 margin-top: 0 !important;
                 padding-top: var(--space-md) !important;
@@ -258,33 +351,56 @@
                 padding-bottom: 0 !important;
             }
 
+            /* Mobile typography adjustments / Настройки мобильной типографики */
             .section-title {
                 font-size: 1.75rem;
             }
         }
 
+        /*
+            SMALL MOBILE RESPONSIVE STYLES / АДАПТИВНЫЕ СТИЛИ ДЛЯ МАЛЕНЬКИХ МОБИЛЬНЫХ
+            Additional optimizations for very small screens / Дополнительные оптимизации для очень маленьких экранов
+        */
         @media (max-width: 480px) {
+            /* Smaller navbar height / Меньшая высота навбара */
             .navbar-custom {
                 min-height: 44px !important;
             }
 
+            /* Adjusted banner spacing / Скорректированные отступы баннера */
             .header-banner-section {
                 margin-top: 44px !important;
+                padding: var(--space-sm) 0 !important;
             }
 
+            /* Body padding adjustment / Настройка отступа body */
             body {
                 padding-top: 44px !important;
             }
 
+            /* Smaller mobile banner / Уменьшенный мобильный баннер */
             .mobile-banner {
                 max-height: 180px;
+                /* Lighter shadows for small screens / Более легкие тени для маленьких экранов */
+                box-shadow:
+                    0 6px 20px -4px rgba(0, 0, 0, 0.12),
+                    0 2px 6px -1px rgba(0, 0, 0, 0.08);
+                padding: var(--space-xs);
             }
         }
     </style>
 </head>
 <body>
+<!--
+    MAIN NAVIGATION / ГЛАВНАЯ НАВИГАЦИЯ
+    Fixed top navbar with organization logo and menu items / Фиксированный верхний навбар с логотипом организации и пунктами меню
+-->
 <nav class="navbar navbar-expand-lg navbar-light navbar-custom fixed-top">
     <div class="container">
+        <!--
+            BRAND LOGO AND NAME / ЛОГОТИП И НАЗВАНИЕ БРЕНДА
+            Organization logo with fallback text / Логотип организации с резервным текстом
+        -->
         <a class="navbar-brand logo-brand" href="/" th:href="@{/}">
             <img src="/images/optimized/logo.png"
                  alt="Лада - Общественная организация"
@@ -293,11 +409,19 @@
             <span style="color: var(--primary-800); display: none;">🏛️ Лада</span>
         </a>
 
+        <!--
+            MOBILE MENU TOGGLE / ПЕРЕКЛЮЧАТЕЛЬ МОБИЛЬНОГО МЕНЮ
+            Hamburger menu button for mobile navigation / Кнопка гамбургер-меню для мобильной навигации
+        -->
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
                 aria-controls="navbarNav" aria-expanded="false" aria-label="Переключить навигацию">
             <span class="navbar-toggler-icon"></span>
         </button>
 
+        <!--
+            NAVIGATION MENU ITEMS / ПУНКТЫ НАВИГАЦИОННОГО МЕНЮ
+            Main navigation links with future section placeholders / Основные навигационные ссылки с заглушками для будущих разделов
+        -->
         <div class="collapse navbar-collapse" id="navbarNav">
             <ul class="navbar-nav ms-auto">
                 <li class="nav-item">
@@ -318,6 +442,10 @@
                 <li class="nav-item">
                     <a class="nav-link fw-semibold" href="/contact" th:href="@{/contact}">Контакты</a>
                 </li>
+                <!--
+                    ADMIN DASHBOARD LINK / ССЫЛКА НА ПАНЕЛЬ УПРАВЛЕНИЯ
+                    Visible only to authenticated users / Видна только аутентифицированным пользователям
+                -->
                 <li class="nav-item" sec:authorize="isAuthenticated()">
                     <a class="nav-link fw-semibold text-success" href="/admin" th:href="@{/admin}">
                         <span class="me-1">⚙️</span>Управление
@@ -328,20 +456,41 @@
     </div>
 </nav>
 
+<!--
+    HEADER BANNER SECTION / СЕКЦИЯ БАННЕРА ШАПКИ
+    Dual image system: desktop banner and mobile logo / Система двух изображений: десктопный баннер и мобильный логотип
+-->
 <section class="header-banner-section">
     <div class="container">
         <div class="header-banner-wrapper">
+            <!--
+                DESKTOP BANNER IMAGE / ИЗОБРАЖЕНИЕ ДЕСКТОПНОГО БАННЕРА
+                Full-width background image for desktop / Полноширинное фоновое изображение для десктопа
+            -->
             <img src="/images/optimized/header-bg.jpg"
                  alt="Общественная организация Лада - баннер"
                  class="desktop-banner">
-            <img src="/images/optimized/logo.png"
+
+            <!--
+                MOBILE BANNER IMAGE / ИЗОБРАЖЕНИЕ МОБИЛЬНОГО БАННЕРА
+                Organization logo with shadows for mobile / Логотип организации с тенями для мобильных
+            -->
+            <img src="/images/optimized/logo@2x.png"
                  alt="Общественная организация Лада - логотип"
                  class="mobile-banner">
         </div>
     </div>
 </section>
 
+<!--
+    MAIN CONTENT CONTAINER / ОСНОВНОЙ КОНТЕЙНЕР КОНТЕНТА
+    Primary content area with organization information and published pages / Основная область контента с информацией об организации и опубликованными страницами
+-->
 <div class="container my-5 py-4">
+    <!--
+        ORGANIZATION ACTIVITY SECTION / СЕКЦИЯ ДЕЯТЕЛЬНОСТИ ОРГАНИЗАЦИИ
+        Feature cards highlighting key areas of work / Карточки возможностей, выделяющие ключевые направления работы
+    -->
     <section class="row mb-5">
         <div class="col-12">
             <h2 class="section-title">О нашей деятельности</h2>
@@ -381,11 +530,19 @@
         </div>
     </section>
 
+    <!--
+        PUBLISHED PAGES SECTION / СЕКЦИЯ ОПУБЛИКОВАННЫХ СТРАНИЦ
+        Dynamic content from CMS - displays published pages / Динамический контент из CMS - отображает опубликованные страницы
+    -->
     <section class="mb-5" th:if="${not #lists.isEmpty(publishedPages)}">
         <div class="row">
             <div class="col-12">
                 <h2 class="section-title">Публикации и материалы</h2>
             </div>
+            <!--
+                PUBLISHED PAGE CARDS / КАРТОЧКИ ОПУБЛИКОВАННЫХ СТРАНИЦ
+                Iterates through published pages from the database / Перебирает опубликованные страницы из базы данных
+            -->
             <div th:each="page : ${publishedPages}" class="col-lg-6 mb-4">
                 <div class="card card-hover h-100">
                     <div class="card-body d-flex flex-column">
@@ -408,6 +565,10 @@
         </div>
     </section>
 
+    <!--
+        EMPTY STATE SECTION / СЕКЦИЯ ПУСТОГО СОСТОЯНИЯ
+        Displayed when no published pages exist / Отображается когда нет опубликованных страниц
+    -->
     <section class="mb-5" th:if="${#lists.isEmpty(publishedPages)}">
         <div class="row">
             <div class="col-12 text-center py-5">
@@ -426,9 +587,14 @@
     </section>
 </div>
 
+<!--
+    MAIN FOOTER / ОСНОВНОЙ ФУТЕР
+    Organization footer with contact information and links / Футер организации с контактной информацией и ссылками
+-->
 <footer class="footer-custom py-5 mt-5">
     <div class="container">
         <div class="row">
+            <!-- Organization Information / Информация об организации -->
             <div class="col-lg-4 mb-4">
                 <h5 class="fw-bold mb-3">
                     <img src="/images/optimized/logo.png"
@@ -448,6 +614,8 @@
                     <a href="#" class="text-light-emphasis text-decoration-none">🐦 Twitter</a>
                 </div>
             </div>
+
+            <!-- Quick Links / Быстрые ссылки -->
             <div class="col-lg-4 mb-4">
                 <h6 class="fw-bold mb-3">Быстрые ссылки</h6>
                 <ul class="list-unstyled">
@@ -468,6 +636,8 @@
                     </li>
                 </ul>
             </div>
+
+            <!-- Contact Information / Контактная информация -->
             <div class="col-lg-4 mb-4">
                 <h6 class="fw-bold mb-3">Контакты</h6>
                 <ul class="list-unstyled text-light-emphasis">
@@ -478,7 +648,11 @@
                 </ul>
             </div>
         </div>
+
+        <!-- Footer Separator / Разделитель футера -->
         <hr class="my-4 bg-primary-600">
+
+        <!-- Copyright Notice / Уведомление об авторских правах -->
         <div class="row">
             <div class="col-12 text-center">
                 <p class="mb-0 text-light-emphasis">
@@ -489,10 +663,19 @@
     </div>
 </footer>
 
+<!--
+    BOOTSTRAP JAVASCRIPT / JAVASCRIPT БИБЛИОТЕКИ BOOTSTRAP
+    Required for interactive components like navbar toggle / Необходим для интерактивных компонентов like переключение навбара
+-->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
 
+<!--
+    CUSTOM JAVASCRIPT FUNCTIONALITY / ПОЛЬЗОВАТЕЛЬСКАЯ JAVASCRIPT ФУНКЦИОНАЛЬНОСТЬ
+    Enhanced interactions and scroll effects / Улучшенные взаимодействия и эффекты прокрутки
+-->
 <script>
     document.addEventListener('DOMContentLoaded', function() {
+        // Navbar scroll effect - adds shadow on scroll / Эффект прокрутки навбара - добавляет тень при скролле
         const navbar = document.querySelector('.navbar-custom');
 
         function updateNavbar() {
@@ -504,11 +687,13 @@
         }
 
         window.addEventListener('scroll', updateNavbar);
-        updateNavbar();
+        updateNavbar(); // Initial call / Первоначальный вызов
 
+        // Add padding to body for fixed navbar / Добавляем отступ для фиксированной навигации
         const navbarHeight = document.querySelector('.navbar').offsetHeight;
         document.body.style.paddingTop = navbarHeight + 'px';
 
+        // Add hover effects to footer links / Добавляем эффекты наведения на ссылки футера
         const style = document.createElement('style');
         style.textContent = `
             .hover-text-white:hover {
@@ -517,6 +702,8 @@
             }
         `;
         document.head.appendChild(style);
+
+        console.log('Design System initialized successfully / Дизайн-система успешно инициализирована');
     });
 </script>
 </body>
