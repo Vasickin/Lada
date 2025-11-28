@@ -17,7 +17,7 @@ import java.util.Optional;
  * <p>Расширен методами для работы с типами страниц и фильтрацией по статусу публикации.
  *
  * @author Vasickin
- * @version 1.1
+ * @version 1.2
  * @since 2025
  * @see Page
  * @see PageType
@@ -100,18 +100,20 @@ public interface PageRepository extends JpaRepository<Page, Long> {
 
     /**
      * Находит все основные страницы сайта (исключая CUSTOM тип).
+     * Использует оператор <> вместо != который не поддерживается в JPQL.
      *
      * @return список основных страниц сайта
      */
-    @Query("SELECT p FROM Page p WHERE p.pageType != com.community.cms.model.PageType.CUSTOM")
+    @Query("SELECT p FROM Page p WHERE p.pageType <> com.community.cms.model.PageType.CUSTOM")
     List<Page> findAllSitePages();
 
     /**
      * Находит все опубликованные основные страницы сайта.
+     * Использует оператор <> вместо != который не поддерживается в JPQL.
      *
      * @return список опубликованных основных страниц
      */
-    @Query("SELECT p FROM Page p WHERE p.pageType != com.community.cms.model.PageType.CUSTOM AND p.published = true")
+    @Query("SELECT p FROM Page p WHERE p.pageType <> com.community.cms.model.PageType.CUSTOM AND p.published = true")
     List<Page> findPublishedSitePages();
 
     /**
