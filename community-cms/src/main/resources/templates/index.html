@@ -1,394 +1,18 @@
 <!DOCTYPE html>
 <html lang="ru" xmlns:th="http://www.thymeleaf.org">
 <head>
-    <!--
-        META AND BASIC SETUP / МЕТАДАННЫЕ И БАЗОВАЯ НАСТРОЙКА
-        Character set, viewport, and page title / Кодировка, вьюпорт и заголовок страницы
-    -->
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Общественная организация Лада - Главная</title>
 
-    <!--
-        BOOTSTRAP 5 CSS / БИБЛИОТЕКА BOOTSTRAP 5
-        Using CDN for consistent styling / Используем CDN для единообразного стиля
-    -->
+    <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
 
-    <!--
-        GOOGLE FONTS / ШРИФТЫ GOOGLE
-        Using Inter font for modern typography / Используем шрифт Inter для современной типографики
-    -->
+    <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
-    <style>
-        /*
-            DESIGN SYSTEM VARIABLES / ПЕРЕМЕННЫЕ ДИЗАЙН-СИСТЕМЫ
-            Comprehensive design tokens for consistent styling / Комплексные токены дизайна для единообразной стилизации
-        */
-        :root {
-            /* Primary Color Scale / Шкала основных цветов */
-            --primary-50: #eff6ff;
-            --primary-100: #dbeafe;
-            --primary-500: #3b82f6;
-            --primary-600: #2563eb;
-            --primary-700: #1d4ed8;
-            --primary-800: #1e40af;
-            --primary-900: #1e3a8a;
-
-            /* Semantic Colors / Семантические цвета */
-            --primary-color: var(--primary-700);
-            --secondary-color: #f8f9fa;
-            --accent-color: #f59e0b;
-            --success-color: #10b981;
-            --warning-color: #f59e0b;
-            --error-color: #ef4444;
-
-            /* Neutral Colors / Нейтральные цвета */
-            --text-primary: #1f2937;
-            --text-secondary: #6b7280;
-            --text-tertiary: #9ca3af;
-            --background: #ffffff;
-            --surface: #f9fafb;
-            --border: #e5e7eb;
-
-            /* Typography Scale / Типографическая шкала */
-            --font-heading: 'Inter', sans-serif;
-            --font-body: 'Inter', sans-serif;
-            --font-accent: 'Inter', sans-serif;
-
-            /* Spacing Scale / Шкала отступов */
-            --space-xs: 0.25rem;
-            --space-sm: 0.5rem;
-            --space-md: 1rem;
-            --space-lg: 1.5rem;
-            --space-xl: 2rem;
-            --space-2xl: 3rem;
-
-            /* Border Radius Scale / Шкала скруглений */
-            --radius-sm: 0.375rem;
-            --radius-md: 0.5rem;
-            --radius-lg: 0.75rem;
-            --radius-xl: 1rem;
-
-            /* Shadow System / Система теней */
-            --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
-            --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
-            --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
-        }
-
-        /*
-            BASE STYLES / БАЗОВЫЕ СТИЛИ
-            Fundamental element styles and reset / Основные стили элементов и сброс
-        */
-        body {
-            font-family: var(--font-body);
-            line-height: 1.6;
-            color: var(--text-primary);
-            background-color: var(--background);
-        }
-
-        /*
-            NAVIGATION BAR STYLES / СТИЛИ НАВИГАЦИОННОЙ ПАНЕЛИ
-            Glass morphism effect with scroll behavior / Эффект стеклянной морфологии с поведением при скролле
-        */
-        .navbar-custom {
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(20px);
-            box-shadow: var(--shadow-sm);
-            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
-            transition: all 0.3s ease;
-            margin-bottom: 0 !important; /* Remove bottom margin for tight layout / Убираем нижний отступ для плотного макета */
-            padding-bottom: 0;
-        }
-
-        .navbar-custom.scrolled {
-            background: rgba(255, 255, 255, 0.98);
-            box-shadow: var(--shadow-md);
-            margin-bottom: 0;
-        }
-
-        /*
-            LOGO BRAND STYLES / СТИЛИ ЛОГОТИПА БРЕНДА
-            Professional logo presentation with hover effects / Профессиональное представление логотипа с эффектами наведения
-        */
-        .logo-brand {
-            display: flex;
-            align-items: center;
-            gap: var(--space-sm);
-            text-decoration: none;
-            font-weight: 700;
-            font-size: 1.5rem;
-        }
-
-        .logo-image {
-            height: 40px;
-            width: auto;
-            transition: transform 0.3s ease;
-        }
-
-        .logo-brand:hover .logo-image {
-            transform: scale(1.05);
-        }
-
-        /*
-            HEADER BANNER SECTION / СЕКЦИЯ БАННЕРА ШАПКИ
-            Dual image system for desktop and mobile / Система двух изображений для десктопа и мобильных
-        */
-        .header-banner-section {
-            margin-top: 76px; /* Fixed navbar height / Высота фиксированного навбара */
-            padding: 0;
-            background: transparent;
-            margin-bottom: 0;
-        }
-
-        .header-banner-wrapper {
-            width: 100%;
-            position: relative;
-        }
-
-        /*
-            DESKTOP BANNER STYLES / СТИЛИ ДЕСКТОПНОГО БАННЕРА
-            Full-width image with shadows and radius / Полноширинное изображение с тенями и скруглением
-        */
-        .desktop-banner {
-            display: block;
-            width: 100%;
-            height: 400px;
-            object-fit: cover;
-            object-position: center center;
-            border-radius: var(--radius-md);
-            box-shadow: 0 20px 40px -8px rgba(0, 0, 0, 0.25);
-            margin: 0;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-
-        /*
-            MOBILE BANNER STYLES / СТИЛИ МОБИЛЬНОГО БАННЕРА
-            Logo image with shadows and proper spacing / Изображение логотипа с тенями и правильными отступами
-        */
-        .mobile-banner {
-            display: none; /* Hidden on desktop by default / Скрыто на десктопе по умолчанию */
-            width: 100%;
-            height: auto;
-            max-height: 200px;
-            object-fit: contain;
-            border-radius: 0;
-            margin: 0;
-            /* Shadow effects for mobile logo / Эффекты теней для мобильного логотипа */
-            box-shadow:
-                0 8px 25px -6px rgba(0, 0, 0, 0.15),
-                0 2px 8px -2px rgba(0, 0, 0, 0.1);
-            padding: var(--space-sm);
-            background: var(--background);
-            border: 1px solid var(--border);
-        }
-
-        /* Banner container styling / Стилизация контейнера баннера */
-        .header-banner-section .container {
-            max-width: 1400px;
-            padding: 0;
-        }
-
-        /*
-            SECTION TITLE STYLES / СТИЛИ ЗАГОЛОВКОВ СЕКЦИЙ
-            Consistent section headings with gradient underline / Единообразные заголовки с градиентным подчеркиванием
-        */
-        .section-title {
-            color: var(--primary-800);
-            font-family: var(--font-heading);
-            font-weight: 700;
-            font-size: 2.25rem;
-            margin-bottom: var(--space-2xl);
-            position: relative;
-            line-height: 1.2;
-        }
-
-        .section-title:after {
-            content: '';
-            position: absolute;
-            bottom: -12px;
-            left: 0;
-            width: 80px;
-            height: 4px;
-            background: linear-gradient(90deg, var(--accent-color), var(--primary-500));
-            border-radius: 2px;
-        }
-
-        /*
-            CARD COMPONENT STYLES / СТИЛИ КОМПОНЕНТОВ КАРТОЧЕК
-            Reusable card styles with hover interactions / Переиспользуемые стили карточек с интерактивными эффектами
-        */
-        .card-hover {
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            border: 1px solid var(--border);
-            border-radius: var(--radius-lg);
-            background: var(--background);
-        }
-
-        .card-hover:hover {
-            transform: translateY(-8px);
-            box-shadow: var(--shadow-lg);
-            border-color: var(--primary-200);
-        }
-
-        /*
-            BUTTON COMPONENT STYLES / СТИЛИ КОМПОНЕНТОВ КНОПОК
-            Primary and secondary button variants with states / Варианты основных и второстепенных кнопок с состояниями
-        */
-        .btn-primary-custom {
-            background: linear-gradient(135deg, var(--primary-600), var(--primary-700));
-            border: none;
-            padding: 12px 32px;
-            font-weight: 600;
-            border-radius: var(--radius-md);
-            color: white;
-            transition: all 0.3s ease;
-            box-shadow: var(--shadow-sm);
-        }
-
-        .btn-primary-custom:hover {
-            background: linear-gradient(135deg, var(--primary-700), var(--primary-800));
-            transform: translateY(-2px);
-            box-shadow: var(--shadow-md);
-            color: white;
-        }
-
-        .btn-outline-custom {
-            border: 2px solid var(--primary-600);
-            color: var(--primary-600);
-            padding: 10px 30px;
-            font-weight: 600;
-            border-radius: var(--radius-md);
-            transition: all 0.3s ease;
-            background: transparent;
-        }
-
-        .btn-outline-custom:hover {
-            background: var(--primary-600);
-            color: white;
-            transform: translateY(-2px);
-            box-shadow: var(--shadow-md);
-        }
-
-        /*
-            ICON STYLES / СТИЛИ ИКОНОК
-            Large icons with gradient text effect / Крупные иконки с градиентным текстовым эффектом
-        */
-        .icon-large {
-            font-size: 3rem;
-            margin-bottom: var(--space-md);
-            background: linear-gradient(135deg, var(--primary-500), var(--accent-color));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-
-        /*
-            FOOTER STYLES / СТИЛИ ФУТЕРА
-            Professional footer with gradient background and accent border / Профессиональный футер с градиентным фоном и акцентной рамкой
-        */
-        .footer-custom {
-            background: linear-gradient(135deg, var(--primary-900), #1e1b4b);
-            color: white;
-            position: relative;
-        }
-
-        .footer-custom::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 4px;
-            background: linear-gradient(90deg, var(--accent-color), var(--primary-500));
-        }
-
-        /*
-            MOBILE RESPONSIVE STYLES / АДАПТИВНЫЕ СТИЛИ ДЛЯ МОБИЛЬНЫХ
-            Optimized styles for mobile devices and tablets / Оптимизированные стили для мобильных устройств и планшетов
-        */
-        @media (max-width: 768px) {
-            /* Mobile navbar adjustments / Настройки мобильного навбара */
-            .navbar-custom {
-                min-height: 48px !important;
-                padding-top: 0.5rem !important;
-                padding-bottom: 0.5rem !important;
-            }
-
-            /* Mobile banner section adjustments / Настройки мобильной секции баннера */
-            .header-banner-section {
-                margin-top: 48px !important;
-                margin-bottom: 0 !important;
-                padding: var(--space-md) 0 !important;
-                background: var(--surface);
-            }
-
-            /* Switch to mobile banner image / Переключение на мобильное изображение баннера */
-            .desktop-banner {
-                display: none;
-            }
-
-            .mobile-banner {
-                display: block;
-            }
-
-            /* Body padding adjustment for fixed navbar / Настройка отступа body для фиксированного навбара */
-            body {
-                padding-top: 48px !important;
-            }
-
-            /* Container padding adjustments / Настройки отступов контейнера */
-            .header-banner-section .container {
-                padding: 0 var(--space-md) !important;
-            }
-
-            /* Main content container adjustments / Настройки основного контейнера контента */
-            .container.my-5.py-4 {
-                margin-top: 0 !important;
-                padding-top: var(--space-md) !important;
-                margin-bottom: 0 !important;
-                padding-bottom: 0 !important;
-            }
-
-            /* Mobile typography adjustments / Настройки мобильной типографики */
-            .section-title {
-                font-size: 1.75rem;
-            }
-        }
-
-        /*
-            SMALL MOBILE RESPONSIVE STYLES / АДАПТИВНЫЕ СТИЛИ ДЛЯ МАЛЕНЬКИХ МОБИЛЬНЫХ
-            Additional optimizations for very small screens / Дополнительные оптимизации для очень маленьких экранов
-        */
-        @media (max-width: 480px) {
-            /* Smaller navbar height / Меньшая высота навбара */
-            .navbar-custom {
-                min-height: 44px !important;
-            }
-
-            /* Adjusted banner spacing / Скорректированные отступы баннера */
-            .header-banner-section {
-                margin-top: 44px !important;
-                padding: var(--space-sm) 0 !important;
-            }
-
-            /* Body padding adjustment / Настройка отступа body */
-            body {
-                padding-top: 44px !important;
-            }
-
-            /* Smaller mobile banner / Уменьшенный мобильный баннер */
-            .mobile-banner {
-                max-height: 180px;
-                /* Lighter shadows for small screens / Более легкие тени для маленьких экранов */
-                box-shadow:
-                    0 6px 20px -4px rgba(0, 0, 0, 0.12),
-                    0 2px 6px -1px rgba(0, 0, 0, 0.08);
-                padding: var(--space-xs);
-            }
-        }
-    </style>
+    <!-- Our Design System CSS -->
+    <link href="/static/css/design-system.css" rel="stylesheet">
 </head>
 <body>
 <!--
@@ -489,103 +113,81 @@
 <div class="container my-5 py-4">
     <!--
         ORGANIZATION ACTIVITY SECTION / СЕКЦИЯ ДЕЯТЕЛЬНОСТИ ОРГАНИЗАЦИИ
-        Feature cards highlighting key areas of work / Карточки возможностей, выделяющие ключевые направления работы
+        Feature cards with textured emoji icons highlighting key areas / Карточки возможностей с фактурными эмодзи-иконками, выделяющие ключевые направления
     -->
     <section class="row mb-5">
         <div class="col-12">
-            <h2 class="section-title">О нашей деятельности</h2>
+            <h2 class="section-title">Направления деятельности</h2>
         </div>
+
+        <!--
+            ABOUT US CARD / КАРТОЧКА "О НАС"
+            Features textured building emoji with architectural details / Оснащена фактурной иконкой здания с архитектурными деталями
+        -->
         <div class="col-md-4 mb-4">
             <div class="card border-0 card-hover h-100 text-center">
                 <div class="card-body p-4">
-                    <div class="icon-large">🎯</div>
+                    <div class="icon-textured">🏛️</div>
                     <h5 class="card-title fw-bold mb-3">О нас</h5>
                     <p class="card-text text-muted">
-                        Содействие развитию гражданского общества и поддержка социально значимых инициатив через образование и сотрудничество.
+                        Знакомство с нашей миссией, ценностями и историей организации.
+                        Узнайте о нашей команде и принципах работы.
                     </p>
+                    <!-- Future interactive element placeholder / Заглушка для будущего интерактивного элемента -->
+                    <div class="mt-3">
+                        <span class="badge bg-primary bg-opacity-10 text-primary">Скоро</span>
+                    </div>
                 </div>
             </div>
         </div>
+
+        <!--
+            OUR PROJECTS CARD / КАРТОЧКА "НАШИ ПРОЕКТЫ"
+            Features textured rocket emoji with smoke and fire effects / Оснащена фактурной иконкой ракеты с эффектами дыма и огня
+        -->
         <div class="col-md-4 mb-4">
             <div class="card border-0 card-hover h-100 text-center">
                 <div class="card-body p-4">
-                    <div class="icon-large">🤝</div>
+                    <div class="icon-textured">🚀</div>
                     <h5 class="card-title fw-bold mb-3">Наши проекты</h5>
                     <p class="card-text text-muted">
-                        Образовательные программы, волонтерство, социальные проекты, общественные мероприятия и поддержка местных инициатив.
+                        Активные и завершённые социальные проекты.
+                        Образовательные программы и общественные инициативы.
                     </p>
+                    <!-- Future interactive element placeholder / Заглушка для будущего интерактивного элемента -->
+                    <div class="mt-3">
+                        <span class="badge bg-primary bg-opacity-10 text-primary">Скоро</span>
+                    </div>
                 </div>
             </div>
         </div>
+
+        <!--
+            PATRONS CARD / КАРТОЧКА "МЕЦЕНАТАМ"
+            Features textured diamond emoji with facet details / Оснащена фактурной иконкой алмаза с деталями граней
+        -->
         <div class="col-md-4 mb-4">
             <div class="card border-0 card-hover h-100 text-center">
                 <div class="card-body p-4">
-                    <div class="icon-large">🌱</div>
-                    <h5 class="card-title fw-bold mb-3">Галерея</h5>
+                    <div class="icon-textured">💎</div>
+                    <h5 class="card-title fw-bold mb-3">Меценатам</h5>
                     <p class="card-text text-muted">
-                        Открытость, сотрудничество, инновации, устойчивое развитие и социальная ответственность перед сообществом.
+                        Информация для партнёров и спонсоров.
+                        Возможности поддержки и сотрудничества с организацией.
                     </p>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!--
-        PUBLISHED PAGES SECTION / СЕКЦИЯ ОПУБЛИКОВАННЫХ СТРАНИЦ
-        Dynamic content from CMS - displays published pages / Динамический контент из CMS - отображает опубликованные страницы
-    -->
-    <section class="mb-5" th:if="${not #lists.isEmpty(publishedPages)}">
-        <div class="row">
-            <div class="col-12">
-                <h2 class="section-title">Публикации и материалы</h2>
-            </div>
-            <!--
-                PUBLISHED PAGE CARDS / КАРТОЧКИ ОПУБЛИКОВАННЫХ СТРАНИЦ
-                Iterates through published pages from the database / Перебирает опубликованные страницы из базы данных
-            -->
-            <div th:each="page : ${publishedPages}" class="col-lg-6 mb-4">
-                <div class="card card-hover h-100">
-                    <div class="card-body d-flex flex-column">
-                        <h5 class="card-title fw-bold mb-3" th:text="${page.title}">Заголовок страницы</h5>
-                        <p class="card-text text-muted flex-grow-1" th:text="${#strings.abbreviate(page.content, 200)}">
-                            Краткое описание содержимого страницы...
-                        </p>
-                        <div class="d-flex justify-content-between align-items-center mt-3 pt-3 border-top">
-                            <small class="text-muted" th:text="${#temporals.format(page.createdAt, 'dd.MM.yyyy')}">
-                                01.01.2025
-                            </small>
-                            <a th:href="@{/pages/{slug}(slug=${page.slug})}"
-                               class="btn btn-outline-custom btn-sm">
-                                Читать далее →
-                            </a>
-                        </div>
+                    <!-- Future interactive element placeholder / Заглушка для будущего интерактивного элемента -->
+                    <div class="mt-3">
+                        <span class="badge bg-primary bg-opacity-10 text-primary">Скоро</span>
                     </div>
                 </div>
             </div>
         </div>
     </section>
 
-    <!--
-        EMPTY STATE SECTION / СЕКЦИЯ ПУСТОГО СОСТОЯНИЯ
-        Displayed when no published pages exist / Отображается когда нет опубликованных страниц
-    -->
-    <section class="mb-5" th:if="${#lists.isEmpty(publishedPages)}">
-        <div class="row">
-            <div class="col-12 text-center py-5">
-                <div class="icon-large mb-4">📝</div>
-                <h3 class="text-muted mb-3">Публикаций пока нет</h3>
-                <p class="text-muted mb-4 lead">
-                    Здесь будут отображаться новости, статьи и материалы нашей организации
-                </p>
-                <div sec:authorize="isAuthenticated()">
-                    <a href="/admin/pages/create" th:href="@{/admin/pages/create}" class="btn btn-primary-custom btn-lg">
-                        ✨ Создать первую публикацию
-                    </a>
-                </div>
-            </div>
-        </div>
-    </section>
+
+
 </div>
+
 
 <!--
     MAIN FOOTER / ОСНОВНОЙ ФУТЕР
@@ -703,7 +305,7 @@
         `;
         document.head.appendChild(style);
 
-        console.log('Design System initialized successfully / Дизайн-система успешно инициализирована');
+        console.log('Design System with single column layout initialized successfully / Дизайн-система с одноколоночным макетом успешно инициализирована');
     });
 </script>
 </body>
