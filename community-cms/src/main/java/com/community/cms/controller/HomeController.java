@@ -1,13 +1,16 @@
 package com.community.cms.controller;
 
 import com.community.cms.model.Page;
+import com.community.cms.model.PageType;
 import com.community.cms.service.PageService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 
 import java.util.List;
+import java.util.Optional;
 
 /**
  * Контроллер для главной страницы и публичных разделов сайта.
@@ -16,8 +19,11 @@ import java.util.List;
  * без необходимости аутентификации. Включает главную страницу, информацию об организации
  * и другие публичные разделы.</p>
  *
+ * <p>Обновлен для работы с динамическим контентом из базы данных.
+ * Если контент отсутствует - страница отображается пустой.</p>
+ *
  * @author Vasickin
- * @version 1.0
+ * @version 1.1
  * @since 2025
  */
 @Controller
@@ -50,72 +56,166 @@ public class HomeController {
         List<Page> publishedPages = pageService.findAllPublishedPages();
         model.addAttribute("publishedPages", publishedPages);
 
-        return "index"; // Убедитесь что ваш файл называется index.html
+        return "index";
     }
 
     /**
-     * Отображает страницу "О нас".
+     * Отображает страницу "О нас" с динамическим контентом.
+     * Если страница не найдена или не опубликована - отображается пустой шаблон.
      *
-     * <p>Страница содержит информацию об организации, ее миссии, целях
-     * и основных направлениях деятельности.</p>
-     *
+     * @param model модель для передачи данных в представление
      * @return имя шаблона страницы "О нас" ("about")
      */
     @GetMapping("/about")
-    public String about() {
+    public String about(Model model) {
+        Optional<Page> aboutPage = pageService.findPublishedPageByType(PageType.ABOUT);
+
+        // Передаем флаг наличия контента и саму страницу если она есть
+        model.addAttribute("hasContent", aboutPage.isPresent());
+        aboutPage.ifPresent(page -> {
+            model.addAttribute("page", page);
+            model.addAttribute("pageTitle", page.getTitle());
+            model.addAttribute("metaDescription", page.getMetaDescription());
+        });
+
+        // Если контента нет - устанавливаем значения по умолчанию
+        if (aboutPage.isEmpty()) {
+            model.addAttribute("pageTitle", "О нас");
+            model.addAttribute("metaDescription", "Информация о нашей организации");
+        }
+
         return "about";
     }
 
     /**
-     * Отображает страницу "Наши проекты".
+     * Отображает страницу "Наши проекты" с динамическим контентом.
+     * Если страница не найдена или не опубликована - отображается пустой шаблон.
      *
-     * <p>Страница содержит информацию о текущих и завершенных проектах
-     * организации, их целях и результатах.</p>
-     *
+     * @param model модель для передачи данных в представление
      * @return имя шаблона страницы "Наши проекты" ("projects")
      */
     @GetMapping("/projects")
-    public String projects() {
+    public String projects(Model model) {
+        Optional<Page> projectsPage = pageService.findPublishedPageByType(PageType.PROJECTS);
+
+        model.addAttribute("hasContent", projectsPage.isPresent());
+        projectsPage.ifPresent(page -> {
+            model.addAttribute("page", page);
+            model.addAttribute("pageTitle", page.getTitle());
+            model.addAttribute("metaDescription", page.getMetaDescription());
+        });
+
+        if (projectsPage.isEmpty()) {
+            model.addAttribute("pageTitle", "Наши проекты");
+            model.addAttribute("metaDescription", "Наши текущие и завершенные проекты");
+        }
+
         return "projects";
     }
 
     /**
-     * Отображает страницу "Галерея".
+     * Отображает страницу "Галерея" с динамическим контентом.
+     * Если страница не найдена или не опубликована - отображается пустой шаблон.
      *
-     * <p>Страница содержит фотографии и видео с мероприятий организации,
-     * иллюстрирующие ее деятельность и достижения.</p>
-     *
+     * @param model модель для передачи данных в представление
      * @return имя шаблона страницы "Галерея" ("gallery")
      */
     @GetMapping("/gallery")
-    public String gallery() {
+    public String gallery(Model model) {
+        Optional<Page> galleryPage = pageService.findPublishedPageByType(PageType.GALLERY);
+
+        model.addAttribute("hasContent", galleryPage.isPresent());
+        galleryPage.ifPresent(page -> {
+            model.addAttribute("page", page);
+            model.addAttribute("pageTitle", page.getTitle());
+            model.addAttribute("metaDescription", page.getMetaDescription());
+        });
+
+        if (galleryPage.isEmpty()) {
+            model.addAttribute("pageTitle", "Галерея");
+            model.addAttribute("metaDescription", "Фотографии и видео наших мероприятий");
+        }
+
         return "gallery";
     }
 
     /**
-     * Отображает страницу "Меценатам".
+     * Отображает страницу "Меценатам" с динамическим контентом.
+     * Если страница не найдена или не опубликована - отображается пустой шаблон.
      *
-     * <p>Страница содержит информацию для потенциальных спонсоров и партнеров,
-     * описание возможностей поддержки и сотрудничества.</p>
-     *
+     * @param model модель для передачи данных в представление
      * @return имя шаблона страницы "Меценатам" ("patrons")
      */
     @GetMapping("/patrons")
-    public String patrons() {
+    public String patrons(Model model) {
+        Optional<Page> patronsPage = pageService.findPublishedPageByType(PageType.PATRONS);
+
+        model.addAttribute("hasContent", patronsPage.isPresent());
+        patronsPage.ifPresent(page -> {
+            model.addAttribute("page", page);
+            model.addAttribute("pageTitle", page.getTitle());
+            model.addAttribute("metaDescription", page.getMetaDescription());
+        });
+
+        if (patronsPage.isEmpty()) {
+            model.addAttribute("pageTitle", "Меценатам");
+            model.addAttribute("metaDescription", "Информация для меценатов и партнеров");
+        }
+
         return "patrons";
     }
 
     /**
-     * Отображает страницу "Контакты".
+     * Отображает страницу "Контакты" с динамическим контентом.
+     * Если страница не найдена или не опубликована - отображается пустой шаблон.
      *
-     * <p>Страница содержит контактную информацию организации, адрес,
-     * телефоны, электронную почту и форму обратной связи.</p>
-     *
+     * @param model модель для передачи данных в представление
      * @return имя шаблона страницы "Контакты" ("contact")
      */
     @GetMapping("/contact")
-    public String contact() {
+    public String contact(Model model) {
+        Optional<Page> contactPage = pageService.findPublishedPageByType(PageType.CONTACT);
+
+        model.addAttribute("hasContent", contactPage.isPresent());
+        contactPage.ifPresent(page -> {
+            model.addAttribute("page", page);
+            model.addAttribute("pageTitle", page.getTitle());
+            model.addAttribute("metaDescription", page.getMetaDescription());
+        });
+
+        if (contactPage.isEmpty()) {
+            model.addAttribute("pageTitle", "Контакты");
+            model.addAttribute("metaDescription", "Контактная информация организации");
+        }
+
         return "contact";
+    }
+
+    /**
+     * Универсальный обработчик для динамических страниц по slug.
+     * Используется для произвольных страниц созданных через админку.
+     *
+     * @param slug уникальный идентификатор страницы
+     * @param model модель для передачи данных в представление
+     * @return имя шаблона или страница 404 если не найдено
+     */
+    @GetMapping("/pages/{slug}")
+    public String showPublicPage(@PathVariable String slug, Model model) {
+        Optional<Page> page = pageService.findPageBySlugAndPublished(slug, true);
+
+        if (page.isPresent()) {
+            Page foundPage = page.get();
+            model.addAttribute("page", foundPage);
+            model.addAttribute("pageTitle", foundPage.getTitle());
+            model.addAttribute("metaDescription", foundPage.getMetaDescription());
+            model.addAttribute("hasContent", true);
+
+            // Для кастомных страниц используем общий шаблон
+            return "pages/view";
+        } else {
+            // Страница не найдена или не опубликована
+            return "error/404";
+        }
     }
 
     /**
@@ -130,5 +230,19 @@ public class HomeController {
     @GetMapping("/test-fragments")
     public String testFragments() {
         return "test-fragments";
+    }
+
+    /**
+     * Возвращает список всех опубликованных основных страниц сайта.
+     * Используется для навигации или карты сайта.
+     *
+     * @param model модель для передачи данных в представление
+     * @return список страниц
+     */
+    @GetMapping("/sitemap")
+    public String sitemap(Model model) {
+        List<Page> sitePages = pageService.findPublishedSitePages();
+        model.addAttribute("sitePages", sitePages);
+        return "sitemap";
     }
 }
