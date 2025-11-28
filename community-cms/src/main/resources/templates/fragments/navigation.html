@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="ru" xmlns:th="http://www.thymeleaf.org">
+<!--
+    NAVIGATION FRAGMENT / ФРАГМЕНТ НАВИГАЦИИ
+    Reusable navigation component for all pages / Переиспользуемый компонент навигации для всех страниц
+-->
+<nav class="navbar navbar-expand-lg navbar-light navbar-custom fixed-top" th:fragment="main-navigation">
+    <div class="container">
+        <!--
+            BRAND LOGO AND NAME / ЛОГОТИП И НАЗВАНИЕ БРЕНДА
+            Organization logo with fallback text / Логотип организации с резервным текстом
+        -->
+        <a class="navbar-brand logo-brand" href="/" th:href="@{/}">
+            <img src="/images/optimized/logo.png"
+                 alt="Лада - Общественная организация"
+                 class="logo-image"
+                 th:onerror="this.style.display='none'; this.nextElementSibling.style.display='inline-block'">
+            <span style="color: var(--primary-800); display: none;">🏛️ Лада</span>
+        </a>
+
+        <!--
+            MOBILE MENU TOGGLE / ПЕРЕКЛЮЧАТЕЛЬ МОБИЛЬНОГО МЕНЮ
+            Hamburger menu button for mobile navigation / Кнопка гамбургер-меню для мобильной навигации
+        -->
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
+                aria-controls="navbarNav" aria-expanded="false" aria-label="Переключить навигацию">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <!--
+            NAVIGATION MENU ITEMS / ПУНКТЫ НАВИГАЦИОННОГО МЕНЮ
+            Main navigation links to all website sections / Основные навигационные ссылки на все разделы сайта
+        -->
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav ms-auto">
+                <!--
+                    DYNAMIC ACTIVE STATE / ДИНАМИЧЕСКОЕ АКТИВНОЕ СОСТОЯНИЕ
+                    th:classappend adds 'active' class based on current page / th:classappend добавляет класс 'active' на основе текущей страницы
+                -->
+                <li class="nav-item">
+                    <a class="nav-link fw-semibold"
+                       href="/"
+                       th:href="@{/}"
+                       th:classappend="${#httpServletRequest.requestURI == '/'} ? 'active' : ''">
+                        Главная
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link fw-semibold"
+                       href="/about"
+                       th:href="@{/about}"
+                       th:classappend="${#httpServletRequest.requestURI == '/about'} ? 'active' : ''">
+                        О нас
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link fw-semibold"
+                       href="/projects"
+                       th:href="@{/projects}"
+                       th:classappend="${#httpServletRequest.requestURI == '/projects'} ? 'active' : ''">
+                        Наши проекты
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link fw-semibold"
+                       href="/gallery"
+                       th:href="@{/gallery}"
+                       th:classappend="${#httpServletRequest.requestURI == '/gallery'} ? 'active' : ''">
+                        Галерея
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link fw-semibold"
+                       href="/patrons"
+                       th:href="@{/patrons}"
+                       th:classappend="${#httpServletRequest.requestURI == '/patrons'} ? 'active' : ''">
+                        Меценатам
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link fw-semibold"
+                       href="/contact"
+                       th:href="@{/contact}"
+                       th:classappend="${#httpServletRequest.requestURI == '/contact'} ? 'active' : ''">
+                        Контакты
+                    </a>
+                </li>
+                <!--
+                    ADMIN DASHBOARD LINK / ССЫЛКА НА ПАНЕЛЬ УПРАВЛЕНИЯ
+                    Visible only to authenticated users / Видна только аутентифицированным пользователям
+                -->
+                <li class="nav-item" sec:authorize="isAuthenticated()">
+                    <a class="nav-link fw-semibold text-success" href="/admin" th:href="@{/admin}">
+                        <span class="me-1">⚙️</span>Управление
+                    </a>
+                </li>
+            </ul>
+        </div>
+    </div>
+</nav>
