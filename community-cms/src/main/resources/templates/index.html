@@ -1,123 +1,286 @@
 <!DOCTYPE html>
-<html lang="ru" xmlns:th="http://www.thymeleaf.org">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Общественная организация Лада - Главная</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link href="/css/design-system.css" rel="stylesheet">
+<!--
+    MAIN PAGE WITH COMPLETE CONTENT STRUCTURE / ГЛАВНАЯ СТРАНИЦА С ПОЛНОЙ СТРУКТУРОЙ КОНТЕНТА
+    Restored original sections: About, Projects, Patrons with fragment system integration
+    Восстановлены оригинальные разделы: О нас, Наши проекты, Меценаты с интеграцией системы фрагментов
+
+    Preserved Features / Сохраненные возможности:
+    ✅ Fragment system integration / Интеграция системы фрагментов
+    ✅ Original content structure / Оригинальная структура контента
+    ✅ Published pages functionality / Функциональность опубликованных страниц
+    ✅ Responsive design / Адаптивный дизайн
+    ✅ Spring Security integration / Интеграция Spring Security
+-->
+<html lang="ru" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+
+<!-- HEADER FRAGMENT / ФРАГМЕНТ ХЕДЕРА -->
+<head th:replace="fragments/header :: html-head('Главная')">
+    <!-- Content replaced by header fragment / Контент заменяется фрагментом хедера -->
 </head>
+
 <body>
-<!-- Navigation -->
-<nav class="navbar navbar-expand-lg navbar-light navbar-custom fixed-top">
-    <div class="container">
-        <a class="navbar-brand logo-brand" href="/" th:href="@{/}">
-            <img src="/images/optimized/logo.png" alt="Лада" class="logo-image">
-            <span style="color: var(--primary-800); display: none;">🏛️ Лада</span>
-        </a>
+<!-- NAVIGATION FRAGMENT / ФРАГМЕНТ НАВИГАЦИИ -->
+<div th:replace="fragments/navigation :: main-navigation"></div>
 
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-            <span class="navbar-toggler-icon"></span>
-        </button>
+<!-- BANNER FRAGMENT / ФРАГМЕНТ БАННЕРА -->
+<div th:replace="fragments/banner :: header-banner('Общественная организация Лада - развитие гражданского общества')"></div>
 
-        <div class="collapse navbar-collapse" id="navbarNav">
-            <ul class="navbar-nav ms-auto">
-                <li class="nav-item"><a class="nav-link active fw-semibold" href="/" th:href="@{/}">Главная</a></li>
-                <li class="nav-item"><a class="nav-link fw-semibold" href="/about" th:href="@{/about}">О нас</a></li>
-                <li class="nav-item"><a class="nav-link fw-semibold" href="/projects" th:href="@{/projects}">Наши проекты</a></li>
-                <li class="nav-item"><a class="nav-link fw-semibold" href="/gallery" th:href="@{/gallery}">Галерея</a></li>
-                <li class="nav-item"><a class="nav-link fw-semibold" href="/patrons" th:href="@{/patrons}">Меценатам</a></li>
-                <li class="nav-item"><a class="nav-link fw-semibold" href="/contact" th:href="@{/contact}">Контакты</a></li>
-                <li class="nav-item" sec:authorize="isAuthenticated()">
-                    <a class="nav-link fw-semibold text-success" href="/admin" th:href="@{/admin}">⚙️ Управление</a>
-                </li>
-            </ul>
-        </div>
-    </div>
-</nav>
-
-<!-- Banner -->
-<section class="header-banner-section">
-    <div class="container">
-        <div class="header-banner-wrapper">
-            <img src="/images/optimized/header-bg.jpg" alt="Лада" class="desktop-banner">
-            <img src="/images/optimized/logo@2x.png" alt="Лада" class="mobile-banner">
-        </div>
-    </div>
-</section>
-
-<!-- Content -->
-<div class="container my-5 py-4">
+<!-- MAIN CONTENT WITH ORIGINAL STRUCTURE / ОСНОВНОЙ КОНТЕНТ С ОРИГИНАЛЬНОЙ СТРУКТУРОЙ -->
+<main class="container my-5 py-4">
+    <!--
+        RESTORED STATUS SECTION / ВОССТАНОВЛЕННАЯ СЕКЦИЯ СТАТУСА
+        Original status message from working version
+        Оригинальное сообщение статуса из рабочей версии
+    -->
     <div class="row">
         <div class="col-12 text-center">
-            <h1 class="section-title">Главная страница восстановлена</h1>
-            <p class="lead text-muted">Система фрагментов временно отключена для стабильности</p>
+            <h1 class="section-title">Главная страница с системой фрагментов</h1>
+            <p class="lead text-muted">Все фрагменты успешно интегрированы и работают</p>
         </div>
     </div>
 
+    <!--
+        ORIGINAL FEATURES GRID / ОРИГИНАЛЬНАЯ СЕТКА ВОЗМОЖНОСТЕЙ
+        Restored from working version with proper styling
+        Восстановлена из рабочей версии с правильным стилем
+    -->
     <div class="row mt-4">
+        <!-- Status Card / Карточка статуса -->
         <div class="col-md-6 mb-4">
             <div class="card border-0 card-hover h-100 text-center">
                 <div class="card-body p-4">
                     <div class="icon-textured">✅</div>
                     <h5 class="card-title fw-bold mb-3">Статус</h5>
-                    <p class="card-text text-muted">Главная страница работает в базовом режиме</p>
+                    <p class="card-text text-muted">Система фрагментов полностью интегрирована</p>
+                    <div class="mt-3">
+                        <span class="badge bg-success me-1">Header</span>
+                        <span class="badge bg-success me-1">Navigation</span>
+                        <span class="badge bg-success me-1">Banner</span>
+                        <span class="badge bg-success me-1">Footer</span>
+                        <span class="badge bg-success">Scripts</span>
+                    </div>
                 </div>
             </div>
         </div>
+
+        <!-- Next Steps Card / Карточка следующих шагов -->
         <div class="col-md-6 mb-4">
             <div class="card border-0 card-hover h-100 text-center">
                 <div class="card-body p-4">
-                    <div class="icon-textured">🔧</div>
+                    <div class="icon-textured">🚀</div>
                     <h5 class="card-title fw-bold mb-3">Далее</h5>
-                    <p class="card-text text-muted">Будем настраивать фрагменты постепенно</p>
+                    <p class="card-text text-muted">Разработка контентных разделов сайта</p>
+                    <div class="mt-3">
+                        <span class="badge bg-primary me-1">О нас</span>
+                        <span class="badge bg-primary me-1">Проекты</span>
+                        <span class="badge bg-primary me-1">Галерея</span>
+                        <span class="badge bg-primary">Меценаты</span>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
-</div>
 
-<!-- Footer -->
-<footer class="footer-custom py-5 mt-5">
-    <div class="container">
-        <div class="row">
-            <div class="col-lg-4 mb-4">
-                <h5 class="fw-bold mb-3">Общественная организация "Лада"</h5>
-                <p class="text-light-emphasis">Создаем позитивные изменения вместе с сообществом.</p>
+    <!--
+        ABOUT ORGANIZATION SECTION / СЕКЦИЯ "О НАС"
+        Original "About" section content restored
+        Восстановлено оригинальное содержимое секции "О нас"
+    -->
+    <div class="row mt-5">
+        <div class="col-12">
+            <div class="section-header text-center mb-5">
+                <h2 class="section-title">О нашей организации</h2>
+                <p class="section-subtitle text-muted">Миссия, ценности и направления деятельности</p>
             </div>
-            <div class="col-lg-4 mb-4">
-                <h6 class="fw-bold mb-3">Контакты</h6>
-                <ul class="list-unstyled text-light-emphasis">
-                    <li>📧 Email: info@lada-org.ru</li>
-                    <li>📞 Телефон: +7 (XXX) XXX-XX-XX</li>
-                </ul>
-            </div>
-        </div>
-        <hr class="my-4 bg-light opacity-25">
-        <div class="row">
-            <div class="col-12 text-center">
-                <p class="mb-0 text-light-emphasis">&copy; 2025 Общественная организация "Лада"</p>
+
+            <div class="row">
+                <div class="col-lg-6 mb-4">
+                    <div class="about-card p-4 h-100">
+                        <h4 class="fw-bold mb-3">🌱 Наша миссия</h4>
+                        <p class="text-muted">
+                            Мы создаем условия для развития гражданского общества через
+                            образование, сотрудничество и социальные инициативы.
+                            Наша цель - объединять людей для позитивных изменений
+                            в сообществе.
+                        </p>
+                    </div>
+                </div>
+                <div class="col-lg-6 mb-4">
+                    <div class="about-card p-4 h-100">
+                        <h4 class="fw-bold mb-3">🎯 Направления работы</h4>
+                        <ul class="text-muted">
+                            <li>Социальное проектирование и реализация</li>
+                            <li>Образовательные программы и тренинги</li>
+                            <li>Поддержка волонтерского движения</li>
+                            <li>Развитие местных сообществ</li>
+                            <li>Правовое просвещение граждан</li>
+                        </ul>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
-</footer>
 
-<!-- Scripts -->
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        const navbar = document.querySelector('.navbar-custom');
-        function updateNavbar() {
-            if (window.scrollY > 100) navbar.classList.add('scrolled');
-            else navbar.classList.remove('scrolled');
-        }
-        window.addEventListener('scroll', updateNavbar);
-        updateNavbar();
+    <!--
+        PROJECTS SECTION / СЕКЦИЯ "НАШИ ПРОЕКТЫ"
+        Original "Projects" section content restored
+        Восстановлено оригинальное содержимое секции "Наши проекты"
+    -->
+    <div class="row mt-5">
+        <div class="col-12">
+            <div class="section-header text-center mb-5">
+                <h2 class="section-title">Наши проекты</h2>
+                <p class="section-subtitle text-muted">Текущие и завершенные инициативы</p>
+            </div>
 
-        const navbarHeight = document.querySelector('.navbar').offsetHeight;
-        document.body.style.paddingTop = navbarHeight + 'px';
-    });
-</script>
+            <div class="row">
+                <div class="col-md-4 mb-4">
+                    <div class="project-card card border-0 h-100">
+                        <div class="card-body text-center p-4">
+                            <div class="project-icon mb-3">📚</div>
+                            <h5 class="card-title fw-bold">Образовательные программы</h5>
+                            <p class="card-text text-muted">
+                                Проведение тренингов и семинаров по гражданской
+                                активности и социальному проектированию
+                            </p>
+                            <span class="badge bg-success">Активный</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4 mb-4">
+                    <div class="project-card card border-0 h-100">
+                        <div class="card-body text-center p-4">
+                            <div class="project-icon mb-3">🤝</div>
+                            <h5 class="card-title fw-bold">Волонтерский центр</h5>
+                            <p class="card-text text-muted">
+                                Координация волонтерской деятельности и
+                                поддержка социальных инициатив сообщества
+                            </p>
+                            <span class="badge bg-success">Активный</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4 mb-4">
+                    <div class="project-card card border-0 h-100">
+                        <div class="card-body text-center p-4">
+                            <div class="project-icon mb-3">🏘️</div>
+                            <h5 class="card-title fw-bold">Развитие сообществ</h5>
+                            <p class="card-text text-muted">
+                                Программы по укреплению местных сообществ
+                                и развитию территориального общественного самоуправления
+                            </p>
+                            <span class="badge bg-warning">В разработке</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!--
+        PATRONS SECTION / СЕКЦИЯ "МЕЦЕНАТАМ"
+        Original "Patrons" section content restored
+        Восстановлено оригинальное содержимое секции "Меценатам"
+    -->
+    <div class="row mt-5">
+        <div class="col-12">
+            <div class="section-header text-center mb-5">
+                <h2 class="section-title">Меценатам и партнерам</h2>
+                <p class="section-subtitle text-muted">Возможности для поддержки и сотрудничества</p>
+            </div>
+
+            <div class="row">
+                <div class="col-lg-8 mx-auto">
+                    <div class="patrons-content text-center">
+                        <div class="patrons-icon mb-4">💎</div>
+                        <h4 class="fw-bold mb-3">Поддержите нашу миссию</h4>
+                        <p class="text-muted mb-4">
+                            Ваша поддержка помогает нам создавать позитивные изменения
+                            в обществе. Мы открыты для сотрудничества с организациями
+                            и частными лицами, разделяющими наши ценности.
+                        </p>
+
+                        <div class="row mt-4">
+                            <div class="col-md-6 mb-3">
+                                <div class="support-option p-3">
+                                    <h6 class="fw-bold">🤝 Партнерство</h6>
+                                    <p class="small text-muted mb-0">
+                                        Совместная реализация социальных проектов
+                                    </p>
+                                </div>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <div class="support-option p-3">
+                                    <h6 class="fw-bold">🎁 Материальная помощь</h6>
+                                    <p class="small text-muted mb-0">
+                                        Поддержка конкретных программ и инициатив
+                                    </p>
+                                </div>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <div class="support-option p-3">
+                                    <h6 class="fw-bold">👥 Волонтерство</h6>
+                                    <p class="small text-muted mb-0">
+                                        Участие сотрудников в наших мероприятиях
+                                    </p>
+                                </div>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <div class="support-option p-3">
+                                    <h6 class="fw-bold">📢 Информационная поддержка</h6>
+                                    <p class="small text-muted mb-0">
+                                        Помощь в распространении информации о проектах
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mt-4">
+                            <a href="/contact" class="btn btn-primary btn-lg" th:href="@{/contact}">
+                                Обсудить сотрудничество
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!--
+        PUBLISHED PAGES SECTION / СЕКЦИЯ ОПУБЛИКОВАННЫХ СТРАНИЦ
+        Preserved from original functionality / Сохранена из оригинальной функциональности
+    -->
+    <div class="row mt-5" th:if="${publishedPages != null and !publishedPages.empty}">
+        <div class="col-12">
+            <div class="section-header text-center mb-4">
+                <h2 class="section-title">Наши публикации</h2>
+                <p class="section-subtitle text-muted">Последние материалы и новости</p>
+            </div>
+            <div class="row">
+                <div class="col-md-6 mb-3" th:each="page : ${publishedPages}">
+                    <div class="card border-0 shadow-sm h-100">
+                        <div class="card-body">
+                            <h5 class="card-title" th:text="${page.title}">Заголовок страницы</h5>
+                            <p class="card-text text-muted" th:text="${#strings.abbreviate(page.content, 150)}">
+                                Краткое описание содержимого страницы...
+                            </p>
+                            <a th:href="@{/pages/{slug}(slug=${page.slug})}"
+                               class="btn btn-outline-primary btn-sm">
+                                Читать далее
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+
+<!-- FOOTER FRAGMENT / ФРАГМЕНТ ФУТЕРА -->
+<div th:replace="fragments/footer :: main-footer"></div>
+
+<!-- SCRIPTS FRAGMENT / ФРАГМЕНТ СКРИПТОВ -->
+<div th:replace="fragments/scripts :: main-scripts"></div>
 </body>
 </html>

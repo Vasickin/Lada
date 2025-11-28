@@ -117,4 +117,18 @@ public class HomeController {
     public String contact() {
         return "contact";
     }
+
+    /**
+     * Отображает тестовую страницу для проверки системы фрагментов.
+     *
+     * <p>Страница предназначена для безопасного тестирования каждого фрагмента
+     * по отдельности перед их интеграцией в основные страницы сайта.
+     * Позволяет идентифицировать конкретный фрагмент вызывающий ошибки.</p>
+     *
+     * @return имя шаблона тестовой страницы ("test-fragments")
+     */
+    @GetMapping("/test-fragments")
+    public String testFragments() {
+        return "test-fragments";
+    }
 }
