@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <!--
     GALLERY PAGE WITH FRAGMENT SYSTEM INTEGRATION / СТРАНИЦА "ГАЛЕРЕЯ" С ИНТЕГРАЦИЕЙ СИСТЕМЫ ФРАГМЕНТОВ
-    Photo and video gallery with categories, lightbox, and responsive grid
-    Фото и видео галерея с категориями, лайтбоксом и адаптивной сеткой
+    Enhanced photo and video gallery with year filtering and improved design
+    Улучшенная фото и видео галерея с фильтрацией по годам и улучшенным дизайном
 
     Fragment Usage / Использование фрагментов:
     - Header: Meta tags, SEO optimization, CSS styles
@@ -28,8 +28,8 @@
 
 <!--
     MAIN CONTENT SECTION / СЕКЦИЯ ОСНОВНОГО КОНТЕНТА
-    Photo and video gallery with filtering and lightbox functionality
-    Фото и видео галерея с фильтрацией и функциональностью лайтбокса
+    Enhanced photo and video gallery with year filtering and beautiful cards
+    Улучшенная фото и видео галерея с фильтрацией по годам и красивыми карточками
 -->
 <main class="container my-5 py-4">
     <!--
@@ -46,29 +46,26 @@
 
     <!--
         GALLERY FILTER SECTION / СЕКЦИЯ ФИЛЬТРАЦИИ ГАЛЕРЕИ
-        Filtering options for gallery categories and media types
-        Опции фильтрации по категориям галереи и типам медиа
+        Year-based filtering with category options
+        Фильтрация по годам с опциями категорий
     -->
     <div class="row mb-4">
         <div class="col-12">
             <div class="card border-0 bg-light">
                 <div class="card-body p-4">
-                    <h5 class="mb-3">Фильтровать галерею</h5>
+                    <h5 class="mb-3">Фильтровать галерею по годам</h5>
                     <div class="d-flex flex-wrap gap-2">
-                        <button class="btn btn-outline-primary active" data-filter="all">
+                        <button class="btn btn-outline-primary active" data-year="all">
                             Все материалы
                         </button>
-                        <button class="btn btn-outline-primary" data-filter="events">
-                            Мероприятия
+                        <button class="btn btn-outline-primary" data-year="2025">
+                            2025 год
                         </button>
-                        <button class="btn btn-outline-primary" data-filter="projects">
-                            Проекты
+                        <button class="btn btn-outline-primary" data-year="2024">
+                            2024 год
                         </button>
-                        <button class="btn btn-outline-primary" data-filter="volunteering">
-                            Волонтерство
-                        </button>
-                        <button class="btn btn-outline-primary" data-filter="education">
-                            Образование
+                        <button class="btn btn-outline-primary" data-year="2023">
+                            2023 год
                         </button>
                     </div>
                 </div>
@@ -77,9 +74,9 @@
     </div>
 
     <!--
-        PHOTO GALLERY SECTION / СЕКЦИЯ ФОТОГАЛЕРЕИ
-        Responsive image grid with masonry layout and lightbox
-        Адаптивная сетка изображений с masonry layout и лайтбоксом
+        ENHANCED PHOTO GALLERY SECTION / УЛУЧШЕННАЯ СЕКЦИЯ ФОТОГАЛЕРЕИ
+        Beautiful thematic cards similar to video gallery
+        Красивые тематические карточки аналогично видеогалерее
     -->
     <div class="row mb-5">
         <div class="col-12">
@@ -87,179 +84,156 @@
             <p class="text-muted mb-4">Моменты из нашей деятельности в фотографиях</p>
         </div>
 
-        <!-- Gallery Grid / Сетка галереи -->
-        <div class="col-12">
-            <div class="row gallery-grid" id="photoGallery">
-                <!-- Event 1 - Education Workshop / Мероприятие 1 - Образовательный воркшоп -->
-                <div class="col-lg-4 col-md-6 mb-4 gallery-item" data-category="events education">
-                    <div class="gallery-card card border-0 card-hover">
-                        <div class="gallery-image-container">
-                            <img src="/images/optimized/gallery/education-workshop.jpg"
-                                 alt="Образовательный воркшоп по гражданской активности"
-                                 class="gallery-image">
-                            <div class="gallery-overlay">
-                                <button class="btn btn-light btn-sm view-image"
-                                        data-image="/images/optimized/gallery/education-workshop.jpg"
-                                        data-title="Образовательный воркшоп">
-                                    🔍 Увеличить
-                                </button>
-                            </div>
+        <!-- Education Photos Card / Карточка образовательных фото -->
+        <div class="col-lg-4 col-md-6 mb-4 gallery-item" data-year="2025" data-category="education">
+            <div class="card border-0 card-hover h-100">
+                <div class="card-body p-0">
+                    <div class="photo-preview bg-primary bg-opacity-10 d-flex align-items-center justify-content-center"
+                         style="height: 200px;">
+                        <div class="text-center">
+                            <div class="icon-textured mb-2">📚</div>
+                            <p class="text-muted mb-0">Образовательные мероприятия</p>
                         </div>
-                        <div class="card-body">
-                            <h6 class="card-title fw-bold">Образовательный воркшоп</h6>
-                            <p class="card-text text-muted small">
-                                Тренинг по гражданской активности для молодежи.
-                                Участники изучают основы социального проектирования.
-                            </p>
-                            <div class="d-flex justify-content-between align-items-center">
-                                <span class="badge bg-primary">Образование</span>
-                                <small class="text-muted">15.11.2025</small>
-                            </div>
+                    </div>
+                    <div class="p-4">
+                        <h5 class="card-title fw-bold">Образовательные программы</h5>
+                        <p class="card-text text-muted small">
+                            Фотографии с тренингов, семинаров и воркшопов по гражданской
+                            активности и социальному проектированию.
+                        </p>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span class="badge bg-primary">Образование</span>
+                            <small class="text-muted">2025</small>
                         </div>
                     </div>
                 </div>
+            </div>
+        </div>
 
-                <!-- Event 2 - Volunteer Action / Мероприятие 2 - Волонтерская акция -->
-                <div class="col-lg-4 col-md-6 mb-4 gallery-item" data-category="events volunteering">
-                    <div class="gallery-card card border-0 card-hover">
-                        <div class="gallery-image-container">
-                            <img src="/images/optimized/gallery/volunteer-action.jpg"
-                                 alt="Волонтерская акция по благоустройству территории"
-                                 class="gallery-image">
-                            <div class="gallery-overlay">
-                                <button class="btn btn-light btn-sm view-image"
-                                        data-image="/images/optimized/gallery/volunteer-action.jpg"
-                                        data-title="Волонтерская акция">
-                                    🔍 Увеличить
-                                </button>
-                            </div>
+        <!-- Volunteering Photos Card / Карточка волонтерских фото -->
+        <div class="col-lg-4 col-md-6 mb-4 gallery-item" data-year="2025" data-category="volunteering">
+            <div class="card border-0 card-hover h-100">
+                <div class="card-body p-0">
+                    <div class="photo-preview bg-success bg-opacity-10 d-flex align-items-center justify-content-center"
+                         style="height: 200px;">
+                        <div class="text-center">
+                            <div class="icon-textured mb-2">🤝</div>
+                            <p class="text-muted mb-0">Волонтерские акции</p>
                         </div>
-                        <div class="card-body">
-                            <h6 class="card-title fw-bold">Волонтерская акция</h6>
-                            <p class="card-text text-muted small">
-                                Благоустройство городской территории силами волонтеров.
-                                Совместная работа по созданию комфортной среды.
-                            </p>
-                            <div class="d-flex justify-content-between align-items-center">
-                                <span class="badge bg-success">Волонтерство</span>
-                                <small class="text-muted">08.11.2025</small>
-                            </div>
+                    </div>
+                    <div class="p-4">
+                        <h5 class="card-title fw-bold">Волонтерская деятельность</h5>
+                        <p class="card-text text-muted small">
+                            Снимки с волонтерских акций, мероприятий по благоустройству
+                            и социальной помощи местному сообществу.
+                        </p>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span class="badge bg-success">Волонтерство</span>
+                            <small class="text-muted">2025</small>
                         </div>
                     </div>
                 </div>
+            </div>
+        </div>
 
-                <!-- Event 3 - Community Meeting / Мероприятие 3 - Встреча сообщества -->
-                <div class="col-lg-4 col-md-6 mb-4 gallery-item" data-category="events projects">
-                    <div class="gallery-card card border-0 card-hover">
-                        <div class="gallery-image-container">
-                            <img src="/images/optimized/gallery/community-meeting.jpg"
-                                 alt="Встреча местного сообщества для обсуждения проектов"
-                                 class="gallery-image">
-                            <div class="gallery-overlay">
-                                <button class="btn btn-light btn-sm view-image"
-                                        data-image="/images/optimized/gallery/community-meeting.jpg"
-                                        data-title="Встреча сообщества">
-                                    🔍 Увеличить
-                                </button>
-                            </div>
+        <!-- Projects Photos Card / Карточка проектных фото -->
+        <div class="col-lg-4 col-md-6 mb-4 gallery-item" data-year="2024" data-category="projects">
+            <div class="card border-0 card-hover h-100">
+                <div class="card-body p-0">
+                    <div class="photo-preview bg-warning bg-opacity-10 d-flex align-items-center justify-content-center"
+                         style="height: 200px;">
+                        <div class="text-center">
+                            <div class="icon-textured mb-2">🚀</div>
+                            <p class="text-muted mb-0">Реализация проектов</p>
                         </div>
-                        <div class="card-body">
-                            <h6 class="card-title fw-bold">Встреча сообщества</h6>
-                            <p class="card-text text-muted small">
-                                Обсуждение новых проектов и инициатив с активными
-                                жителями района. Планирование совместных действий.
-                            </p>
-                            <div class="d-flex justify-content-between align-items-center">
-                                <span class="badge bg-warning">Проекты</span>
-                                <small class="text-muted">01.11.2025</small>
-                            </div>
+                    </div>
+                    <div class="p-4">
+                        <h5 class="card-title fw-bold">Проектная деятельность</h5>
+                        <p class="card-text text-muted small">
+                            Фотоотчеты по реализации социальных проектов, встречи
+                            с партнерами и презентации результатов.
+                        </p>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span class="badge bg-warning">Проекты</span>
+                            <small class="text-muted">2024</small>
                         </div>
                     </div>
                 </div>
+            </div>
+        </div>
 
-                <!-- Event 4 - Training Session / Мероприятие 4 - Тренинг -->
-                <div class="col-lg-4 col-md-6 mb-4 gallery-item" data-category="events education">
-                    <div class="gallery-card card border-0 card-hover">
-                        <div class="gallery-image-container">
-                            <img src="/images/optimized/gallery/training-session.jpg"
-                                 alt="Тренинг по социальному проектированию для НКО"
-                                 class="gallery-image">
-                            <div class="gallery-overlay">
-                                <button class="btn btn-light btn-sm view-image"
-                                        data-image="/images/optimized/gallery/training-session.jpg"
-                                        data-title="Тренинг по проектированию">
-                                    🔍 Увеличить
-                                </button>
-                            </div>
+        <!-- Events Photos Card / Карточка мероприятий -->
+        <div class="col-lg-4 col-md-6 mb-4 gallery-item" data-year="2024" data-category="events">
+            <div class="card border-0 card-hover h-100">
+                <div class="card-body p-0">
+                    <div class="photo-preview bg-info bg-opacity-10 d-flex align-items-center justify-content-center"
+                         style="height: 200px;">
+                        <div class="text-center">
+                            <div class="icon-textured mb-2">🎉</div>
+                            <p class="text-muted mb-0">Мероприятия и встречи</p>
                         </div>
-                        <div class="card-body">
-                            <h6 class="card-title fw-bold">Тренинг по проектированию</h6>
-                            <p class="card-text text-muted small">
-                                Обучение представителей НКО основам социального
-                                проектирования и подготовки заявок на гранты.
-                            </p>
-                            <div class="d-flex justify-content-between align-items-center">
-                                <span class="badge bg-primary">Образование</span>
-                                <small class="text-muted">25.10.2025</small>
-                            </div>
+                    </div>
+                    <div class="p-4">
+                        <h5 class="card-title fw-bold">Общественные мероприятия</h5>
+                        <p class="card-text text-muted small">
+                            Фотографии с праздников, встреч сообщества, культурных
+                            событий и других общественных мероприятий.
+                        </p>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span class="badge bg-info">Мероприятия</span>
+                            <small class="text-muted">2024</small>
                         </div>
                     </div>
                 </div>
+            </div>
+        </div>
 
-                <!-- Event 5 - Environmental Action / Мероприятие 5 - Экологическая акция -->
-                <div class="col-lg-4 col-md-6 mb-4 gallery-item" data-category="events volunteering">
-                    <div class="gallery-card card border-0 card-hover">
-                        <div class="gallery-image-container">
-                            <img src="/images/optimized/gallery/environmental-action.jpg"
-                                 alt="Экологическая акция по очистке береговой линии"
-                                 class="gallery-image">
-                            <div class="gallery-overlay">
-                                <button class="btn btn-light btn-sm view-image"
-                                        data-image="/images/optimized/gallery/environmental-action.jpg"
-                                        data-title="Экологическая акция">
-                                    🔍 Увеличить
-                                </button>
-                            </div>
+        <!-- Community Photos Card / Карточка сообщества -->
+        <div class="col-lg-4 col-md-6 mb-4 gallery-item" data-year="2023" data-category="community">
+            <div class="card border-0 card-hover h-100">
+                <div class="card-body p-0">
+                    <div class="photo-preview bg-secondary bg-opacity-10 d-flex align-items-center justify-content-center"
+                         style="height: 200px;">
+                        <div class="text-center">
+                            <div class="icon-textured mb-2">🏘️</div>
+                            <p class="text-muted mb-0">Развитие сообществ</p>
                         </div>
-                        <div class="card-body">
-                            <h6 class="card-title fw-bold">Экологическая акция</h6>
-                            <p class="card-text text-muted small">
-                                Очистка береговой линии от мусора. Волонтеры собрали
-                                более 50 мешков отходов для последующей переработки.
-                            </p>
-                            <div class="d-flex justify-content-between align-items-center">
-                                <span class="badge bg-success">Волонтерство</span>
-                                <small class="text-muted">18.10.2025</small>
-                            </div>
+                    </div>
+                    <div class="p-4">
+                        <h5 class="card-title fw-bold">Работа с сообществами</h5>
+                        <p class="card-text text-muted small">
+                            Снимки работы с местными сообществами, развития
+                            территориального самоуправления и местных инициатив.
+                        </p>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span class="badge bg-secondary">Сообщество</span>
+                            <small class="text-muted">2023</small>
                         </div>
                     </div>
                 </div>
+            </div>
+        </div>
 
-                <!-- Event 6 - Project Presentation / Мероприятие 6 - Презентация проекта -->
-                <div class="col-lg-4 col-md-6 mb-4 gallery-item" data-category="events projects">
-                    <div class="gallery-card card border-0 card-hover">
-                        <div class="gallery-image-container">
-                            <img src="/images/optimized/gallery/project-presentation.jpg"
-                                 alt="Презентация нового социального проекта партнерам"
-                                 class="gallery-image">
-                            <div class="gallery-overlay">
-                                <button class="btn btn-light btn-sm view-image"
-                                        data-image="/images/optimized/gallery/project-presentation.jpg"
-                                        data-title="Презентация проекта">
-                                    🔍 Увеличить
-                                </button>
-                            </div>
+        <!-- Environmental Photos Card / Карточка экологических фото -->
+        <div class="col-lg-4 col-md-6 mb-4 gallery-item" data-year="2023" data-category="ecology">
+            <div class="card border-0 card-hover h-100">
+                <div class="card-body p-0">
+                    <div class="photo-preview bg-success bg-opacity-10 d-flex align-items-center justify-content-center"
+                         style="height: 200px;">
+                        <div class="text-center">
+                            <div class="icon-textured mb-2">🌳</div>
+                            <p class="text-muted mb-0">Экологические акции</p>
                         </div>
-                        <div class="card-body">
-                            <h6 class="card-title fw-bold">Презентация проекта</h6>
-                            <p class="card-text text-muted small">
-                                Представление нового социального проекта потенциальным
-                                партнерам и спонсорам. Обсуждение возможностей сотрудничества.
-                            </p>
-                            <div class="d-flex justify-content-between align-items-center">
-                                <span class="badge bg-warning">Проекты</span>
-                                <small class="text-muted">10.10.2025</small>
-                            </div>
+                    </div>
+                    <div class="p-4">
+                        <h5 class="card-title fw-bold">Экологические инициативы</h5>
+                        <p class="card-text text-muted small">
+                            Фото с экологических акций, мероприятий по озеленению
+                            и программ экологического просвещения.
+                        </p>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span class="badge bg-success">Экология</span>
+                            <small class="text-muted">2023</small>
                         </div>
                     </div>
                 </div>
@@ -279,7 +253,7 @@
         </div>
 
         <!-- Video 1 / Видео 1 -->
-        <div class="col-lg-6 mb-4">
+        <div class="col-lg-6 mb-4 gallery-item" data-year="2025" data-category="education">
             <div class="card border-0 card-hover h-100">
                 <div class="card-body p-0">
                     <div class="video-container">
@@ -297,14 +271,17 @@
                             Видеоотчет о ходе реализации образовательной программы
                             и достигнутых результатах за первый квартал.
                         </p>
-                        <span class="badge bg-primary">Образование</span>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span class="badge bg-primary">Образование</span>
+                            <small class="text-muted">2025</small>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
 
         <!-- Video 2 / Видео 2 -->
-        <div class="col-lg-6 mb-4">
+        <div class="col-lg-6 mb-4 gallery-item" data-year="2025" data-category="volunteering">
             <div class="card border-0 card-hover h-100">
                 <div class="card-body p-0">
                     <div class="video-container">
@@ -322,7 +299,66 @@
                             Личные истории волонтеров, их мотивация и опыт участия
                             в социальных проектах организации.
                         </p>
-                        <span class="badge bg-success">Волонтерство</span>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span class="badge bg-success">Волонтерство</span>
+                            <small class="text-muted">2025</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Video 3 / Видео 3 -->
+        <div class="col-lg-6 mb-4 gallery-item" data-year="2024" data-category="projects">
+            <div class="card border-0 card-hover h-100">
+                <div class="card-body p-0">
+                    <div class="video-container">
+                        <div class="video-placeholder bg-light d-flex align-items-center justify-content-center"
+                             style="height: 250px;">
+                            <div class="text-center">
+                                <div class="icon-textured mb-2">🚀</div>
+                                <p class="text-muted mb-0">Видео будет добавлено позже</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="p-4">
+                        <h5 class="card-title fw-bold">Презентация проектов 2024</h5>
+                        <p class="card-text text-muted small">
+                            Видеопрезентации ключевых проектов, реализованных
+                            организацией в 2024 году и их социальный эффект.
+                        </p>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span class="badge bg-warning">Проекты</span>
+                            <small class="text-muted">2024</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Video 4 / Видео 4 -->
+        <div class="col-lg-6 mb-4 gallery-item" data-year="2023" data-category="community">
+            <div class="card border-0 card-hover h-100">
+                <div class="card-body p-0">
+                    <div class="video-container">
+                        <div class="video-placeholder bg-light d-flex align-items-center justify-content-center"
+                             style="height: 250px;">
+                            <div class="text-center">
+                                <div class="icon-textured mb-2">🏘️</div>
+                                <p class="text-muted mb-0">Видео будет добавлено позже</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="p-4">
+                        <h5 class="card-title fw-bold">Истории сообществ</h5>
+                        <p class="card-text text-muted small">
+                            Видеосюжеты о развитии местных сообществ, успешных
+                            инициативах и изменениях к лучшему.
+                        </p>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span class="badge bg-secondary">Сообщество</span>
+                            <small class="text-muted">2023</small>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -330,49 +366,24 @@
     </div>
 
     <!--
-        CALL TO ACTION SECTION / СЕКЦИЯ ПРИЗЫВА К ДЕЙСТВИЮ
-        Encourages visitors to participate in events
-        Побуждает посетителей участвовать в мероприятиях
+        SIMPLE CALL TO ACTION SECTION / ПРОСТАЯ СЕКЦИЯ ПРИЗЫВА К ДЕЙСТВИЮ
+        Clean call-to-action without extra buttons
+        Чистый призыв к действию без лишних кнопок
     -->
     <div class="row">
         <div class="col-12">
             <div class="cta-banner p-5 rounded-4 text-center">
-                <h3 class="fw-bold mb-3 text-white">Хотите увидеть себя в нашей галерее?</h3>
+                <h3 class="fw-bold mb-3 text-white">Присоединяйтесь к нашему сообществу</h3>
                 <p class="mb-4 text-white-50">
-                    Присоединяйтесь к нашим мероприятиям и станьте частью нашего сообщества.
-                    Следите за анонсами предстоящих событий!
+                    Станьте частью позитивных изменений и следите за нашими будущими мероприятиями
                 </p>
-                <div class="d-flex justify-content-center flex-wrap gap-3">
-                    <a href="/projects" class="btn btn-primary btn-lg" th:href="@{/projects}">
-                        Наши проекты
-                    </a>
-                    <a href="/contact" class="btn btn-outline-light btn-lg" th:href="@{/contact}">
-                        Узнать о мероприятиях
-                    </a>
-                </div>
+                <a href="/contact" class="btn btn-outline-light btn-lg" th:href="@{/contact}">
+                    Связаться с нами
+                </a>
             </div>
         </div>
     </div>
 </main>
-
-<!--
-    LIGHTBOX MODAL / МОДАЛЬНОЕ ОКНО ЛАЙТБОКСА
-    For displaying enlarged images
-    Для отображения увеличенных изображений
--->
-<div class="modal fade" id="imageLightbox" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered modal-lg">
-        <div class="modal-content border-0">
-            <div class="modal-header border-0">
-                <h5 class="modal-title" id="lightboxTitle">Просмотр изображения</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body text-center p-0">
-                <img src="" alt="" class="img-fluid" id="lightboxImage">
-            </div>
-        </div>
-    </div>
-</div>
 
 <!-- FOOTER FRAGMENT INTEGRATION / ИНТЕГРАЦИЯ ФРАГМЕНТА ФУТЕРА -->
 <div th:replace="fragments/footer :: main-footer"></div>
@@ -381,54 +392,35 @@
 <div th:replace="fragments/scripts :: main-scripts"></div>
 
 <!--
-    ADDITIONAL GALLERY JAVASCRIPT / ДОПОЛНИТЕЛЬНЫЙ JAVASCRIPT ДЛЯ ГАЛЕРЕИ
-    Filtering and lightbox functionality
-    Функциональность фильтрации и лайтбокса
+    ENHANCED GALLERY JAVASCRIPT / УЛУЧШЕННЫЙ JAVASCRIPT ДЛЯ ГАЛЕРЕИ
+    Year-based filtering functionality
+    Функциональность фильтрации по годам
 -->
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        // Gallery filtering functionality / Функциональность фильтрации галереи
-        const filterButtons = document.querySelectorAll('[data-filter]');
+        // Year-based gallery filtering functionality / Функциональность фильтрации галереи по годам
+        const yearButtons = document.querySelectorAll('[data-year]');
         const galleryItems = document.querySelectorAll('.gallery-item');
 
-        filterButtons.forEach(button => {
+        yearButtons.forEach(button => {
             button.addEventListener('click', function() {
                 // Remove active class from all buttons / Убираем активный класс у всех кнопок
-                filterButtons.forEach(btn => btn.classList.remove('active'));
+                yearButtons.forEach(btn => btn.classList.remove('active'));
                 // Add active class to clicked button / Добавляем активный класс нажатой кнопке
                 this.classList.add('active');
 
-                const filterValue = this.getAttribute('data-filter');
+                const yearValue = this.getAttribute('data-year');
 
-                // Filter gallery items / Фильтруем элементы галереи
+                // Filter gallery items by year / Фильтруем элементы галереи по году
                 galleryItems.forEach(item => {
-                    if (filterValue === 'all' || item.getAttribute('data-category').includes(filterValue)) {
+                    if (yearValue === 'all' || item.getAttribute('data-year') === yearValue) {
                         item.style.display = 'block';
                     } else {
                         item.style.display = 'none';
                     }
                 });
 
-                console.log('Gallery filtered by:', filterValue);
-            });
-        });
-
-        // Lightbox functionality / Функциональность лайтбокса
-        const viewButtons = document.querySelectorAll('.view-image');
-        const lightboxModal = new bootstrap.Modal(document.getElementById('imageLightbox'));
-        const lightboxImage = document.getElementById('lightboxImage');
-        const lightboxTitle = document.getElementById('lightboxTitle');
-
-        viewButtons.forEach(button => {
-            button.addEventListener('click', function() {
-                const imageUrl = this.getAttribute('data-image');
-                const imageTitle = this.getAttribute('data-title');
-
-                lightboxImage.src = imageUrl;
-                lightboxImage.alt = imageTitle;
-                lightboxTitle.textContent = imageTitle;
-
-                lightboxModal.show();
+                console.log('Gallery filtered by year:', yearValue);
             });
         });
 
@@ -444,49 +436,23 @@
             });
         });
 
-        console.log('Gallery page initialized successfully');
+        console.log('Enhanced gallery page initialized successfully');
     });
 </script>
 
 <!--
     ADDITIONAL GALLERY STYLES / ДОПОЛНИТЕЛЬНЫЕ СТИЛИ ДЛЯ ГАЛЕРЕИ
-    Custom styles for gallery layout and effects
-    Пользовательские стили для макета и эффектов галереи
+    Enhanced styles for photo preview cards
+    Улучшенные стили для карточек предпросмотра фото
 -->
 <style>
-    .gallery-image-container {
-        position: relative;
-        overflow: hidden;
+    .photo-preview {
         border-radius: 12px 12px 0 0;
+        transition: all 0.3s ease;
     }
 
-    .gallery-image {
-        width: 100%;
-        height: 250px;
-        object-fit: cover;
-        transition: transform 0.3s ease;
-    }
-
-    .gallery-overlay {
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        background: rgba(0, 0, 0, 0.7);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        opacity: 0;
-        transition: opacity 0.3s ease;
-    }
-
-    .gallery-card:hover .gallery-overlay {
-        opacity: 1;
-    }
-
-    .gallery-card:hover .gallery-image {
-        transform: scale(1.05);
+    .card-hover:hover .photo-preview {
+        transform: scale(1.02);
     }
 
     .video-placeholder {
@@ -494,21 +460,8 @@
         background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
     }
 
-    .gallery-grid {
-        display: grid;
-        gap: 1.5rem;
-    }
-
-    @media (min-width: 768px) {
-        .gallery-grid {
-            grid-template-columns: repeat(2, 1fr);
-        }
-    }
-
-    @media (min-width: 992px) {
-        .gallery-grid {
-            grid-template-columns: repeat(3, 1fr);
-        }
+    .cta-banner {
+        background: linear-gradient(135deg, var(--primary-700), var(--primary-900));
     }
 </style>
 </body>
