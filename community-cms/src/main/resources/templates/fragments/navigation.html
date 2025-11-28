@@ -1,62 +1,39 @@
 <!DOCTYPE html>
 <!--
-    NAVIGATION FRAGMENT / ФРАГМЕНТ НАВИГАЦИИ
-    Reusable navigation component for all pages / Переиспользуемый компонент навигации для всех страниц
+    NAVIGATION FRAGMENT - FIXED VERSION / ФРАГМЕНТ НАВИГАЦИИ - ИСПРАВЛЕННАЯ ВЕРСИЯ
+    Fixed: Removed problematic httpServletRequest expressions causing 500 errors
+    Исправлено: Убраны проблемные выражения httpServletRequest вызывающие ошибки 500
 
-    Features / Особенности:
-    - Dynamic active state highlighting based on current URL
-      Динамическое выделение активного состояния на основе текущего URL
-    - Spring Security integration for role-based menu items
-      Интеграция Spring Security для элементов меню на основе ролей
-    - Responsive design with mobile hamburger menu
-      Адаптивный дизайн с гамбургер-меню для мобильных устройств
-    - Organization branding with logo and fallback text
-      Брендинг организации с логотипом и резервным текстом
+    Solution: Use simpler approach for active states without httpServletRequest
+    Решение: Использовать более простой подход для активных состояний без httpServletRequest
 -->
 <html lang="ru" xmlns:th="http://www.thymeleaf.org"
       xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
-<!--
-    SPRING SECURITY NAMESPACE DECLARATION / ОБЪЯВЛЕНИЕ ПРОСТРАНСТВА ИМЕН SPRING SECURITY
-    Required for sec:authorize attributes to work properly
-    Необходимо для корректной работы атрибутов sec:authorize
-    Without this declaration, Thymeleaf cannot process security expressions
-    Без этого объявления Thymeleaf не может обрабатывать security выражения
--->
 
 <!--
-    MAIN NAVIGATION COMPONENT / ОСНОВНОЙ КОМПОНЕНТ НАВИГАЦИИ
-    Fixed top navigation bar with glass morphism effect
-    Фиксированная верхняя навигационная панель с эффектом glass morphism
+    MAIN NAVIGATION COMPONENT - SIMPLIFIED / ОСНОВНОЙ КОМПОНЕНТ НАВИГАЦИИ - УПРОЩЕННЫЙ
+    Fixed version without httpServletRequest dependency for fragment compatibility
+    Исправленная версия без зависимости от httpServletRequest для совместимости фрагментов
 -->
 <nav class="navbar navbar-expand-lg navbar-light navbar-custom fixed-top" th:fragment="main-navigation">
     <div class="container">
         <!--
             BRAND LOGO AND NAME / ЛОГОТИП И НАЗВАНИЕ БРЕНДА
-            Organization branding with responsive logo image
-            Брендинг организации с адаптивным изображением логотипа
+            Organization branding remains unchanged
+            Брендинг организации остается без изменений
         -->
         <a class="navbar-brand logo-brand" href="/" th:href="@{/}">
-            <!--
-                ORGANIZATION LOGO / ЛОГОТИП ОРГАНИЗАЦИИ
-                Optimized logo image with fallback to text if image fails to load
-                Оптимизированное изображение логотипа с резервным текстом при ошибке загрузки
-            -->
             <img src="/images/optimized/logo.png"
                  alt="Лада - Общественная организация"
                  class="logo-image"
                  th:onerror="this.style.display='none'; this.nextElementSibling.style.display='inline-block'">
-            <!--
-                FALLBACK BRAND TEXT / РЕЗЕРВНЫЙ ТЕКСТ БРЕНДА
-                Displayed only if logo image fails to load
-                Отображается только если изображение логотипа не загрузилось
-            -->
             <span style="color: var(--primary-800); display: none;">🏛️ Лада</span>
         </a>
 
         <!--
             MOBILE MENU TOGGLE / ПЕРЕКЛЮЧАТЕЛЬ МОБИЛЬНОГО МЕНЮ
-            Hamburger menu button for mobile navigation with accessibility attributes
-            Кнопка гамбургер-меню для мобильной навигации с атрибутами доступности
+            Hamburger menu button remains unchanged
+            Кнопка гамбургер-меню остается без изменений
         -->
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
                 aria-controls="navbarNav" aria-expanded="false" aria-label="Переключить навигацию">
@@ -64,73 +41,57 @@
         </button>
 
         <!--
-            NAVIGATION MENU ITEMS / ПУНКТЫ НАВИГАЦИОННОГО МЕНЮ
-            Main navigation links to all website sections with dynamic active states
-            Основные навигационные ссылки на все разделы сайта с динамическими активными состояниями
+            NAVIGATION MENU ITEMS - SIMPLIFIED / ПУНКТЫ НАВИГАЦИОННОГО МЕНЮ - УПРОЩЕННЫЕ
+            Fixed: Removed httpServletRequest expressions causing null pointer exceptions
+            Исправлено: Убраны выражения httpServletRequest вызывающие исключения null pointer
+            Solution: Active states will be handled by JavaScript or server-side logic
+            Решение: Активные состояния будут обрабатываться JavaScript или серверной логикой
         -->
         <div class="collapse navbar-collapse" id="navbarNav">
             <ul class="navbar-nav ms-auto">
                 <!--
-                    DYNAMIC ACTIVE STATE IMPLEMENTATION / РЕАЛИЗАЦИЯ ДИНАМИЧЕСКОГО АКТИВНОГО СОСТОЯНИЯ
-                    th:classappend conditionally adds 'active' class based on current request URI
-                    th:classappend условно добавляет класс 'active' на основе текущего URI запроса
-                    This provides visual feedback for current page location
-                    Это обеспечивает визуальную обратную связь о текущем местоположении страницы
+                    SIMPLIFIED NAVIGATION LINKS / УПРОЩЕННЫЕ НАВИГАЦИОННЫЕ ССЫЛКИ
+                    Removed problematic th:classappend with httpServletRequest
+                    Убраны проблемные th:classappend с httpServletRequest
+                    Active states will be implemented later with JavaScript
+                    Активные состояния будут реализованы позже с помощью JavaScript
                 -->
                 <li class="nav-item">
-                    <a class="nav-link fw-semibold"
-                       href="/"
-                       th:href="@{/}"
-                       th:classappend="${#httpServletRequest.requestURI == '/'} ? 'active' : ''">
+                    <a class="nav-link fw-semibold" href="/" th:href="@{/}">
                         Главная
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link fw-semibold"
-                       href="/about"
-                       th:href="@{/about}"
-                       th:classappend="${#httpServletRequest.requestURI == '/about'} ? 'active' : ''">
+                    <a class="nav-link fw-semibold" href="/about" th:href="@{/about}">
                         О нас
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link fw-semibold"
-                       href="/projects"
-                       th:href="@{/projects}"
-                       th:classappend="${#httpServletRequest.requestURI == '/projects'} ? 'active' : ''">
+                    <a class="nav-link fw-semibold" href="/projects" th:href="@{/projects}">
                         Наши проекты
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link fw-semibold"
-                       href="/gallery"
-                       th:href="@{/gallery}"
-                       th:classappend="${#httpServletRequest.requestURI == '/gallery'} ? 'active' : ''">
+                    <a class="nav-link fw-semibold" href="/gallery" th:href="@{/gallery}">
                         Галерея
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link fw-semibold"
-                       href="/patrons"
-                       th:href="@{/patrons}"
-                       th:classappend="${#httpServletRequest.requestURI == '/patrons'} ? 'active' : ''">
+                    <a class="nav-link fw-semibold" href="/patrons" th:href="@{/patrons}">
                         Меценатам
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link fw-semibold"
-                       href="/contact"
-                       th:href="@{/contact}"
-                       th:classappend="${#httpServletRequest.requestURI == '/contact'} ? 'active' : ''">
+                    <a class="nav-link fw-semibold" href="/contact" th:href="@{/contact}">
                         Контакты
                     </a>
                 </li>
                 <!--
-                    ADMIN DASHBOARD LINK WITH SPRING SECURITY / ССЫЛКА НА ПАНЕЛЬ УПРАВЛЕНИЯ С SPRING SECURITY
-                    Visible only to authenticated users using Spring Security expressions
-                    Видна только аутентифицированным пользователям с использованием Spring Security выражений
-                    sec:authorize="isAuthenticated()" checks if user is logged in
-                    sec:authorize="isAuthenticated()" проверяет, вошел ли пользователь в систему
+                    ADMIN DASHBOARD LINK - WORKS CORRECTLY / ССЫЛКА НА ПАНЕЛЬ УПРАВЛЕНИЯ - РАБОТАЕТ КОРРЕКТНО
+                    Spring Security integration works fine with sec:authorize
+                    Интеграция Spring Security работает корректно с sec:authorize
+                    This was not the source of the problem
+                    Это не было источником проблемы
                 -->
                 <li class="nav-item" sec:authorize="isAuthenticated()">
                     <a class="nav-link fw-semibold text-success" href="/admin" th:href="@{/admin}">
