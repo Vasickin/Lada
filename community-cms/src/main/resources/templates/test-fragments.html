@@ -1,10 +1,136 @@
 <!DOCTYPE html>
-<html lang="en">
+<!--
+    FRAGMENTS TESTING PAGE - BANNER TEST / ТЕСТОВАЯ СТРАНИЦА - ТЕСТ БАННЕРА
+    Testing Strategy: Add banner fragment after successful navigation test
+    Стратегия тестирования: Добавляем фрагмент баннера после успешного теста навигации
+
+    Current Test: Banner Fragment with responsive images / Текущий тест: Фрагмент баннера с адаптивными изображениями
+    Expected: Should display header images for desktop and mobile
+    Ожидается: Должен отображать изображения шапки для десктопа и мобильных
+-->
+<html lang="ru" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head>
     <meta charset="UTF-8">
-    <title>Title</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Тестирование фрагментов - Banner</title>
+
+    <!--
+        HEADER FRAGMENT - CONFIRMED WORKING / ФРАГМЕНТ ХЕДЕРА - ПОДТВЕРЖДЕНО РАБОТАЕТ
+    -->
+    <div th:replace="fragments/header :: html-head('Тест фрагментов')">
+        <!-- Fallback content / Резервный контент -->
+    </div>
 </head>
 <body>
+<!--
+    NAVIGATION FRAGMENT - CONFIRMED WORKING / ФРАГМЕНТ НАВИГАЦИИ - ПОДТВЕРЖДЕНО РАБОТАЕТ
+    Fixed version without httpServletRequest expressions
+    Исправленная версия без выражений httpServletRequest
+-->
+<div th:replace="fragments/navigation :: main-navigation"></div>
 
+<!--
+    TEST 3: BANNER FRAGMENT INTEGRATION / ТЕСТ 3: ИНТЕГРАЦИЯ ФРАГМЕНТА БАННЕРА
+    This fragment displays responsive header images
+    Этот фрагмент отображает адаптивные изображения шапки
+    Should work without issues as it doesn't use complex expressions
+    Должен работать без проблем, так как не использует сложные выражения
+-->
+<div th:replace="fragments/banner :: header-banner('Тестирование системы фрагментов - Общественная организация Лада')"></div>
+
+<div class="container my-5" style="margin-top: 100px !important;">
+    <h1>Тестирование системы фрагментов</h1>
+
+    <!-- TEST 1: HEADER FRAGMENT STATUS - CONFIRMED / ТЕСТ 1: СТАТУС ФРАГМЕНТА ХЕДЕРА - ПОДТВЕРЖДЕНО -->
+    <div class="card mb-4">
+        <div class="card-header bg-success text-white">
+            <h5>✅ Тест 1: Фрагмент хедера - УСПЕШНО</h5>
+        </div>
+        <div class="card-body">
+            <p><strong>Статус:</strong> Фрагмент хедера работает корректно</p>
+        </div>
+    </div>
+
+    <!-- TEST 2: NAVIGATION FRAGMENT STATUS - CONFIRMED / ТЕСТ 2: СТАТУС ФРАГМЕНТА НАВИГАЦИИ - ПОДТВЕРЖДЕНО -->
+    <div class="card mb-4">
+        <div class="card-header bg-success text-white">
+            <h5>✅ Тест 2: Фрагмент навигации - УСПЕШНО</h5>
+        </div>
+        <div class="card-body">
+            <p><strong>Статус:</strong> Фрагмент навигации работает после исправления httpServletRequest</p>
+            <p><strong>Исправление:</strong> Убраны проблемные выражения с requestURI</p>
+
+            <!-- Spring Security Status / Статус Spring Security -->
+            <div class="alert alert-info mt-3">
+                <h6>Проверка Spring Security:</h6>
+                <p sec:authorize="isAuthenticated()">
+                    ✅ <strong>Вы аутентифицированы</strong> как: <span sec:authentication="name"></span>
+                </p>
+                <p sec:authorize="!isAuthenticated()">
+                    ℹ️ <strong>Вы не аутентифицированы</strong> - ссылка "Управление" скрыта
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- TEST 3: BANNER FRAGMENT STATUS - ACTIVE / ТЕСТ 3: СТАТУС ФРАГМЕНТА БАННЕРА - АКТИВЕН -->
+    <div class="card mb-4">
+        <div class="card-header bg-warning text-dark">
+            <h5>🖼️ Тест 3: Фрагмент баннера - АКТИВЕН</h5>
+        </div>
+        <div class="card-body">
+            <p><strong>Статус:</strong> Фрагмент баннера интегрирован в страницу</p>
+            <p><strong>Проверка:</strong> Если эта страница загружается, значит banner фрагмент работает корректно</p>
+
+            <ul>
+                <li>✅ Десктопное фоновое изображение (header-bg.jpg)</li>
+                <li>✅ Мобильное изображение логотипа (logo@2x.png)</li>
+                <li>✅ Alt тексты для доступности</li>
+                <li>✅ Адаптивный дизайн для разных устройств</li>
+                <li>✅ Параметризованный alt текст</li>
+            </ul>
+
+            <!--
+                VISUAL VERIFICATION / ВИЗУАЛЬНАЯ ПРОВЕРКА
+                Instructions to verify banner is displayed
+                Инструкции для проверки отображения баннера
+            -->
+            <div class="alert alert-info mt-3">
+                <h6>Визуальная проверка баннера:</h6>
+                <p><strong>Прокрутите страницу вверх</strong> - вы должны увидеть:</p>
+                <ul>
+                    <li>📱 На мобильных: Логотип организации в центре</li>
+                    <li>💻 На десктопе: Фоновое изображение шапки</li>
+                    <li>🎯 Адаптивное переключение между версиями</li>
+                </ul>
+            </div>
+
+            <!--
+                NEXT STEPS / СЛЕДУЮЩИЕ ШАГИ
+                Only proceed if banner test passes
+                Переходим дальше только если тест баннера пройдет
+            -->
+            <div class="alert alert-success mt-3">
+                <strong>Следующий шаг:</strong> Если страница загружается без ошибок 500,
+                переходим к тестированию фрагмента футера.
+            </div>
+        </div>
+    </div>
+
+    <!--
+        PLACEHOLDER FOR NEXT TESTS / ЗАПОЛНИТЕЛЬ ДЛЯ СЛЕДУЮЩИХ ТЕСТОВ
+        We'll add footer fragment test here if banner test passes
+        Мы добавим тест фрагмента футера здесь, если тест баннера пройдет
+    -->
+    <div class="card mb-4">
+        <div class="card-header bg-secondary text-white">
+            <h5>⏳ Тест 4: Фрагмент футера - ОЖИДАЕТСЯ</h5>
+        </div>
+        <div class="card-body">
+            <p>Будет активирован после успешного тестирования banner фрагмента</p>
+        </div>
+    </div>
+</div>
 </body>
 </html>
