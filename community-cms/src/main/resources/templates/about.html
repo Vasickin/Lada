@@ -1,438 +1,221 @@
 <!DOCTYPE html>
-<html lang="ru" xmlns:th="http://www.thymeleaf.org"
-      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<html lang="ru" xmlns:th="http://www.thymeleaf.org">
 <head>
-    <!--
-        META AND BASIC SETUP / МЕТАДАННЫЕ И БАЗОВАЯ НАСТРОЙКА
-        Character set, viewport, and page title / Кодировка, вьюпорт и заголовок страницы
-    -->
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>О нашей организации - Общественная организация Лада</title>
+    <title>О нас - Общественная организация Лада</title>
 
-    <!--
-        BOOTSTRAP 5 CSS / БИБЛИОТЕКА BOOTSTRAP 5
-        Using CDN for consistent styling / Используем CDN для единообразного стиля
-    -->
+    <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
 
-    <!--
-        GOOGLE FONTS / ШРИФТЫ GOOGLE
-        Using Roboto font for better typography / Используем шрифт Roboto для лучшей типографики
-    -->
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
-    <style>
-        /* Reuse styles from main page / Переиспользуем стили с главной страницы */
-        :root {
-            --primary-color: #2c5aa0;
-            --secondary-color: #f8f9fa;
-            --accent-color: #ff6b35;
-        }
-
-        body {
-            font-family: 'Roboto', sans-serif;
-            line-height: 1.6;
-            padding-top: 76px; /* For fixed navbar / Для фиксированной навигации */
-        }
-
-        .section-title {
-            color: var(--primary-color);
-            font-weight: 700;
-            margin-bottom: 2rem;
-            position: relative;
-        }
-
-        .section-title:after {
-            content: '';
-            position: absolute;
-            bottom: -10px;
-            left: 0;
-            width: 60px;
-            height: 3px;
-            background: var(--accent-color);
-        }
-
-        .card-hover {
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-        }
-
-        .card-hover:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
-        }
-
-        .navbar-custom {
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(10px);
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-        }
-
-        .hero-about {
-            background: linear-gradient(135deg, var(--primary-color) 0%, #1e3a8a 100%);
-            color: white;
-            padding: 80px 0;
-            margin-bottom: 3rem;
-        }
-
-        .timeline {
-            position: relative;
-            padding-left: 2rem;
-        }
-
-        .timeline:before {
-            content: '';
-            position: absolute;
-            left: 0;
-            top: 0;
-            bottom: 0;
-            width: 2px;
-            background: var(--primary-color);
-        }
-
-        .timeline-item {
-            position: relative;
-            margin-bottom: 2rem;
-        }
-
-        .timeline-item:before {
-            content: '';
-            position: absolute;
-            left: -2.3rem;
-            top: 0.5rem;
-            width: 12px;
-            height: 12px;
-            border-radius: 50%;
-            background: var(--accent-color);
-            border: 3px solid white;
-            box-shadow: 0 0 0 3px var(--primary-color);
-        }
-    </style>
+    <!-- Our Design System CSS -->
+    <link href="/css/design-system.css" rel="stylesheet">
 </head>
 <body>
-<!--
-    NAVIGATION HEADER / НАВИГАЦИОННЫЙ ЗАГОЛОВОК
-    Reused from main page with active state /
-    Переиспользовано с главной страницы с активным состоянием
--->
+<!-- Navigation - Same as homepage / Навигация - такая же как на главной -->
 <nav class="navbar navbar-expand-lg navbar-light navbar-custom fixed-top">
     <div class="container">
-        <a class="navbar-brand fw-bold" href="/" th:href="@{/}">
-            <span style="color: var(--primary-color);">🏛️ Лада</span>
+        <a class="navbar-brand logo-brand" href="/" th:href="@{/}">
+            <img src="/images/optimized/logo.png"
+                 alt="Лада - Общественная организация"
+                 class="logo-image"
+                 onerror="this.style.display='none'; this.nextElementSibling.style.display='inline-block'">
+            <span style="color: var(--primary-800); display: none;">🏛️ Лада</span>
         </a>
 
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
+                aria-controls="navbarNav" aria-expanded="false" aria-label="Переключить навигацию">
             <span class="navbar-toggler-icon"></span>
         </button>
 
         <div class="collapse navbar-collapse" id="navbarNav">
             <ul class="navbar-nav ms-auto">
                 <li class="nav-item">
-                    <a class="nav-link fw-medium" href="/" th:href="@{/}">Главная</a>
+                    <a class="nav-link fw-semibold" href="/" th:href="@{/}">Главная</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link active fw-medium" href="/about" th:href="@{/about}">О нас</a>
+                    <a class="nav-link active fw-semibold" href="/about" th:href="@{/about}">О нас</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link fw-medium" href="/contact" th:href="@{/contact}">Контакты</a>
+                    <a class="nav-link fw-semibold" href="/projects" th:href="@{/projects}">Наши проекты</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link fw-semibold" href="/gallery" th:href="@{/gallery}">Галерея</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link fw-semibold" href="/patrons" th:href="@{/patrons}">Меценатам</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link fw-semibold" href="/contact" th:href="@{/contact}">Контакты</a>
                 </li>
                 <li class="nav-item" sec:authorize="isAuthenticated()">
-                    <a class="nav-link fw-medium text-success" href="/pages" th:href="@{/pages}">⚙️ Управление</a>
-                </li>
-                <li class="nav-item" sec:authorize="isAnonymous()">
-                    <a class="btn btn-outline-primary btn-sm ms-2" href="/login" th:href="@{/login}">Войти</a>
-                </li>
-                <li class="nav-item" sec:authorize="isAuthenticated()">
-                    <form th:action="@{/logout}" method="post" class="d-inline ms-2">
-                        <button type="submit" class="btn btn-outline-danger btn-sm">Выйти</button>
-                    </form>
+                    <a class="nav-link fw-semibold text-success" href="/admin" th:href="@{/admin}">
+                        <span class="me-1">⚙️</span>Управление
+                    </a>
                 </li>
             </ul>
         </div>
     </div>
 </nav>
 
-<!--
-    HERO SECTION / ГЕРОЙ СЕКЦИЯ
-    About page hero with organization introduction /
-    Герой страницы "О нас" с представлением организации
--->
-<section class="hero-about">
+<!-- Header Banner / Баннер шапки -->
+<section class="header-banner-section">
     <div class="container">
-        <div class="row align-items-center">
-            <div class="col-lg-8">
-                <h1 class="display-4 fw-bold mb-4">О нашей организации</h1>
-                <p class="lead mb-0">
-                    Общественная организация "Лада" - это сообщество единомышленников,
-                    объединенных общей целью создания позитивных изменений в нашем регионе.
-                </p>
-            </div>
-            <div class="col-lg-4 text-center">
-                <div class="bg-light bg-opacity-25 rounded-3 p-4 d-inline-block">
-                    <span class="display-1">🏛️</span>
-                </div>
-            </div>
+        <div class="header-banner-wrapper">
+            <img src="/images/optimized/header-bg.jpg"
+                 alt="Общественная организация Лада - О нас"
+                 class="desktop-banner">
+            <img src="/images/optimized/logo@2x.png"
+                 alt="Общественная организация Лада - логотип"
+                 class="mobile-banner">
         </div>
     </div>
 </section>
 
-<!--
-    MAIN CONTENT SECTION / СЕКЦИЯ ОСНОВНОГО КОНТЕНТА
-    Detailed information about the organization /
-    Подробная информация об организации
--->
-<div class="container my-5">
+<!-- Main Content / Основной контент -->
+<div class="container my-5 py-4">
+    <!-- Page Header / Заголовок страницы -->
+    <div class="row mb-5">
+        <div class="col-12 text-center">
+            <h1 class="section-title">О нашей организации</h1>
+            <p class="lead text-muted">Знакомство с миссией, ценностями и историей общественной организации "Лада"</p>
+        </div>
+    </div>
 
-    <!--
-        MISSION AND VALUES SECTION / СЕКЦИЯ МИССИИ И ЦЕННОСТЕЙ
-        Organization mission, vision, and values / Миссия, видение и ценности организации
-    -->
-    <section class="row mb-5">
-        <div class="col-lg-6 mb-4">
-            <h2 class="section-title">Наша миссия</h2>
-            <p class="fs-5">
-                Содействие развитию гражданского общества через образование,
-                волонтерство и реализацию социально значимых проектов,
-                направленных на улучшение качества жизни в нашем сообществе.
-            </p>
+    <!-- Content Sections / Секции контента -->
+    <div class="row">
+        <!-- Mission Section / Секция миссии -->
+        <div class="col-lg-6 mb-5">
+            <div class="card border-0 card-hover h-100">
+                <div class="card-body p-4">
+                    <div class="icon-textured text-center mb-4">🎯</div>
+                    <h3 class="card-title fw-bold mb-3">Наша миссия</h3>
+                    <p class="card-text text-muted">
+                        Развитие гражданского общества через образование, сотрудничество
+                        и поддержку социально значимых инициатив.
+                    </p>
+                    <p class="card-text text-muted">
+                        Мы стремимся создать условия для активного участия граждан
+                        в жизни сообщества и реализации их потенциала.
+                    </p>
+                </div>
+            </div>
         </div>
-        <div class="col-lg-6 mb-4">
-            <h2 class="section-title">Наше видение</h2>
-            <p class="fs-5">
-                Мы стремимся к созданию сильного, сплоченного сообщества,
-                где каждый житель имеет возможность реализовать свой потенциал
-                и внести вклад в развитие нашего региона.
-            </p>
-        </div>
-    </section>
 
-    <!--
-        VALUES SECTION / СЕКЦИЯ ЦЕННОСТЕЙ
-        Core values of the organization / Основные ценности организации
-    -->
-    <section class="row mb-5">
-        <div class="col-12">
-            <h2 class="section-title">Наши ценности</h2>
-        </div>
-        <div class="col-md-4 mb-4">
+        <!-- Values Section / Секция ценностей -->
+        <div class="col-lg-6 mb-5">
             <div class="card border-0 card-hover h-100">
-                <div class="card-body text-center p-4">
-                    <div class="display-4 text-primary mb-3">🔓</div>
-                    <h5 class="card-title fw-bold">Открытость</h5>
-                    <p class="card-text">
-                        Мы ведем свою деятельность прозрачно и открыто,
-                        готовы к диалогу и сотрудничеству со всеми заинтересованными сторонами.
-                    </p>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-4 mb-4">
-            <div class="card border-0 card-hover h-100">
-                <div class="card-body text-center p-4">
-                    <div class="display-4 text-primary mb-3">🤝</div>
-                    <h5 class="card-title fw-bold">Сотрудничество</h5>
-                    <p class="card-text">
-                        Мы верим в силу партнерства и совместных действий.
-                        Вместе мы можем достичь большего, чем поодиночке.
-                    </p>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-4 mb-4">
-            <div class="card border-0 card-hover h-100">
-                <div class="card-body text-center p-4">
-                    <div class="display-4 text-primary mb-3">💡</div>
-                    <h5 class="card-title fw-bold">Инновации</h5>
-                    <p class="card-text">
-                        Мы постоянно ищем новые, эффективные подходы
-                        к решению социальных проблем и развитию сообщества.
-                    </p>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!--
-        HISTORY SECTION / СЕКЦИЯ ИСТОРИИ
-        Organization history and milestones / История организации и ключевые вехи
-    -->
-    <section class="row mb-5">
-        <div class="col-12">
-            <h2 class="section-title">Наша история</h2>
-        </div>
-        <div class="col-lg-8">
-            <div class="timeline">
-                <div class="timeline-item">
-                    <h5 class="fw-bold">2018 - Основание</h5>
-                    <p>
-                        Организация "Лада" была основана группой активных граждан,
-                        объединенных желанием сделать наш город лучше. Начали с небольших
-                        экологических акций и образовательных мероприятий.
-                    </p>
-                </div>
-                <div class="timeline-item">
-                    <h5 class="fw-bold">2020 - Первые крупные проекты</h5>
-                    <p>
-                        Реализовали первую крупную образовательную программу
-                        "Гражданский университет", которая объединила более 200 участников.
-                        Наладили партнерские отношения с местными властями.
-                    </p>
-                </div>
-                <div class="timeline-item">
-                    <h5 class="fw-bold">2022 - Расширение деятельности</h5>
-                    <p>
-                        Запустили волонтерскую программу и открыли центр
-                        community-менеджмента. Начали работу с молодежью и
-                        развитие местных инициатив.
-                    </p>
-                </div>
-                <div class="timeline-item">
-                    <h5 class="fw-bold">2024 - Современный этап</h5>
-                    <p>
-                        Сегодня "Лада" - это признанная организация с устойчивой
-                        структурой, реализующая multiple проекты в области образования,
-                        экологии и социального предпринимательства.
-                    </p>
-                </div>
-            </div>
-        </div>
-        <div class="col-lg-4">
-            <div class="card bg-light border-0">
-                <div class="card-body">
-                    <h5 class="card-title fw-bold">📊 В цифрах</h5>
-                    <ul class="list-unstyled">
-                        <li class="mb-2"><strong>6+</strong> лет работы</li>
-                        <li class="mb-2"><strong>50+</strong> реализованных проектов</li>
-                        <li class="mb-2"><strong>1000+</strong> участников программ</li>
-                        <li class="mb-2"><strong>15+</strong> партнерских организаций</li>
-                        <li class="mb-2"><strong>200+</strong> волонтеров</li>
+                <div class="card-body p-4">
+                    <div class="icon-textured text-center mb-4">💡</div>
+                    <h3 class="card-title fw-bold mb-3">Наши ценности</h3>
+                    <ul class="list-unstyled text-muted">
+                        <li class="mb-2">✅ <strong>Открытость</strong> - прозрачность нашей деятельности</li>
+                        <li class="mb-2">✅ <strong>Сотрудничество</strong> - работаем вместе с сообществом</li>
+                        <li class="mb-2">✅ <strong>Инновации</strong> - ищем новые подходы к решению проблем</li>
+                        <li class="mb-2">✅ <strong>Устойчивость</strong> - создаём долгосрочные изменения</li>
+                        <li class="mb-2">✅ <strong>Ответственность</strong> - отвечаем за свои действия</li>
                     </ul>
                 </div>
             </div>
         </div>
-    </section>
+    </div>
 
-    <!--
-        TEAM SECTION / СЕКЦИЯ КОМАНДЫ
-        Information about team and leadership / Информация о команде и руководстве
-    -->
-    <section class="row mb-5">
+    <!-- Team Section / Секция команды -->
+    <div class="row mb-5">
         <div class="col-12">
-            <h2 class="section-title">Руководство организации</h2>
+            <h2 class="section-title">Наша команда</h2>
         </div>
-        <div class="col-md-6 mb-4">
-            <div class="card border-0 card-hover h-100">
-                <div class="card-body">
-                    <div class="row align-items-center">
-                        <div class="col-4 text-center">
-                            <div class="bg-primary bg-opacity-25 rounded-circle p-4 d-inline-block">
-                                <span class="display-6">👨‍💼</span>
-                            </div>
-                        </div>
-                        <div class="col-8">
-                            <h5 class="card-title fw-bold mb-1">Иван Петров</h5>
-                            <p class="text-muted mb-2">Председатель правления</p>
-                            <p class="card-text small">
-                                Основатель организации, эксперт в области социального
-                                проектирования и гражданского образования.
-                            </p>
-                        </div>
-                    </div>
+        <div class="col-md-4 mb-4">
+            <div class="card border-0 card-hover h-100 text-center">
+                <div class="card-body p-4">
+                    <div class="icon-textured">👥</div>
+                    <h5 class="card-title fw-bold mb-3">Профессионалы</h5>
+                    <p class="card-text text-muted">
+                        Опытные специалисты в области социальной работы,
+                        образования и управления проектами.
+                    </p>
                 </div>
             </div>
         </div>
-        <div class="col-md-6 mb-4">
-            <div class="card border-0 card-hover h-100">
-                <div class="card-body">
-                    <div class="row align-items-center">
-                        <div class="col-4 text-center">
-                            <div class="bg-primary bg-opacity-25 rounded-circle p-4 d-inline-block">
-                                <span class="display-6">👩‍💼</span>
-                            </div>
-                        </div>
-                        <div class="col-8">
-                            <h5 class="card-title fw-bold mb-1">Мария Сидорова</h5>
-                            <p class="text-muted mb-2">Директор по развитию</p>
-                            <p class="card-text small">
-                                Специалист по фандрайзингу и партнерским отношениям,
-                                курирует образовательные программы организации.
-                            </p>
-                        </div>
-                    </div>
+        <div class="col-md-4 mb-4">
+            <div class="card border-0 card-hover h-100 text-center">
+                <div class="card-body p-4">
+                    <div class="icon-textured">🤝</div>
+                    <h5 class="card-title fw-bold mb-3">Волонтёры</h5>
+                    <p class="card-text text-muted">
+                        Активные граждане, готовые делиться своим временем
+                        и expertise для помощи сообществу.
+                    </p>
                 </div>
             </div>
         </div>
-    </section>
-
-    <!--
-        CALL TO ACTION SECTION / СЕКЦИЯ ПРИЗЫВА К ДЕЙСТВИЮ
-        Encouragement to get involved / Призыв вовлечься в деятельность
-    -->
-    <section class="row mb-5">
-        <div class="col-12 text-center py-5 bg-light rounded-3">
-            <h2 class="section-title d-inline-block">Хотите стать частью нашей команды?</h2>
-            <p class="fs-5 mb-4">
-                Присоединяйтесь к нам в создании позитивных изменений!
-                Каждый может внести свой вклад в развитие нашего сообщества.
-            </p>
-            <div class="d-flex gap-3 justify-content-center flex-wrap">
-                <a href="/contact" th:href="@{/contact}" class="btn btn-primary btn-lg fw-medium">
-                    📞 Связаться с нами
-                </a>
-                <a href="/" th:href="@{/}" class="btn btn-outline-primary btn-lg fw-medium">
-                    🏠 На главную
-                </a>
-            </div>
-        </div>
-    </section>
-</div>
-
-<!--
-    FOOTER SECTION / СЕКЦИЯ ФУТЕРА
-    Reused from main page / Переиспользовано с главной страницы
--->
-<footer class="bg-dark text-light py-5 mt-5">
-    <div class="container">
-        <div class="row">
-            <div class="col-lg-4 mb-4">
-                <h5 class="fw-bold mb-3">🏛️ Общественная организация "Лада"</h5>
-                <p class="text-light-emphasis">
-                    Создаем позитивные изменения вместе с сообществом.
-                    Развиваем гражданское общество через образование и сотрудничество.
-                </p>
-            </div>
-            <div class="col-lg-4 mb-4">
-                <h6 class="fw-bold mb-3">Быстрые ссылки</h6>
-                <ul class="list-unstyled">
-                    <li><a href="/" th:href="@{/}" class="text-light-emphasis text-decoration-none">Главная</a></li>
-                    <li><a href="/about" th:href="@{/about}" class="text-light-emphasis text-decoration-none">О нас</a></li>
-                    <li><a href="/contact" th:href="@{/contact}" class="text-light-emphasis text-decoration-none">Контакты</a></li>
-                </ul>
-            </div>
-            <div class="col-lg-4 mb-4">
-                <h6 class="fw-bold mb-3">Контакты</h6>
-                <ul class="list-unstyled text-light-emphasis">
-                    <li>📧 Email: info@lada-org.ru</li>
-                    <li>📞 Телефон: +7 (XXX) XXX-XX-XX</li>
-                    <li>📍 Адрес: [Ваш адрес]</li>
-                </ul>
-            </div>
-        </div>
-        <hr class="my-4 bg-secondary">
-        <div class="row">
-            <div class="col-12 text-center">
-                <p class="mb-0 text-light-emphasis">
-                    &copy; 2025 Общественная организация "Лада". Все права защищены.
-                </p>
+        <div class="col-md-4 mb-4">
+            <div class="card border-0 card-hover h-100 text-center">
+                <div class="card-body p-4">
+                    <div class="icon-textured">🌟</div>
+                    <h5 class="card-title fw-bold mb-3">Партнёры</h5>
+                    <p class="card-text text-muted">
+                        Организации и учреждения, разделяющие наши ценности
+                        и поддерживающие наши инициативы.
+                    </p>
+                </div>
             </div>
         </div>
     </div>
+
+    <!-- History Section / Секция истории -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card border-0 bg-surface">
+                <div class="card-body p-5 text-center">
+                    <div class="icon-textured mb-4">📜</div>
+                    <h3 class="card-title fw-bold mb-3">Наша история</h3>
+                    <p class="card-text text-muted lead">
+                        Раздел находится в разработке. Скдесь будет представлена
+                        подробная информация об истории создания и развития
+                        нашей организации.
+                    </p>
+                    <div class="mt-4">
+                        <span class="badge bg-primary bg-opacity-10 text-primary fs-6">Скоро будет доступно</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Footer / Футер -->
+<footer class="footer-custom py-5 mt-5">
+    <!-- [Тот же футер что и на главной странице] -->
 </footer>
 
-<!--
-    BOOTSTRAP JAVASCRIPT / JAVASCRIPT БИБЛИОТЕКИ BOOTSTRAP
-    Required for interactive components / Необходим для интерактивных компонентов
--->
+<!-- Bootstrap JavaScript -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+
+<!-- Custom JavaScript -->
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Navbar scroll effect
+        const navbar = document.querySelector('.navbar-custom');
+
+        function updateNavbar() {
+            if (window.scrollY > 100) {
+                navbar.classList.add('scrolled');
+            } else {
+                navbar.classList.remove('scrolled');
+            }
+        }
+
+        window.addEventListener('scroll', updateNavbar);
+        updateNavbar();
+
+        // Add padding to body for fixed navbar
+        const navbarHeight = document.querySelector('.navbar').offsetHeight;
+        document.body.style.paddingTop = navbarHeight + 'px';
+    });
+</script>
 </body>
 </html>

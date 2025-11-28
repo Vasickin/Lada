@@ -1,18 +1,31 @@
 <!DOCTYPE html>
 <html lang="ru" xmlns:th="http://www.thymeleaf.org">
 <head>
+    <!--
+        META AND BASIC SETUP / МЕТАДАННЫЕ И БАЗОВАЯ НАСТРОЙКА
+        Character set, viewport, and page title / Кодировка, вьюпорт и заголовок страницы
+    -->
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Общественная организация Лада - Главная</title>
 
-    <!-- Bootstrap CSS -->
+    <!--
+        BOOTSTRAP 5 CSS / БИБЛИОТЕКА BOOTSTRAP 5
+        Using CDN for consistent styling / Используем CDN для единообразного стиля
+    -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
 
-    <!-- Google Fonts -->
+    <!--
+        GOOGLE FONTS / ШРИФТЫ GOOGLE
+        Using Inter font for modern typography / Используем шрифт Inter для современной типографики
+    -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
-    <!-- Our Design System CSS -->
-    <link href="/static/css/design-system.css" rel="stylesheet">
+    <!--
+        OUR DESIGN SYSTEM CSS / НАША CSS ДИЗАЙН-СИСТЕМА
+        Custom design system with variables and components / Пользовательская дизайн-система с переменными и компонентами
+    -->
+    <link href="/css/design-system.css" rel="stylesheet">
 </head>
 <body>
 <!--
@@ -44,7 +57,7 @@
 
         <!--
             NAVIGATION MENU ITEMS / ПУНКТЫ НАВИГАЦИОННОГО МЕНЮ
-            Main navigation links with future section placeholders / Основные навигационные ссылки с заглушками для будущих разделов
+            Main navigation links to all website sections / Основные навигационные ссылки на все разделы сайта
         -->
         <div class="collapse navbar-collapse" id="navbarNav">
             <ul class="navbar-nav ms-auto">
@@ -55,13 +68,13 @@
                     <a class="nav-link fw-semibold" href="/about" th:href="@{/about}">О нас</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link fw-semibold" href="/contact" th:href="@{/}">Наши проекты</a>
+                    <a class="nav-link fw-semibold" href="/projects" th:href="@{/projects}">Наши проекты</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link fw-semibold" href="/contact" th:href="@{/}">Галерея</a>
+                    <a class="nav-link fw-semibold" href="/gallery" th:href="@{/gallery}">Галерея</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link fw-semibold" href="/contact" th:href="@{/}">Меценатам</a>
+                    <a class="nav-link fw-semibold" href="/patrons" th:href="@{/patrons}">Меценатам</a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link fw-semibold" href="/contact" th:href="@{/contact}">Контакты</a>
@@ -108,7 +121,7 @@
 
 <!--
     MAIN CONTENT CONTAINER / ОСНОВНОЙ КОНТЕЙНЕР КОНТЕНТА
-    Primary content area with organization information and published pages / Основная область контента с информацией об организации и опубликованными страницами
+    Primary content area with organization information / Основная область контента с информацией об организации
 -->
 <div class="container my-5 py-4">
     <!--
@@ -133,10 +146,9 @@
                         Знакомство с нашей миссией, ценностями и историей организации.
                         Узнайте о нашей команде и принципах работы.
                     </p>
-                    <!-- Future interactive element placeholder / Заглушка для будущего интерактивного элемента -->
-                    <div class="mt-3">
-                        <span class="badge bg-primary bg-opacity-10 text-primary">Скоро</span>
-                    </div>
+                    <a href="/about" th:href="@{/about}" class="btn btn-outline-custom btn-sm mt-3">
+                        Узнать больше →
+                    </a>
                 </div>
             </div>
         </div>
@@ -154,10 +166,9 @@
                         Активные и завершённые социальные проекты.
                         Образовательные программы и общественные инициативы.
                     </p>
-                    <!-- Future interactive element placeholder / Заглушка для будущего интерактивного элемента -->
-                    <div class="mt-3">
-                        <span class="badge bg-primary bg-opacity-10 text-primary">Скоро</span>
-                    </div>
+                    <a href="/projects" th:href="@{/projects}" class="btn btn-outline-custom btn-sm mt-3">
+                        Смотреть проекты →
+                    </a>
                 </div>
             </div>
         </div>
@@ -175,19 +186,63 @@
                         Информация для партнёров и спонсоров.
                         Возможности поддержки и сотрудничества с организацией.
                     </p>
-                    <!-- Future interactive element placeholder / Заглушка для будущего интерактивного элемента -->
-                    <div class="mt-3">
-                        <span class="badge bg-primary bg-opacity-10 text-primary">Скоро</span>
-                    </div>
+                    <a href="/patrons" th:href="@{/patrons}" class="btn btn-outline-custom btn-sm mt-3">
+                        Подробнее →
+                    </a>
                 </div>
             </div>
         </div>
     </section>
 
+    <!--
+        GALLERY PREVIEW SECTION / СЕКЦИЯ ПРЕВЬЮ ГАЛЕРЕИ
+        Preview of gallery content with call to action / Превью содержимого галереи с призывом к действию
+    -->
+    <section class="row mb-5">
+        <div class="col-12">
+            <div class="card border-0 bg-surface">
+                <div class="card-body p-5 text-center">
+                    <div class="icon-textured mb-4">🖼️</div>
+                    <h3 class="card-title fw-bold mb-3">Фото и видео галерея</h3>
+                    <p class="card-text text-muted lead mb-4">
+                        Посмотрите фотографии и видео с наших мероприятий, проектов и встреч.
+                        Узнайте больше о нашей деятельности через визуальные материалы.
+                    </p>
+                    <a href="/gallery" th:href="@{/gallery}" class="btn btn-primary-custom btn-lg">
+                        Перейти в галерею
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
 
-
+    <!--
+        CONTACT PREVIEW SECTION / СЕКЦИЯ ПРЕВЬЮ КОНТАКТОВ
+        Contact information preview with quick access / Превью контактной информации с быстрым доступом
+    -->
+    <section class="row">
+        <div class="col-12">
+            <div class="card border-0">
+                <div class="card-body p-5 text-center">
+                    <div class="row align-items-center">
+                        <div class="col-lg-8 text-lg-start">
+                            <h3 class="card-title fw-bold mb-3">Свяжитесь с нами</h3>
+                            <p class="card-text text-muted mb-0">
+                                Есть вопросы или предложения? Мы всегда рады общению и готовы
+                                ответить на все ваши вопросы о нашей деятельности.
+                            </p>
+                        </div>
+                        <div class="col-lg-4 text-lg-end mt-3 mt-lg-0">
+                            <a href="/contact" th:href="@{/contact}" class="btn btn-primary-custom btn-lg">
+                                📞 Написать нам
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
 </div>
-
 
 <!--
     MAIN FOOTER / ОСНОВНОЙ ФУТЕР
@@ -232,6 +287,21 @@
                         </a>
                     </li>
                     <li class="mb-2">
+                        <a href="/projects" th:href="@{/projects}" class="text-light-emphasis text-decoration-none hover-text-white">
+                            🚀 Наши проекты
+                        </a>
+                    </li>
+                    <li class="mb-2">
+                        <a href="/gallery" th:href="@{/gallery}" class="text-light-emphasis text-decoration-none hover-text-white">
+                            🖼️ Галерея
+                        </a>
+                    </li>
+                    <li class="mb-2">
+                        <a href="/patrons" th:href="@{/patrons}" class="text-light-emphasis text-decoration-none hover-text-white">
+                            💎 Меценатам
+                        </a>
+                    </li>
+                    <li class="mb-2">
                         <a href="/contact" th:href="@{/contact}" class="text-light-emphasis text-decoration-none hover-text-white">
                             📞 Контакты
                         </a>
@@ -252,7 +322,7 @@
         </div>
 
         <!-- Footer Separator / Разделитель футера -->
-        <hr class="my-4 bg-primary-600">
+        <hr class="my-4 bg-light opacity-25">
 
         <!-- Copyright Notice / Уведомление об авторских правах -->
         <div class="row">
@@ -304,8 +374,6 @@
             }
         `;
         document.head.appendChild(style);
-
-        console.log('Design System with single column layout initialized successfully / Дизайн-система с одноколоночным макетом успешно инициализирована');
     });
 </script>
 </body>
