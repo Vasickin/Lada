@@ -1,26 +1,62 @@
 <!DOCTYPE html>
-<html lang="ru" xmlns:th="http://www.thymeleaf.org">
 <!--
     NAVIGATION FRAGMENT / ФРАГМЕНТ НАВИГАЦИИ
     Reusable navigation component for all pages / Переиспользуемый компонент навигации для всех страниц
+
+    Features / Особенности:
+    - Dynamic active state highlighting based on current URL
+      Динамическое выделение активного состояния на основе текущего URL
+    - Spring Security integration for role-based menu items
+      Интеграция Spring Security для элементов меню на основе ролей
+    - Responsive design with mobile hamburger menu
+      Адаптивный дизайн с гамбургер-меню для мобильных устройств
+    - Organization branding with logo and fallback text
+      Брендинг организации с логотипом и резервным текстом
+-->
+<html lang="ru" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<!--
+    SPRING SECURITY NAMESPACE DECLARATION / ОБЪЯВЛЕНИЕ ПРОСТРАНСТВА ИМЕН SPRING SECURITY
+    Required for sec:authorize attributes to work properly
+    Необходимо для корректной работы атрибутов sec:authorize
+    Without this declaration, Thymeleaf cannot process security expressions
+    Без этого объявления Thymeleaf не может обрабатывать security выражения
+-->
+
+<!--
+    MAIN NAVIGATION COMPONENT / ОСНОВНОЙ КОМПОНЕНТ НАВИГАЦИИ
+    Fixed top navigation bar with glass morphism effect
+    Фиксированная верхняя навигационная панель с эффектом glass morphism
 -->
 <nav class="navbar navbar-expand-lg navbar-light navbar-custom fixed-top" th:fragment="main-navigation">
     <div class="container">
         <!--
             BRAND LOGO AND NAME / ЛОГОТИП И НАЗВАНИЕ БРЕНДА
-            Organization logo with fallback text / Логотип организации с резервным текстом
+            Organization branding with responsive logo image
+            Брендинг организации с адаптивным изображением логотипа
         -->
         <a class="navbar-brand logo-brand" href="/" th:href="@{/}">
+            <!--
+                ORGANIZATION LOGO / ЛОГОТИП ОРГАНИЗАЦИИ
+                Optimized logo image with fallback to text if image fails to load
+                Оптимизированное изображение логотипа с резервным текстом при ошибке загрузки
+            -->
             <img src="/images/optimized/logo.png"
                  alt="Лада - Общественная организация"
                  class="logo-image"
                  th:onerror="this.style.display='none'; this.nextElementSibling.style.display='inline-block'">
+            <!--
+                FALLBACK BRAND TEXT / РЕЗЕРВНЫЙ ТЕКСТ БРЕНДА
+                Displayed only if logo image fails to load
+                Отображается только если изображение логотипа не загрузилось
+            -->
             <span style="color: var(--primary-800); display: none;">🏛️ Лада</span>
         </a>
 
         <!--
             MOBILE MENU TOGGLE / ПЕРЕКЛЮЧАТЕЛЬ МОБИЛЬНОГО МЕНЮ
-            Hamburger menu button for mobile navigation / Кнопка гамбургер-меню для мобильной навигации
+            Hamburger menu button for mobile navigation with accessibility attributes
+            Кнопка гамбургер-меню для мобильной навигации с атрибутами доступности
         -->
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
                 aria-controls="navbarNav" aria-expanded="false" aria-label="Переключить навигацию">
@@ -29,13 +65,17 @@
 
         <!--
             NAVIGATION MENU ITEMS / ПУНКТЫ НАВИГАЦИОННОГО МЕНЮ
-            Main navigation links to all website sections / Основные навигационные ссылки на все разделы сайта
+            Main navigation links to all website sections with dynamic active states
+            Основные навигационные ссылки на все разделы сайта с динамическими активными состояниями
         -->
         <div class="collapse navbar-collapse" id="navbarNav">
             <ul class="navbar-nav ms-auto">
                 <!--
-                    DYNAMIC ACTIVE STATE / ДИНАМИЧЕСКОЕ АКТИВНОЕ СОСТОЯНИЕ
-                    th:classappend adds 'active' class based on current page / th:classappend добавляет класс 'active' на основе текущей страницы
+                    DYNAMIC ACTIVE STATE IMPLEMENTATION / РЕАЛИЗАЦИЯ ДИНАМИЧЕСКОГО АКТИВНОГО СОСТОЯНИЯ
+                    th:classappend conditionally adds 'active' class based on current request URI
+                    th:classappend условно добавляет класс 'active' на основе текущего URI запроса
+                    This provides visual feedback for current page location
+                    Это обеспечивает визуальную обратную связь о текущем местоположении страницы
                 -->
                 <li class="nav-item">
                     <a class="nav-link fw-semibold"
@@ -86,8 +126,11 @@
                     </a>
                 </li>
                 <!--
-                    ADMIN DASHBOARD LINK / ССЫЛКА НА ПАНЕЛЬ УПРАВЛЕНИЯ
-                    Visible only to authenticated users / Видна только аутентифицированным пользователям
+                    ADMIN DASHBOARD LINK WITH SPRING SECURITY / ССЫЛКА НА ПАНЕЛЬ УПРАВЛЕНИЯ С SPRING SECURITY
+                    Visible only to authenticated users using Spring Security expressions
+                    Видна только аутентифицированным пользователям с использованием Spring Security выражений
+                    sec:authorize="isAuthenticated()" checks if user is logged in
+                    sec:authorize="isAuthenticated()" проверяет, вошел ли пользователь в систему
                 -->
                 <li class="nav-item" sec:authorize="isAuthenticated()">
                     <a class="nav-link fw-semibold text-success" href="/admin" th:href="@{/admin}">
