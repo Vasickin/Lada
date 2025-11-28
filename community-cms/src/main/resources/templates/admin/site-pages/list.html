@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="ru" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Управление основными страницами - Админка Community CMS</title>
+
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.1/font/bootstrap-icons.css">
+    <style>
+        .page-card {
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            border: none;
+            border-radius: 12px;
+        }
+        .page-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+        }
+        .page-icon {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+        }
+        .status-badge {
+            font-size: 0.75rem;
+        }
+        .action-buttons .btn {
+            margin: 0.1rem;
+        }
+    </style>
+</head>
+<body>
+<div class="container-fluid py-4">
+
+    <!-- ЗАГОЛОВОК И НАВИГАЦИЯ -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a th:href="@{/admin}">📊 Дашборд</a></li>
+                    <li class="breadcrumb-item active">🌐 Основные страницы сайта</li>
+                </ol>
+            </nav>
+
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h1 class="h2 mb-1">🌐 Основные страницы сайта</h1>
+                    <p class="text-muted mb-0">Управление контентом главных разделов сайта</p>
+                </div>
+                <a th:href="@{/admin}" class="btn btn-outline-secondary">
+                    <i class="bi bi-arrow-left"></i> Назад к дашборду
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- УВЕДОМЛЕНИЯ -->
+    <div th:if="${param.success}" class="row mb-4">
+        <div class="col-12">
+            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                <i class="bi bi-check-circle-fill"></i>
+                <span th:if="${param.success == 'page_updated'}">Страница успешно обновлена!</span>
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        </div>
+    </div>
+
+    <div th:if="${param.error}" class="row mb-4">
+        <div class="col-12">
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                <i class="bi bi-exclamation-triangle-fill"></i>
+                <span th:if="${param.error == 'invalid_page_type'}">Ошибка: Неверный тип страницы</span>
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        </div>
+    </div>
+
+    <!-- КАРТОЧКИ ОСНОВНЫХ СТРАНИЦ -->
+    <div class="row">
+        <!-- СТРАНИЦА "О НАС" -->
+        <div class="col-xl-4 col-md-6 mb-4">
+            <div class="card page-card h-100 border-primary">
+                <div class="card-body text-center">
+                    <div class="page-icon text-primary">
+                        <i class="bi bi-building"></i>
+                    </div>
+                    <h5 class="card-title">О нашей организации</h5>
+                    <p class="card-text text-muted small">
+                        Информация о миссии, ценностях и команде организации
+                    </p>
+
+                    <div class="mb-3">
+                        <span class="badge bg-primary status-badge">
+                            <i class="bi bi-globe"></i> Основная страница
+                        </span>
+                    </div>
+
+                    <div class="action-buttons">
+                        <a th:href="@{/admin/site-pages/edit/about}"
+                           class="btn btn-primary btn-sm">
+                            <i class="bi bi-pencil"></i> Редактировать
+                        </a>
+                        <a th:href="@{/about}" target="_blank"
+                           class="btn btn-outline-secondary btn-sm">
+                            <i class="bi bi-eye"></i> Просмотр
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- СТРАНИЦА "ПРОЕКТЫ" -->
+        <div class="col-xl-4 col-md-6 mb-4">
+            <div class="card page-card h-100 border-success">
+                <div class="card-body text-center">
+                    <div class="page-icon text-success">
+                        <i class="bi bi-rocket"></i>
+                    </div>
+                    <h5 class="card-title">Наши проекты</h5>
+                    <p class="card-text text-muted small">
+                        Текущие и завершенные проекты, статистика и достижения
+                    </p>
+
+                    <div class="mb-3">
+                        <span class="badge bg-success status-badge">
+                            <i class="bi bi-globe"></i> Основная страница
+                        </span>
+                    </div>
+
+                    <div class="action-buttons">
+                        <a th:href="@{/admin/site-pages/edit/projects}"
+                           class="btn btn-success btn-sm">
+                            <i class="bi bi-pencil"></i> Редактировать
+                        </a>
+                        <a th:href="@{/projects}" target="_blank"
+                           class="btn btn-outline-secondary btn-sm">
+                            <i class="bi bi-eye"></i> Просмотр
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- СТРАНИЦА "ГАЛЕРЕЯ" -->
+        <div class="col-xl-4 col-md-6 mb-4">
+            <div class="card page-card h-100 border-warning">
+                <div class="card-body text-center">
+                    <div class="page-icon text-warning">
+                        <i class="bi bi-images"></i>
+                    </div>
+                    <h5 class="card-title">Галерея мероприятий</h5>
+                    <p class="card-text text-muted small">
+                        Фотографии и видео с мероприятий, фильтрация по годам
+                    </p>
+
+                    <div class="mb-3">
+                        <span class="badge bg-warning status-badge">
+                            <i class="bi bi-globe"></i> Основная страница
+                        </span>
+                    </div>
+
+                    <div class="action-buttons">
+                        <a th:href="@{/admin/site-pages/edit/gallery}"
+                           class="btn btn-warning btn-sm">
+                            <i class="bi bi-pencil"></i> Редактировать
+                        </a>
+                        <a th:href="@{/gallery}" target="_blank"
+                           class="btn btn-outline-secondary btn-sm">
+                            <i class="bi bi-eye"></i> Просмотр
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- СТРАНИЦА "МЕЦЕНАТАМ" -->
+        <div class="col-xl-4 col-md-6 mb-4">
+            <div class="card page-card h-100 border-info">
+                <div class="card-body text-center">
+                    <div class="page-icon text-info">
+                        <i class="bi bi-gem"></i>
+                    </div>
+                    <h5 class="card-title">Информация для меценатов</h5>
+                    <p class="card-text text-muted small">
+                        Условия партнерства, преимущества и процесс сотрудничества
+                    </p>
+
+                    <div class="mb-3">
+                        <span class="badge bg-info status-badge">
+                            <i class="bi bi-globe"></i> Основная страница
+                        </span>
+                    </div>
+
+                    <div class="action-buttons">
+                        <a th:href="@{/admin/site-pages/edit/patrons}"
+                           class="btn btn-info btn-sm">
+                            <i class="bi bi-pencil"></i> Редактировать
+                        </a>
+                        <a th:href="@{/patrons}" target="_blank"
+                           class="btn btn-outline-secondary btn-sm">
+                            <i class="bi bi-eye"></i> Просмотр
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- СТРАНИЦА "КОНТАКТЫ" -->
+        <div class="col-xl-4 col-md-6 mb-4">
+            <div class="card page-card h-100 border-secondary">
+                <div class="card-body text-center">
+                    <div class="page-icon text-secondary">
+                        <i class="bi bi-telephone"></i>
+                    </div>
+                    <h5 class="card-title">Контактная информация</h5>
+                    <p class="card-text text-muted small">
+                        Адреса, телефоны, форма обратной связи и время работы
+                    </p>
+
+                    <div class="mb-3">
+                        <span class="badge bg-secondary status-badge">
+                            <i class="bi bi-globe"></i> Основная страница
+                        </span>
+                    </div>
+
+                    <div class="action-buttons">
+                        <a th:href="@{/admin/site-pages/edit/contact}"
+                           class="btn btn-secondary btn-sm">
+                            <i class="bi bi-pencil"></i> Редактировать
+                        </a>
+                        <a th:href="@{/contact}" target="_blank"
+                           class="btn btn-outline-secondary btn-sm">
+                            <i class="bi bi-eye"></i> Просмотр
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ИНФОРМАЦИОННАЯ КАРТОЧКА -->
+        <div class="col-xl-4 col-md-6 mb-4">
+            <div class="card page-card h-100 border-light">
+                <div class="card-body text-center">
+                    <div class="page-icon text-muted">
+                        <i class="bi bi-info-circle"></i>
+                    </div>
+                    <h5 class="card-title">Управление контентом</h5>
+                    <p class="card-text text-muted small">
+                        Редактируйте контент основных страниц сайта. Все изменения сохраняются автоматически и сразу отображаются на сайте.
+                    </p>
+
+                    <div class="mt-3">
+                        <div class="alert alert-light border">
+                            <small>
+                                <i class="bi bi-lightbulb"></i>
+                                <strong>Совет:</strong> Используйте WYSIWYG редактор для удобного форматирования текста
+                            </small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- СТАТИСТИКА И БЫСТРЫЕ ДЕЙСТВИЯ -->
+    <div class="row mt-5">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-dark text-white">
+                    <h5 class="mb-0"><i class="bi bi-speedometer2"></i> Быстрая навигация</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-4 text-center mb-3">
+                            <a th:href="@{/pages}" class="btn btn-outline-primary w-100">
+                                <i class="bi bi-files"></i><br>
+                                Все страницы
+                            </a>
+                        </div>
+                        <div class="col-md-4 text-center mb-3">
+                            <a th:href="@{/pages/create}" class="btn btn-outline-success w-100">
+                                <i class="bi bi-plus-circle"></i><br>
+                                Новая страница
+                            </a>
+                        </div>
+                        <div class="col-md-4 text-center mb-3">
+                            <a th:href="@{/admin}" class="btn btn-outline-secondary w-100">
+                                <i class="bi bi-house"></i><br>
+                                На дашборд
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Bootstrap JavaScript -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        console.log('Site pages management loaded');
+
+        // Автоматическое скрытие уведомлений через 5 секунд
+        const alerts = document.querySelectorAll('.alert');
+        alerts.forEach(alert => {
+            setTimeout(() => {
+                if (alert.classList.contains('show')) {
+                    const bsAlert = new bootstrap.Alert(alert);
+                    bsAlert.close();
+                }
+            }, 5000);
+        });
+    });
+</script>
+</body>
+</html>

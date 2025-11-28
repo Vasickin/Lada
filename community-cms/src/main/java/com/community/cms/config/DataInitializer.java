@@ -2,8 +2,10 @@ package com.community.cms.config;
 
 import com.community.cms.model.User;
 import com.community.cms.service.UserService;
+import com.community.cms.service.PageService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
@@ -14,46 +16,84 @@ import java.time.LocalDateTime;
  * <p>Основные функции:
  * <ul>
  *   <li>Создание административных учетных записей при первом запуске</li>
+ *   <li>Создание основных страниц сайта по умолчанию</li>
  *   <li>Настройка ролей и прав доступа по умолчанию</li>
  *   <li>Обеспечение работоспособности системы после развертывания</li>
  * </ul>
  *
- * <p>Учетные записи создаются только если они еще не существуют в базе данных.
+ * <p>Учетные записи и страницы создаются только если они еще не существуют в базе данных.
  * Это предотвращает дублирование при повторных запусках приложения.</p>
  *
  * @author Vasickin
- * @version 1.0
+ * @version 1.1
  * @since 2025
  * @see UserService
+ * @see PageService
  * @see User
  */
 @Component
 public class DataInitializer implements CommandLineRunner {
 
     private final UserService userService;
+    private final PageService pageService;
+    private final PasswordEncoder passwordEncoder;
 
     /**
-     * Конструктор с внедрением зависимости UserService.
+     * Конструктор с внедрением зависимостей.
      *
      * @param userService сервис для работы с пользователями
+     * @param pageService сервис для работы со страницами
+     * @param passwordEncoder кодировщик паролей
      */
     @Autowired
-    public DataInitializer(UserService userService) {
+    public DataInitializer(UserService userService, PageService pageService, PasswordEncoder passwordEncoder) {
         this.userService = userService;
+        this.pageService = pageService;
+        this.passwordEncoder = passwordEncoder;
     }
 
     /**
      * Метод, выполняемый при запуске приложения.
-     * Создает начальные учетные записи пользователей если они не существуют.
+     * Создает начальные учетные записи пользователей и страницы если они не существуют.
      *
      * @param args аргументы командной строки (не используются)
      * @throws Exception если произошла ошибка при инициализации данных
      */
     @Override
     public void run(String... args) throws Exception {
+        createDefaultUsers();
+        createDefaultPages();
+    }
+
+    /**
+     * Создает учетные записи пользователей по умолчанию.
+     */
+    private void createDefaultUsers() {
         createAdminUser();
         createEditorUser();
         createTestUser();
+    }
+
+    /**
+     * Создает основные страницы сайта по умолчанию.
+     */
+    private void createDefaultPages() {
+        System.out.println("🔄 Проверка основных страниц сайта...");
+
+        // Используем метод из PageService для создания страниц
+        var createdPages = pageService.initializeSitePages();
+
+        if (!createdPages.isEmpty()) {
+            System.out.println("✅ Созданы основные страницы сайта:");
+            for (var page : createdPages) {
+                System.out.println("   📄 " + page.getTitle() + " (" + page.getSlug() + ")");
+            }
+        } else {
+            System.out.println("✅ Все основные страницы сайта уже существуют");
+        }
+
+        // Создаем пример произвольной страницы для демонстрации
+        createSampleCustomPage();
     }
 
     /**
@@ -137,6 +177,41 @@ public class DataInitializer implements CommandLineRunner {
             System.out.println("✅ Создан тестовый пользователь: user / user123");
         } catch (Exception e) {
             System.err.println("❌ Ошибка при создании тестового пользователя: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Создает пример произвольной страницы для демонстрации функциональности.
+     */
+    private void createSampleCustomPage() {
+        String sampleSlug = "primer-stranicy";
+        if (!pageService.pageExistsBySlug(sampleSlug)) {
+            var samplePage = new com.community.cms.model.Page(
+                    "Пример страницы",
+                    """
+                    <h2>Добро пожаловать на пример страницы!</h2>
+                    <p>Это демонстрационная страница, созданная автоматически при первом запуске приложения.</p>
+                    
+                    <h3>Что вы можете делать:</h3>
+                    <ul>
+                        <li>Создавать новые страницы через административную панель</li>
+                        <li>Редактировать содержимое страниц с помощью WYSIWYG редактора</li>
+                        <li>Публиковать и снимать с публикации страницы</li>
+                        <li>Управлять пользователями и их правами доступа</li>
+                    </ul>
+                    
+                    <div class="alert alert-info">
+                        <strong>Совет:</strong> Для начала работы перейдите в административную панель 
+                        и создайте свои собственные страницы!
+                    </div>
+                    """,
+                    sampleSlug
+            );
+            samplePage.setMetaDescription("Пример страницы для демонстрации функциональности CMS системы");
+            samplePage.setPublished(true);
+
+            pageService.savePage(samplePage);
+            System.out.println("✅ Создана демонстрационная страница: " + samplePage.getTitle());
         }
     }
 }

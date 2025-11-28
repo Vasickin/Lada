@@ -1,6 +1,7 @@
 package com.community.cms.repository;
 
 import com.community.cms.model.Page;
+import com.community.cms.model.PageType;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -13,97 +14,122 @@ import java.util.Optional;
  * Репозиторий для работы с сущностью Page в базе данных.
  * Предоставляет методы для выполнения CRUD операций и пользовательских запросов.
  *
- * <p>Наследует {@link JpaRepository} который предоставляет стандартные методы:
- * <ul>
- *   <li>{@code save()} - сохранение сущности</li>
- *   <li>{@code findById()} - поиск по идентификатору</li>
- *   <li>{@code findAll()} - получение всех записей</li>
- *   <li>{@code delete()} - удаление сущности</li>
- * </ul>
+ * <p>Расширен методами для работы с типами страниц и фильтрацией по статусу публикации.
  *
  * @author Vasickin
- * @version 1.0
+ * @version 1.2
  * @since 2025
  * @see Page
+ * @see PageType
  * @see org.springframework.data.jpa.repository.JpaRepository
  */
 @Repository
 public interface PageRepository extends JpaRepository<Page, Long> {
 
-    /**
-     * Находит страницу по уникальному slug.
-     *
-     * @param slug уникальный идентификатор страницы для URL
-     * @return Optional содержащий страницу если найдена, иначе empty
-     * @throws org.springframework.dao.DataAccessException при ошибках доступа к данным
-     */
+    // СУЩЕСТВУЮЩИЕ МЕТОДЫ
+
     Optional<Page> findBySlug(String slug);
-
-    /**
-     * Находит все опубликованные страницы, отсортированные по дате создания (сначала новые).
-     *
-     * @return список опубликованных страниц
-     */
     List<Page> findByPublishedTrueOrderByCreatedAtDesc();
-
-    /**
-     * Находит все страницы по статусу публикации.
-     *
-     * @param published true для опубликованных, false для черновиков
-     * @return список страниц с указанным статусом публикации
-     */
     List<Page> findByPublished(Boolean published);
-
-    /**
-     * Проверяет существование страницы с указанным slug.
-     *
-     * @param slug slug для проверки
-     * @return true если страница с таким slug существует, иначе false
-     */
     boolean existsBySlug(String slug);
-
-    /**
-     * Находит страницы по заголовку (поиск с учетом регистра).
-     *
-     * @param title заголовок для поиска
-     * @return список страниц с указанным заголовком
-     */
     List<Page> findByTitleContainingIgnoreCase(String title);
 
-    /**
-     * Пользовательский запрос для поиска страниц по содержимому.
-     * Использует Native SQL запрос для полнотекстового поиска.
-     *
-     * @param content фрагмент содержимого для поиска
-     * @return список страниц содержащих указанный текст
-     */
     @Query("SELECT p FROM Page p WHERE LOWER(p.content) LIKE LOWER(CONCAT('%', :content, '%'))")
     List<Page> findByContentContaining(@Param("content") String content);
 
-
-    // В PageRepository.java добавляем методы:
-
-    /**
-     * Подсчитывает количество страниц по статусу публикации.
-     *
-     * @param published true для опубликованных, false для черновиков
-     * @return количество страниц с указанным статусом
-     */
     long countByPublished(Boolean published);
-
-    /**
-     * Находит последние N страниц, отсортированных по дате создания (сначала новые).
-     *
-     * @return список последних страниц
-     */
     List<Page> findTop5ByOrderByCreatedAtDesc();
 
-    /**
-     * Находит последние страницы с ограничением по количеству.
-     *
-     * @param limit максимальное количество страниц
-     * @return список последних страниц
-     */
     @Query("SELECT p FROM Page p ORDER BY p.createdAt DESC LIMIT :limit")
     List<Page> findRecentPages(@Param("limit") int limit);
+
+    // НОВЫЕ МЕТОДЫ ДЛЯ РАБОТЫ С ТИПАМИ СТРАНИЦ
+
+    /**
+     * Находит страницу по slug ТОЛЬКО если она опубликована.
+     * Используется для публичного доступа к контенту.
+     *
+     * @param slug уникальный идентификатор страницы
+     * @param published статус публикации (true для опубликованных)
+     * @return Optional содержащий страницу если найдена и опубликована
+     */
+    Optional<Page> findBySlugAndPublished(String slug, Boolean published);
+
+    /**
+     * Находит страницы по типу и статусу публикации.
+     *
+     * @param pageType тип страницы для поиска
+     * @param published статус публикации
+     * @return список страниц с указанным типом и статусом
+     */
+    List<Page> findByPageTypeAndPublished(PageType pageType, Boolean published);
+
+    /**
+     * Находит ОДНУ страницу по типу ТОЛЬКО если она опубликована.
+     * Используется для получения уникальных основных страниц сайта.
+     *
+     * @param pageType тип страницы
+     * @param published статус публикации (true для опубликованных)
+     * @return Optional содержащий страницу если найдена и опубликована
+     */
+    Optional<Page> findFirstByPageTypeAndPublished(PageType pageType, Boolean published);
+
+    /**
+     * Проверяет существование страницы определенного типа.
+     *
+     * @param pageType тип страницы для проверки
+     * @return true если страница с таким типом существует, иначе false
+     */
+    boolean existsByPageType(PageType pageType);
+
+    /**
+     * Находит все страницы определенного типа.
+     *
+     * @param pageType тип страницы для поиска
+     * @return список страниц указанного типа
+     */
+    List<Page> findByPageType(PageType pageType);
+
+    /**
+     * Находит все страницы определенного типа, отсортированные по дате создания.
+     *
+     * @param pageType тип страницы для поиска
+     * @return список страниц указанного типа (сначала новые)
+     */
+    List<Page> findByPageTypeOrderByCreatedAtDesc(PageType pageType);
+
+    /**
+     * Находит все основные страницы сайта (исключая CUSTOM тип).
+     * Использует оператор <> вместо != который не поддерживается в JPQL.
+     *
+     * @return список основных страниц сайта
+     */
+    @Query("SELECT p FROM Page p WHERE p.pageType <> com.community.cms.model.PageType.CUSTOM")
+    List<Page> findAllSitePages();
+
+    /**
+     * Находит все опубликованные основные страницы сайта.
+     * Использует оператор <> вместо != который не поддерживается в JPQL.
+     *
+     * @return список опубликованных основных страниц
+     */
+    @Query("SELECT p FROM Page p WHERE p.pageType <> com.community.cms.model.PageType.CUSTOM AND p.published = true")
+    List<Page> findPublishedSitePages();
+
+    /**
+     * Подсчитывает количество страниц по типу.
+     *
+     * @param pageType тип страницы
+     * @return количество страниц указанного типа
+     */
+    long countByPageType(PageType pageType);
+
+    /**
+     * Подсчитывает количество опубликованных страниц по типу.
+     *
+     * @param pageType тип страницы
+     * @param published статус публикации
+     * @return количество опубликованных страниц указанного типа
+     */
+    long countByPageTypeAndPublished(PageType pageType, Boolean published);
 }
