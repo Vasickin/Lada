@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="ru" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Управление галереей - Админка Community CMS</title>
+
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.1/font/bootstrap-icons.css">
+    <style>
+        .gallery-admin-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 16px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+        }
+
+        .stats-card {
+            transition: all 0.3s ease;
+            border: none;
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        .stats-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+        }
+
+        .gallery-item-card {
+            transition: all 0.3s ease;
+            border: none;
+            border-radius: 12px;
+            overflow: hidden;
+            border-left: 4px solid transparent;
+        }
+
+        .gallery-item-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        .gallery-item-card.published {
+            border-left-color: #28a745;
+        }
+
+        .gallery-item-card.draft {
+            border-left-color: #6c757d;
+        }
+
+        .item-thumbnail {
+            width: 80px;
+            height: 60px;
+            object-fit: cover;
+            border-radius: 6px;
+        }
+
+        .media-type-badge {
+            font-size: 0.7rem;
+            padding: 0.25rem 0.5rem;
+        }
+
+        .action-buttons .btn {
+            margin: 0.1rem;
+        }
+
+        @media (max-width: 768px) {
+            .gallery-admin-header {
+                padding: 1.5rem;
+            }
+
+            .action-buttons {
+                flex-direction: column;
+            }
+
+            .action-buttons .btn {
+                margin: 0.1rem 0;
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="container-fluid py-4">
+
+    <!-- ЗАГОЛОВОК С НАВИГАЦИЕЙ -->
+    <div class="gallery-admin-header">
+        <nav aria-label="breadcrumb" class="mb-3">
+            <ol class="breadcrumb mb-0">
+                <li class="breadcrumb-item"><a th:href="@{/admin}" class="text-white-50 text-decoration-none">📊 Дашборд</a></li>
+                <li class="breadcrumb-item active text-white">🖼️ Управление галереей</li>
+            </ol>
+        </nav>
+
+        <div class="d-flex justify-content-between align-items-center">
+            <div>
+                <h1 class="h2 mb-2">🖼️ Управление галереей</h1>
+                <p class="mb-0 opacity-90">Добавляйте и редактируйте фотографии и видео для сайта</p>
+            </div>
+            <a th:href="@{/admin/gallery/create}" class="btn btn-light">
+                <i class="bi bi-plus-circle"></i> Добавить элемент
+            </a>
+        </div>
+    </div>
+
+    <!-- УВЕДОМЛЕНИЯ -->
+    <div th:if="${param.success}" class="row mb-4">
+        <div class="col-12">
+            <div class="alert alert-success alert-dismissible fade show rounded-3" role="alert">
+                <i class="bi bi-check-circle-fill me-2"></i>
+                <span th:if="${param.success == 'gallery_item_created'}">✅ Элемент галереи успешно создан!</span>
+                <span th:if="${param.success == 'gallery_item_updated'}">✅ Элемент галереи успешно обновлен!</span>
+                <span th:if="${param.success == 'gallery_item_deleted'}">✅ Элемент галереи успешно удален!</span>
+                <span th:if="${param.success == 'gallery_item_published'}">✅ Элемент галереи опубликован!</span>
+                <span th:if="${param.success == 'gallery_item_unpublished'}">✅ Элемент галереи снят с публикации!</span>
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        </div>
+    </div>
+
+    <div th:if="${param.error}" class="row mb-4">
+        <div class="col-12">
+            <div class="alert alert-danger alert-dismissible fade show rounded-3" role="alert">
+                <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                <span th:if="${param.error == 'item_not_found'}">❌ Элемент галереи не найден!</span>
+                <span th:if="${param.error == 'creation_failed'}">❌ Ошибка при создании элемента!</span>
+                <span th:if="${param.error == 'update_failed'}">❌ Ошибка при обновлении элемента!</span>
+                <span th:if="${param.error == 'delete_failed'}">❌ Ошибка при удалении элемента!</span>
+                <span th:if="${param.error == 'publish_failed'}">❌ Ошибка при публикации элемента!</span>
+                <span th:if="${param.error == 'unpublish_failed'}">❌ Ошибка при снятии с публикации!</span>
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        </div>
+    </div>
+
+    <!-- СТАТИСТИКА ГАЛЕРЕИ -->
+    <div class="row mb-4" th:if="${statistics}">
+        <div class="col-xl-3 col-md-6 mb-3">
+            <div class="card stats-card text-white bg-primary">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h2 class="card-title" th:text="${statistics.totalItems}">0</h2>
+                            <p class="card-text mb-0">Всего элементов</p>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="bi bi-images fs-1 opacity-75"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-3">
+            <div class="card stats-card text-white bg-success">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h2 class="card-title" th:text="${statistics.publishedCount}">0</h2>
+                            <p class="card-text mb-0">Опубликовано</p>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="bi bi-eye fs-1 opacity-75"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-3">
+            <div class="card stats-card text-white bg-warning">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h2 class="card-title" th:text="${statistics.draftCount}">0</h2>
+                            <p class="card-text mb-0">Черновики</p>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="bi bi-file-earmark fs-1 opacity-75"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-3">
+            <div class="card stats-card text-white bg-info">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h2 class="card-title" th:text="${availableYears != null ? availableYears.size() : 0}">0</h2>
+                            <p class="card-text mb-0">Активных лет</p>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="bi bi-calendar fs-1 opacity-75"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- СПИСОК ЭЛЕМЕНТОВ ГАЛЕРЕИ -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card border-0">
+                <div class="card-header bg-transparent border-bottom-0 py-3">
+                    <h5 class="mb-0 text-dark">
+                        <i class="bi bi-list-ul me-2"></i>Элементы галереи
+                        <span class="badge bg-primary ms-2" th:text="${galleryItems != null ? galleryItems.size() : 0}">0</span>
+                    </h5>
+                </div>
+                <div class="card-body p-0">
+                    <!-- СОСТОЯНИЕ ПУСТОГО СПИСКА -->
+                    <div th:if="${#lists.isEmpty(galleryItems)}" class="text-center py-5">
+                        <div class="py-4">
+                            <i class="bi bi-images text-muted" style="font-size: 4rem;"></i>
+                            <h5 class="text-muted mt-3">Галерея пуста</h5>
+                            <p class="text-muted mb-4">Добавьте первый элемент в галерею</p>
+                            <a th:href="@{/admin/gallery/create}" class="btn btn-primary">
+                                <i class="bi bi-plus-circle"></i> Добавить первый элемент
+                            </a>
+                        </div>
+                    </div>
+
+                    <!-- ТАБЛИЦА ЭЛЕМЕНТОВ -->
+                    <div th:unless="${#lists.isEmpty(galleryItems)}" class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="table-light">
+                            <tr>
+                                <th style="width: 80px;">Миниатюра</th>
+                                <th>Название</th>
+                                <th style="width: 100px;">Год</th>
+                                <th style="width: 120px;">Категория</th>
+                                <th style="width: 100px;">Тип</th>
+                                <th style="width: 100px;">Статус</th>
+                                <th style="width: 150px;">Действия</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <tr th:each="item : ${galleryItems}"
+                                th:classappend="${item.published} ? 'table-success' : 'table-light'">
+                                <!-- МИНИАТЮРА -->
+                                <td>
+                                    <img th:src="${item.imageUrl}"
+                                         th:alt="${item.title}"
+                                         class="item-thumbnail"
+                                         th:if="${item.imageUrl}">
+                                    <div th:unless="${item.imageUrl}" class="item-thumbnail bg-light d-flex align-items-center justify-content-center">
+                                        <i class="bi bi-image text-muted"></i>
+                                    </div>
+                                </td>
+
+                                <!-- НАЗВАНИЕ И ОПИСАНИЕ -->
+                                <td>
+                                    <div>
+                                        <strong th:text="${item.title}">Название элемента</strong>
+                                        <br>
+                                        <small class="text-muted" th:text="${item.description} ?: 'Без описания'">
+                                            Описание элемента
+                                        </small>
+                                    </div>
+                                </td>
+
+                                <!-- ГОД -->
+                                <td>
+                                    <span class="badge bg-secondary" th:text="${item.year}">2025</span>
+                                </td>
+
+                                <!-- КАТЕГОРИЯ -->
+                                <td>
+                                        <span class="badge"
+                                              th:classappend="'bg-' + ${#maps.containsKey(categoryColors, item.category)} ? ${categoryColors[item.category]} : 'primary'"
+                                              th:text="${item.category}">
+                                            Категория
+                                        </span>
+                                </td>
+
+                                <!-- ТИП МЕДИА -->
+                                <td>
+                                        <span th:if="${item.mediaType.name() == 'PHOTO'}"
+                                              class="badge bg-info media-type-badge">
+                                            <i class="bi bi-image me-1"></i>Фото
+                                        </span>
+                                    <span th:if="${item.mediaType.name() == 'VIDEO'}"
+                                          class="badge bg-warning media-type-badge">
+                                            <i class="bi bi-play-circle me-1"></i>Видео
+                                        </span>
+                                </td>
+
+                                <!-- СТАТУС -->
+                                <td>
+                                        <span th:if="${item.published}" class="badge bg-success">
+                                            <i class="bi bi-eye me-1"></i>Опубликовано
+                                        </span>
+                                    <span th:unless="${item.published}" class="badge bg-secondary">
+                                            <i class="bi bi-eye-slash me-1"></i>Черновик
+                                        </span>
+                                </td>
+
+                                <!-- ДЕЙСТВИЯ -->
+                                <td>
+                                    <div class="action-buttons d-flex">
+                                        <!-- ПРЕДПРОСМОТР -->
+                                        <a th:href="@{/admin/gallery/preview/{id}(id=${item.id})}"
+                                           class="btn btn-outline-primary btn-sm me-1"
+                                           title="Предпросмотр">
+                                            <i class="bi bi-eye"></i>
+                                        </a>
+
+                                        <!-- РЕДАКТИРОВАНИЕ -->
+                                        <a th:href="@{/admin/gallery/edit/{id}(id=${item.id})}"
+                                           class="btn btn-outline-secondary btn-sm me-1"
+                                           title="Редактировать">
+                                            <i class="bi bi-pencil"></i>
+                                        </a>
+
+                                        <!-- ПУБЛИКАЦИЯ/СНЯТИЕ -->
+                                        <form th:action="@{/admin/gallery/{action}/{id}(action=${item.published} ? 'unpublish' : 'publish', id=${item.id})}"
+                                              method="post" class="me-1">
+                                            <button type="submit"
+                                                    class="btn btn-sm"
+                                                    th:classappend="${item.published} ? 'btn-outline-warning' : 'btn-outline-success'"
+                                                    th:title="${item.published} ? 'Снять с публикации' : 'Опубликовать'">
+                                                <i th:classappend="${item.published} ? 'bi-eye-slash' : 'bi-eye'"></i>
+                                            </button>
+                                        </form>
+
+                                        <!-- УДАЛЕНИЕ -->
+                                        <form th:action="@{/admin/gallery/delete/{id}(id=${item.id})}"
+                                              method="post"
+                                              th:onclick="return confirm('Вы уверены, что хотите удалить этот элемент?')">
+                                            <button type="submit" class="btn btn-outline-danger btn-sm" title="Удалить">
+                                                <i class="bi bi-trash"></i>
+                                            </button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- БЫСТРАЯ НАВИГАЦИЯ -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="d-flex flex-wrap gap-2 justify-content-center">
+                <a th:href="@{/admin/gallery/create}" class="btn btn-primary">
+                    <i class="bi bi-plus-circle"></i> Добавить элемент
+                </a>
+                <a th:href="@{/admin}" class="btn btn-outline-secondary">
+                    <i class="bi bi-arrow-left"></i> Назад к дашборду
+                </a>
+                <a th:href="@{/gallery}" target="_blank" class="btn btn-outline-info">
+                    <i class="bi bi-eye"></i> Просмотр галереи
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Bootstrap JavaScript -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        console.log('Gallery admin panel loaded');
+
+        // Автоматическое скрытие уведомлений
+        const alerts = document.querySelectorAll('.alert');
+        alerts.forEach(alert => {
+            setTimeout(() => {
+                if (alert.classList.contains('show')) {
+                    const bsAlert = new bootstrap.Alert(alert);
+                    bsAlert.close();
+                }
+            }, 5000);
+        });
+
+        // Подтверждение удаления
+        const deleteForms = document.querySelectorAll('form[th\\:onclick]');
+        deleteForms.forEach(form => {
+            form.addEventListener('submit', function(e) {
+                if (!confirm('Вы уверены, что хотите удалить этот элемент?')) {
+                    e.preventDefault();
+                }
+            });
+        });
+    });
+</script>
+</body>
+</html>
