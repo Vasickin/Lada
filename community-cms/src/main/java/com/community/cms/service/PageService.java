@@ -217,7 +217,8 @@ public class PageService {
 
     /**
      * Создает основные страницы сайта если они не существуют.
-     * Используется при инициализации приложения.
+     * ИСПРАВЛЕННАЯ ВЕРСИЯ: Проверяет существование по slug, а не по типу страницы.
+     * Это предотвращает конфликты дублирования slug в базе данных.
      *
      * @return список созданных страниц
      */
@@ -225,18 +226,42 @@ public class PageService {
         List<Page> createdPages = new java.util.ArrayList<>();
 
         for (PageType pageType : PageType.getSitePages()) {
-            if (!pageTypeExists(pageType)) {
-                Page page = new Page(
-                        pageType.getDisplayName(),
-                        getDefaultContentForPageType(pageType),
-                        pageType.getSlug(),
-                        pageType
-                );
-                page.setMetaDescription(getDefaultMetaDescriptionForPageType(pageType));
-                page.setPublished(true);
+            try {
+                String expectedSlug = pageType.getSlug();
 
-                Page savedPage = pageRepository.save(page);
-                createdPages.add(savedPage);
+                // ИСПРАВЛЕНИЕ: Проверяем существование по slug, а не по типу
+                // Это предотвращает дублирование slug в базе данных
+                if (!pageRepository.existsBySlug(expectedSlug)) {
+                    Page page = new Page(
+                            pageType.getDisplayName(),
+                            getDefaultContentForPageType(pageType),
+                            expectedSlug,  // Используем slug из PageType
+                            pageType
+                    );
+                    page.setMetaDescription(getDefaultMetaDescriptionForPageType(pageType));
+                    page.setPublished(true);
+
+                    Page savedPage = pageRepository.save(page);
+                    createdPages.add(savedPage);
+
+                    System.out.println("✅ Создана страница: " + pageType.getDisplayName() + " (slug: " + expectedSlug + ")");
+                } else {
+                    // Страница уже существует - проверяем и обновляем тип если нужно
+                    Optional<Page> existingPage = pageRepository.findBySlug(expectedSlug);
+                    if (existingPage.isPresent()) {
+                        Page page = existingPage.get();
+                        if (!pageType.equals(page.getPageType())) {
+                            // Обновляем тип страницы если не совпадает
+                            page.setPageType(pageType);
+                            pageRepository.save(page);
+                            System.out.println("🔄 Обновлен тип страницы: " + pageType.getDisplayName());
+                        }
+                    }
+                    System.out.println("✅ Страница уже существует: " + pageType.getDisplayName() + " (slug: " + expectedSlug + ")");
+                }
+            } catch (Exception e) {
+                System.err.println("❌ Ошибка при создании страницы " + pageType + ": " + e.getMessage());
+                e.printStackTrace();
             }
         }
 
