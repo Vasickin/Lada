@@ -491,4 +491,21 @@ public class GalleryItem {
                 ", mediaFilesCount=" + getMediaFilesCount() +
                 '}';
     }
+
+    /**
+     * Получает медиафайл по ID
+     * Gets media file by ID
+     *
+     * @param mediaFileId ID медиафайла / media file ID
+     * @return медиафайл или null / media file or null
+     */
+    public GalleryMedia getMediaFileById(Long mediaFileId) {
+        if (mediaFiles != null) {
+            return mediaFiles.stream()
+                    .filter(mediaFile -> mediaFile.getId() != null && mediaFile.getId().equals(mediaFileId))
+                    .findFirst()
+                    .orElse(null);
+        }
+        return null;
+    }
 }
