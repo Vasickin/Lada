@@ -5,7 +5,6 @@ import com.community.cms.model.GalleryMedia;
 import com.community.cms.model.MediaType;
 import com.community.cms.service.FileStorageService;
 import com.community.cms.service.GalleryService;
-import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -107,7 +106,7 @@ public class GalleryAdminController {
      * @return перенаправление на список или возврат к форме / redirect to list or return to form
      */
     @PostMapping("/create")
-    public String createGalleryItem(@Valid @ModelAttribute GalleryItem galleryItem,
+    public String createGalleryItem(@ModelAttribute GalleryItem galleryItem,
                                     BindingResult bindingResult,
                                     Model model,
                                     RedirectAttributes redirectAttributes) {
@@ -127,7 +126,7 @@ public class GalleryAdminController {
      * @return перенаправление на список или возврат к форме / redirect to list or return to form
      */
     @PostMapping("/create-with-files")
-    public String createGalleryItemWithFiles(@Valid @ModelAttribute GalleryItem galleryItem,
+    public String createGalleryItemWithFiles(@ModelAttribute GalleryItem galleryItem,
                                              BindingResult bindingResult,
                                              @RequestParam(value = "files", required = false) MultipartFile[] files,
                                              Model model,
@@ -222,7 +221,7 @@ public class GalleryAdminController {
      */
     @PostMapping("/edit/{id}")
     public String updateGalleryItem(@PathVariable Long id,
-                                    @Valid @ModelAttribute GalleryItem galleryItem,
+                                    @ModelAttribute GalleryItem galleryItem,
                                     BindingResult bindingResult,
                                     Model model,
                                     RedirectAttributes redirectAttributes) {
@@ -244,7 +243,7 @@ public class GalleryAdminController {
      */
     @PostMapping("/edit-with-files/{id}")
     public String updateGalleryItemWithFiles(@PathVariable Long id,
-                                             @Valid @ModelAttribute GalleryItem galleryItem,
+                                             @ModelAttribute GalleryItem galleryItem,
                                              BindingResult bindingResult,
                                              @RequestParam(value = "newFiles", required = false) MultipartFile[] newFiles,
                                              Model model,
