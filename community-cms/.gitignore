@@ -32,3 +32,4 @@ application.properties# Backup files
 /backups/project/*.tar.gz
 /backups/logs/*.log
 uploads/
+../uploads/
