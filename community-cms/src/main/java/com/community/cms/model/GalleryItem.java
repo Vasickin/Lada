@@ -39,8 +39,7 @@ public class GalleryItem {
 
     // СТАРЫЕ ПОЛЯ ДЛЯ ОБРАТНОЙ СОВМЕСТИМОСТИ
     // OLD FIELDS FOR BACKWARD COMPATIBILITY
-    @NotBlank(message = "URL изображения обязателен / Image URL is required")
-    @Column(nullable = false)
+    @Column(nullable = false) // Оставляем nullable=false для БД, но убираем валидацию
     private String imageUrl;
 
     private String thumbnailUrl;
