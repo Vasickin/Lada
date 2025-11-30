@@ -20,16 +20,6 @@ import java.util.Optional;
 /**
  * Контроллер для административного управления галереей с поддержкой множественных медиафайлов
  * Controller for administrative gallery management with multiple media files support
- *
- * Расширен для поддержки загрузки нескольких файлов на элемент с сохранением обратной совместимости
- * Extended to support multiple file uploads per item while maintaining backward compatibility
- *
- * @author Vasickin
- * @version 2.0
- * @since 2025
- * @see GalleryService
- * @see GalleryItem
- * @see GalleryMedia
  */
 @Controller
 @RequestMapping("/admin/gallery")
@@ -38,31 +28,12 @@ public class GalleryAdminController {
     private final GalleryService galleryService;
     private final FileStorageService fileStorageService;
 
-    /**
-     * Конструктор с внедрением зависимости сервиса
-     * Constructor with service dependency injection
-     *
-     * @param galleryService сервис для работы с галереей / gallery service
-     * @param fileStorageService сервис для работы с файлами / file storage service
-     */
     @Autowired
     public GalleryAdminController(GalleryService galleryService, FileStorageService fileStorageService) {
         this.galleryService = galleryService;
         this.fileStorageService = fileStorageService;
     }
 
-    /**
-     * ОСНОВНЫЕ СТРАНИЦЫ АДМИНКИ - СТАРЫЕ МЕТОДЫ ДЛЯ ОБРАТНОЙ СОВМЕСТИМОСТИ
-     * ADMIN PANEL MAIN PAGES - OLD METHODS FOR BACKWARD COMPATIBILITY
-     */
-
-    /**
-     * Отображает список всех элементов галереи (админка)
-     * Displays list of all gallery items (admin panel)
-     *
-     * @param model модель для передачи данных в представление / model for view data
-     * @return имя шаблона списка галереи / gallery list template name
-     */
     @GetMapping
     public String manageGallery(Model model) {
         List<GalleryItem> galleryItems = galleryService.findAllItems();
@@ -77,34 +48,15 @@ public class GalleryAdminController {
         return "admin/gallery/list";
     }
 
-    /**
-     * Отображает форму создания нового элемента галереи
-     * Displays form for creating new gallery item
-     *
-     * @param model модель для передачи данных в представление / model for view data
-     * @return имя шаблона формы создания / create form template name
-     */
     @GetMapping("/create")
     public String showCreateForm(Model model) {
         model.addAttribute("galleryItem", new GalleryItem());
-        model.addAttribute("mediaTypes", MediaType.values());
-        model.addAttribute("availableYears", List.of(2023, 2024, 2025, 2026));
-        model.addAttribute("availableCategories", List.of("education", "volunteering", "projects", "events", "community", "ecology"));
-        model.addAttribute("maxFiles", 20); // Максимальное количество файлов / Maximum files
+        prepareModelForForm(model);
+        model.addAttribute("maxFiles", 20);
 
         return "admin/gallery/create";
     }
 
-    /**
-     * Обрабатывает отправку формы создания элемента галереи (старая версия - без файлов)
-     * Processes gallery item creation form submission (old version - without files)
-     *
-     * @param galleryItem создаваемый элемент галереи / gallery item to create
-     * @param bindingResult результаты валидации / validation results
-     * @param model модель для передачи данных в представление / model for view data
-     * @param redirectAttributes атрибуты для перенаправления / redirect attributes
-     * @return перенаправление на список или возврат к форме / redirect to list or return to form
-     */
     @PostMapping("/create")
     public String createGalleryItem(@ModelAttribute GalleryItem galleryItem,
                                     BindingResult bindingResult,
@@ -114,17 +66,6 @@ public class GalleryAdminController {
         return createGalleryItemWithFiles(galleryItem, bindingResult, null, model, redirectAttributes);
     }
 
-    /**
-     * Обрабатывает отправку формы создания элемента галереи с файлами (новая версия)
-     * Processes gallery item creation form submission with files (new version)
-     *
-     * @param galleryItem создаваемый элемент галереи / gallery item to create
-     * @param bindingResult результаты валидации / validation results
-     * @param files загружаемые файлы / uploaded files
-     * @param model модель для передачи данных в представление / model for view data
-     * @param redirectAttributes атрибуты для перенаправления / redirect attributes
-     * @return перенаправление на список или возврат к форме / redirect to list or return to form
-     */
     @PostMapping("/create-with-files")
     public String createGalleryItemWithFiles(@ModelAttribute GalleryItem galleryItem,
                                              BindingResult bindingResult,
@@ -139,19 +80,20 @@ public class GalleryAdminController {
         }
 
         try {
+            // Обеспечиваем что imageUrl не будет null
+            if (galleryItem.getImageUrl() == null) {
+                galleryItem.setImageUrl("");
+            }
+
             GalleryItem savedItem;
 
             if (files != null && files.length > 0) {
-                // Используем новую функциональность с файлами
-                // Use new functionality with files
                 savedItem = galleryService.createGalleryItemWithFiles(galleryItem, files);
                 redirectAttributes.addFlashAttribute("success", "gallery_item_created_with_files");
                 redirectAttributes.addFlashAttribute("message",
                         "Элемент галереи успешно создан! Загружено файлов: " + files.length +
                                 " / Gallery item created successfully! Files uploaded: " + files.length);
             } else {
-                // Используем старую функциональность без файлов
-                // Use old functionality without files
                 savedItem = galleryService.saveGalleryItem(galleryItem);
                 redirectAttributes.addFlashAttribute("success", "gallery_item_created");
                 redirectAttributes.addFlashAttribute("message",
@@ -183,14 +125,6 @@ public class GalleryAdminController {
         }
     }
 
-    /**
-     * Отображает форму редактирования элемента галереи
-     * Displays gallery item editing form
-     *
-     * @param id идентификатор редактируемого элемента / item identifier to edit
-     * @param model модель для передачи данных в представление / model for view data
-     * @return имя шаблона формы редактирования / edit form template name
-     */
     @GetMapping("/edit/{id}")
     public String showEditForm(@PathVariable Long id, Model model) {
         Optional<GalleryItem> galleryItemOpt = galleryService.findGalleryItemWithMediaFiles(id);
@@ -199,6 +133,8 @@ public class GalleryAdminController {
             GalleryItem galleryItem = galleryItemOpt.get();
             model.addAttribute("galleryItem", galleryItem);
             prepareModelForForm(model);
+
+            // ИСПРАВЛЕНИЕ: Добавляем значения по умолчанию
             model.addAttribute("maxFiles", 20);
             model.addAttribute("currentFilesCount", galleryItem.getMediaFilesCount());
 
@@ -208,17 +144,6 @@ public class GalleryAdminController {
         }
     }
 
-    /**
-     * Обрабатывает отправку формы редактирования элемента галереи (старая версия)
-     * Processes gallery item editing form submission (old version)
-     *
-     * @param id идентификатор редактируемого элемента / item identifier to edit
-     * @param galleryItem обновленные данные элемента / updated item data
-     * @param bindingResult результаты валидации / validation results
-     * @param model модель для передачи данных в представление / model for view data
-     * @param redirectAttributes атрибуты для перенаправления / redirect attributes
-     * @return перенаправление на список или возврат к форме / redirect to list or return to form
-     */
     @PostMapping("/edit/{id}")
     public String updateGalleryItem(@PathVariable Long id,
                                     @ModelAttribute GalleryItem galleryItem,
@@ -229,18 +154,6 @@ public class GalleryAdminController {
         return updateGalleryItemWithFiles(id, galleryItem, bindingResult, null, model, redirectAttributes);
     }
 
-    /**
-     * Обрабатывает отправку формы редактирования элемента галереи с файлами (новая версия)
-     * Processes gallery item editing form submission with files (new version)
-     *
-     * @param id идентификатор редактируемого элемента / item identifier to edit
-     * @param galleryItem обновленные данные элемента / updated item data
-     * @param bindingResult результаты валидации / validation results
-     * @param newFiles новые файлы для добавления / new files to add
-     * @param model модель для передачи данных в представление / model for view data
-     * @param redirectAttributes атрибуты для перенаправления / redirect attributes
-     * @return перенаправление на список или возврат к форме / redirect to list or return to form
-     */
     @PostMapping("/edit-with-files/{id}")
     public String updateGalleryItemWithFiles(@PathVariable Long id,
                                              @ModelAttribute GalleryItem galleryItem,
@@ -254,7 +167,6 @@ public class GalleryAdminController {
             model.addAttribute("maxFiles", 20);
 
             // Загружаем текущие файлы для отображения
-            // Load current files for display
             Optional<GalleryItem> currentItemOpt = galleryService.findGalleryItemWithMediaFiles(id);
             currentItemOpt.ifPresent(item -> model.addAttribute("currentFilesCount", item.getMediaFilesCount()));
 
@@ -262,21 +174,22 @@ public class GalleryAdminController {
         }
 
         try {
-            galleryItem.setId(id); // Ensure ID is preserved / Сохраняем ID
+            galleryItem.setId(id); // Ensure ID is preserved
+
+            // Обеспечиваем что imageUrl не будет null
+            if (galleryItem.getImageUrl() == null) {
+                galleryItem.setImageUrl("");
+            }
 
             GalleryItem updatedItem;
             String message;
 
             if (newFiles != null && newFiles.length > 0) {
-                // Используем новую функциональность с файлами
-                // Use new functionality with files
                 updatedItem = galleryService.updateGalleryItemWithFiles(id, galleryItem, newFiles);
                 message = "Элемент галереи успешно обновлен! Добавлено новых файлов: " + newFiles.length +
                         " / Gallery item updated successfully! New files added: " + newFiles.length;
                 redirectAttributes.addFlashAttribute("success", "gallery_item_updated_with_files");
             } else {
-                // Используем старую функциональность без файлов
-                // Use old functionality without files
                 updatedItem = galleryService.saveGalleryItem(galleryItem);
                 message = "Элемент галереи успешно обновлен! / Gallery item updated successfully!";
                 redirectAttributes.addFlashAttribute("success", "gallery_item_updated");
@@ -305,20 +218,6 @@ public class GalleryAdminController {
         }
     }
 
-    /**
-     * НОВЫЕ МЕТОДЫ ДЛЯ УПРАВЛЕНИЯ МЕДИАФАЙЛАМИ
-     * NEW METHODS FOR MEDIA FILES MANAGEMENT
-     */
-
-    /**
-     * Добавляет файлы к существующему элементу галереи
-     * Adds files to existing gallery item
-     *
-     * @param id идентификатор элемента / item identifier
-     * @param files файлы для добавления / files to add
-     * @param redirectAttributes атрибуты для перенаправления / redirect attributes
-     * @return перенаправление на форму редактирования / redirect to edit form
-     */
     @PostMapping("/{id}/add-files")
     public String addFilesToGalleryItem(@PathVariable Long id,
                                         @RequestParam("files") MultipartFile[] files,
@@ -353,15 +252,6 @@ public class GalleryAdminController {
         return "redirect:/admin/gallery/edit/" + id;
     }
 
-    /**
-     * Удаляет медиафайл из элемента галереи
-     * Removes media file from gallery item
-     *
-     * @param id идентификатор элемента / item identifier
-     * @param mediaFileId идентификатор медиафайла / media file identifier
-     * @param redirectAttributes атрибуты для перенаправления / redirect attributes
-     * @return перенаправление на форму редактирования / redirect to edit form
-     */
     @PostMapping("/{id}/remove-file/{mediaFileId}")
     public String removeFileFromGalleryItem(@PathVariable Long id,
                                             @PathVariable Long mediaFileId,
@@ -390,15 +280,6 @@ public class GalleryAdminController {
         return "redirect:/admin/gallery/edit/" + id;
     }
 
-    /**
-     * Устанавливает основной медиафайл для элемента
-     * Sets primary media file for item
-     *
-     * @param id идентификатор элемента / item identifier
-     * @param mediaFileId идентификатор медиафайла / media file identifier
-     * @param redirectAttributes атрибуты для перенаправления / redirect attributes
-     * @return перенаправление на форму редактирования / redirect to edit form
-     */
     @PostMapping("/{id}/set-primary/{mediaFileId}")
     public String setPrimaryMediaFile(@PathVariable Long id,
                                       @PathVariable Long mediaFileId,
@@ -415,11 +296,6 @@ public class GalleryAdminController {
 
         return "redirect:/admin/gallery/edit/" + id;
     }
-
-    /**
-     * ОСНОВНЫЕ ДЕЙСТВИЯ С ЭЛЕМЕНТАМИ - СТАРЫЕ МЕТОДЫ
-     * BASIC ITEM ACTIONS - OLD METHODS
-     */
 
     @PostMapping("/delete/{id}")
     public String deleteGalleryItem(@PathVariable Long id, RedirectAttributes redirectAttributes) {
@@ -468,11 +344,6 @@ public class GalleryAdminController {
         return "redirect:/admin/gallery";
     }
 
-    /**
-     * ПРЕДПРОСМОТР И ДОПОЛНИТЕЛЬНЫЕ СТРАНИЦЫ
-     * PREVIEW AND ADDITIONAL PAGES
-     */
-
     @GetMapping("/preview/{id}")
     public String previewGalleryItem(@PathVariable Long id, Model model) {
         Optional<GalleryItem> galleryItemOpt = galleryService.findGalleryItemWithMediaFiles(id);
@@ -481,8 +352,6 @@ public class GalleryAdminController {
             GalleryItem galleryItem = galleryItemOpt.get();
             model.addAttribute("galleryItem", galleryItem);
 
-            // Разделяем фото и видео для удобного отображения
-            // Separate photos and videos for convenient display
             model.addAttribute("photos", galleryItem.getPhotos());
             model.addAttribute("videos", galleryItem.getVideos());
             model.addAttribute("primaryMedia", galleryItem.getPrimaryMedia());
@@ -493,27 +362,12 @@ public class GalleryAdminController {
         }
     }
 
-    /**
-     * ВСПОМОГАТЕЛЬНЫЕ МЕТОДЫ
-     * HELPER METHODS
-     */
-
-    /**
-     * Подготавливает модель для форм создания/редактирования
-     * Prepares model for create/edit forms
-     *
-     * @param model модель для заполнения / model to populate
-     */
     private void prepareModelForForm(Model model) {
         model.addAttribute("mediaTypes", MediaType.values());
         model.addAttribute("availableYears", List.of(2023, 2024, 2025, 2026));
         model.addAttribute("availableCategories", List.of("education", "volunteering", "projects", "events", "community", "ecology"));
     }
 
-    /**
-     * Обрабатывает исключения файлового хранилища
-     * Handles file storage exceptions
-     */
     @ExceptionHandler(FileStorageService.FileStorageException.class)
     public String handleFileStorageException(FileStorageService.FileStorageException ex,
                                              RedirectAttributes redirectAttributes) {
@@ -522,10 +376,6 @@ public class GalleryAdminController {
         return "redirect:/admin/gallery";
     }
 
-    /**
-     * Обрабатывает исключения ввода-вывода
-     * Handles IO exceptions
-     */
     @ExceptionHandler(IOException.class)
     public String handleIOException(IOException ex, RedirectAttributes redirectAttributes) {
         redirectAttributes.addFlashAttribute("error", "io_error");

@@ -23,9 +23,15 @@ public class GalleryMedia {
     @Column(nullable = false)
     private String fileName;
 
+    @Column(name = "original_file_name")
+    private String originalFileName;
+
     @NotNull(message = "Путь к файлу обязателен / File path is required")
     @Column(nullable = false)
     private String filePath;
+
+    @Column(name = "file_url")
+    private String fileUrl;
 
     @NotNull(message = "Тип файла обязателен / File type is required")
     @Column(nullable = false)
@@ -62,10 +68,12 @@ public class GalleryMedia {
     public GalleryMedia(String fileName, String filePath, String fileType, Long fileSize, MediaType mediaType) {
         this();
         this.fileName = fileName;
+        this.originalFileName = fileName;
         this.filePath = filePath;
         this.fileType = fileType;
         this.fileSize = fileSize;
         this.mediaType = mediaType;
+        this.fileUrl = "/uploads/" + filePath;
     }
 
     public GalleryMedia(String fileName, String filePath, String fileType, Long fileSize,
@@ -92,12 +100,28 @@ public class GalleryMedia {
         this.fileName = fileName;
     }
 
+    public String getOriginalFileName() {
+        return originalFileName != null ? originalFileName : fileName;
+    }
+
+    public void setOriginalFileName(String originalFileName) {
+        this.originalFileName = originalFileName;
+    }
+
     public String getFilePath() {
         return filePath;
     }
 
     public void setFilePath(String filePath) {
         this.filePath = filePath;
+    }
+
+    public String getFileUrl() {
+        return fileUrl != null ? fileUrl : "/uploads/" + this.filePath;
+    }
+
+    public void setFileUrl(String fileUrl) {
+        this.fileUrl = fileUrl;
     }
 
     public String getFileType() {
@@ -177,14 +201,6 @@ public class GalleryMedia {
     }
 
     // Вспомогательные методы / Helper methods
-
-    /**
-     * Возвращает полный URL для доступа к файлу
-     * Returns full URL for file access
-     */
-    public String getFileUrl() {
-        return "/uploads/" + this.filePath;
-    }
 
     /**
      * Возвращает читаемый размер файла

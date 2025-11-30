@@ -40,7 +40,7 @@ public class GalleryItem {
     // СТАРЫЕ ПОЛЯ ДЛЯ ОБРАТНОЙ СОВМЕСТИМОСТИ
     // OLD FIELDS FOR BACKWARD COMPATIBILITY
     @Column(nullable = false) // Оставляем nullable=false для БД, но убираем валидацию
-    private String imageUrl;
+    private String imageUrl = "";
 
     private String thumbnailUrl;
 
