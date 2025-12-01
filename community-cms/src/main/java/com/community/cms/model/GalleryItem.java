@@ -6,6 +6,7 @@ import jakarta.validation.constraints.NotNull;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 /**
@@ -19,7 +20,7 @@ import java.util.stream.Collectors;
  * upload multiple files (photos and videos) for single item
  *
  * @author Vasickin
- * @version 2.0
+ * @version 2.2 (Исправлены ошибки null-безопасности и обратных ссылок)
  * @since 2025
  */
 @Entity
@@ -39,9 +40,10 @@ public class GalleryItem {
 
     // СТАРЫЕ ПОЛЯ ДЛЯ ОБРАТНОЙ СОВМЕСТИМОСТИ
     // OLD FIELDS FOR BACKWARD COMPATIBILITY
-    @Column(nullable = false) // Оставляем nullable=false для БД, но убираем валидацию
+    @Column(name = "image_url", nullable = false)
     private String imageUrl = "";
 
+    @Column(name = "thumbnail_url")
     private String thumbnailUrl;
 
     @NotNull(message = "Год обязателен / Year is required")
@@ -53,20 +55,22 @@ public class GalleryItem {
     private String category; // education, volunteering, projects, events, community, ecology
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
+    @Column(name = "media_type", nullable = false)
     private MediaType mediaType;
 
+    @Column(name = "video_url")
     private String videoUrl;
 
-    @Column(nullable = false)
+    @Column(name = "sort_order", nullable = false)
     private Integer sortOrder = 0;
 
     @Column(nullable = false)
     private Boolean published = true;
 
-    @Column(nullable = false)
+    @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
+    @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
     // НОВАЯ СВЯЗЬ С МНОЖЕСТВЕННЫМИ МЕДИАФАЙЛАМИ
@@ -84,13 +88,17 @@ public class GalleryItem {
     public GalleryItem() {
         this.createdAt = LocalDateTime.now();
         this.mediaFiles = new ArrayList<>();
+        this.imageUrl = "";
+        this.published = true;
+        this.sortOrder = 0;
     }
 
-    public GalleryItem(String title, String description, String imageUrl, Integer year, String category, MediaType mediaType) {
+    public GalleryItem(String title, String description, String imageUrl, Integer year,
+                       String category, MediaType mediaType) {
         this();
         this.title = title;
         this.description = description;
-        this.imageUrl = imageUrl;
+        this.imageUrl = (imageUrl != null && !imageUrl.trim().isEmpty()) ? imageUrl : "";
         this.year = year;
         this.category = category;
         this.mediaType = mediaType;
@@ -107,37 +115,37 @@ public class GalleryItem {
     }
 
     public String getTitle() {
-        return title;
+        return title != null ? title : "";
     }
 
     public void setTitle(String title) {
-        this.title = title;
+        this.title = title != null ? title.trim() : "";
     }
 
     public String getDescription() {
-        return description;
+        return description != null ? description : "";
     }
 
     public void setDescription(String description) {
-        this.description = description;
+        this.description = description != null ? description : "";
     }
 
     // СТАРЫЕ ГЕТТЕРЫ И СЕТТЕРЫ ДЛЯ ОБРАТНОЙ СОВМЕСТИМОСТИ
     // OLD GETTERS AND SETTERS FOR BACKWARD COMPATIBILITY
     public String getImageUrl() {
-        return imageUrl;
+        return imageUrl != null ? imageUrl : "";
     }
 
     public void setImageUrl(String imageUrl) {
-        this.imageUrl = imageUrl;
+        this.imageUrl = (imageUrl != null && !imageUrl.trim().isEmpty()) ? imageUrl : "";
     }
 
     public String getThumbnailUrl() {
-        return thumbnailUrl;
+        return thumbnailUrl != null ? thumbnailUrl : "";
     }
 
     public void setThumbnailUrl(String thumbnailUrl) {
-        this.thumbnailUrl = thumbnailUrl;
+        this.thumbnailUrl = thumbnailUrl != null ? thumbnailUrl : "";
     }
 
     public Integer getYear() {
@@ -149,11 +157,11 @@ public class GalleryItem {
     }
 
     public String getCategory() {
-        return category;
+        return category != null ? category : "";
     }
 
     public void setCategory(String category) {
-        this.category = category;
+        this.category = category != null ? category.trim() : "";
     }
 
     public MediaType getMediaType() {
@@ -165,35 +173,35 @@ public class GalleryItem {
     }
 
     public String getVideoUrl() {
-        return videoUrl;
+        return videoUrl != null ? videoUrl : "";
     }
 
     public void setVideoUrl(String videoUrl) {
-        this.videoUrl = videoUrl;
+        this.videoUrl = videoUrl != null ? videoUrl : "";
     }
 
     public Integer getSortOrder() {
-        return sortOrder;
+        return sortOrder != null ? sortOrder : 0;
     }
 
     public void setSortOrder(Integer sortOrder) {
-        this.sortOrder = sortOrder;
+        this.sortOrder = sortOrder != null ? sortOrder : 0;
     }
 
     public Boolean getPublished() {
-        return published;
+        return published != null ? published : true;
     }
 
     public void setPublished(Boolean published) {
-        this.published = published;
+        this.published = published != null ? published : true;
     }
 
     public LocalDateTime getCreatedAt() {
-        return createdAt;
+        return createdAt != null ? createdAt : LocalDateTime.now();
     }
 
     public void setCreatedAt(LocalDateTime createdAt) {
-        this.createdAt = createdAt;
+        this.createdAt = createdAt != null ? createdAt : LocalDateTime.now();
     }
 
     public LocalDateTime getUpdatedAt() {
@@ -204,161 +212,260 @@ public class GalleryItem {
         this.updatedAt = updatedAt;
     }
 
-    // НОВЫЕ ГЕТТЕРЫ И СЕТТЕРЫ ДЛЯ МЕДИАФАЙЛОВ
-    // NEW GETTERS AND SETTERS FOR MEDIA FILES
+    // НОВЫЕ ГЕТТЕРЫ И СЕТТЕРЫ ДЛЯ МЕДИАФАЙЛОВ (БЕЗОПАСНЫЕ)
+    // NEW GETTERS AND SETTERS FOR MEDIA FILES (SAFE)
+
+    /**
+     * Возвращает список медиафайлов (гарантированно не null)
+     * Returns media files list (guaranteed not null)
+     *
+     * @return список медиафайлов / media files list
+     */
     public List<GalleryMedia> getMediaFiles() {
+        if (mediaFiles == null) {
+            mediaFiles = new ArrayList<>();
+        }
         return mediaFiles;
     }
 
+    /**
+     * Устанавливает список медиафайлов с безопасной обработкой
+     * Sets media files list with safe handling
+     *
+     * @param mediaFiles список медиафайлов / media files list
+     */
     public void setMediaFiles(List<GalleryMedia> mediaFiles) {
-        this.mediaFiles = mediaFiles;
+        if (mediaFiles == null) {
+            this.mediaFiles = new ArrayList<>();
+        } else {
+            this.mediaFiles = new ArrayList<>(mediaFiles);
+            // Устанавливаем обратную ссылку для всех файлов
+            // Set back reference for all files
+            for (GalleryMedia media : this.mediaFiles) {
+                if (media != null) {
+                    media.setGalleryItem(this);
+                }
+            }
+        }
     }
 
     // Методы предварительной обработки / Pre-persist methods
 
     @PrePersist
     protected void onCreate() {
-        createdAt = LocalDateTime.now();
+        if (createdAt == null) {
+            createdAt = LocalDateTime.now();
+        }
         if (mediaFiles == null) {
             mediaFiles = new ArrayList<>();
+        }
+        if (imageUrl == null) {
+            imageUrl = "";
+        }
+        if (published == null) {
+            published = true;
+        }
+        if (sortOrder == null) {
+            sortOrder = 0;
+        }
+        if (title == null) {
+            title = "";
+        }
+        if (category == null) {
+            category = "";
+        }
+        if (mediaType == null) {
+            mediaType = MediaType.PHOTO; // Значение по умолчанию
         }
     }
 
     @PreUpdate
     protected void onUpdate() {
         updatedAt = LocalDateTime.now();
+        // Гарантируем что у всех файлов установлена обратная ссылка
+        // Ensure all files have back reference
+        if (mediaFiles != null) {
+            for (GalleryMedia media : mediaFiles) {
+                if (media != null && media.getGalleryItem() == null) {
+                    media.setGalleryItem(this);
+                }
+            }
+        }
     }
 
-    // ВСПОМОГАТЕЛЬНЫЕ МЕТОДЫ ДЛЯ РАБОТЫ С МЕДИАФАЙЛАМИ
-    // HELPER METHODS FOR WORKING WITH MEDIA FILES
+    // ВСПОМОГАТЕЛЬНЫЕ МЕТОДЫ ДЛЯ РАБОТЫ С МЕДИАФАЙЛАМИ (БЕЗОПАСНЫЕ)
+    // HELPER METHODS FOR WORKING WITH MEDIA FILES (SAFE)
 
     /**
-     * Добавляет медиафайл к элементу галереи
-     * Adds media file to gallery item
+     * Добавляет медиафайл к элементу галереи (безопасная версия)
+     * Adds media file to gallery item (safe version)
      *
      * @param mediaFile медиафайл для добавления / media file to add
      */
     public void addMediaFile(GalleryMedia mediaFile) {
-        if (mediaFiles == null) {
-            mediaFiles = new ArrayList<>();
-        }
+        List<GalleryMedia> files = getMediaFiles(); // Используем безопасный геттер
 
-        mediaFile.setGalleryItem(this);
-        mediaFiles.add(mediaFile);
+        if (mediaFile != null) {
+            mediaFile.setGalleryItem(this);
+            files.add(mediaFile);
 
-        // Если это первый файл, устанавливаем его как основной
-        // If this is first file, set it as primary
-        if (mediaFiles.size() == 1) {
-            mediaFile.setIsPrimary(true);
-        }
-    }
-
-    /**
-     * Добавляет несколько медиафайлов к элементу галереи
-     * Adds multiple media files to gallery item
-     *
-     * @param mediaFiles список медиафайлов / list of media files
-     */
-    public void addMediaFiles(List<GalleryMedia> mediaFiles) {
-        if (this.mediaFiles == null) {
-            this.mediaFiles = new ArrayList<>();
-        }
-
-        for (GalleryMedia mediaFile : mediaFiles) {
-            addMediaFile(mediaFile);
-        }
-    }
-
-    /**
-     * Удаляет медиафайл из элемента галереи
-     * Removes media file from gallery item
-     *
-     * @param mediaFile медиафайл для удаления / media file to remove
-     */
-    public void removeMediaFile(GalleryMedia mediaFile) {
-        if (mediaFiles != null) {
-            boolean wasPrimary = mediaFile.getIsPrimary();
-            mediaFiles.remove(mediaFile);
-            mediaFile.setGalleryItem(null);
-
-            // Если удалили основной файл, устанавливаем новый основной
-            // If primary file was removed, set new primary
-            if (wasPrimary && !mediaFiles.isEmpty()) {
-                mediaFiles.get(0).setIsPrimary(true);
+            // Если это первый файл, устанавливаем его как основной
+            // If this is first file, set it as primary
+            if (files.size() == 1) {
+                mediaFile.setIsPrimary(true);
             }
         }
     }
 
     /**
-     * Удаляет медиафайл по ID
-     * Removes media file by ID
+     * Добавляет несколько медиафайлов к элементу галереи (безопасная версия)
+     * Adds multiple media files to gallery item (safe version)
      *
-     * @param mediaFileId ID медиафайла / media file ID
+     * @param mediaFiles список медиафайлов / list of media files
+     */
+    public void addMediaFiles(List<GalleryMedia> mediaFiles) {
+        if (mediaFiles != null) {
+            for (GalleryMedia mediaFile : mediaFiles) {
+                addMediaFile(mediaFile);
+            }
+        }
+    }
+
+    /**
+     * Удаляет медиафайл из элемента галереи (безопасная версия)
+     * Removes media file from gallery item (safe version)
+     *
+     * @param mediaFile медиафайл для удаления / media file to remove
      * @return true если файл был удален / true if file was removed
      */
-    public boolean removeMediaFileById(Long mediaFileId) {
-        if (mediaFiles != null) {
-            return mediaFiles.removeIf(mediaFile -> {
-                if (mediaFile.getId() != null && mediaFile.getId().equals(mediaFileId)) {
-                    boolean wasPrimary = mediaFile.getIsPrimary();
-                    mediaFile.setGalleryItem(null);
+    public boolean removeMediaFile(GalleryMedia mediaFile) {
+        if (mediaFile != null && getMediaFiles().contains(mediaFile)) {
+            boolean wasPrimary = Boolean.TRUE.equals(mediaFile.getIsPrimary());
+            boolean removed = getMediaFiles().remove(mediaFile);
 
-                    // Если удалили основной файл, устанавливаем новый основной
-                    // If primary file was removed, set new primary
-                    if (wasPrimary && !mediaFiles.isEmpty()) {
-                        mediaFiles.get(0).setIsPrimary(true);
+            if (removed) {
+                mediaFile.setGalleryItem(null);
+
+                // Если удалили основной файл и остались другие файлы
+                // If primary file was removed and there are other files left
+                if (wasPrimary && !getMediaFiles().isEmpty()) {
+                    // Находим первый файл (не удаленный) и делаем его основным
+                    // Find first file (not removed) and make it primary
+                    GalleryMedia newPrimary = getMediaFiles().get(0);
+                    if (newPrimary != null && !newPrimary.equals(mediaFile)) {
+                        newPrimary.setIsPrimary(true);
                     }
-                    return true;
                 }
-                return false;
-            });
+                return true;
+            }
         }
         return false;
     }
 
     /**
-     * Очищает все медиафайлы элемента
-     * Clears all media files of item
+     * Удаляет медиафайл по ID (безопасная версия)
+     * Removes media file by ID (safe version)
+     *
+     * @param mediaFileId ID медиафайла / media file ID
+     * @return true если файл был удален / true if file was removed
      */
-    public void clearMediaFiles() {
-        if (mediaFiles != null) {
-            mediaFiles.forEach(mediaFile -> mediaFile.setGalleryItem(null));
-            mediaFiles.clear();
+    public boolean removeMediaFileById(Long mediaFileId) {
+        if (mediaFileId != null) {
+            List<GalleryMedia> files = getMediaFiles();
+
+            for (GalleryMedia mediaFile : files) {
+                if (mediaFile != null && mediaFile.getId() != null && mediaFile.getId().equals(mediaFileId)) {
+                    boolean wasPrimary = Boolean.TRUE.equals(mediaFile.getIsPrimary());
+                    boolean removed = files.remove(mediaFile);
+
+                    if (removed) {
+                        mediaFile.setGalleryItem(null);
+
+                        // Если удалили основной файл и остались другие файлы
+                        // If primary file was removed and there are other files left
+                        if (wasPrimary && !files.isEmpty()) {
+                            // Ищем подходящий файл для установки как основной
+                            // Find suitable file to set as primary
+                            for (GalleryMedia remainingFile : files) {
+                                if (remainingFile != null && !remainingFile.getId().equals(mediaFileId)) {
+                                    remainingFile.setIsPrimary(true);
+                                    break;
+                                }
+                            }
+                        }
+                        return true;
+                    }
+                }
+            }
         }
+        return false;
     }
 
     /**
-     * Возвращает основной медиафайл элемента
-     * Returns primary media file of item
+     * Очищает все медиафайлы элемента (безопасная версия)
+     * Clears all media files of item (safe version)
+     */
+    public void clearMediaFiles() {
+        List<GalleryMedia> files = getMediaFiles();
+        for (GalleryMedia mediaFile : files) {
+            if (mediaFile != null) {
+                mediaFile.setGalleryItem(null);
+            }
+        }
+        files.clear();
+    }
+
+    /**
+     * Возвращает основной медиафайл элемента (безопасная версия)
+     * Returns primary media file of item (safe version)
      *
      * @return основной медиафайл или null / primary media file or null
      */
     public GalleryMedia getPrimaryMedia() {
-        if (mediaFiles == null || mediaFiles.isEmpty()) {
+        List<GalleryMedia> files = getMediaFiles();
+
+        if (files.isEmpty()) {
             return null;
         }
 
-        return mediaFiles.stream()
-                .filter(GalleryMedia::getIsPrimary)
-                .findFirst()
-                .orElse(mediaFiles.get(0)); // Возвращаем первый если основной не установлен
+        // Сначала ищем явно помеченный как основной
+        // First look for explicitly marked as primary
+        for (GalleryMedia mediaFile : files) {
+            if (mediaFile != null && Boolean.TRUE.equals(mediaFile.getIsPrimary())) {
+                return mediaFile;
+            }
+        }
+
+        // Если нет явно помеченного, возвращаем первый файл
+        // If no explicitly marked, return first file
+        return files.isEmpty() ? null : files.get(0);
     }
 
     /**
-     * Устанавливает основной медиафайл
-     * Sets primary media file
+     * Устанавливает основной медиафайл (безопасная версия)
+     * Sets primary media file (safe version)
      *
      * @param mediaFile медиафайл для установки как основной / media file to set as primary
      * @throws IllegalArgumentException если файл не принадлежит элементу / if file doesn't belong to item
      */
     public void setPrimaryMedia(GalleryMedia mediaFile) {
-        if (mediaFiles == null || !mediaFiles.contains(mediaFile)) {
+        if (mediaFile == null) {
+            throw new IllegalArgumentException("Медиафайл не может быть null / Media file cannot be null");
+        }
+
+        List<GalleryMedia> files = getMediaFiles();
+
+        if (!files.contains(mediaFile)) {
             throw new IllegalArgumentException("Медиафайл не принадлежит этому элементу галереи / Media file doesn't belong to this gallery item");
         }
 
         // Снимаем статус основного со всех файлов
         // Remove primary status from all files
-        mediaFiles.forEach(file -> file.setIsPrimary(false));
+        for (GalleryMedia file : files) {
+            if (file != null) {
+                file.setIsPrimary(false);
+            }
+        }
 
         // Устанавливаем новый основной файл
         // Set new primary file
@@ -366,16 +473,18 @@ public class GalleryItem {
     }
 
     /**
-     * Устанавливает основной медиафайл по ID
-     * Sets primary media file by ID
+     * Устанавливает основной медиафайл по ID (безопасная версия)
+     * Sets primary media file by ID (safe version)
      *
      * @param mediaFileId ID медиафайла / media file ID
      * @return true если операция успешна / true if operation successful
      */
     public boolean setPrimaryMediaById(Long mediaFileId) {
-        if (mediaFiles != null) {
-            for (GalleryMedia mediaFile : mediaFiles) {
-                if (mediaFile.getId() != null && mediaFile.getId().equals(mediaFileId)) {
+        if (mediaFileId != null) {
+            List<GalleryMedia> files = getMediaFiles();
+
+            for (GalleryMedia mediaFile : files) {
+                if (mediaFile != null && mediaFile.getId() != null && mediaFile.getId().equals(mediaFileId)) {
                     setPrimaryMedia(mediaFile);
                     return true;
                 }
@@ -391,7 +500,8 @@ public class GalleryItem {
      * @return true если есть фото / true if has photos
      */
     public boolean hasPhotos() {
-        return mediaFiles != null && mediaFiles.stream()
+        return getMediaFiles().stream()
+                .filter(Objects::nonNull)
                 .anyMatch(mediaFile -> mediaFile.getMediaType() == MediaType.PHOTO);
     }
 
@@ -402,38 +512,33 @@ public class GalleryItem {
      * @return true если есть видео / true if has videos
      */
     public boolean hasVideos() {
-        return mediaFiles != null && mediaFiles.stream()
+        return getMediaFiles().stream()
+                .filter(Objects::nonNull)
                 .anyMatch(mediaFile -> mediaFile.getMediaType() == MediaType.VIDEO);
     }
 
     /**
-     * Возвращает список всех фото элемента
-     * Returns list of all photos of item
+     * Возвращает список всех фото элемента (безопасная версия)
+     * Returns list of all photos of item (safe version)
      *
      * @return список фото / list of photos
      */
     public List<GalleryMedia> getPhotos() {
-        if (mediaFiles == null) {
-            return new ArrayList<>();
-        }
-
-        return mediaFiles.stream()
+        return getMediaFiles().stream()
+                .filter(Objects::nonNull)
                 .filter(mediaFile -> mediaFile.getMediaType() == MediaType.PHOTO)
                 .collect(Collectors.toList());
     }
 
     /**
-     * Возвращает список всех видео элемента
-     * Returns list of all videos of item
+     * Возвращает список всех видео элемента (безопасная версия)
+     * Returns list of all videos of item (safe version)
      *
      * @return список видео / list of videos
      */
     public List<GalleryMedia> getVideos() {
-        if (mediaFiles == null) {
-            return new ArrayList<>();
-        }
-
-        return mediaFiles.stream()
+        return getMediaFiles().stream()
+                .filter(Objects::nonNull)
                 .filter(mediaFile -> mediaFile.getMediaType() == MediaType.VIDEO)
                 .collect(Collectors.toList());
     }
@@ -445,7 +550,7 @@ public class GalleryItem {
      * @return количество медиафайлов / count of media files
      */
     public int getMediaFilesCount() {
-        return mediaFiles != null ? mediaFiles.size() : 0;
+        return getMediaFiles().size();
     }
 
     /**
@@ -475,7 +580,25 @@ public class GalleryItem {
      * @return true если есть медиафайлы / true if has media files
      */
     public boolean hasMediaFiles() {
-        return mediaFiles != null && !mediaFiles.isEmpty();
+        return !getMediaFiles().isEmpty();
+    }
+
+    /**
+     * Получает медиафайл по ID (безопасная версия)
+     * Gets media file by ID (safe version)
+     *
+     * @param mediaFileId ID медиафайла / media file ID
+     * @return медиафайл или null / media file or null
+     */
+    public GalleryMedia getMediaFileById(Long mediaFileId) {
+        if (mediaFileId != null) {
+            return getMediaFiles().stream()
+                    .filter(Objects::nonNull)
+                    .filter(mediaFile -> mediaFile.getId() != null && mediaFile.getId().equals(mediaFileId))
+                    .findFirst()
+                    .orElse(null);
+        }
+        return null;
     }
 
     @Override
@@ -491,20 +614,16 @@ public class GalleryItem {
                 '}';
     }
 
-    /**
-     * Получает медиафайл по ID
-     * Gets media file by ID
-     *
-     * @param mediaFileId ID медиафайла / media file ID
-     * @return медиафайл или null / media file or null
-     */
-    public GalleryMedia getMediaFileById(Long mediaFileId) {
-        if (mediaFiles != null) {
-            return mediaFiles.stream()
-                    .filter(mediaFile -> mediaFile.getId() != null && mediaFile.getId().equals(mediaFileId))
-                    .findFirst()
-                    .orElse(null);
-        }
-        return null;
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        GalleryItem that = (GalleryItem) o;
+        return Objects.equals(id, that.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id);
     }
 }
