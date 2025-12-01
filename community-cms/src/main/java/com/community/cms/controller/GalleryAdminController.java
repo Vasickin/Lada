@@ -182,9 +182,6 @@ public class GalleryAdminController {
             model.addAttribute("galleryItem", galleryItem);
             prepareModelForForm(model);
 
-            model.addAttribute("maxFiles", 20);
-            model.addAttribute("currentFilesCount", galleryItem.getMediaFilesCount());
-
             return "admin/gallery/edit";
         } else {
             return "redirect:/admin/gallery?error=item_not_found";
@@ -214,38 +211,33 @@ public class GalleryAdminController {
 
         if (bindingResult.hasErrors()) {
             prepareModelForForm(model);
-            model.addAttribute("maxFiles", 20);
-
-            // Загружаем текущие файлы для отображения
-            Optional<GalleryItem> currentItemOpt = galleryService.findGalleryItemWithMediaFiles(id);
-            currentItemOpt.ifPresent(item -> model.addAttribute("currentFilesCount", item.getMediaFilesCount()));
-
             return "admin/gallery/edit";
         }
 
         try {
-            // Устанавливаем ID
-            galleryItem.setId(id);
-
             // Загружаем существующий элемент
-            Optional<GalleryItem> existingItemOpt = galleryService.findGalleryItemWithMediaFiles(id);
+            Optional<GalleryItem> existingItemOpt = galleryService.findGalleryItemById(id);
 
             if (existingItemOpt.isEmpty()) {
-                model.addAttribute("error", "item_not_found");
-                prepareModelForForm(model);
-                return "admin/gallery/edit";
+                redirectAttributes.addFlashAttribute("error", "Элемент не найден");
+                return "redirect:/admin/gallery";
             }
 
             GalleryItem existingItem = existingItemOpt.get();
 
-            // КОПИРУЕМ ВАЖНЫЕ ДАННЫЕ ИЗ СУЩЕСТВУЮЩЕГО ЭЛЕМЕНТА
-            // 1. Сохраняем время создания
+            // Сохраняем время создания
             galleryItem.setCreatedAt(existingItem.getCreatedAt());
 
-            // 2. Сохраняем медиафайлы
+            // Сохраняем медиафайлы
             galleryItem.setMediaFiles(existingItem.getMediaFiles());
 
-            // 3. Обеспечиваем что поля не null
+            // Устанавливаем время обновления
+            galleryItem.setUpdatedAt(LocalDateTime.now());
+
+            // Устанавливаем ID
+            galleryItem.setId(id);
+
+            // Обеспечиваем что поля не null
             if (galleryItem.getImageUrl() == null) {
                 galleryItem.setImageUrl(existingItem.getImageUrl() != null ? existingItem.getImageUrl() : "");
             }
@@ -259,25 +251,15 @@ public class GalleryAdminController {
                 galleryItem.setSortOrder(existingItem.getSortOrder() != null ? existingItem.getSortOrder() : 0);
             }
 
-            // 4. Устанавливаем время обновления
-            galleryItem.setUpdatedAt(LocalDateTime.now());
+            // Сохраняем
+            galleryService.saveGalleryItem(galleryItem);
 
-            // Обновляем элемент
-            GalleryItem updatedItem = galleryService.saveGalleryItem(galleryItem);
-
-            redirectAttributes.addFlashAttribute("success", "gallery_item_updated");
+            redirectAttributes.addFlashAttribute("success", "Изменения сохранены");
             redirectAttributes.addFlashAttribute("message", "Элемент галереи успешно обновлен!");
-
             return "redirect:/admin/gallery";
 
         } catch (Exception e) {
-            model.addAttribute("error", "update_failed");
-            model.addAttribute("errorMessage", "Ошибка при обновлении элемента: " + e.getMessage());
-
-            // Загружаем текущие файлы для отображения
-            Optional<GalleryItem> currentItemOpt = galleryService.findGalleryItemWithMediaFiles(id);
-            currentItemOpt.ifPresent(item -> model.addAttribute("currentFilesCount", item.getMediaFilesCount()));
-
+            model.addAttribute("error", "Ошибка при обновлении: " + e.getMessage());
             prepareModelForForm(model);
             return "admin/gallery/edit";
         }
@@ -314,12 +296,9 @@ public class GalleryAdminController {
                 // Сохраняем существующие файлы
                 galleryItem.setMediaFiles(currentItem.getMediaFiles());
                 galleryItem.setCreatedAt(currentItem.getCreatedAt());
-
-                model.addAttribute("currentFilesCount", currentItem.getMediaFilesCount());
             }
 
             prepareModelForForm(model);
-            model.addAttribute("maxFiles", 20);
             return "admin/gallery/edit";
         }
 
@@ -421,21 +400,76 @@ public class GalleryAdminController {
         }
     }
 
-    @PostMapping("/{id}/add-files")
-    public String addFilesToGalleryItem(@PathVariable Long id,
-                                        @RequestParam("files") MultipartFile[] files,
-                                        RedirectAttributes redirectAttributes) {
+    // ========== МЕТОДЫ ДЛЯ УПРАВЛЕНИЯ ФАЙЛАМИ ==========
+
+    @GetMapping("/{id}/manage-files")
+    public String manageFiles(@PathVariable Long id, Model model, RedirectAttributes redirectAttributes) {
         try {
-            Optional<GalleryItem> itemOpt = galleryService.findGalleryItemById(id);
+            Optional<GalleryItem> galleryItemOpt = galleryService.findGalleryItemWithMediaFiles(id);
 
-            if (itemOpt.isPresent()) {
-                galleryService.addMediaFilesToItem(itemOpt.get(), files);
+            if (galleryItemOpt.isPresent()) {
+                GalleryItem galleryItem = galleryItemOpt.get();
+                model.addAttribute("galleryItem", galleryItem);
 
-                redirectAttributes.addFlashAttribute("success", "files_added");
-                redirectAttributes.addFlashAttribute("message",
-                        "Файлы успешно добавлены! Загружено: " + files.length + " файл(ов)");
+                // Рассчитываем максимальное количество файлов
+                int maxFiles = 20;
+                int currentCount = galleryItem.getMediaFilesCount();
+                model.addAttribute("maxFiles", maxFiles);
+                model.addAttribute("availableSlots", maxFiles - currentCount);
+
+                return "admin/gallery/manage-files";
             } else {
                 redirectAttributes.addFlashAttribute("error", "item_not_found");
+                redirectAttributes.addFlashAttribute("errorMessage", "Элемент галереи не найден");
+                return "redirect:/admin/gallery";
+            }
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("error", "load_error");
+            redirectAttributes.addFlashAttribute("errorMessage", "Ошибка при загрузке данных: " + e.getMessage());
+            return "redirect:/admin/gallery";
+        }
+    }
+
+    @PostMapping("/{id}/add-files")
+    public String addFiles(@PathVariable Long id,
+                           @RequestParam("files") MultipartFile[] files,
+                           RedirectAttributes redirectAttributes) {
+
+        if (files == null || files.length == 0) {
+            redirectAttributes.addFlashAttribute("error", "no_files_selected");
+            redirectAttributes.addFlashAttribute("errorMessage", "Пожалуйста, выберите файлы для загрузки");
+            return "redirect:/admin/gallery/" + id + "/manage-files";
+        }
+
+        try {
+            // Проверяем лимит файлов
+            Optional<GalleryItem> itemOpt = galleryService.findGalleryItemById(id);
+            if (itemOpt.isPresent()) {
+                GalleryItem item = itemOpt.get();
+                int currentCount = item.getMediaFilesCount();
+                int maxFiles = 20;
+
+                if (currentCount + files.length > maxFiles) {
+                    redirectAttributes.addFlashAttribute("error", "max_files_exceeded");
+                    redirectAttributes.addFlashAttribute("errorMessage",
+                            "Максимальное количество файлов: " + maxFiles +
+                                    ". У вас уже есть " + currentCount + " файлов." +
+                                    " Можно добавить еще " + (maxFiles - currentCount) + " файлов.");
+                    return "redirect:/admin/gallery/" + id + "/manage-files";
+                }
+            }
+
+            // Добавляем файлы
+            Optional<GalleryItem> itemOpt2 = galleryService.findGalleryItemById(id);
+            if (itemOpt2.isPresent()) {
+                galleryService.addMediaFilesToItem(itemOpt2.get(), files);
+
+                redirectAttributes.addFlashAttribute("success", "files_uploaded");
+                redirectAttributes.addFlashAttribute("message",
+                        "Файлы успешно загружены! Добавлено: " + files.length + " файл(ов)");
+            } else {
+                redirectAttributes.addFlashAttribute("error", "item_not_found");
+                redirectAttributes.addFlashAttribute("errorMessage", "Элемент галереи не найден");
             }
 
         } catch (FileStorageService.FileStorageException e) {
@@ -451,13 +485,13 @@ public class GalleryAdminController {
                     "Ошибка при добавлении файлов: " + e.getMessage());
         }
 
-        return "redirect:/admin/gallery/edit/" + id;
+        return "redirect:/admin/gallery/" + id + "/manage-files";
     }
 
     @PostMapping("/{id}/remove-file/{mediaFileId}")
-    public String removeFileFromGalleryItem(@PathVariable Long id,
-                                            @PathVariable Long mediaFileId,
-                                            RedirectAttributes redirectAttributes) {
+    public String removeFile(@PathVariable Long id,
+                             @PathVariable Long mediaFileId,
+                             RedirectAttributes redirectAttributes) {
         try {
             boolean success = galleryService.removeMediaFileFromItem(id, mediaFileId);
 
@@ -466,6 +500,7 @@ public class GalleryAdminController {
                 redirectAttributes.addFlashAttribute("message", "Файл успешно удален");
             } else {
                 redirectAttributes.addFlashAttribute("error", "file_not_found");
+                redirectAttributes.addFlashAttribute("errorMessage", "Файл не найден");
             }
 
         } catch (IOException e) {
@@ -478,13 +513,13 @@ public class GalleryAdminController {
                     "Ошибка при удалении файла: " + e.getMessage());
         }
 
-        return "redirect:/admin/gallery/edit/" + id;
+        return "redirect:/admin/gallery/" + id + "/manage-files";
     }
 
     @PostMapping("/{id}/set-primary/{mediaFileId}")
-    public String setPrimaryMediaFile(@PathVariable Long id,
-                                      @PathVariable Long mediaFileId,
-                                      RedirectAttributes redirectAttributes) {
+    public String setPrimaryFile(@PathVariable Long id,
+                                 @PathVariable Long mediaFileId,
+                                 RedirectAttributes redirectAttributes) {
         boolean success = galleryService.setPrimaryMediaFile(id, mediaFileId);
 
         if (success) {
@@ -492,9 +527,10 @@ public class GalleryAdminController {
             redirectAttributes.addFlashAttribute("message", "Основной файл успешно установлен");
         } else {
             redirectAttributes.addFlashAttribute("error", "set_primary_failed");
+            redirectAttributes.addFlashAttribute("errorMessage", "Не удалось установить основной файл");
         }
 
-        return "redirect:/admin/gallery/edit/" + id;
+        return "redirect:/admin/gallery/" + id + "/manage-files";
     }
 
     @PostMapping("/delete/{id}")
@@ -575,7 +611,8 @@ public class GalleryAdminController {
     @ExceptionHandler(IOException.class)
     public String handleIOException(IOException ex, RedirectAttributes redirectAttributes) {
         redirectAttributes.addFlashAttribute("error", "io_error");
-        redirectAttributes.addFlashAttribute("errorMessage", "Ошибка ввода-вывода: " + ex.getMessage());
+        redirectAttributes.addFlashAttribute("errorMessage",
+                "Ошибка ввода-вывода: " + ex.getMessage() + " / IO error: " + ex.getMessage());
         return "redirect:/admin/gallery";
     }
 }
