@@ -11,24 +11,10 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
-import java.util.ArrayList;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
-/**
- * Сервис для бизнес-логики работы с галереей и медиафайлами
- * Service for gallery and media files business logic
- *
- * Расширен для поддержки множественных медиафайлов
- * Extended to support multiple media files
- *
- * @author Vasickin
- * @version 2.0
- * @since 2025
- * @see GalleryItemRepository
- * @see GalleryMediaRepository
- * @see FileStorageService
- */
 @Service
 @Transactional
 public class GalleryService {
@@ -37,14 +23,6 @@ public class GalleryService {
     private final GalleryMediaRepository galleryMediaRepository;
     private final FileStorageService fileStorageService;
 
-    /**
-     * Конструктор с внедрением зависимостей
-     * Constructor with dependency injection
-     *
-     * @param galleryItemRepository репозиторий элементов галереи / gallery items repository
-     * @param galleryMediaRepository репозиторий медиафайлов / media files repository
-     * @param fileStorageService сервис файлового хранилища / file storage service
-     */
     @Autowired
     public GalleryService(GalleryItemRepository galleryItemRepository,
                           GalleryMediaRepository galleryMediaRepository,
@@ -54,47 +32,33 @@ public class GalleryService {
         this.fileStorageService = fileStorageService;
     }
 
-    /**
-     * СТАРЫЕ МЕТОДЫ ДЛЯ ОБРАТНОЙ СОВМЕСТИМОСТИ
-     * OLD METHODS FOR BACKWARD COMPATIBILITY
-     */
+    // ========== ОСНОВНЫЕ МЕТОДЫ ==========
 
-    /**
-     * Сохраняет элемент галереи (старая версия)
-     * Saves gallery item (old version)
-     *
-     * @param galleryItem элемент для сохранения / item to save
-     * @return сохраненный элемент / saved item
-     */
     public GalleryItem saveGalleryItem(GalleryItem galleryItem) {
+        // Устанавливаем временные метки
+        if (galleryItem.getCreatedAt() == null) {
+            galleryItem.setCreatedAt(LocalDateTime.now());
+        }
+        galleryItem.setUpdatedAt(LocalDateTime.now());
+
+        // Убеждаемся что обязательные поля не null
+        ensureGalleryItemNotNull(galleryItem);
+
+        // Убеждаемся что у всех медиафайлов установлена обратная ссылка
+        ensureMediaFilesHaveBackReference(galleryItem);
+
         return galleryItemRepository.save(galleryItem);
     }
 
-    /**
-     * Находит элемент по ID (старая версия)
-     * Finds item by ID (old version)
-     *
-     * @param id идентификатор элемента / item identifier
-     * @return Optional с элементом если найден / Optional with item if found
-     */
     @Transactional(readOnly = true)
     public Optional<GalleryItem> findGalleryItemById(Long id) {
         return galleryItemRepository.findById(id);
     }
 
-    /**
-     * Находит элемент по ID с полной загрузкой медиафайлов
-     * Finds item by ID with full media files loading
-     *
-     * @param id идентификатор элемента / item identifier
-     * @return Optional с элементом если найден / Optional with item if found
-     */
     @Transactional(readOnly = true)
     public Optional<GalleryItem> findGalleryItemWithMediaFiles(Long id) {
         Optional<GalleryItem> itemOpt = galleryItemRepository.findById(id);
 
-        // Явно загружаем медиафайлы для избежания LazyInitializationException
-        // Explicitly load media files to avoid LazyInitializationException
         itemOpt.ifPresent(item -> {
             if (item.getMediaFiles() != null) {
                 item.getMediaFiles().size(); // Trigger lazy loading
@@ -104,39 +68,10 @@ public class GalleryService {
         return itemOpt;
     }
 
-    /**
-     * Находит все опубликованные элементы галереи (старая версия)
-     * Finds all published gallery items (old version)
-     *
-     * @return список опубликованных элементов / list of published items
-     */
-    @Transactional(readOnly = true)
-    public List<GalleryItem> findAllPublishedItems() {
-        List<GalleryItem> items = galleryItemRepository.findByPublishedTrueOrderBySortOrderAsc();
-
-        // Загружаем медиафайлы для каждого элемента
-        // Load media files for each item
-        for (GalleryItem item : items) {
-            if (item.getMediaFiles() != null) {
-                item.getMediaFiles().size(); // Trigger lazy loading
-            }
-        }
-
-        return items;
-    }
-
-    /**
-     * Находит все элементы (для админки) (старая версия)
-     * Finds all items (for admin panel) (old version)
-     *
-     * @return список всех элементов / list of all items
-     */
     @Transactional(readOnly = true)
     public List<GalleryItem> findAllItems() {
         List<GalleryItem> items = galleryItemRepository.findAllByOrderBySortOrderAsc();
 
-        // Загружаем медиафайлы для каждого элемента
-        // Load media files for each item
         for (GalleryItem item : items) {
             if (item.getMediaFiles() != null) {
                 item.getMediaFiles().size(); // Trigger lazy loading
@@ -146,30 +81,15 @@ public class GalleryService {
         return items;
     }
 
-    /**
-     * НОВЫЕ МЕТОДЫ ДЛЯ МНОЖЕСТВЕННЫХ МЕДИАФАЙЛОВ
-     * NEW METHODS FOR MULTIPLE MEDIA FILES
-     */
+    // ========== МЕТОДЫ С ФАЙЛАМИ ==========
 
-    /**
-     * Создает элемент галереи с медиафайлами
-     * Creates gallery item with media files
-     *
-     * @param galleryItem элемент галереи / gallery item
-     * @param files массив файлов для загрузки / array of files to upload
-     * @return созданный элемент / created item
-     * @throws IOException ошибка загрузки файлов / file upload error
-     * @throws FileStorageService.FileStorageException ошибка валидации файлов / file validation error
-     */
     public GalleryItem createGalleryItemWithFiles(GalleryItem galleryItem, MultipartFile[] files)
             throws IOException, FileStorageService.FileStorageException {
 
-        // Сохраняем элемент
-        // Save item
-        GalleryItem savedItem = galleryItemRepository.save(galleryItem);
+        // Сначала сохраняем элемент
+        GalleryItem savedItem = saveGalleryItem(galleryItem);
 
-        // Добавляем медиафайлы если есть
-        // Add media files if any
+        // Потом добавляем файлы если есть
         if (files != null && files.length > 0) {
             addMediaFilesToItem(savedItem, files);
         }
@@ -177,30 +97,40 @@ public class GalleryService {
         return savedItem;
     }
 
-    /**
-     * Обновляет элемент галереи с новыми файлами
-     * Updates gallery item with new files
-     *
-     * @param itemId ID элемента / item ID
-     * @param galleryItem обновленные данные / updated data
-     * @param newFiles новые файлы для добавления / new files to add
-     * @return обновленный элемент / updated item
-     * @throws IOException ошибка загрузки файлов / file upload error
-     * @throws FileStorageService.FileStorageException ошибка валидации файлов / file validation error
-     */
     public GalleryItem updateGalleryItemWithFiles(Long itemId, GalleryItem galleryItem, MultipartFile[] newFiles)
             throws IOException, FileStorageService.FileStorageException {
 
-        // Убеждаемся что ID сохранен
-        // Ensure ID is preserved
+        // Устанавливаем ID
         galleryItem.setId(itemId);
 
+        // Загружаем существующий элемент
+        Optional<GalleryItem> existingItemOpt = galleryItemRepository.findById(itemId);
+
+        if (existingItemOpt.isPresent()) {
+            GalleryItem existingItem = existingItemOpt.get();
+
+            // Сохраняем время создания
+            galleryItem.setCreatedAt(existingItem.getCreatedAt());
+
+            // Сохраняем существующие медиафайлы
+            if (existingItem.getMediaFiles() != null && !existingItem.getMediaFiles().isEmpty()) {
+                galleryItem.setMediaFiles(existingItem.getMediaFiles());
+            }
+
+            // Обеспечиваем обратную ссылку для всех медиафайлов
+            ensureMediaFilesHaveBackReference(galleryItem);
+        }
+
+        // Обеспечиваем что поля не null
+        ensureGalleryItemNotNull(galleryItem);
+
+        // Устанавливаем время обновления
+        galleryItem.setUpdatedAt(LocalDateTime.now());
+
         // Сохраняем обновленный элемент
-        // Save updated item
         GalleryItem updatedItem = galleryItemRepository.save(galleryItem);
 
         // Добавляем новые файлы если есть
-        // Add new files if any
         if (newFiles != null && newFiles.length > 0) {
             addMediaFilesToItem(updatedItem, newFiles);
         }
@@ -208,15 +138,6 @@ public class GalleryService {
         return updatedItem;
     }
 
-    /**
-     * Добавляет медиафайлы к элементу галереи
-     * Adds media files to gallery item
-     *
-     * @param galleryItem элемент галереи / gallery item
-     * @param files массив файлов / array of files
-     * @throws IOException ошибка загрузки файлов / file upload error
-     * @throws FileStorageService.FileStorageException ошибка валидации файлов / file validation error
-     */
     public void addMediaFilesToItem(GalleryItem galleryItem, MultipartFile[] files)
             throws IOException, FileStorageService.FileStorageException {
 
@@ -240,26 +161,21 @@ public class GalleryService {
             );
 
             // Устанавливаем порядок сортировки
-            // Set sort order
             mediaFile.setSortOrder(galleryItem.getMediaFilesCount() + i);
 
+            // Устанавливаем как основной, если это первый файл
+            if (galleryItem.getMediaFilesCount() == 0 && i == 0) {
+                mediaFile.setIsPrimary(true);
+            }
+
+            // Добавляем в коллекцию
             galleryItem.addMediaFile(mediaFile);
         }
 
         // Сохраняем элемент с новыми файлами
-        // Save item with new files
         galleryItemRepository.save(galleryItem);
     }
 
-    /**
-     * Удаляет медиафайл из элемента галереи
-     * Removes media file from gallery item
-     *
-     * @param itemId ID элемента / item ID
-     * @param mediaFileId ID медиафайла / media file ID
-     * @return true если удаление успешно / true if deletion successful
-     * @throws IOException ошибка удаления файла / file deletion error
-     */
     public boolean removeMediaFileFromItem(Long itemId, Long mediaFileId) throws IOException {
         Optional<GalleryItem> itemOpt = galleryItemRepository.findById(itemId);
 
@@ -269,14 +185,17 @@ public class GalleryService {
 
             if (mediaFile != null) {
                 // Удаляем файл из файловой системы
-                // Delete file from file system
-                fileStorageService.deleteFile(mediaFile.getFilePath());
+                try {
+                    fileStorageService.deleteFile(mediaFile.getFilePath());
+                } catch (Exception e) {
+                    System.err.println("Failed to delete file from storage: " + e.getMessage());
+                }
 
                 // Удаляем из элемента
-                // Remove from item
                 boolean removed = item.removeMediaFileById(mediaFileId);
 
                 if (removed) {
+                    // Сохраняем изменения
                     galleryItemRepository.save(item);
                     return true;
                 }
@@ -286,14 +205,6 @@ public class GalleryService {
         return false;
     }
 
-    /**
-     * Устанавливает основной медиафайл для элемента
-     * Sets primary media file for item
-     *
-     * @param itemId ID элемента / item ID
-     * @param mediaFileId ID медиафайла / media file ID
-     * @return true если операция успешна / true if operation successful
-     */
     public boolean setPrimaryMediaFile(Long itemId, Long mediaFileId) {
         Optional<GalleryItem> itemOpt = galleryItemRepository.findById(itemId);
 
@@ -310,10 +221,20 @@ public class GalleryService {
         return false;
     }
 
-    /**
-     * ОСТАЛЬНЫЕ СТАРЫЕ МЕТОДЫ ДЛЯ ОБРАТНОЙ СОВМЕСТИМОСТИ
-     * OTHER OLD METHODS FOR BACKWARD COMPATIBILITY
-     */
+    // ========== ВСПОМОГАТЕЛЬНЫЕ МЕТОДЫ ==========
+
+    @Transactional(readOnly = true)
+    public List<GalleryItem> findAllPublishedItems() {
+        List<GalleryItem> items = galleryItemRepository.findByPublishedTrueOrderBySortOrderAsc();
+
+        for (GalleryItem item : items) {
+            if (item.getMediaFiles() != null) {
+                item.getMediaFiles().size();
+            }
+        }
+
+        return items;
+    }
 
     @Transactional(readOnly = true)
     public List<GalleryItem> findPublishedItemsByYear(Integer year) {
@@ -380,13 +301,6 @@ public class GalleryService {
         return items;
     }
 
-    /**
-     * Удаляет элемент галереи по ID со всеми медиафайлами
-     * Deletes gallery item by ID with all media files
-     *
-     * @param id идентификатор элемента для удаления / item identifier to delete
-     * @throws IOException ошибка удаления файлов / file deletion error
-     */
     public void deleteGalleryItem(Long id) throws IOException {
         Optional<GalleryItem> itemOpt = galleryItemRepository.findById(id);
 
@@ -394,15 +308,17 @@ public class GalleryService {
             GalleryItem item = itemOpt.get();
 
             // Удаляем все файлы из файловой системы
-            // Delete all files from file system
             if (item.getMediaFiles() != null) {
                 for (GalleryMedia mediaFile : item.getMediaFiles()) {
-                    fileStorageService.deleteFile(mediaFile.getFilePath());
+                    try {
+                        fileStorageService.deleteFile(mediaFile.getFilePath());
+                    } catch (Exception e) {
+                        System.err.println("Failed to delete file " + mediaFile.getFilePath() + ": " + e.getMessage());
+                    }
                 }
             }
 
-            // Удаляем элемент из базы данных (каскадно удалит медиафайлы)
-            // Delete item from database (will cascade delete media files)
+            // Удаляем элемент из базы данных
             galleryItemRepository.deleteById(id);
         }
     }
@@ -412,6 +328,7 @@ public class GalleryService {
         if (itemOpt.isPresent()) {
             GalleryItem item = itemOpt.get();
             item.setPublished(true);
+            item.setUpdatedAt(LocalDateTime.now());
             galleryItemRepository.save(item);
             return true;
         }
@@ -423,26 +340,19 @@ public class GalleryService {
         if (itemOpt.isPresent()) {
             GalleryItem item = itemOpt.get();
             item.setPublished(false);
+            item.setUpdatedAt(LocalDateTime.now());
             galleryItemRepository.save(item);
             return true;
         }
         return false;
     }
 
-    /**
-     * Получает статистику по галерее
-     * Gets gallery statistics
-     *
-     * @return объект со статистикой / object with statistics
-     */
     @Transactional(readOnly = true)
     public GalleryStatistics getGalleryStatistics() {
         long totalItems = galleryItemRepository.count();
         long publishedCount = galleryItemRepository.countByPublished(true);
         long draftCount = galleryItemRepository.countByPublished(false);
 
-        // Статистика по медиафайлам
-        // Media files statistics
         long totalMediaFiles = galleryMediaRepository.count();
         long totalPhotos = galleryMediaRepository.countByMediaType(MediaType.PHOTO);
         long totalVideos = galleryMediaRepository.countByMediaType(MediaType.VIDEO);
@@ -473,10 +383,38 @@ public class GalleryService {
         return items;
     }
 
-    /**
-     * Внутренний класс для статистики галереи
-     * Inner class for gallery statistics
-     */
+    // ========== ПРИВАТНЫЕ ВСПОМОГАТЕЛЬНЫЕ МЕТОДЫ ==========
+
+    private void ensureGalleryItemNotNull(GalleryItem galleryItem) {
+        if (galleryItem.getImageUrl() == null) {
+            galleryItem.setImageUrl("");
+        }
+        if (galleryItem.getVideoUrl() == null) {
+            galleryItem.setVideoUrl("");
+        }
+        if (galleryItem.getPublished() == null) {
+            galleryItem.setPublished(true);
+        }
+        if (galleryItem.getSortOrder() == null) {
+            galleryItem.setSortOrder(0);
+        }
+        if (galleryItem.getCreatedAt() == null) {
+            galleryItem.setCreatedAt(LocalDateTime.now());
+        }
+    }
+
+    private void ensureMediaFilesHaveBackReference(GalleryItem galleryItem) {
+        if (galleryItem.getMediaFiles() != null) {
+            for (GalleryMedia media : galleryItem.getMediaFiles()) {
+                if (media != null && media.getGalleryItem() == null) {
+                    media.setGalleryItem(galleryItem);
+                }
+            }
+        }
+    }
+
+    // ========== КЛАСС СТАТИСТИКИ ==========
+
     public static class GalleryStatistics {
         private final long totalItems;
         private final long publishedCount;
