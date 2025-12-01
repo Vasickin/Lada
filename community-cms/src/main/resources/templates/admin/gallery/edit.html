@@ -1,0 +1,694 @@
+<!DOCTYPE html>
+<html lang="ru" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Редактировать элемент галереи - Админка Community CMS</title>
+
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.1/font/bootstrap-icons.css">
+    <style>
+        .form-header {
+            background: linear-gradient(135deg, #ff9a9e 0%, #fad0c4 100%);
+            color: white;
+            border-radius: 16px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+        }
+
+        .form-card {
+            border: none;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        }
+
+        .preview-image {
+            max-width: 200px;
+            max-height: 150px;
+            border-radius: 8px;
+            border: 2px dashed #dee2e6;
+            padding: 10px;
+        }
+
+        .media-type-option {
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            padding: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .media-type-option:hover {
+            border-color: #007bff;
+            background-color: #f8f9fa;
+        }
+
+        .media-type-option.selected {
+            border-color: #007bff;
+            background-color: #e7f3ff;
+        }
+
+        .category-badge {
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .category-badge:hover {
+            transform: scale(1.05);
+        }
+
+        .category-badge.selected {
+            box-shadow: 0 0 0 2px #007bff;
+        }
+
+        /* Стили для информации о файлах */
+        .files-info-card {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            border: 2px solid #e9ecef;
+        }
+
+        .file-count-badge {
+            font-size: 0.9rem;
+            padding: 0.5rem 1rem;
+        }
+
+        .manage-files-btn {
+            background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+            color: white;
+            border: none;
+            transition: all 0.3s ease;
+        }
+
+        .manage-files-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(106, 17, 203, 0.4);
+        }
+
+        /* Стили для отображения файлов */
+        .file-preview-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .file-preview-item {
+            position: relative;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            padding: 8px;
+            background: white;
+            transition: all 0.3s ease;
+        }
+
+        .file-preview-item:hover {
+            border-color: #007bff;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .file-preview-item.primary {
+            border-color: #28a745;
+            background: #f8fff9;
+        }
+
+        .file-preview-img {
+            width: 100%;
+            height: 80px;
+            object-fit: cover;
+            border-radius: 4px;
+            margin-bottom: 5px;
+        }
+
+        .file-preview-icon {
+            width: 100%;
+            height: 80px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #f8f9fa;
+            border-radius: 4px;
+            margin-bottom: 5px;
+        }
+
+        .file-preview-name {
+            font-size: 0.7rem;
+            text-align: center;
+            word-break: break-all;
+            color: #6c757d;
+        }
+
+        .primary-badge {
+            position: absolute;
+            top: -8px;
+            left: -8px;
+            background: #28a745;
+            color: white;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.6rem;
+            font-weight: bold;
+        }
+
+        /* Стили для валидации */
+        .field-error {
+            border-color: #dc3545 !important;
+        }
+
+        .error-message {
+            color: #dc3545;
+            font-size: 0.875rem;
+            margin-top: 0.25rem;
+        }
+    </style>
+</head>
+<body>
+<div class="container-fluid py-4">
+
+    <!-- ЗАГОЛОВОК С НАВИГАЦИЕЙ -->
+    <div class="form-header">
+        <nav aria-label="breadcrumb" class="mb-3">
+            <ol class="breadcrumb mb-0">
+                <li class="breadcrumb-item"><a th:href="@{/admin}" class="text-white-50 text-decoration-none">📊 Дашборд</a></li>
+                <li class="breadcrumb-item"><a th:href="@{/admin/gallery}" class="text-white-50 text-decoration-none">🖼️ Галерея</a></li>
+                <li class="breadcrumb-item active text-white">✏️ Редактировать элемент</li>
+            </ol>
+        </nav>
+
+        <div class="d-flex justify-content-between align-items-center">
+            <div>
+                <h1 class="h2 mb-2">✏️ Редактировать элемент</h1>
+                <p class="mb-0 opacity-90" th:text="'Редактирование: ' + ${galleryItem.title}">Редактирование элемента галереи</p>
+            </div>
+            <div>
+                <a th:href="@{/admin/gallery}" class="btn btn-light me-2">
+                    <i class="bi bi-arrow-left"></i> Назад
+                </a>
+                <a th:href="@{/admin/gallery/preview/{id}(id=${galleryItem.id})}" class="btn btn-outline-light" target="_blank">
+                    <i class="bi bi-eye"></i> Предпросмотр
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- УВЕДОМЛЕНИЯ -->
+    <div th:if="${error}" class="row mb-4">
+        <div class="col-12">
+            <div class="alert alert-danger alert-dismissible fade show rounded-3" role="alert">
+                <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                <span th:text="${errorMessage} ?: error">Ошибка при обновлении элемента</span>
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        </div>
+    </div>
+
+    <div th:if="${success}" class="row mb-4">
+        <div class="col-12">
+            <div class="alert alert-success alert-dismissible fade show rounded-3" role="alert">
+                <i class="bi bi-check-circle-fill me-2"></i>
+                <span th:text="${message} ?: success">Изменения успешно сохранены</span>
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ИНФОРМАЦИЯ О ФАЙЛАХ С ПРЕВЬЮ -->
+    <div class="row mb-4" th:if="${galleryItem.hasMediaFiles()}">
+        <div class="col-12">
+            <div class="files-info-card">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <div>
+                        <h5 class="mb-1">
+                            <i class="bi bi-files me-2"></i>Прикрепленные файлы
+                        </h5>
+                        <p class="text-muted mb-0">
+                            Всего файлов: <strong th:text="${galleryItem.mediaFilesCount}">0</strong>
+                            <span th:if="${galleryItem.hasPhotos()}">
+                                | Фото: <strong th:text="${galleryItem.photosCount}">0</strong>
+                            </span>
+                            <span th:if="${galleryItem.hasVideos()}">
+                                | Видео: <strong th:text="${galleryItem.videosCount}">0</strong>
+                            </span>
+                        </p>
+                    </div>
+                    <div>
+                        <a th:href="@{/admin/gallery/{id}/manage-files(id=${galleryItem.id})}"
+                           class="btn manage-files-btn">
+                            <i class="bi bi-gear-wide-connected me-2"></i>Управление файлами
+                        </a>
+                    </div>
+                </div>
+
+                <!-- ПРЕВЬЮ ФАЙЛОВ -->
+                <div class="mt-3">
+                    <h6 class="mb-2">
+                        <i class="bi bi-images me-1"></i>Превью файлов:
+                    </h6>
+                    <div class="file-preview-grid">
+                        <div th:each="mediaFile : ${galleryItem.mediaFiles}"
+                             class="file-preview-item"
+                             th:classappend="${mediaFile.isPrimary} ? 'primary' : ''">
+
+                            <!-- Бейдж основного файла -->
+                            <span th:if="${mediaFile.isPrimary}" class="primary-badge">
+                                ★
+                            </span>
+
+                            <!-- Изображение -->
+                            <img th:if="${mediaFile.isImage()}"
+                                 th:src="${mediaFile.fileUrl}"
+                                 th:alt="${mediaFile.fileName}"
+                                 class="file-preview-img">
+
+                            <!-- Видео иконка -->
+                            <div th:unless="${mediaFile.isImage()}" class="file-preview-icon">
+                                <i class="bi bi-play-circle fs-3 text-secondary"></i>
+                            </div>
+
+                            <!-- Название файла -->
+                            <div class="file-preview-name" th:text="${mediaFile.fileName}"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ИНФОРМАЦИЯ ОБ ЭЛЕМЕНТЕ -->
+                <div class="mt-3 pt-3 border-top">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <small class="text-muted">
+                                <i class="bi bi-calendar me-1"></i>
+                                Создан: <span th:text="${#temporals.format(galleryItem.createdAt, 'dd.MM.yyyy HH:mm')}">дата</span>
+                            </small>
+                        </div>
+                        <div class="col-md-6">
+                            <small class="text-muted" th:if="${galleryItem.updatedAt}">
+                                <i class="bi bi-clock-history me-1"></i>
+                                Обновлен: <span th:text="${#temporals.format(galleryItem.updatedAt, 'dd.MM.yyyy HH:mm')}">дата</span>
+                            </small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- СООБЩЕНИЕ ЕСЛИ НЕТ ФАЙЛОВ -->
+    <div class="row mb-4" th:unless="${galleryItem.hasMediaFiles()}">
+        <div class="col-12">
+            <div class="alert alert-info">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <i class="bi bi-info-circle me-2"></i>
+                        У этого элемента пока нет файлов.
+                        <a th:href="@{/admin/gallery/{id}/manage-files(id=${galleryItem.id})}" class="alert-link">
+                            Добавить файлы
+                        </a>
+                    </div>
+                    <div>
+                        <a th:href="@{/admin/gallery/{id}/manage-files(id=${galleryItem.id})}"
+                           class="btn btn-outline-primary btn-sm">
+                            <i class="bi bi-plus-circle"></i> Добавить файлы
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ФОРМА РЕДАКТИРОВАНИЯ -->
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <div class="card form-card">
+                <div class="card-body p-4">
+                    <!-- ОСНОВНАЯ ФОРМА РЕДАКТИРОВАНИЯ -->
+                    <form th:action="@{/admin/gallery/edit/{id}(id=${galleryItem.id})}"
+                          method="post" th:object="${galleryItem}" id="galleryForm">
+
+                        <!-- ВАЖНО: CSRF токен -->
+                        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+
+                        <!-- Скрытые поля для сохранения данных -->
+                        <input type="hidden" th:field="*{id}" />
+                        <input type="hidden" th:field="*{createdAt}" />
+
+                        <!-- ОСНОВНАЯ ИНФОРМАЦИЯ -->
+                        <div class="row mb-4">
+                            <div class="col-12">
+                                <h5 class="mb-3 text-primary">
+                                    <i class="bi bi-info-circle me-2"></i>Основная информация
+                                </h5>
+                            </div>
+
+                            <!-- НАЗВАНИЕ -->
+                            <div class="col-md-6 mb-3">
+                                <label for="title" class="form-label">Название элемента *</label>
+                                <input type="text"
+                                       class="form-control"
+                                       id="title"
+                                       th:field="*{title}"
+                                       placeholder="Введите название элемента"
+                                       required>
+                                <div class="form-text">Краткое и понятное название для отображения</div>
+                            </div>
+
+                            <!-- ГОД -->
+                            <div class="col-md-6 mb-3">
+                                <label for="year" class="form-label">Год *</label>
+                                <select class="form-select" id="year" th:field="*{year}" required>
+                                    <option value="">Выберите год</option>
+                                    <option th:each="year : ${availableYears}"
+                                            th:value="${year}"
+                                            th:text="${year}"
+                                            th:selected="${galleryItem.year == year}">
+                                    </option>
+                                </select>
+                            </div>
+
+                            <!-- ОПИСАНИЕ -->
+                            <div class="col-12 mb-3">
+                                <label for="description" class="form-label">Описание</label>
+                                <textarea class="form-control"
+                                          id="description"
+                                          th:field="*{description}"
+                                          rows="3"
+                                          placeholder="Описание элемента (необязательно)"></textarea>
+                                <div class="form-text">Дополнительная информация об элементе</div>
+                            </div>
+                        </div>
+
+                        <!-- ТИП МЕДИА -->
+                        <div class="row mb-4">
+                            <div class="col-12">
+                                <h5 class="mb-3 text-primary">
+                                    <i class="bi bi-collection-play me-2"></i>Тип медиа
+                                </h5>
+                            </div>
+
+                            <div class="col-12">
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <div class="media-type-option" onclick="selectMediaType('PHOTO')" th:classappend="${galleryItem.mediaType.name() == 'PHOTO'} ? 'selected' : ''">
+                                            <div class="form-check">
+                                                <input class="form-check-input"
+                                                       type="radio"
+                                                       name="mediaType"
+                                                       id="mediaTypePhoto"
+                                                       th:field="*{mediaType}"
+                                                       value="PHOTO"
+                                                       required>
+                                                <label class="form-check-label fw-bold" for="mediaTypePhoto">
+                                                    <i class="bi bi-image text-primary me-2"></i>Фотография
+                                                </label>
+                                            </div>
+                                            <p class="text-muted mb-0 mt-2 small">
+                                                Изображения в формате JPG, PNG, GIF или WebP
+                                            </p>
+                                        </div>
+                                    </div>
+
+                                    <div class="col-md-6 mb-3">
+                                        <div class="media-type-option" onclick="selectMediaType('VIDEO')" th:classappend="${galleryItem.mediaType.name() == 'VIDEO'} ? 'selected' : ''">
+                                            <div class="form-check">
+                                                <input class="form-check-input"
+                                                       type="radio"
+                                                       name="mediaType"
+                                                       id="mediaTypeVideo"
+                                                       th:field="*{mediaType}"
+                                                       value="VIDEO">
+                                                <label class="form-check-label fw-bold" for="mediaTypeVideo">
+                                                    <i class="bi bi-play-circle text-warning me-2"></i>Видео
+                                                </label>
+                                            </div>
+                                            <p class="text-muted mb-0 mt-2 small">
+                                                Видео в формате MP4, WebM или OGG
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- URL ДЛЯ ОБРАТНОЙ СОВМЕСТИМОСТИ -->
+                        <div class="row mb-4">
+                            <div class="col-12">
+                                <h5 class="mb-3 text-primary">
+                                    <i class="bi bi-link me-2"></i>URL для обратной совместимости
+                                </h5>
+                            </div>
+
+                            <!-- URL ИЗОБРАЖЕНИЯ -->
+                            <div class="col-12 mb-3" id="imageUrlSection">
+                                <label for="imageUrl" class="form-label">URL изображения</label>
+                                <input type="url"
+                                       class="form-control"
+                                       id="imageUrl"
+                                       th:field="*{imageUrl}"
+                                       placeholder="https://example.com/image.jpg">
+                                <div class="form-text">
+                                    Ссылка на изображение (необязательно). Для видео - это будет preview изображение
+                                </div>
+
+                                <!-- ПРЕВЬЮ ИЗОБРАЖЕНИЯ -->
+                                <div class="mt-3" id="imagePreview" style="display: none;">
+                                    <label class="form-label">Предпросмотр нового изображения:</label>
+                                    <div>
+                                        <img id="previewImage" class="preview-image" src="" alt="Preview">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- URL ВИДЕО (только для видео) -->
+                            <div class="col-12 mb-3" id="videoUrlSection" th:style="${galleryItem.mediaType.name() == 'VIDEO'} ? 'display: block;' : 'display: none;'">
+                                <label for="videoUrl" class="form-label">URL видео</label>
+                                <input type="url"
+                                       class="form-control"
+                                       id="videoUrl"
+                                       th:field="*{videoUrl}"
+                                       placeholder="https://youtube.com/watch?v=...">
+                                <div class="form-text">Ссылка на видео (YouTube, Vimeo и т.д.) - необязательно</div>
+                            </div>
+                        </div>
+
+                        <!-- КАТЕГОРИЯ И ДОПОЛНИТЕЛЬНЫЕ НАСТРОЙКИ -->
+                        <div class="row mb-4">
+                            <div class="col-12">
+                                <h5 class="mb-3 text-primary">
+                                    <i class="bi bi-tags me-2"></i>Категория и настройки
+                                </h5>
+                            </div>
+
+                            <!-- КАТЕГОРИЯ -->
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Категория *</label>
+                                <div>
+                                    <div th:each="category : ${availableCategories}" class="d-inline-block me-2 mb-2">
+                                        <input type="radio"
+                                               class="btn-check"
+                                               th:field="*{category}"
+                                               th:id="${'category_' + category}"
+                                               th:value="${category}"
+                                               required>
+                                        <label class="btn btn-outline-primary category-badge"
+                                               th:attr="for='category_' + ${category}"
+                                               th:classappend="${galleryItem.category == category} ? 'selected' : ''"
+                                               th:text="${category}">
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- ПОРЯДОК СОРТИРОВКИ -->
+                            <div class="col-md-6 mb-3">
+                                <label for="sortOrder" class="form-label">Порядок сортировки</label>
+                                <input type="number"
+                                       class="form-control"
+                                       id="sortOrder"
+                                       th:field="*{sortOrder}"
+                                       min="0"
+                                       max="1000">
+                                <div class="form-text">Чем меньше число, тем выше в списке</div>
+                            </div>
+
+                            <!-- СТАТУС ПУБЛИКАЦИИ -->
+                            <div class="col-12 mb-3">
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input"
+                                           type="checkbox"
+                                           id="published"
+                                           th:field="*{published}">
+                                    <label class="form-check-label fw-bold" for="published">
+                                        Опубликовано
+                                    </label>
+                                </div>
+                                <div class="form-text">
+                                    Если включено, элемент будет виден на сайте. Если выключено - будет черновиком.
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- КНОПКИ ДЕЙСТВИЙ -->
+                        <div class="row">
+                            <div class="col-12">
+                                <div class="d-flex flex-wrap gap-2 justify-content-between">
+                                    <div>
+                                        <a th:href="@{/admin/gallery}" class="btn btn-outline-secondary">
+                                            <i class="bi bi-x-circle"></i> Отмена
+                                        </a>
+                                        <a th:href="@{/admin/gallery/preview/{id}(id=${galleryItem.id})}"
+                                           class="btn btn-outline-info"
+                                           target="_blank">
+                                            <i class="bi bi-eye"></i> Предпросмотр
+                                        </a>
+                                    </div>
+                                    <div>
+                                        <a th:href="@{/admin/gallery/{id}/manage-files(id=${galleryItem.id})}"
+                                           class="btn btn-outline-warning me-2">
+                                            <i class="bi bi-files"></i> Управление файлами
+                                        </a>
+                                        <button type="submit" class="btn btn-success" id="submitBtn">
+                                            <i class="bi bi-check-circle"></i> Сохранить изменения
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Bootstrap JavaScript -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        console.log('Инициализация формы редактирования');
+
+        // Инициализация выбора типа медиа
+        updateMediaTypeSections();
+
+        // Обработка изменения типа медиа
+        const mediaTypeRadios = document.querySelectorAll('input[name="mediaType"]');
+        mediaTypeRadios.forEach(radio => {
+            radio.addEventListener('change', updateMediaTypeSections);
+        });
+
+        // Автоматический выбор категории при клике на бейдж
+        const categoryBadges = document.querySelectorAll('.category-badge');
+        categoryBadges.forEach(badge => {
+            badge.addEventListener('click', function() {
+                categoryBadges.forEach(b => b.classList.remove('selected'));
+                this.classList.add('selected');
+            });
+        });
+
+        // Обработка изменения URL изображения для превью
+        const imageUrlInput = document.getElementById('imageUrl');
+        if (imageUrlInput) {
+            imageUrlInput.addEventListener('input', updateImagePreview);
+        }
+
+        // Показываем превью если URL уже заполнен
+        updateImagePreview();
+    });
+
+    function selectMediaType(type) {
+        const radio = document.querySelector(`input[value="${type}"]`);
+        if (radio) {
+            radio.checked = true;
+            updateMediaTypeSections();
+        }
+    }
+
+    function updateMediaTypeSections() {
+        const selectedType = document.querySelector('input[name="mediaType"]:checked');
+        const videoUrlSection = document.getElementById('videoUrlSection');
+        const imageUrlInput = document.getElementById('imageUrl');
+
+        if (selectedType && selectedType.value === 'VIDEO') {
+            videoUrlSection.style.display = 'block';
+            imageUrlInput.placeholder = "URL preview изображения для видео (необязательно)";
+        } else {
+            videoUrlSection.style.display = 'none';
+            imageUrlInput.placeholder = "https://example.com/image.jpg (необязательно)";
+        }
+    }
+
+    function updateImagePreview() {
+        const imageUrl = document.getElementById('imageUrl').value;
+        const preview = document.getElementById('imagePreview');
+        const previewImage = document.getElementById('previewImage');
+
+        if (imageUrl && isValidUrl(imageUrl)) {
+            previewImage.src = imageUrl;
+            preview.style.display = 'block';
+        } else {
+            preview.style.display = 'none';
+        }
+    }
+
+    function isValidUrl(string) {
+        try {
+            new URL(string);
+            return true;
+        } catch (_) {
+            return false;
+        }
+    }
+
+    // Простая валидация перед отправкой
+    document.getElementById('galleryForm').addEventListener('submit', function(e) {
+        console.log('Проверка формы перед отправкой');
+
+        const title = document.getElementById('title').value.trim();
+        const year = document.getElementById('year').value;
+        const category = document.querySelector('input[name="category"]:checked');
+        const mediaType = document.querySelector('input[name="mediaType"]:checked');
+
+        let errors = [];
+
+        if (!title) {
+            errors.push('Поле "Название элемента" обязательно для заполнения');
+        }
+
+        if (!year) {
+            errors.push('Поле "Год" обязательно для заполнения');
+        }
+
+        if (!category) {
+            errors.push('Пожалуйста, выберите категорию');
+        }
+
+        if (!mediaType) {
+            errors.push('Пожалуйста, выберите тип медиа');
+        }
+
+        if (errors.length > 0) {
+            e.preventDefault();
+            alert('Пожалуйста, исправьте следующие ошибки:\n\n' + errors.join('\n'));
+            return false;
+        }
+
+        // Обеспечиваем что imageUrl не пустой
+        const imageUrlInput = document.getElementById('imageUrl');
+        if (imageUrlInput && !imageUrlInput.value.trim()) {
+            imageUrlInput.value = "";
+        }
+
+        console.log('Форма валидна, отправка...');
+        return true;
+    });
+</script>
+</body>
+</html>

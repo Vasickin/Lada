@@ -1,9 +1,9 @@
-
 package com.community.cms.model;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
+import jakarta.validation.constraints.Pattern;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
@@ -13,8 +13,17 @@ import java.time.LocalDateTime;
  * Сущность, представляющая страницу в системе управления контентом.
  * Содержит основную информацию о веб-странице: заголовок, содержимое, URL-адрес и метаданные.
  *
+ * <p>Расширена поддержкой типов страниц для основных разделов сайта:
+ * <ul>
+ *   <li>О нас (ABOUT)</li>
+ *   <li>Наши проекты (PROJECTS)</li>
+ *   <li>Галерея (GALLERY)</li>
+ *   <li>Меценатам (PATRONS)</li>
+ *   <li>Контакты (CONTACT)</li>
+ * </ul>
+ *
  * @author Vasickin
- * @version 1.0
+ * @version 1.1
  * @since 2025
  */
 @Entity
@@ -51,6 +60,8 @@ public class Page {
      * Используется для построения SEO-дружественных URL.
      * Пример: "o-nas" вместо "page?id=1"
      */
+    @NotBlank(message = "Slug не может быть пустым")
+    @Pattern(regexp = "^[a-z0-9-]+$", message = "Slug может содержать только латинские буквы в нижнем регистре, цифры и дефисы")
     @Column(unique = true, nullable = false)
     private String slug;
 
@@ -77,6 +88,31 @@ public class Page {
     private Boolean published = false;
 
     /**
+     * Тип страницы для определения её назначения и поведения.
+     * CUSTOM - произвольные страницы (по умолчанию)
+     * ABOUT, PROJECTS, etc. - основные страницы сайта
+     */
+    @Enumerated(EnumType.STRING)
+    @Column(name = "page_type", nullable = false)
+    private PageType pageType = PageType.CUSTOM;
+
+    /**
+     * Meta-описание для SEO оптимизации.
+     * Используется в meta description теге для поисковых систем.
+     * Необязательное поле, может быть пустым.
+     */
+    @Column(name = "meta_description", columnDefinition = "TEXT")
+    private String metaDescription;
+
+    /**
+     * Путь к главному изображению страницы.
+     * Используется для превью в соцсетях, Open Graph разметки и SEO.
+     * Необязательное поле, может быть пустым.
+     */
+    @Column(name = "featured_image")
+    private String featuredImage;
+
+    /**
      * Конструктор по умолчанию, требуемый JPA.
      */
     public Page() {}
@@ -93,6 +129,23 @@ public class Page {
         this.content = content;
         this.slug = slug;
         this.published = false;
+        this.pageType = PageType.CUSTOM;
+    }
+
+    /**
+     * Конструктор для создания страницы определенного типа.
+     *
+     * @param title заголовок страницы
+     * @param content содержимое страницы
+     * @param slug уникальный идентификатор для URL
+     * @param pageType тип страницы
+     */
+    public Page(String title, String content, String slug, PageType pageType) {
+        this.title = title;
+        this.content = content;
+        this.slug = slug;
+        this.published = false;
+        this.pageType = pageType;
     }
 
     // Геттеры и сеттеры с Javadoc
@@ -221,5 +274,95 @@ public class Page {
      */
     public void setPublished(Boolean published) {
         this.published = published;
+    }
+
+    /**
+     * Возвращает тип страницы.
+     *
+     * @return тип страницы
+     */
+    public PageType getPageType() {
+        return pageType;
+    }
+
+    /**
+     * Устанавливает тип страницы.
+     *
+     * @param pageType тип страницы
+     */
+    public void setPageType(PageType pageType) {
+        this.pageType = pageType;
+    }
+
+    /**
+     * Возвращает meta-описание страницы.
+     *
+     * @return meta-описание
+     */
+    public String getMetaDescription() {
+        return metaDescription;
+    }
+
+    /**
+     * Устанавливает meta-описание страницы.
+     *
+     * @param metaDescription meta-описание
+     */
+    public void setMetaDescription(String metaDescription) {
+        this.metaDescription = metaDescription;
+    }
+
+    /**
+     * Возвращает путь к главному изображению страницы.
+     *
+     * @return путь к изображению
+     */
+    public String getFeaturedImage() {
+        return featuredImage;
+    }
+
+    /**
+     * Устанавливает путь к главному изображению страницы.
+     *
+     * @param featuredImage путь к изображению
+     */
+    public void setFeaturedImage(String featuredImage) {
+        this.featuredImage = featuredImage;
+    }
+
+    /**
+     * Проверяет, является ли страница одним из основных разделов сайта.
+     *
+     * @return true если страница является основным разделом, иначе false
+     */
+    public boolean isSitePage() {
+        return this.pageType != PageType.CUSTOM;
+    }
+
+    /**
+     * Проверяет, является ли страница опубликованной и основным разделом.
+     *
+     * @return true если страница опубликована и является основным разделом
+     */
+    public boolean isPublishedSitePage() {
+        return this.published && this.isSitePage();
+    }
+
+    /**
+     * Возвращает строковое представление страницы.
+     * Не включает содержимое для безопасности и читаемости.
+     *
+     * @return строковое представление страницы
+     */
+    @Override
+    public String toString() {
+        return "Page{" +
+                "id=" + id +
+                ", title='" + title + '\'' +
+                ", slug='" + slug + '\'' +
+                ", pageType=" + pageType +
+                ", published=" + published +
+                ", createdAt=" + createdAt +
+                '}';
     }
 }

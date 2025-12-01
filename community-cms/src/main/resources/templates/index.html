@@ -1,373 +1,225 @@
 <!DOCTYPE html>
-<html lang="ru" xmlns:th="http://www.thymeleaf.org">
-<head>
-    <!--
-        META AND BASIC SETUP / МЕТАДАННЫЕ И БАЗОВАЯ НАСТРОЙКА
-        Character set, viewport, and page title / Кодировка, вьюпорт и заголовок страницы
-    -->
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Общественная организация Лада - Главная</title>
+<!--
+    MAIN PAGE - MINIMALISTIC LANDING / ГЛАВНАЯ СТРАНИЦА - МИНИМАЛИСТИЧНЫЙ ЛЕНДИНГ
+    Clean, focused design with three main sections linking to content pages
+    Чистый, сфокусированный дизайн с тремя основными секциями, ссылающимися на контентные страницы
 
-    <!--
-        BOOTSTRAP 5 CSS / БИБЛИОТЕКА BOOTSTRAP 5
-        Using CDN for consistent styling / Используем CDN для единообразного стиля
-    -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    Key Features / Ключевые особенности:
+    ✅ Minimal text, maximum impact / Минимум текста, максимум воздействия
+    ✅ Three thematic sections with icons / Три тематические секции с иконками
+    ✅ Clear calls-to-action / Четкие призывы к действию
+    ✅ Consistent with fragment system / Согласованность с системой фрагментов
+    ✅ Mobile-responsive / Адаптивность для мобильных
+-->
+<html lang="ru" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 
-    <!--
-        GOOGLE FONTS / ШРИФТЫ GOOGLE
-        Using Roboto font for better typography / Используем шрифт Roboto для лучшей типографики
-    -->
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
-
-    <style>
-        /* Custom styles for home page / Пользовательские стили для главной страницы */
-        :root {
-            --primary-color: #2c5aa0;
-            --secondary-color: #f8f9fa;
-            --accent-color: #ff6b35;
-        }
-
-        body {
-            font-family: 'Roboto', sans-serif;
-            line-height: 1.6;
-        }
-
-        .hero-section {
-            background: linear-gradient(135deg, var(--primary-color) 0%, #1e3a8a 100%);
-            color: white;
-            padding: 100px 0;
-        }
-
-        .section-title {
-            color: var(--primary-color);
-            font-weight: 700;
-            margin-bottom: 2rem;
-            position: relative;
-        }
-
-        .section-title:after {
-            content: '';
-            position: absolute;
-            bottom: -10px;
-            left: 0;
-            width: 60px;
-            height: 3px;
-            background: var(--accent-color);
-        }
-
-        .card-hover {
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-        }
-
-        .card-hover:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
-        }
-
-        .btn-primary-custom {
-            background: var(--primary-color);
-            border: none;
-            padding: 12px 30px;
-            font-weight: 500;
-        }
-
-        .btn-primary-custom:hover {
-            background: #1e3a8a;
-            transform: translateY(-2px);
-        }
-
-        .navbar-custom {
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(10px);
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-        }
-    </style>
+<!-- HEADER FRAGMENT / ФРАГМЕНТ ХЕДЕРА -->
+<head th:replace="fragments/header :: html-head('Главная')">
+    <!-- Content replaced by header fragment / Контент заменяется фрагментом хедера -->
 </head>
+
 <body>
+<!-- NAVIGATION FRAGMENT / ФРАГМЕНТ НАВИГАЦИИ -->
+<div th:replace="fragments/navigation :: main-navigation"></div>
+
+<!-- BANNER FRAGMENT / ФРАГМЕНТ БАННЕРА -->
+<div th:replace="fragments/banner :: header-banner('Общественная организация Лада - развитие гражданского общества')"></div>
+
 <!--
-    NAVIGATION HEADER / НАВИГАЦИОННЫЙ ЗАГОЛОВОК
-    Main navigation menu with logo and links /
-    Главное навигационное меню с логотипом и ссылками
+    MAIN CONTENT - THREE PILLAR SECTIONS / ОСНОВНОЙ КОНТЕНТ - ТРИ ОСНОВНЫЕ СЕКЦИИ
+    Clean, focused layout with minimal text and clear navigation
+    Чистый, сфокусированный макет с минимальным текстом и четкой навигацией
 -->
-<nav class="navbar navbar-expand-lg navbar-light navbar-custom fixed-top">
-    <div class="container">
-        <!--
-            BRAND LOGO / ЛОГОТИП БРЕНДА
-            Organization name and logo / Название организации и логотип
-        -->
-        <a class="navbar-brand fw-bold" href="/" th:href="@{/}">
-            <span style="color: var(--primary-color);">🏛️ Лада</span>
-        </a>
-
-        <!--
-            MOBILE MENU BUTTON / КНОПКА МОБИЛЬНОГО МЕНЮ
-            Toggle button for mobile navigation / Кнопка переключения для мобильной навигации
-        -->
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-            <span class="navbar-toggler-icon"></span>
-        </button>
-
-        <!--
-            NAVIGATION MENU / НАВИГАЦИОННОЕ МЕНЮ
-            Main navigation links / Основные навигационные ссылки
-        -->
-        <div class="collapse navbar-collapse" id="navbarNav">
-            <ul class="navbar-nav ms-auto">
-                <li class="nav-item">
-                    <a class="nav-link active fw-medium" href="/" th:href="@{/}">Главная</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link fw-medium" href="/about" th:href="@{/about}">О нас</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link fw-medium" href="/contact" th:href="@{/contact}">Контакты</a>
-                </li>
-                <!--
-                    ADMIN LINK / ССЫЛКА НА АДМИНКУ
-                    Only show if user is authenticated / Показывать только если пользователь аутентифицирован
-                -->
-                <li class="nav-item" sec:authorize="isAuthenticated()">
-                    <a class="nav-link fw-medium text-success" href="/admin" th:href="@{/admin}">⚙️ Управление</a>
-                </li>
-                <!--
-                    LOGIN/LOGOUT BUTTONS / КНОПКИ ВХОДА/ВЫХОДА
-                    Conditional display based on authentication status /
-                    Условное отображение на основе статуса аутентификации
-                -->
-                <li class="nav-item" sec:authorize="isAnonymous()">
-                    <a class="btn btn-outline-primary btn-sm ms-2" href="/login" th:href="@{/login}">Войти</a>
-                </li>
-                <li class="nav-item" sec:authorize="isAuthenticated()">
-                    <form th:action="@{/logout}" method="post" class="d-inline ms-2">
-                        <button type="submit" class="btn btn-outline-danger btn-sm">Выйти</button>
-                    </form>
-                </li>
-            </ul>
+<main class="container my-5 py-4">
+    <!--
+        HERO INTRODUCTION SECTION / ГЕРОЙ-ВВЕДЕНИЕ
+        Brief welcome message and organization overview
+        Краткое приветственное сообщение и обзор организации
+    -->
+    <div class="row mb-5">
+        <div class="col-12 text-center">
+            <h1 class="section-title">Общественная организация "Лада"</h1>
+            <p class="lead text-muted">
+                Создаем позитивные изменения через развитие гражданского общества,
+                образование и социальные инициативы
+            </p>
         </div>
     </div>
-</nav>
-
-<!--
-    HERO SECTION / ГЕРОЙ СЕКЦИЯ
-    Main banner with organization introduction /
-    Главный баннер с представлением организации
--->
-<section class="hero-section">
-    <div class="container">
-        <div class="row align-items-center">
-            <div class="col-lg-6">
-                <h1 class="display-4 fw-bold mb-4">Общественная организация "Лада"</h1>
-                <p class="lead mb-4">
-                    Мы объединяем людей для создания позитивных изменений в нашем сообществе.
-                    Наша миссия - развитие гражданского общества и поддержка социальных инициатив.
-                </p>
-                <div class="d-flex gap-3 flex-wrap">
-                    <a href="/about" th:href="@{/about}" class="btn btn-light btn-lg fw-medium">
-                        📖 Узнать больше
-                    </a>
-                    <a href="/contact" th:href="@{/contact}" class="btn btn-outline-light btn-lg fw-medium">
-                        📞 Связаться с нами
-                    </a>
-                </div>
-            </div>
-            <div class="col-lg-6 text-center">
-                <!--
-                    HERO IMAGE PLACEHOLDER / ЗАГОЛУШКА ДЛЯ ГЕРОЙ ИЗОБРАЖЕНИЯ
-                    Can be replaced with actual organization photo /
-                    Можно заменить на реальное фото организации
-                -->
-                <div class="bg-light rounded-3 p-5 d-inline-block">
-                    <span class="display-1">🏛️</span>
-                    <p class="text-muted mt-3">Ваше изображение здесь</p>
-                </div>
-            </div>
-        </div>
-    </div>
-</section>
-
-<!--
-    MAIN CONTENT SECTION / СЕКЦИЯ ОСНОВНОГО КОНТЕНТА
-    Organization information and published pages /
-    Информация об организации и опубликованные страницы
--->
-<div class="container my-5">
 
     <!--
-        ABOUT ORGANIZATION SECTION / СЕКЦИЯ ОБ ОРГАНИЗАЦИИ
-        Brief information about the organization / Краткая информация об организации
+        THREE PILLAR SECTIONS / ТРИ ОСНОВНЫЕ СЕКЦИИ
+        Clean cards with thematic icons linking to main content pages
+        Чистые карточки с тематическими иконками, ссылающиеся на основные контентные страницы
     -->
-    <section class="row mb-5">
-        <div class="col-12">
-            <h2 class="section-title">О нашей деятельности</h2>
-        </div>
-        <div class="col-md-4 mb-4">
-            <div class="card border-0 card-hover h-100">
-                <div class="card-body text-center p-4">
-                    <div class="display-4 text-primary mb-3">🎯</div>
-                    <h5 class="card-title fw-bold">Наша миссия</h5>
-                    <p class="card-text">
-                        Содействие развитию гражданского общества и поддержка социально значимых инициатив.
-                    </p>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-4 mb-4">
-            <div class="card border-0 card-hover h-100">
-                <div class="card-body text-center p-4">
-                    <div class="display-4 text-primary mb-3">🤝</div>
-                    <h5 class="card-title fw-bold">Направления работы</h5>
-                    <p class="card-text">
-                        Образовательные программы, волонтерство, социальные проекты и общественные мероприятия.
-                    </p>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-4 mb-4">
-            <div class="card border-0 card-hover h-100">
-                <div class="card-body text-center p-4">
-                    <div class="display-4 text-primary mb-3">🌱</div>
-                    <h5 class="card-title fw-bold">Наши ценности</h5>
-                    <p class="card-text">
-                        Открытость, сотрудничество, инновации и устойчивое развитие сообщества.
-                    </p>
-                </div>
-            </div>
-        </div>
-    </section>
+    <div class="row">
+        <!--
+            ABOUT US PILLAR / СЕКЦИЯ "О НАС"
+            Organization identity, mission, and values
+            Идентичность организации, миссия и ценности
+        -->
+        <div class="col-lg-4 mb-4">
+            <div class="card border-0 card-hover h-100 text-center">
+                <div class="card-body p-5">
+                    <!-- Thematic icon with animation / Тематическая иконка с анимацией -->
+                    <div class="icon-textured mb-4">🏛️</div>
 
-    <!--
-        PUBLISHED PAGES SECTION / СЕКЦИЯ ОПУБЛИКОВАННЫХ СТРАНИЦ
-        Display published pages from CMS / Отображение опубликованных страниц из CMS
-    -->
-    <section class="mb-5" th:if="${not #lists.isEmpty(publishedPages)}">
-        <div class="row">
-            <div class="col-12">
-                <h2 class="section-title">Публикации и материалы</h2>
-            </div>
+                    <!-- Section title / Заголовок секции -->
+                    <h3 class="card-title fw-bold mb-3">О нашей организации</h3>
 
-            <!--
-                PUBLISHED PAGES LIST / СПИСОК ОПУБЛИКОВАННЫХ СТРАНИЦ
-                Iterate through published pages / Перебор опубликованных страниц
-            -->
-            <div th:each="page : ${publishedPages}" class="col-lg-6 mb-4">
-                <div class="card card-hover h-100">
-                    <div class="card-body">
-                        <h5 class="card-title fw-bold" th:text="${page.title}">Заголовок страницы</h5>
-                        <p class="card-text text-muted" th:text="${#strings.abbreviate(page.content, 150)}">
-                            Краткое описание содержимого страницы...
-                        </p>
-                        <div class="d-flex justify-content-between align-items-center">
-                            <small class="text-muted" th:text="${#temporals.format(page.createdAt, 'dd.MM.yyyy')}">
-                                01.01.2025
-                            </small>
-                            <a th:href="@{/pages/{slug}(slug=${page.slug})}"
-                               class="btn btn-outline-primary btn-sm">
-                                Читать далее →
-                            </a>
-                        </div>
+                    <!-- Minimal description / Минимальное описание -->
+                    <p class="card-text text-muted mb-4">
+                        Узнайте о нашей миссии, ценностях, команде и истории.
+                        Познакомьтесь с принципами, которые направляют нашу работу.
+                    </p>
+
+                    <!-- Key highlights / Ключевые моменты -->
+                    <div class="key-points mb-4">
+                        <span class="badge bg-primary bg-opacity-10 text-primary me-2 mb-2">Миссия</span>
+                        <span class="badge bg-primary bg-opacity-10 text-primary me-2 mb-2">Ценности</span>
+                        <span class="badge bg-primary bg-opacity-10 text-primary me-2 mb-2">Команда</span>
+                        <span class="badge bg-primary bg-opacity-10 text-primary mb-2">История</span>
                     </div>
-                </div>
-            </div>
-        </div>
-    </section>
 
-    <!--
-        EMPTY STATE FOR PAGES / СОСТОЯНИЕ ПУСТОГО СПИСКА СТРАНИЦ
-        Show when no published pages exist / Показывать когда нет опубликованных страниц
-    -->
-    <section class="mb-5" th:if="${#lists.isEmpty(publishedPages)}">
-        <div class="row">
-            <div class="col-12 text-center py-5">
-                <div class="display-1 text-muted mb-3">📝</div>
-                <h3 class="text-muted">Публикаций пока нет</h3>
-                <p class="text-muted">
-                    Здесь будут отображаться новости и материалы организации
-                </p>
-                <div sec:authorize="isAuthenticated()">
-                    <a href="/admin" th:href="@{/admin}" class="btn btn-primary-custom">
-                        Создать первую публикацию
+                    <!-- Call-to-action button / Кнопка призыва к действию -->
+                    <a href="/about" class="btn btn-primary-custom btn-lg" th:href="@{/about}">
+                        Узнать больше
                     </a>
                 </div>
             </div>
         </div>
-    </section>
-</div>
 
-<!--
-    FOOTER SECTION / СЕКЦИЯ ФУТЕРА
-    Organization footer with contact information and copyright /
-    Футер организации с контактной информацией и авторскими правами
--->
-<footer class="bg-dark text-light py-5 mt-5">
-    <div class="container">
-        <div class="row">
-            <div class="col-lg-4 mb-4">
-                <h5 class="fw-bold mb-3">🏛️ Общественная организация "Лада"</h5>
-                <p class="text-light-emphasis">
-                    Создаем позитивные изменения вместе с сообществом.
-                    Развиваем гражданское общество через образование и сотрудничество.
-                </p>
-            </div>
-            <div class="col-lg-4 mb-4">
-                <h6 class="fw-bold mb-3">Быстрые ссылки</h6>
-                <ul class="list-unstyled">
-                    <li><a href="/" th:href="@{/}" class="text-light-emphasis text-decoration-none">Главная</a></li>
-                    <li><a href="/about" th:href="@{/about}" class="text-light-emphasis text-decoration-none">О нас</a></li>
-                    <li><a href="/contact" th:href="@{/contact}" class="text-light-emphasis text-decoration-none">Контакты</a></li>
-                </ul>
-            </div>
-            <div class="col-lg-4 mb-4">
-                <h6 class="fw-bold mb-3">Контакты</h6>
-                <ul class="list-unstyled text-light-emphasis">
-                    <li>📧 Email: info@lada-org.ru</li>
-                    <li>📞 Телефон: +7 (XXX) XXX-XX-XX</li>
-                    <li>📍 Адрес: [Ваш адрес]</li>
-                </ul>
+        <!--
+            PROJECTS PILLAR / СЕКЦИЯ "ПРОЕКТЫ"
+            Current initiatives and social impact
+            Текущие инициативы и социальное воздействие
+        -->
+        <div class="col-lg-4 mb-4">
+            <div class="card border-0 card-hover h-100 text-center">
+                <div class="card-body p-5">
+                    <!-- Thematic icon with animation / Тематическая иконка с анимацией -->
+                    <div class="icon-textured mb-4">🚀</div>
+
+                    <!-- Section title / Заголовок секции -->
+                    <h3 class="card-title fw-bold mb-3">Наши проекты</h3>
+
+                    <!-- Minimal description / Минимальное описание -->
+                    <p class="card-text text-muted mb-4">
+                        Исследуйте наши активные и завершенные инициативы.
+                        Узнайте, как мы создаем реальные изменения в сообществе.
+                    </p>
+
+                    <!-- Key highlights / Ключевые моменты -->
+                    <div class="key-points mb-4">
+                        <span class="badge bg-success bg-opacity-10 text-success me-2 mb-2">Активные</span>
+                        <span class="badge bg-warning bg-opacity-10 text-warning me-2 mb-2">Завершенные</span>
+                        <span class="badge bg-info bg-opacity-10 text-info me-2 mb-2">Образование</span>
+                        <span class="badge bg-info bg-opacity-10 text-info mb-2">Сообщество</span>
+                    </div>
+
+                    <!-- Call-to-action button / Кнопка призыва к действию -->
+                    <a href="/projects" class="btn btn-primary-custom btn-lg" th:href="@{/projects}">
+                        Смотреть проекты
+                    </a>
+                </div>
             </div>
         </div>
-        <hr class="my-4 bg-secondary">
-        <div class="row">
-            <div class="col-12 text-center">
-                <p class="mb-0 text-light-emphasis">
-                    &copy; 2025 Общественная организация "Лада". Все права защищены.
-                </p>
+
+        <!--
+            PATRONS PILLAR / СЕКЦИЯ "МЕЦЕНАТАМ"
+            Partnership and support opportunities
+            Возможности партнерства и поддержки
+        -->
+        <div class="col-lg-4 mb-4">
+            <div class="card border-0 card-hover h-100 text-center">
+                <div class="card-body p-5">
+                    <!-- Thematic icon with animation / Тематическая иконка с анимацией -->
+                    <div class="icon-textured mb-4">💎</div>
+
+                    <!-- Section title / Заголовок секции -->
+                    <h3 class="card-title fw-bold mb-3">Меценатам и партнерам</h3>
+
+                    <!-- Minimal description / Минимальное описание -->
+                    <p class="card-text text-muted mb-4">
+                        Узнайте о возможностях поддержки нашей работы.
+                        Станьте частью позитивных изменений в обществе.
+                    </p>
+
+                    <!-- Key highlights / Ключевые моменты -->
+                    <div class="key-points mb-4">
+                        <span class="badge bg-warning bg-opacity-10 text-warning me-2 mb-2">Партнерство</span>
+                        <span class="badge bg-warning bg-opacity-10 text-warning me-2 mb-2">Волонтерство</span>
+                        <span class="badge bg-warning bg-opacity-10 text-warning me-2 mb-2">Поддержка</span>
+                        <span class="badge bg-warning bg-opacity-10 text-warning mb-2">Сотрудничество</span>
+                    </div>
+
+                    <!-- Call-to-action button / Кнопка призыва к действию -->
+                    <a href="/patrons" class="btn btn-primary-custom btn-lg" th:href="@{/patrons}">
+                        Поддержать
+                    </a>
+                </div>
             </div>
         </div>
     </div>
-</footer>
+
+    <!--
+        QUICK NAVIGATION SECTION / СЕКЦИЯ БЫСТРОЙ НАВИГАЦИИ
+        Additional navigation options for other important pages
+        Дополнительные навигационные опции для других важных страниц
+    -->
+    <div class="row mt-5">
+        <div class="col-12 text-center">
+            <div class="quick-nav p-4 rounded-3">
+                <h4 class="fw-bold mb-3">Быстрый доступ</h4>
+                <p class="text-muted mb-4">Другие важные разделы нашего сайта</p>
+
+                <div class="d-flex justify-content-center flex-wrap gap-3">
+                    <a href="/gallery" class="btn btn-outline-primary" th:href="@{/gallery}">
+                        🖼️ Галерея
+                    </a>
+                    <a href="/contact" class="btn btn-outline-primary" th:href="@{/contact}">
+                        📞 Контакты
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+
+<!-- FOOTER FRAGMENT / ФРАГМЕНТ ФУТЕРА -->
+<div th:replace="fragments/footer :: main-footer"></div>
+
+<!-- SCRIPTS FRAGMENT / ФРАГМЕНТ СКРИПТОВ -->
+<div th:replace="fragments/scripts :: main-scripts"></div>
 
 <!--
-    BOOTSTRAP JAVASCRIPT / JAVASCRIPT БИБЛИОТЕКИ BOOTSTRAP
-    Required for interactive components / Необходим для интерактивных компонентов
+    ADDITIONAL STYLES FOR MINIMALISTIC DESIGN / ДОПОЛНИТЕЛЬНЫЕ СТИЛИ ДЛЯ МИНИМАЛИСТИЧНОГО ДИЗАЙНА
+    Enhanced styling for the clean layout
+    Улучшенные стили для чистого макета
 -->
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+<style>
+    /* Quick navigation section styling / Стили для секции быстрой навигации */
+    .quick-nav {
+        background: linear-gradient(135deg, var(--surface), var(--background));
+        border: 1px solid var(--border-light);
+    }
 
-<!--
-    CUSTOM JAVASCRIPT / ПОЛЬЗОВАТЕЛЬСКИЙ JAVASCRIPT
-    Smooth scrolling and other interactions /
-    Плавная прокрутка и другие взаимодействия
--->
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        // Smooth scrolling for navigation links / Плавная прокрутка для навигационных ссылок
-        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-            anchor.addEventListener('click', function (e) {
-                e.preventDefault();
-                const target = document.querySelector(this.getAttribute('href'));
-                if (target) {
-                    target.scrollIntoView({
-                        behavior: 'smooth',
-                        block: 'start'
-                    });
-                }
-            });
-        });
+    /* Enhanced card padding for better spacing / Улучшенные отступы карточек для лучшего расстояния */
+    .card-body.p-5 {
+        padding: 3rem !important;
+    }
 
-        // Add padding to body for fixed navbar / Добавляем отступ для фиксированной навигации
-        document.body.style.paddingTop = document.querySelector('.navbar').offsetHeight + 'px';
-    });
-</script>
+    /* Key points badges styling / Стили для бейджей ключевых моментов */
+    .key-points .badge {
+        font-size: 0.75rem;
+        padding: 0.5rem 0.75rem;
+    }
+
+    /* Section title adjustments / Настройки заголовков секций */
+    .section-title {
+        font-size: var(--text-4xl);
+        margin-bottom: var(--space-lg);
+    }
+</style>
 </body>
 </html>
