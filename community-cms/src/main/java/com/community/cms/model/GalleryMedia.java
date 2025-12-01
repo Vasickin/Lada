@@ -117,7 +117,14 @@ public class GalleryMedia {
     }
 
     public String getFileUrl() {
-        return fileUrl != null ? fileUrl : "/uploads/" + this.filePath;
+        if (filePath != null && !filePath.isEmpty()) {
+            String name = filePath;
+            if (name.contains("/")) {
+                name = name.substring(name.lastIndexOf("/") + 1);
+            }
+            return "/" + name;
+        }
+        return "/images/default.jpg";
     }
 
     public void setFileUrl(String fileUrl) {
