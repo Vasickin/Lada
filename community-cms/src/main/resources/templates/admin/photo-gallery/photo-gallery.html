@@ -1,10 +1,478 @@
 <!DOCTYPE html>
-<html lang="en">
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{fragments/layout}">
 <head>
-    <meta charset="UTF-8">
-    <title>Title</title>
+    <title th:text="#{photo.gallery.title}">Фото-галерея - Админ панель</title>
+
+    <!-- Стили для фото-галереи -->
+    <link rel="stylesheet" th:href="@{/css/photo-gallery.css}">
+
+    <!-- JavaScript для динамики -->
+    <script th:src="@{/js/photo-gallery.js}" defer></script>
 </head>
 <body>
+<div layout:fragment="content">
+    <!-- ========== ЗАГОЛОВОК И СТАТИСТИКА ========== -->
+    <div class="container-fluid">
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h1 class="h2 mb-0">
+                        <i class="bi bi-images me-2"></i>
+                        <span th:text="#{photo.gallery.title}">Фото-галерея</span>
+                    </h1>
 
+                    <a th:href="@{/admin/photo-gallery/create}" class="btn btn-primary">
+                        <i class="bi bi-plus-circle me-1"></i>
+                        <span th:text="#{photo.gallery.create.new}">Создать новый элемент</span>
+                    </a>
+                </div>
+
+                <p class="text-muted mb-0">
+                    <span th:text="#{photo.gallery.management}">Управление фото-элементами для публикации на сайте</span>
+                </p>
+            </div>
+        </div>
+
+        <!-- ========== СТАТИСТИКА ========== -->
+        <div class="row mb-4" th:if="${statistics}">
+            <div class="col-12">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-body">
+                        <div class="row g-3">
+                            <!-- Всего элементов -->
+                            <div class="col-md-3 col-6">
+                                <div class="text-center">
+                                    <div class="display-6 fw-bold text-primary"
+                                         th:text="${statistics.totalItems}">0</div>
+                                    <div class="text-muted small" th:text="#{photo.gallery.statistics.total}">
+                                        Всего элементов
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Опубликовано -->
+                            <div class="col-md-3 col-6">
+                                <div class="text-center">
+                                    <div class="display-6 fw-bold text-success"
+                                         th:text="${statistics.publishedCount}">0</div>
+                                    <div class="text-muted small" th:text="#{photo.gallery.statistics.published}">
+                                        Опубликовано
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Черновики -->
+                            <div class="col-md-3 col-6">
+                                <div class="text-center">
+                                    <div class="display-6 fw-bold text-warning"
+                                         th:text="${statistics.draftCount}">0</div>
+                                    <div class="text-muted small" th:text="#{photo.gallery.statistics.drafts}">
+                                        Черновики
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Всего изображений -->
+                            <div class="col-md-3 col-6">
+                                <div class="text-center">
+                                    <div class="display-6 fw-bold text-info"
+                                         th:text="${statistics.totalImages}">0</div>
+                                    <div class="text-muted small" th:text="#{photo.gallery.statistics.images}">
+                                        Всего изображений
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ========== ФИЛЬТРЫ И ПОИСК ========== -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-body">
+                        <div class="row g-3">
+                            <!-- Поиск по названию -->
+                            <div class="col-md-4">
+                                <form th:action="@{/admin/photo-gallery}" method="get" class="search-form">
+                                    <div class="input-group">
+                                        <input type="text"
+                                               class="form-control"
+                                               placeholder="Поиск по названию..."
+                                               name="search"
+                                               th:value="${param.search}">
+                                        <button class="btn btn-outline-secondary" type="submit">
+                                            <i class="bi bi-search"></i>
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
+
+                            <!-- Фильтр по статусу -->
+                            <div class="col-md-3">
+                                <div class="btn-group w-100" role="group">
+                                    <a th:href="@{/admin/photo-gallery}"
+                                       class="btn btn-outline-secondary"
+                                       th:classappend="${!isPublishedView} ? 'active' : ''">
+                                        <span th:text="#{photo.gallery.filter.all}">Все</span>
+                                    </a>
+                                    <a th:href="@{/admin/photo-gallery/published}"
+                                       class="btn btn-outline-secondary"
+                                       th:classappend="${isPublishedView} ? 'active' : ''">
+                                        <span th:text="#{photo.gallery.filter.published}">Опубликовано</span>
+                                    </a>
+                                </div>
+                            </div>
+
+                            <!-- Фильтр по году -->
+                            <div class="col-md-2">
+                                <select class="form-select year-filter" id="yearFilter">
+                                    <option value="">Все года</option>
+                                    <option th:each="year : ${availableYears}"
+                                            th:value="${year}"
+                                            th:text="${year}"
+                                            th:selected="${selectedYear == year}">
+                                    </option>
+                                </select>
+                            </div>
+
+                            <!-- Фильтр по категории -->
+                            <div class="col-md-3">
+                                <select class="form-select category-filter" id="categoryFilter">
+                                    <option value="">Все категории</option>
+                                    <option th:each="category : ${categories}"
+                                            th:value="${category.id}"
+                                            th:text="${category.name}"
+                                            th:selected="${selectedCategory != null && selectedCategory.id == category.id}">
+                                    </option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ========== СООБЩЕНИЯ ОБ УСПЕХЕ/ОШИБКЕ ========== -->
+        <div th:if="${successMessage}" class="row mb-3">
+            <div class="col-12">
+                <div class="alert alert-success alert-dismissible fade show" role="alert">
+                    <i class="bi bi-check-circle-fill me-2"></i>
+                    <span th:text="${successMessage}">Операция выполнена успешно</span>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            </div>
+        </div>
+
+        <div th:if="${errorMessage}" class="row mb-3">
+            <div class="col-12">
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                    <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                    <span th:text="${errorMessage}">Произошла ошибка</span>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            </div>
+        </div>
+
+        <!-- ========== ТАБЛИЦА ЭЛЕМЕНТОВ ========== -->
+        <div class="row">
+            <div class="col-12">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-body p-0">
+                        <!-- Заголовок таблицы -->
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle mb-0">
+                                <thead class="table-light">
+                                <tr>
+                                    <th width="80" class="text-center">
+                                        <span th:text="#{photo.gallery.table.image}">Изображение</span>
+                                    </th>
+                                    <th>
+                                        <span th:text="#{photo.gallery.table.title}">Название</span>
+                                    </th>
+                                    <th width="100" class="text-center">
+                                        <span th:text="#{photo.gallery.table.year}">Год</span>
+                                    </th>
+                                    <th>
+                                        <span th:text="#{photo.gallery.table.categories}">Категории</span>
+                                    </th>
+                                    <th width="120" class="text-center">
+                                        <span th:text="#{photo.gallery.table.status}">Статус</span>
+                                    </th>
+                                    <th width="150" class="text-center">
+                                        <span th:text="#{photo.gallery.table.created}">Создано</span>
+                                    </th>
+                                    <th width="180" class="text-center">
+                                        <span th:text="#{photo.gallery.table.actions}">Действия</span>
+                                    </th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                <!-- Если нет элементов -->
+                                <tr th:if="${#lists.isEmpty(items)}">
+                                    <td colspan="7" class="text-center py-5">
+                                        <div class="text-muted">
+                                            <i class="bi bi-inbox display-6 d-block mb-3"></i>
+                                            <h5 class="mb-2" th:text="#{photo.gallery.empty.title}">
+                                                Нет элементов фото-галереи
+                                            </h5>
+                                            <p class="mb-0" th:text="#{photo.gallery.empty.description}">
+                                                Создайте первый элемент, чтобы начать работу
+                                            </p>
+                                            <a th:href="@{/admin/photo-gallery/create}"
+                                               class="btn btn-primary mt-3">
+                                                <i class="bi bi-plus-circle me-1"></i>
+                                                <span th:text="#{photo.gallery.create.first}">
+                                                        Создать первый элемент
+                                                    </span>
+                                            </a>
+                                        </div>
+                                    </td>
+                                </tr>
+
+                                <!-- Список элементов -->
+                                <tr th:each="item : ${items}"
+                                    th:class="${item.published} ? '' : 'table-secondary'">
+
+                                    <!-- Изображение (основное) -->
+                                    <td class="text-center">
+                                        <div class="position-relative" style="width: 60px; height: 60px; margin: 0 auto;">
+                                            <div th:if="${item.primaryImage}"
+                                                 class="w-100 h-100 rounded overflow-hidden border">
+                                                <img th:src="@{${item.primaryImage.filePath}}"
+                                                     th:alt="${item.title}"
+                                                     class="img-fluid w-100 h-100 object-fit-cover">
+                                            </div>
+                                            <div th:unless="${item.primaryImage}"
+                                                 class="w-100 h-100 rounded bg-light border d-flex align-items-center justify-content-center">
+                                                <i class="bi bi-image text-muted"></i>
+                                            </div>
+
+                                            <!-- Бейдж количества изображений -->
+                                            <span th:if="${item.imagesCount > 0}"
+                                                  class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-info"
+                                                  style="font-size: 0.65rem;"
+                                                  th:text="${item.imagesCount}">
+                                                    0
+                                                </span>
+                                        </div>
+                                    </td>
+
+                                    <!-- Название и описание -->
+                                    <td>
+                                        <div class="d-flex flex-column">
+                                            <strong th:text="${item.title}">Название элемента</strong>
+                                            <small class="text-muted text-truncate"
+                                                   style="max-width: 300px;"
+                                                   th:text="${item.description ?: 'Нет описания'}">
+                                                Описание элемента
+                                            </small>
+                                        </div>
+                                    </td>
+
+                                    <!-- Год -->
+                                    <td class="text-center">
+                                        <span class="badge bg-secondary" th:text="${item.year}">2024</span>
+                                    </td>
+
+                                    <!-- Категории -->
+                                    <td>
+                                        <div class="d-flex flex-wrap gap-1">
+                                                <span th:each="category : ${item.categories}"
+                                                      class="badge"
+                                                      th:class="${category.name == 'Главная'} ? 'bg-danger' :
+                                                                  ${category.name == 'О нас'} ? 'bg-success' :
+                                                                  ${category.name == 'Наши проекты'} ? 'bg-primary' :
+                                                                  'bg-info'"
+                                                      th:text="${category.name}">
+                                                    Категория
+                                                </span>
+                                            <span th:if="${#lists.isEmpty(item.categories)}"
+                                                  class="text-muted small">
+                                                    Нет категорий
+                                                </span>
+                                        </div>
+                                    </td>
+
+                                    <!-- Статус -->
+                                    <td class="text-center">
+                                            <span th:if="${item.published}"
+                                                  class="badge bg-success">
+                                                <i class="bi bi-eye me-1"></i>
+                                                <span th:text="#{photo.gallery.status.published}">Опубликовано</span>
+                                            </span>
+                                        <span th:unless="${item.published}"
+                                              class="badge bg-warning text-dark">
+                                                <i class="bi bi-eye-slash me-1"></i>
+                                                <span th:text="#{photo.gallery.status.draft}">Черновик</span>
+                                            </span>
+                                    </td>
+
+                                    <!-- Дата создания -->
+                                    <td class="text-center">
+                                        <small class="text-muted"
+                                               th:text="${#temporals.format(item.createdAt, 'dd.MM.yyyy')}">
+                                            01.01.2024
+                                        </small>
+                                    </td>
+
+                                    <!-- Действия -->
+                                    <td class="text-center">
+                                        <div class="btn-group btn-group-sm" role="group">
+                                            <!-- Предпросмотр -->
+                                            <a th:href="@{/admin/photo-gallery/preview/{id}(id=${item.id})}"
+                                               class="btn btn-outline-info"
+                                               title="Предпросмотр"
+                                               data-bs-toggle="tooltip">
+                                                <i class="bi bi-eye"></i>
+                                            </a>
+
+                                            <!-- Редактирование -->
+                                            <a th:href="@{/admin/photo-gallery/edit/{id}(id=${item.id})}"
+                                               class="btn btn-outline-primary"
+                                               title="Редактировать"
+                                               data-bs-toggle="tooltip">
+                                                <i class="bi bi-pencil"></i>
+                                            </a>
+
+                                            <!-- Публикация/Снятие с публикации -->
+                                            <form th:if="${item.published}"
+                                                  th:action="@{/admin/photo-gallery/unpublish/{id}(id=${item.id})}"
+                                                  method="post"
+                                                  class="d-inline"
+                                                  onsubmit="return confirm('Снять элемент с публикации?')">
+                                                <button type="submit"
+                                                        class="btn btn-outline-warning"
+                                                        title="Снять с публикации"
+                                                        data-bs-toggle="tooltip">
+                                                    <i class="bi bi-eye-slash"></i>
+                                                </button>
+                                            </form>
+                                            <form th:unless="${item.published}"
+                                                  th:action="@{/admin/photo-gallery/publish/{id}(id=${item.id})}"
+                                                  method="post"
+                                                  class="d-inline"
+                                                  onsubmit="return confirm('Опубликовать элемент?')">
+                                                <button type="submit"
+                                                        class="btn btn-outline-success"
+                                                        title="Опубликовать"
+                                                        data-bs-toggle="tooltip">
+                                                    <i class="bi bi-eye"></i>
+                                                </button>
+                                            </form>
+
+                                            <!-- Удаление -->
+                                            <form th:action="@{/admin/photo-gallery/delete/{id}(id=${item.id})}"
+                                                  method="post"
+                                                  class="d-inline"
+                                                  onsubmit="return confirm('Удалить элемент? Это действие нельзя отменить.')">
+                                                <button type="submit"
+                                                        class="btn btn-outline-danger"
+                                                        title="Удалить"
+                                                        data-bs-toggle="tooltip">
+                                                    <i class="bi bi-trash"></i>
+                                                </button>
+                                            </form>
+                                        </div>
+                                    </td>
+                                </tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- Пагинация (если понадобится позже) -->
+                        <div th:if="${totalPages > 1}" class="card-footer border-top-0">
+                            <nav aria-label="Навигация по страницам">
+                                <ul class="pagination justify-content-center mb-0">
+                                    <!-- Здесь будет пагинация -->
+                                </ul>
+                            </nav>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ========== ИНФОРМАЦИЯ О РЕЗУЛЬТАТАХ ========== -->
+        <div class="row mt-3">
+            <div class="col-12">
+                <div class="text-muted small">
+                    <i class="bi bi-info-circle me-1"></i>
+                    <span th:text="'Показано элементов: ' + ${totalItems}">Показано элементов: 0</span>
+                    <span th:if="${selectedCategory}" class="ms-3">
+                        <i class="bi bi-funnel me-1"></i>
+                        <span th:text="'Категория: ' + ${selectedCategory.name}">Категория: Главная</span>
+                    </span>
+                    <span th:if="${selectedYear}" class="ms-3">
+                        <i class="bi bi-calendar me-1"></i>
+                        <span th:text="'Год: ' + ${selectedYear}">Год: 2024</span>
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ========== JAVASCRIPT ДЛЯ ФИЛЬТРОВ ========== -->
+<script th:inline="javascript">
+    /*<![CDATA[*/
+
+    // Инициализация tooltips
+    document.addEventListener('DOMContentLoaded', function() {
+        // Bootstrap tooltips
+        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+        var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl);
+        });
+
+        // Фильтр по году
+        const yearFilter = document.getElementById('yearFilter');
+        if (yearFilter) {
+            yearFilter.addEventListener('change', function() {
+                const year = this.value;
+                if (year) {
+                    window.location.href = `/admin/photo-gallery/year/${year}`;
+                } else {
+                    window.location.href = `/admin/photo-gallery`;
+                }
+            });
+        }
+
+        // Фильтр по категории
+        const categoryFilter = document.getElementById('categoryFilter');
+        if (categoryFilter) {
+            categoryFilter.addEventListener('change', function() {
+                const categoryId = this.value;
+                if (categoryId) {
+                    window.location.href = `/admin/photo-gallery/category/${categoryId}`;
+                } else {
+                    window.location.href = `/admin/photo-gallery`;
+                }
+            });
+        }
+
+        // Поиск по названию
+        const searchForm = document.querySelector('.search-form');
+        if (searchForm) {
+            const searchInput = searchForm.querySelector('input[name="search"]');
+            let searchTimeout;
+
+            searchInput.addEventListener('input', function() {
+                clearTimeout(searchTimeout);
+                searchTimeout = setTimeout(function() {
+                    if (searchInput.value.trim().length >= 2 || searchInput.value.trim().length === 0) {
+                        searchForm.submit();
+                    }
+                }, 500);
+            });
+        }
+    });
+
+    /*]]>*/
+</script>
 </body>
 </html>
