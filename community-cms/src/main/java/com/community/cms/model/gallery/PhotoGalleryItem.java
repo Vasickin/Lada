@@ -47,7 +47,22 @@ public class PhotoGalleryItem {
     @Column(columnDefinition = "TEXT")
     private String description;
 
-    @NotEmpty(message = "Выберите хотя бы одну категорию для публикации / Select at least one publication category")
+
+
+
+
+
+
+
+    //@NotEmpty(message = "Выберите хотя бы одну категорию для публикации / Select at least one publication category")
+
+
+
+
+
+
+
+
     @ManyToMany
     @JoinTable(
             name = "photo_item_categories",
