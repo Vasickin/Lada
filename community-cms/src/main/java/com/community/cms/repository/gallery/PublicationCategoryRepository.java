@@ -1,6 +1,6 @@
-package com.community.cms.repository.category;
+package com.community.cms.repository.gallery;
 
-import com.community.cms.model.category.PublicationCategory;
+import com.community.cms.model.gallery.PublicationCategory;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;

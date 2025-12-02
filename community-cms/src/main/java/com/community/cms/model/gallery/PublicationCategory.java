@@ -1,4 +1,4 @@
-package com.community.cms.model.category;
+package com.community.cms.model.gallery;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
