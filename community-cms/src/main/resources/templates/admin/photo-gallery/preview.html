@@ -1,0 +1,532 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{fragments/layout}">
+<head>
+    <title>Предпросмотр элемента фото-галереи</title>
+
+    <!-- Подключаем стили для предпросмотра -->
+    <link rel="stylesheet" th:href="@{/css/photo-gallery-preview.css}">
+
+    <!-- Lightbox для просмотра изображений -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/lightbox2/2.11.3/css/lightbox.min.css">
+</head>
+<body>
+<div layout:fragment="content">
+    <div class="container-fluid">
+        <!-- ========== ЗАГОЛОВОК И НАВИГАЦИЯ ========== -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item">
+                            <a th:href="@{/admin/photo-gallery}" class="text-decoration-none">
+                                <i class="bi bi-images me-1"></i>
+                                <span>Фото-галерея</span>
+                            </a>
+                        </li>
+                        <li class="breadcrumb-item">
+                            <a th:href="@{/admin/photo-gallery/edit/{id}(id=${item.id})}" class="text-decoration-none">
+                                <i class="bi bi-pencil me-1"></i>
+                                <span>Редактирование</span>
+                            </a>
+                        </li>
+                        <li class="breadcrumb-item active" aria-current="page">
+                            <i class="bi bi-eye me-1"></i>
+                            <span>Предпросмотр</span>
+                        </li>
+                    </ol>
+                </nav>
+
+                <div class="d-flex justify-content-between align-items-center">
+                    <h1 class="h2 mb-0">
+                        <i class="bi bi-eye me-2"></i>
+                        <span>Предпросмотр элемента</span>
+                        <small class="text-muted ms-2">"<span th:text="${item.title}"></span>"</small>
+                    </h1>
+
+                    <div class="btn-group">
+                        <a th:href="@{/admin/photo-gallery/edit/{id}(id=${item.id})}"
+                           class="btn btn-primary">
+                            <i class="bi bi-pencil me-1"></i>
+                            <span>Редактировать</span>
+                        </a>
+                        <a th:href="@{/admin/photo-gallery}"
+                           class="btn btn-outline-secondary">
+                            <i class="bi bi-arrow-left me-1"></i>
+                            <span>Назад к списку</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ========== СТАТУС ЭЛЕМЕНТА ========== -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <span th:if="${item.published}" class="badge bg-success fs-6">
+                                    <i class="bi bi-eye-fill me-1"></i>
+                                    <span>Опубликовано</span>
+                                </span>
+                                <span th:unless="${item.published}" class="badge bg-warning text-dark fs-6">
+                                    <i class="bi bi-eye-slash-fill me-1"></i>
+                                    <span>Черновик</span>
+                                </span>
+
+                                <span class="ms-3">
+                                    <i class="bi bi-calendar me-1"></i>
+                                    <strong>Год:</strong>
+                                    <span th:text="${item.year}" class="ms-1"></span>
+                                </span>
+
+                                <span class="ms-3">
+                                    <i class="bi bi-clock me-1"></i>
+                                    <strong>Создано:</strong>
+                                    <span th:text="${#temporals.format(item.createdAt, 'dd.MM.yyyy HH:mm')}"
+                                          class="ms-1"></span>
+                                </span>
+                            </div>
+
+                            <div>
+                                <span class="badge bg-info fs-6">
+                                    <i class="bi bi-images me-1"></i>
+                                    <span>Изображений:</span>
+                                    <span th:text="${item.imagesCount}" class="ms-1"></span>
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <!-- ========== ЛЕВАЯ КОЛОНКА: ИЗОБРАЖЕНИЯ ========== -->
+            <div class="col-lg-8">
+                <!-- Основное изображение -->
+                <div class="card border-0 shadow-sm mb-4">
+                    <div class="card-header bg-white border-bottom">
+                        <h5 class="mb-0">
+                            <i class="bi bi-star-fill text-warning me-2"></i>
+                            <span>Основное изображение</span>
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div th:if="${item.primaryImage}" class="text-center">
+                            <a th:href="@{${item.primaryImage.filePath}}"
+                               data-lightbox="gallery"
+                               data-title="${item.title}"
+                               class="d-block">
+                                <img th:src="@{${item.primaryImage.filePath}}"
+                                     th:alt="${item.title}"
+                                     class="img-fluid rounded shadow"
+                                     style="max-height: 500px; object-fit: contain;">
+                            </a>
+                            <div class="mt-3">
+                                <small class="text-muted">
+                                    <i class="bi bi-info-circle me-1"></i>
+                                    <span>Нажмите на изображение для увеличения</span>
+                                </small>
+                            </div>
+                        </div>
+                        <div th:unless="${item.primaryImage}" class="text-center py-5">
+                            <i class="bi bi-image text-muted display-4 d-block mb-3"></i>
+                            <p class="text-muted mb-0">Основное изображение не задано</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Все изображения -->
+                <div class="card border-0 shadow-sm">
+                    <div class="card-header bg-white border-bottom">
+                        <h5 class="mb-0">
+                            <i class="bi bi-images me-2"></i>
+                            <span>Все изображения</span>
+                            <small class="text-muted">(<span th:text="${item.imagesCount}">0</span>)</small>
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div th:if="${item.imagesCount > 0}">
+                            <div class="row g-3" id="gallery">
+                                <div th:each="image, iter : ${item.images}"
+                                     class="col-md-3 col-6">
+                                    <div class="position-relative border rounded overflow-hidden">
+                                        <a th:href="@{${image.filePath}}"
+                                           data-lightbox="gallery"
+                                           th:data-title="${item.title} + ' - ' + ${image.fileName}"
+                                           class="d-block">
+                                            <img th:src="@{${image.filePath}}"
+                                                 th:alt="${image.fileName}"
+                                                 class="img-fluid w-100"
+                                                 style="height: 150px; object-fit: cover;">
+                                        </a>
+                                        <div class="position-absolute top-0 end-0 p-1">
+                                            <span th:if="${image.isPrimary}"
+                                                  class="badge bg-warning">
+                                                <i class="bi bi-star-fill"></i>
+                                            </span>
+                                        </div>
+                                        <div class="position-absolute bottom-0 start-0 end-0 bg-dark bg-opacity-75 p-1">
+                                            <small class="text-white d-block text-truncate">
+                                                <span th:text="${image.fileName}"></span>
+                                            </small>
+                                            <small class="text-white-50">
+                                                <span th:text="${image.formattedFileSize}"></span>
+                                            </small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div th:unless="${item.imagesCount > 0}" class="text-center py-5">
+                            <i class="bi bi-image text-muted display-4 d-block mb-3"></i>
+                            <p class="text-muted mb-0">Нет изображений</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ========== ПРАВАЯ КОЛОНКА: ИНФОРМАЦИЯ ========== -->
+            <div class="col-lg-4">
+                <!-- Основная информация -->
+                <div class="card border-0 shadow-sm mb-4">
+                    <div class="card-header bg-white border-bottom">
+                        <h5 class="mb-0">
+                            <i class="bi bi-info-circle me-2"></i>
+                            <span>Информация об элементе</span>
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-4">
+                            <h6 class="fw-semibold text-primary mb-2">
+                                <i class="bi bi-card-heading me-2"></i>
+                                <span>Название</span>
+                            </h6>
+                            <p class="fs-5" th:text="${item.title}"></p>
+                        </div>
+
+                        <div class="mb-4" th:if="${item.description}">
+                            <h6 class="fw-semibold text-primary mb-2">
+                                <i class="bi bi-text-paragraph me-2"></i>
+                                <span>Описание</span>
+                            </h6>
+                            <div class="bg-light p-3 rounded" th:utext="${item.description}"></div>
+                        </div>
+
+                        <div>
+                            <h6 class="fw-semibold text-primary mb-2">
+                                <i class="bi bi-calendar3 me-2"></i>
+                                <span>Год</span>
+                            </h6>
+                            <div class="d-flex align-items-center">
+                                <span class="badge bg-secondary fs-6" th:text="${item.year}"></span>
+                                <small class="text-muted ms-3">
+                                    <i class="bi bi-info-circle me-1"></i>
+                                    <span>Год проведения мероприятия или создания контента</span>
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Категории публикации -->
+                <div class="card border-0 shadow-sm mb-4">
+                    <div class="card-header bg-white border-bottom">
+                        <h5 class="mb-0">
+                            <i class="bi bi-tags me-2"></i>
+                            <span>Категории публикации</span>
+                            <small class="text-muted">(<span th:text="${#lists.size(item.categories)}">0</span>)</small>
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div th:if="${#lists.size(item.categories) > 0}">
+                            <div class="d-flex flex-wrap gap-2">
+                                <span th:each="category : ${item.categories}"
+                                      class="badge fs-6 py-2 px-3"
+                                      th:class="${category.name == 'Главная'} ? 'bg-danger' :
+                                                ${category.name == 'О нас'} ? 'bg-success' :
+                                                ${category.name == 'Наши проекты'} ? 'bg-primary' :
+                                                'bg-info'">
+                                    <i class="bi"
+                                       th:class="${category.name == 'Главная'} ? 'bi-house-door' :
+                                                 ${category.name == 'О нас'} ? 'bi-people' :
+                                                 ${category.name == 'Наши проекты'} ? 'bi-kanban' :
+                                                 'bi-images'"
+                                       class="me-2"></i>
+                                    <span th:text="${category.name}"></span>
+                                </span>
+                            </div>
+                            <div class="mt-3">
+                                <small class="text-muted">
+                                    <i class="bi bi-info-circle me-1"></i>
+                                    <span>Элемент будет опубликован в выбранных категориях</span>
+                                </small>
+                            </div>
+                        </div>
+                        <div th:unless="${#lists.size(item.categories) > 0}" class="text-center py-3">
+                            <p class="text-muted mb-0">
+                                <i class="bi bi-exclamation-triangle me-1"></i>
+                                <span>Категории не выбраны</span>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Техническая информация -->
+                <div class="card border-0 shadow-sm">
+                    <div class="card-header bg-white border-bottom">
+                        <h5 class="mb-0">
+                            <i class="bi bi-gear me-2"></i>
+                            <span>Техническая информация</span>
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <h6 class="fw-semibold text-primary mb-2">
+                                <i class="bi bi-calendar-plus me-2"></i>
+                                <span>Дата создания</span>
+                            </h6>
+                            <p class="mb-0">
+                                <i class="bi bi-clock-history me-1"></i>
+                                <span th:text="${#temporals.format(item.createdAt, 'dd.MM.yyyy HH:mm:ss')}"></span>
+                            </p>
+                        </div>
+
+                        <div class="mb-3" th:if="${item.updatedAt}">
+                            <h6 class="fw-semibold text-primary mb-2">
+                                <i class="bi bi-calendar-check me-2"></i>
+                                <span>Дата обновления</span>
+                            </h6>
+                            <p class="mb-0">
+                                <i class="bi bi-clock me-1"></i>
+                                <span th:text="${#temporals.format(item.updatedAt, 'dd.MM.yyyy HH:mm:ss')}"></span>
+                            </p>
+                        </div>
+
+                        <div>
+                            <h6 class="fw-semibold text-primary mb-2">
+                                <i class="bi bi-hash me-2"></i>
+                                <span>ID элемента</span>
+                            </h6>
+                            <div class="input-group">
+                                <input type="text"
+                                       class="form-control"
+                                       th:value="${item.id}"
+                                       readonly
+                                       id="itemId">
+                                <button class="btn btn-outline-secondary"
+                                        type="button"
+                                        onclick="copyToClipboard('itemId')">
+                                    <i class="bi bi-clipboard"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ========== КНОПКИ ДЕЙСТВИЙ ========== -->
+        <div class="row mt-4">
+            <div class="col-12">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between">
+                            <div>
+                                <a th:href="@{/admin/photo-gallery}" class="btn btn-outline-secondary">
+                                    <i class="bi bi-arrow-left me-1"></i>
+                                    <span>Назад к списку</span>
+                                </a>
+                            </div>
+                            <div class="btn-group">
+                                <a th:href="@{/admin/photo-gallery/edit/{id}(id=${item.id})}"
+                                   class="btn btn-primary">
+                                    <i class="bi bi-pencil me-1"></i>
+                                    <span>Редактировать</span>
+                                </a>
+
+                                <button type="button"
+                                        class="btn btn-outline-info"
+                                        onclick="window.print()">
+                                    <i class="bi bi-printer me-1"></i>
+                                    <span>Распечатать</span>
+                                </button>
+
+                                <button type="button"
+                                        class="btn btn-outline-success"
+                                        onclick="sharePreview()">
+                                    <i class="bi bi-share me-1"></i>
+                                    <span>Поделиться</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Подключаем Lightbox -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/lightbox2/2.11.3/js/lightbox.min.js"></script>
+
+<!-- JavaScript для предпросмотра -->
+<script>
+    // Настройка Lightbox
+    lightbox.option({
+        'resizeDuration': 200,
+        'wrapAround': true,
+        'albumLabel': 'Изображение %1 из %2',
+        'fadeDuration': 300,
+        'imageFadeDuration': 300
+    });
+
+    // Копирование ID в буфер обмена
+    function copyToClipboard(elementId) {
+        const element = document.getElementById(elementId);
+        if (!element) return;
+
+        element.select();
+        element.setSelectionRange(0, 99999); // Для мобильных устройств
+
+        try {
+            const successful = document.execCommand('copy');
+            if (successful) {
+                // Показываем уведомление
+                showToast('ID скопирован в буфер обмена', 'success');
+            }
+        } catch (err) {
+            console.error('Ошибка при копировании: ', err);
+        }
+    }
+
+    // Поделиться предпросмотром
+    function sharePreview() {
+        if (navigator.share) {
+            navigator.share({
+                title: document.title,
+                text: 'Предпросмотр элемента фото-галереи',
+                url: window.location.href
+            })
+            .then(() => console.log('Успешный шаринг'))
+            .catch((error) => console.log('Ошибка шаринга:', error));
+        } else {
+            // Копируем ссылку в буфер обмена
+            copyToClipboard('shareUrl');
+        }
+    }
+
+    // Показ toast-уведомлений
+    function showToast(message, type = 'info') {
+        const toast = document.createElement('div');
+        toast.className = `toast align-items-center text-bg-${type} border-0 position-fixed`;
+        toast.style.bottom = '20px';
+        toast.style.right = '20px';
+        toast.style.zIndex = '9999';
+
+        toast.innerHTML = `
+            <div class="d-flex">
+                <div class="toast-body">
+                    <i class="bi ${type === 'success' ? 'bi-check-circle' : 'bi-info-circle'} me-2"></i>
+                    ${message}
+                </div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+            </div>
+        `;
+
+        document.body.appendChild(toast);
+
+        const bsToast = new bootstrap.Toast(toast, { delay: 3000 });
+        bsToast.show();
+
+        toast.addEventListener('hidden.bs.toast', () => {
+            toast.remove();
+        });
+    }
+
+    // Инициализация при загрузке страницы
+    document.addEventListener('DOMContentLoaded', function() {
+        // Добавляем кнопку "Поделиться" если поддерживается
+        if (!navigator.share) {
+            const shareBtn = document.querySelector('button[onclick="sharePreview()"]');
+            if (shareBtn) {
+                // Создаем скрытый input для копирования ссылки
+                const input = document.createElement('input');
+                input.type = 'text';
+                input.id = 'shareUrl';
+                input.value = window.location.href;
+                input.style.position = 'absolute';
+                input.style.left = '-9999px';
+                document.body.appendChild(input);
+
+                // Меняем текст кнопки
+                shareBtn.querySelector('span').textContent = 'Копировать ссылку';
+            }
+        }
+    });
+</script>
+
+<!-- Стили для предпросмотра -->
+<style>
+    /* Стили для Lightbox */
+    .lightbox-overlay {
+        background-color: rgba(0, 0, 0, 0.9) !important;
+    }
+
+    .lightbox-image {
+        border-radius: 8px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+    }
+
+    /* Адаптивные изображения */
+    .img-fluid {
+        max-width: 100%;
+        height: auto;
+    }
+
+    /* Стили для бейджей */
+    .badge {
+        font-weight: 500;
+        letter-spacing: 0.5px;
+    }
+
+    /* Анимации */
+    .fade-in {
+        animation: fadeIn 0.5s ease-out;
+    }
+
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Стили для печати */
+    @media print {
+        .breadcrumb,
+        .btn,
+        .card-header,
+        .badge.bg-warning {
+            display: none !important;
+        }
+
+        .card {
+            border: 1px solid #dee2e6 !important;
+            box-shadow: none !important;
+        }
+
+        .container-fluid {
+            max-width: 100% !important;
+            padding: 0 !important;
+        }
+
+        h1, h2, h3, h4, h5, h6 {
+            color: #000 !important;
+        }
+    }
+</style>
+</body>
+</html>
