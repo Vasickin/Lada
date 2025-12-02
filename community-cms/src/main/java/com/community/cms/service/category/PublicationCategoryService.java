@@ -1,8 +1,8 @@
 
 package com.community.cms.service.category;
 
-import com.community.cms.model.category.PublicationCategory;
-import com.community.cms.repository.category.PublicationCategoryRepository;
+import com.community.cms.model.gallery.PublicationCategory;
+import com.community.cms.repository.gallery.PublicationCategoryRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
