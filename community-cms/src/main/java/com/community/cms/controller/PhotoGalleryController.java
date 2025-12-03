@@ -45,6 +45,7 @@ public class PhotoGalleryController {
     public String listPhotoGalleryItems(Model model) {
         List<PhotoGalleryItem> items = photoGalleryService.getAllPhotoGalleryItems();
         List<PublicationCategory> categories = publicationCategoryService.getAllCategories();
+        List<Integer> availableYears = photoGalleryService.getAvailableYears();
 
         model.addAttribute("items", items);
         model.addAttribute("categories", categories);
@@ -53,6 +54,7 @@ public class PhotoGalleryController {
         model.addAttribute("isPublishedView", false);
         model.addAttribute("selectedCategory", null);
         model.addAttribute("selectedYear", null);
+        model.addAttribute("availableYears", availableYears);
 
         return "admin/photo-gallery/list";
     }
@@ -82,7 +84,7 @@ public class PhotoGalleryController {
     public String createPhotoGalleryItem(
             @Valid @ModelAttribute("photoGalleryItem") PhotoGalleryItem item,
             BindingResult bindingResult,
-            @RequestParam(value = "files", required = false) MultipartFile[] files, // ИЗМЕНЕНО: images -> files
+            @RequestParam(value = "files", required = false) MultipartFile[] files,
             @RequestParam(value = "categoryIds", required = false) List<Long> categoryIds,
             RedirectAttributes redirectAttributes,
             Model model) {
@@ -203,6 +205,19 @@ public class PhotoGalleryController {
         }
     }
 
+    // ========== ПРЕДПРОСМОТР ЭЛЕМЕНТА ==========
+
+    @GetMapping("/preview/{id}")
+    public String previewPhotoGalleryItem(@PathVariable Long id, Model model) {
+        try {
+            PhotoGalleryItem item = photoGalleryService.getPhotoGalleryItemById(id);
+            model.addAttribute("item", item);
+            return "admin/photo-gallery/preview";
+        } catch (EntityNotFoundException e) {
+            return "redirect:/admin/photo-gallery";
+        }
+    }
+
     // ========== УДАЛЕНИЕ ЭЛЕМЕНТА ==========
 
     @PostMapping("/delete/{id}")
@@ -215,6 +230,73 @@ public class PhotoGalleryController {
             redirectAttributes.addFlashAttribute("errorMessage", "Ошибка при удалении: " + e.getMessage());
         }
         return "redirect:/admin/photo-gallery";
+    }
+
+    // ========== ПУБЛИКАЦИЯ/СНЯТИЕ С ПУБЛИКАЦИИ ==========
+
+    @PostMapping("/publish/{id}")
+    public String publishPhotoGalleryItem(@PathVariable Long id, RedirectAttributes redirectAttributes) {
+        try {
+            photoGalleryService.publishPhotoGalleryItem(id);
+            redirectAttributes.addFlashAttribute("successMessage", "Элемент успешно опубликован");
+        } catch (Exception e) {
+            logger.error("Ошибка при публикации элемента {}: {}", id, e.getMessage(), e);
+            redirectAttributes.addFlashAttribute("errorMessage", "Ошибка при публикации: " + e.getMessage());
+        }
+        return "redirect:/admin/photo-gallery";
+    }
+
+    @PostMapping("/unpublish/{id}")
+    public String unpublishPhotoGalleryItem(@PathVariable Long id, RedirectAttributes redirectAttributes) {
+        try {
+            photoGalleryService.unpublishPhotoGalleryItem(id);
+            redirectAttributes.addFlashAttribute("successMessage", "Элемент успешно снят с публикации");
+        } catch (Exception e) {
+            logger.error("Ошибка при снятии с публикации элемента {}: {}", id, e.getMessage(), e);
+            redirectAttributes.addFlashAttribute("errorMessage", "Ошибка при снятии с публикации: " + e.getMessage());
+        }
+        return "redirect:/admin/photo-gallery";
+    }
+
+    // ========== ФИЛЬТРАЦИЯ ==========
+
+    @GetMapping("/year/{year}")
+    public String filterByYear(@PathVariable Integer year, Model model) {
+        List<PhotoGalleryItem> items = photoGalleryService.getPublishedPhotoGalleryItemsByYear(year);
+        List<PublicationCategory> categories = publicationCategoryService.getAllCategories();
+        List<Integer> availableYears = photoGalleryService.getAvailableYears();
+
+        model.addAttribute("items", items);
+        model.addAttribute("categories", categories);
+        model.addAttribute("totalItems", items.size());
+        model.addAttribute("availableYears", availableYears);
+        model.addAttribute("isPublishedView", true);
+        model.addAttribute("selectedYear", year);
+        model.addAttribute("selectedCategory", null);
+
+        return "admin/photo-gallery/list";
+    }
+
+    @GetMapping("/category/{categoryId}")
+    public String filterByCategory(@PathVariable Long categoryId, Model model) {
+        PublicationCategory category = publicationCategoryService.getCategoryById(categoryId);
+        if (category == null) {
+            return "redirect:/admin/photo-gallery";
+        }
+
+        List<PhotoGalleryItem> items = photoGalleryService.getPublishedPhotoGalleryItemsByCategory(category.getName());
+        List<PublicationCategory> categories = publicationCategoryService.getAllCategories();
+        List<Integer> availableYears = photoGalleryService.getAvailableYears();
+
+        model.addAttribute("items", items);
+        model.addAttribute("categories", categories);
+        model.addAttribute("totalItems", items.size());
+        model.addAttribute("availableYears", availableYears);
+        model.addAttribute("isPublishedView", true);
+        model.addAttribute("selectedYear", null);
+        model.addAttribute("selectedCategory", category);
+
+        return "admin/photo-gallery/list";
     }
 
     // ========== ВСПОМОГАТЕЛЬНЫЕ МЕТОДЫ ==========

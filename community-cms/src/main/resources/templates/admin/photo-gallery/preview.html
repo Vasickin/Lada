@@ -121,11 +121,15 @@
                     </div>
                     <div class="card-body">
                         <div th:if="${item.primaryImage}" class="text-center">
-                            <a th:href="@{${item.primaryImage.filePath}}"
+                            <a th:href="@{__${#strings.startsWith(item.primaryImage.filePath, '/static/') ?
+                                           item.primaryImage.filePath :
+                                           '/static/' + item.primaryImage.filePath}__}"
                                data-lightbox="gallery"
                                data-title="${item.title}"
                                class="d-block">
-                                <img th:src="@{${item.primaryImage.filePath}}"
+                                <img th:src="@{__${#strings.startsWith(item.primaryImage.filePath, '/static/') ?
+                                           item.primaryImage.filePath :
+                                           '/static/' + item.primaryImage.filePath}__}"
                                      th:alt="${item.title}"
                                      class="img-fluid rounded shadow"
                                      style="max-height: 500px; object-fit: contain;">
@@ -159,11 +163,15 @@
                                 <div th:each="image, iter : ${item.images}"
                                      class="col-md-3 col-6">
                                     <div class="position-relative border rounded overflow-hidden">
-                                        <a th:href="@{${image.filePath}}"
+                                        <a th:href="@{__${#strings.startsWith(image.filePath, '/static/') ?
+                                           image.filePath :
+                                           '/static/' + image.filePath}__}"
                                            data-lightbox="gallery"
                                            th:data-title="${item.title} + ' - ' + ${image.fileName}"
                                            class="d-block">
-                                            <img th:src="@{${image.filePath}}"
+                                            <img th:src="@{__${#strings.startsWith(image.filePath, '/static/') ?
+                                           image.filePath :
+                                           '/static/' + image.filePath}__}"
                                                  th:alt="${image.fileName}"
                                                  class="img-fluid w-100"
                                                  style="height: 150px; object-fit: cover;">

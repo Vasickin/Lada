@@ -252,7 +252,9 @@
                                              style="width: 60px; height: 60px; margin: 0 auto;">
                                             <div th:if="${item.primaryImage}"
                                                  class="w-100 h-100 rounded overflow-hidden border">
-                                                <img th:src="@{${item.primaryImage.filePath}}"
+                                                <img th:src="@{__${#strings.startsWith(item.primaryImage.filePath, '/static/') ?
+                                                               item.primaryImage.filePath :
+                                                               '/static/' + item.primaryImage.filePath}__}"
                                                      th:alt="${item.title}"
                                                      class="img-fluid w-100 h-100 object-fit-cover">
                                             </div>
