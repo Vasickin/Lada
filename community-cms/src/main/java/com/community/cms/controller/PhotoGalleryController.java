@@ -17,7 +17,6 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import java.io.IOException;
 import java.util.List;
 
 @Controller
@@ -38,31 +37,6 @@ public class PhotoGalleryController {
         this.photoGalleryService = photoGalleryService;
         this.publicationCategoryService = publicationCategoryService;
         this.fileStorageService = fileStorageService;
-    }
-
-    // ========== ДЕБАГ МЕТОД ==========
-
-    /**
-     * Простой метод для тестирования формы
-     */
-    @GetMapping("/debug-create")
-    public String debugCreateForm(Model model) {
-        logger.info("DEBUG: Открываем дебаг-форму создания");
-
-        PhotoGalleryItem item = new PhotoGalleryItem();
-        item.setYear(2024);
-
-        List<PublicationCategory> categories = publicationCategoryService.getAllCategories();
-
-        logger.info("DEBUG: Категорий найдено: {}", categories.size());
-        categories.forEach(cat -> logger.info("DEBUG: Категория: {} (ID: {})", cat.getName(), cat.getId()));
-
-        model.addAttribute("photoGalleryItem", item);
-        model.addAttribute("categories", categories);
-        model.addAttribute("maxFiles", MAX_UPLOAD_FILES);
-        model.addAttribute("isEdit", false);
-
-        return "admin/photo-gallery/create-or-edit";
     }
 
     // ========== СПИСОК ЭЛЕМЕНТОВ ==========
@@ -108,13 +82,13 @@ public class PhotoGalleryController {
     public String createPhotoGalleryItem(
             @Valid @ModelAttribute("photoGalleryItem") PhotoGalleryItem item,
             BindingResult bindingResult,
-            @RequestParam(value = "images", required = false) MultipartFile[] images,
+            @RequestParam(value = "files", required = false) MultipartFile[] files, // ИЗМЕНЕНО: images -> files
             @RequestParam(value = "categoryIds", required = false) List<Long> categoryIds,
             RedirectAttributes redirectAttributes,
             Model model) {
 
-        logger.info("Создание элемента: {}, категории: {}, изображений: {}",
-                item.getTitle(), categoryIds, images != null ? images.length : 0);
+        logger.info("Создание элемента: {}, категории: {}, файлов: {}",
+                item.getTitle(), categoryIds, files != null ? files.length : 0);
 
         if (bindingResult.hasErrors()) {
             logger.warn("Ошибки валидации: {}", bindingResult.getAllErrors());
@@ -127,9 +101,16 @@ public class PhotoGalleryController {
             return prepareCreateOrEditModel(model, item, false, categoryIds);
         }
 
+        // Проверяем файлы
+        if (files == null || files.length == 0) {
+            bindingResult.rejectValue("images", "error.photoGalleryItem",
+                    "Загрузите хотя бы одно изображение");
+            return prepareCreateOrEditModel(model, item, false, categoryIds);
+        }
+
         try {
             addSelectedCategories(item, categoryIds);
-            PhotoGalleryItem savedItem = photoGalleryService.createPhotoGalleryItemWithImages(item, images);
+            PhotoGalleryItem savedItem = photoGalleryService.createPhotoGalleryItemWithImages(item, files);
 
             redirectAttributes.addFlashAttribute("successMessage",
                     String.format("Элемент '%s' успешно создан", savedItem.getTitle()));
@@ -170,6 +151,72 @@ public class PhotoGalleryController {
         }
     }
 
+    @PostMapping("/edit/{id}")
+    public String updatePhotoGalleryItem(
+            @PathVariable Long id,
+            @Valid @ModelAttribute("photoGalleryItem") PhotoGalleryItem item,
+            BindingResult bindingResult,
+            @RequestParam(value = "files", required = false) MultipartFile[] files,
+            @RequestParam(value = "categoryIds", required = false) List<Long> categoryIds,
+            @RequestParam(value = "deleteExistingImages", required = false) List<Long> deleteImageIds,
+            RedirectAttributes redirectAttributes,
+            Model model) {
+
+        logger.info("Редактирование элемента ID: {}, категории: {}, файлов: {}",
+                id, categoryIds, files != null ? files.length : 0);
+
+        if (bindingResult.hasErrors()) {
+            logger.warn("Ошибки валидации: {}", bindingResult.getAllErrors());
+            return prepareCreateOrEditModel(model, item, true, categoryIds);
+        }
+
+        if (categoryIds == null || categoryIds.isEmpty()) {
+            bindingResult.rejectValue("categories", "error.photoGalleryItem",
+                    "Выберите хотя бы одну категорию");
+            return prepareCreateOrEditModel(model, item, true, categoryIds);
+        }
+
+        try {
+            addSelectedCategories(item, categoryIds);
+
+            // Удаляем помеченные изображения
+            if (deleteImageIds != null && !deleteImageIds.isEmpty()) {
+                for (Long imageId : deleteImageIds) {
+                    photoGalleryService.removeImageFromPhotoGalleryItem(id, imageId);
+                }
+            }
+
+            // Обновляем элемент с новыми файлами
+            PhotoGalleryItem updatedItem = photoGalleryService.updatePhotoGalleryItemWithImages(
+                    id, item, files);
+
+            redirectAttributes.addFlashAttribute("successMessage",
+                    String.format("Элемент '%s' успешно обновлен", updatedItem.getTitle()));
+
+            return "redirect:/admin/photo-gallery";
+
+        } catch (Exception e) {
+            logger.error("Ошибка при обновлении: {}", e.getMessage(), e);
+            redirectAttributes.addFlashAttribute("errorMessage",
+                    "Ошибка: " + e.getMessage());
+            return "redirect:/admin/photo-gallery/edit/" + id;
+        }
+    }
+
+    // ========== УДАЛЕНИЕ ЭЛЕМЕНТА ==========
+
+    @PostMapping("/delete/{id}")
+    public String deletePhotoGalleryItem(@PathVariable Long id, RedirectAttributes redirectAttributes) {
+        try {
+            photoGalleryService.deletePhotoGalleryItem(id);
+            redirectAttributes.addFlashAttribute("successMessage", "Элемент успешно удален");
+        } catch (Exception e) {
+            logger.error("Ошибка при удалении элемента {}: {}", id, e.getMessage(), e);
+            redirectAttributes.addFlashAttribute("errorMessage", "Ошибка при удалении: " + e.getMessage());
+        }
+        return "redirect:/admin/photo-gallery";
+    }
+
     // ========== ВСПОМОГАТЕЛЬНЫЕ МЕТОДЫ ==========
 
     private String prepareCreateOrEditModel(Model model, PhotoGalleryItem item, boolean isEdit, List<Long> categoryIds) {
@@ -195,6 +242,4 @@ public class PhotoGalleryController {
             }
         }
     }
-
-    // Остальные методы остаются без изменений...
 }
