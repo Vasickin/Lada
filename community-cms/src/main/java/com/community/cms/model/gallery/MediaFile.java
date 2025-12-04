@@ -224,6 +224,14 @@ public class MediaFile {
         return isPrimary;
     }
 
+    public Boolean isPrimary() {
+        return isPrimary;
+    }
+
+    public void setPrimary(Boolean primary) {
+        this.isPrimary = primary;
+    }
+
     public void setIsPrimary(Boolean isPrimary) {
         this.isPrimary = isPrimary;
     }
