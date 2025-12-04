@@ -16,7 +16,6 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -372,7 +371,7 @@ public class PhotoGalleryService {
      *
      * @param item элемент / item
      * @throws IOException если произошла ошибка при удалении файлов / if file deletion error occurs
-     * @throws FileStorageService.FileStorageException если произошла ошибка при удалении файлов / if file deletion error occurs
+     * @throws FileStorageService.FileStorageException если произошла ошибка при удалении файлов / if file storage error occurs
      */
     private void deleteAllItemImages(PhotoGalleryItem item)
             throws IOException, FileStorageService.FileStorageException {

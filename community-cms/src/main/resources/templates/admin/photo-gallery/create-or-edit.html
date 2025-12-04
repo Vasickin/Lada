@@ -48,7 +48,7 @@
                         <span th:text="${isEdit} ? 'Редактирование элемента' : 'Создание нового элемента'">
                             Создание элемента
                         </span>
-                        <span th:if="${isEdit && photoGalleryItem?.title}"
+                        <span th:if="${isEdit and photoGalleryItem != null and photoGalleryItem.title != null}"
                               class="text-muted ms-2"
                               style="font-size: 1rem;">
                             "<span th:text="${photoGalleryItem.title}"></span>"
@@ -315,7 +315,9 @@
                                     <div th:each="image : ${photoGalleryItem.images}"
                                          class="col-4">
                                         <div class="position-relative border rounded overflow-hidden">
-                                            <img th:src="@{${image.filePath}}"
+                                            <img th:src="@{__${#strings.startsWith(image.filePath, '/static/') ?
+                                           image.filePath :
+                                           '/static/' + image.filePath}__}"
                                                  th:alt="${image.fileName}"
                                                  class="img-fluid w-100"
                                                  style="height: 80px; object-fit: cover;">

@@ -1,6 +1,5 @@
 package com.community.cms.model.gallery;
 
-import com.community.cms.model.gallery.PublicationCategory;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
 import org.hibernate.annotations.CreationTimestamp;
@@ -47,22 +46,6 @@ public class PhotoGalleryItem {
     @Column(columnDefinition = "TEXT")
     private String description;
 
-
-
-
-
-
-
-
-    //@NotEmpty(message = "Выберите хотя бы одну категорию для публикации / Select at least one publication category")
-
-
-
-
-
-
-
-
     @ManyToMany
     @JoinTable(
             name = "photo_item_categories",
@@ -71,8 +54,6 @@ public class PhotoGalleryItem {
     )
     private Set<PublicationCategory> categories = new HashSet<>();
 
-    @NotEmpty(message = "Загрузите хотя бы одно изображение / Upload at least one image")
-    @Size(min = 1, message = "Загрузите хотя бы одно изображение / Upload at least one image")
     @Size(max = 15, message = "Максимальное количество изображений: 15 / Maximum number of images: 15")
     @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     @JoinColumn(name = "photo_item_id")
