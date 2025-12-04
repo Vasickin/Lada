@@ -83,7 +83,7 @@ public class PhotoGalleryController {
         model.addAttribute("maxFiles", MAX_UPLOAD_FILES);
         model.addAttribute("isEdit", false);
 
-        return "admin/photo-gallery/create-or-edit";
+        return "admin/photo-gallery/create";
     }
 
     @PostMapping("/create")
@@ -152,7 +152,7 @@ public class PhotoGalleryController {
             model.addAttribute("isEdit", true);
             model.addAttribute("currentImageCount", item.getImagesCount());
 
-            return "admin/photo-gallery/create-or-edit";
+            return "admin/photo-gallery/edit";
 
         } catch (EntityNotFoundException e) {
             return "redirect:/admin/photo-gallery";

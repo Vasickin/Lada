@@ -1,0 +1,894 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{fragments/layout}">
+<head>
+    <title>Редактирование элемента - Фото-галерея</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <!-- Стили для фото-галереи -->
+    <link rel="stylesheet" th:href="@{/css/photo-gallery.css}">
+</head>
+<body>
+<div layout:fragment="content">
+
+    <!-- ========== ТЕСТОВЫЙ БЛОК ========== -->
+    <div style="position: fixed; top: 0; left: 0; right: 0; background: red; color: white; padding: 20px; z-index: 9999;">
+        <h3>🚨 ТЕСТ THYMELEAF 🚨</h3>
+        <p>Файл загружен: <strong>edit.html</strong></p>
+        <p>Данные: [[${photoGalleryItem?.title}]] (ID: [[${photoGalleryItem?.id}]])</p>
+        <button class="btn btn-light">Тест кнопка 1</button>
+        <button class="btn btn-warning">Тест кнопка 2</button>
+    </div>
+    <!-- ========== КОНЕЦ ТЕСТОВОГО БЛОКА ========== -->
+
+
+
+    <div class="container-fluid">
+        <!-- ========== ЗАГОЛОВОК ФОРМЫ ========== -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item">
+                            <a th:href="@{/admin/photo-gallery}" class="text-decoration-none">
+                                <i class="bi bi-images me-1"></i>
+                                Фото-галерея
+                            </a>
+                        </li>
+                        <li class="breadcrumb-item active" aria-current="page">
+                            <i class="bi bi-pencil me-1"></i>
+                            Редактирование
+                        </li>
+                    </ol>
+                </nav>
+
+                <div class="d-flex justify-content-between align-items-center">
+                    <h1 class="h2 mb-0">
+                        <i class="bi bi-pencil-square"></i>
+                        Редактирование элемента
+                        <span th:if="${photoGalleryItem?.title}"
+                              class="text-muted ms-2"
+                              style="font-size: 1rem;">
+                            "<span th:text="${photoGalleryItem.title}"></span>"
+                        </span>
+                    </h1>
+
+                    <!-- Кнопка "Назад" -->
+                    <a th:href="@{/admin/photo-gallery}" class="btn btn-outline-secondary">
+                        <i class="bi bi-arrow-left me-1"></i>
+                        Назад
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- ========== СООБЩЕНИЯ ОБ УСПЕХЕ/ОШИБКЕ ========== -->
+        <div th:if="${successMessage}" class="row mb-3">
+            <div class="col-12">
+                <div class="alert alert-success alert-dismissible fade show" role="alert">
+                    <i class="bi bi-check-circle-fill me-2"></i>
+                    <span th:text="${successMessage}">Операция выполнена успешно</span>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            </div>
+        </div>
+
+        <div th:if="${errorMessage}" class="row mb-3">
+            <div class="col-12">
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                    <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                    <span th:text="${errorMessage}">Произошла ошибка</span>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            </div>
+        </div>
+
+        <!-- ========== ОСНОВНАЯ ФОРМА ========== -->
+        <form th:action="@{/admin/photo-gallery/edit/{id}(id=${photoGalleryItem.id})}"
+              th:object="${photoGalleryItem}"
+              method="post"
+              enctype="multipart/form-data"
+              id="photoGalleryForm"
+              novalidate>
+
+            <!-- CSRF токен -->
+            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+
+            <div class="row">
+                <!-- ========== ЛЕВАЯ КОЛОНКА: ОСНОВНАЯ ИНФОРМАЦИЯ ========== -->
+                <div class="col-lg-8">
+                    <div class="card border-0 shadow-sm mb-4">
+                        <div class="card-header bg-white border-bottom">
+                            <h5 class="mb-0">
+                                <i class="bi bi-info-circle me-2"></i>
+                                Основная информация
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <!-- Название -->
+                            <div class="mb-4">
+                                <label for="title" class="form-label fw-semibold">
+                                    Название элемента *
+                                </label>
+                                <input type="text"
+                                       class="form-control"
+                                       th:classappend="${#fields.hasErrors('title')} ? 'is-invalid' : ''"
+                                       id="title"
+                                       th:field="*{title}"
+                                       placeholder="Введите название элемента"
+                                       required
+                                       minlength="3"
+                                       maxlength="255">
+                                <div class="invalid-feedback" th:if="${#fields.hasErrors('title')}">
+                                    <span th:errors="*{title}">Ошибка в названии</span>
+                                </div>
+                                <div class="form-text">
+                                    Название будет отображаться на сайте. Минимум 3 символа.
+                                </div>
+                            </div>
+
+                            <!-- Год -->
+                            <div class="mb-4">
+                                <label for="year" class="form-label fw-semibold">
+                                    Год *
+                                </label>
+                                <input type="number"
+                                       class="form-control"
+                                       th:classappend="${#fields.hasErrors('year')} ? 'is-invalid' : ''"
+                                       id="year"
+                                       th:field="*{year}"
+                                       placeholder="2024"
+                                       required
+                                       min="2000"
+                                       max="2100"
+                                       step="1">
+                                <div class="invalid-feedback" th:if="${#fields.hasErrors('year')}">
+                                    <span th:errors="*{year}">Ошибка в годе</span>
+                                </div>
+                                <div class="form-text">
+                                    Год проведения мероприятия или создания контента (2000-2100).
+                                </div>
+                            </div>
+
+                            <!-- Описание -->
+                            <div class="mb-4">
+                                <label for="description" class="form-label fw-semibold">
+                                    Описание
+                                    <span class="text-muted small">(необязательно)</span>
+                                </label>
+                                <textarea class="form-control"
+                                          th:classappend="${#fields.hasErrors('description')} ? 'is-invalid' : ''"
+                                          id="description"
+                                          th:field="*{description}"
+                                          placeholder="Описание элемента"
+                                          rows="5"
+                                          maxlength="2000"
+                                          style="resize: vertical;"></textarea>
+                                <div class="invalid-feedback" th:if="${#fields.hasErrors('description')}">
+                                    <span th:errors="*{description}">Ошибка в описании</span>
+                                </div>
+                                <div class="form-text">
+                                    Подробное описание элемента. Максимум 2000 символов.
+                                    <span class="d-block mt-1">
+                                        <small class="text-muted" id="descriptionCounter">0/2000</small>
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- ========== БЛОК КАТЕГОРИЙ ========== -->
+                    <div class="card border-0 shadow-sm mb-4">
+                        <div class="card-header bg-white border-bottom">
+                            <h5 class="mb-0">
+                                <i class="bi bi-tags me-2"></i>
+                                Категории публикации *
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div th:classappend="${#fields.hasErrors('categories')} ? 'border-danger' : ''"
+                                 class="border rounded p-3">
+                                <div class="row g-3">
+                                    <div th:each="category : ${categories}" class="col-md-6">
+                                        <div class="form-check">
+                                            <input class="form-check-input category-checkbox"
+                                                   type="checkbox"
+                                                   th:id="'category_' + ${category.id}"
+                                                   th:value="${category.id}"
+                                                   name="categoryIds"
+                                                   th:checked="${selectedCategoryIds != null && selectedCategoryIds.contains(category.id)}">
+                                            <label class="form-check-label d-flex align-items-center"
+                                                   th:for="'category_' + ${category.id}">
+                                                <span class="badge me-2"
+                                                      th:class="${category.name == 'Главная' ? 'bg-danger' :
+                                                                (category.name == 'О нас' ? 'bg-success' :
+                                                                (category.name == 'Наши проекты' ? 'bg-primary' : 'bg-info'))}">
+                                                    <span th:text="${category.name}">Категория</span>
+                                                </span>
+                                                <small class="text-muted"
+                                                       th:text="${category.description}">
+                                                    Описание категории
+                                                </small>
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div th:if="${#fields.hasErrors('categories')}" class="mt-2">
+                                    <div class="text-danger small">
+                                        <i class="bi bi-exclamation-triangle me-1"></i>
+                                        <span th:errors="*{categories}">Выберите хотя бы одну категорию</span>
+                                    </div>
+                                </div>
+
+                                <div class="mt-3">
+                                    <div class="alert alert-info mb-0">
+                                        <i class="bi bi-info-circle me-2"></i>
+                                        Выберите категории, в которых будет опубликован элемент.
+                                        Можно выбрать несколько категорий.
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ========== ПРАВАЯ КОЛОНКА: ИЗОБРАЖЕНИЯ И НАСТРОЙКИ ========== -->
+                <div class="col-lg-4">
+                    <!-- ========== ЗАГРУЗКА ФАЙЛОВ ========== -->
+                    <div class="card border-0 shadow-sm mb-4">
+                        <div class="card-header bg-white border-bottom">
+                            <h5 class="mb-0">
+                                <i class="bi bi-images me-2"></i>
+                                Изображения
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <!-- Drag & Drop зона -->
+                            <div id="dropzone" class="dropzone-area border rounded p-5 text-center mb-3">
+                                <i class="bi bi-cloud-upload display-4 text-muted d-block mb-3"></i>
+                                <h5 class="mb-2">
+                                    Перетащите изображения сюда
+                                </h5>
+                                <p class="text-muted mb-3">
+                                    или нажмите для выбора файлов
+                                </p>
+                                <!-- ВАЖНО: имя должно быть "files", как в контроллере -->
+                                <input type="file"
+                                       id="fileInput"
+                                       name="files"
+                                       multiple
+                                       accept="image/*"
+                                       class="d-none">
+                                <button type="button"
+                                        class="btn btn-outline-primary"
+                                        onclick="document.getElementById('fileInput').click()">
+                                    <i class="bi bi-folder2-open me-1"></i>
+                                    Выбрать файлы
+                                </button>
+                                <div class="mt-3 text-muted small">
+                                    Максимум 15 файлов, каждый до 5MB. Поддерживаются: JPG, PNG, GIF, WebP.
+                                </div>
+                            </div>
+
+                            <!-- Список загруженных файлов -->
+                            <div id="uploadedFiles" class="d-none">
+                                <h6 class="mb-3">
+                                    <i class="bi bi-list-check me-1"></i>
+                                    Выбранные изображения
+                                    <small class="text-muted" id="fileCount">(0)</small>
+                                </h6>
+                                <div id="fileList" class="list-group mb-3" style="max-height: 300px; overflow-y: auto;">
+                                    <!-- Здесь будут отображаться выбранные файлы -->
+                                </div>
+
+                                <!-- Кнопки управления -->
+                                <div class="d-flex justify-content-between">
+                                    <button type="button"
+                                            class="btn btn-outline-danger btn-sm"
+                                            id="clearAllBtn">
+                                        <i class="bi bi-trash me-1"></i>
+                                        Очистить все
+                                    </button>
+                                    <button type="button"
+                                            class="btn btn-outline-secondary btn-sm"
+                                            onclick="sortFiles()">
+                                        <i class="bi bi-arrow-down-up me-1"></i>
+                                        Сортировать
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Существующие изображения -->
+                            <div th:if="${photoGalleryItem.images != null && !photoGalleryItem.images.isEmpty()}"
+                                 class="mt-4">
+                                <h6 class="mb-3">
+                                    <i class="bi bi-image me-1"></i>
+                                    Существующие изображения
+                                    <small class="text-muted">(<span th:text="${photoGalleryItem.images.size()}">0</span>)</small>
+                                </h6>
+                                <div class="row g-2 mb-3" id="existingImages">
+                                    <div th:each="image : ${photoGalleryItem.images}"
+                                         class="col-4">
+                                        <div class="position-relative border rounded overflow-hidden">
+                                            <img th:src="@{__${#strings.startsWith(image.filePath, '/static/') ?
+                                                       image.filePath :
+                                                       '/static/' + image.filePath}__}"
+                                                 th:alt="${image.fileName}"
+                                                 class="img-fluid w-100"
+                                                 style="height: 80px; object-fit: cover;">
+                                            <div class="position-absolute top-0 end-0 p-1">
+                                                <span th:if="${image.primary}"
+                                                      class="badge bg-success">
+                                                    <i class="bi bi-star-fill"></i>
+                                                </span>
+                                            </div>
+                                            <div class="position-absolute bottom-0 start-0 end-0 bg-dark bg-opacity-75 p-1">
+                                                <small class="text-white d-block text-truncate"
+                                                       th:text="${image.fileName}">
+                                                    файл.jpg
+                                                </small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="alert alert-info">
+                                    <i class="bi bi-info-circle me-2"></i>
+                                    Существующие изображения будут сохранены. Вы можете добавить новые.
+                                </div>
+                            </div>
+
+                            <!-- Счетчик файлов -->
+                            <div class="mt-3">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <small class="text-muted">
+                                        Текущее количество:
+                                        <span id="currentFileCount"
+                                              th:text="${photoGalleryItem.images != null ? photoGalleryItem.images.size() : 0}">
+                                            0
+                                        </span>
+                                        /
+                                        <span>15</span>
+                                    </small>
+                                    <small th:if="${photoGalleryItem.images != null}" class="text-warning">
+                                        <i class="bi bi-exclamation-triangle me-1"></i>
+                                        Можно добавить еще
+                                        <span th:text="${15 - photoGalleryItem.images.size()}">15</span>
+                                        файлов
+                                    </small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- ========== НАСТРОЙКИ ПУБЛИКАЦИИ ========== -->
+                    <div class="card border-0 shadow-sm mb-4">
+                        <div class="card-header bg-white border-bottom">
+                            <h5 class="mb-0">
+                                <i class="bi bi-gear me-2"></i>
+                                Настройки публикации
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <!-- Статус публикации -->
+                            <div class="form-check form-switch mb-3">
+                                <input class="form-check-input"
+                                       type="checkbox"
+                                       role="switch"
+                                       id="published"
+                                       th:field="*{published}">
+                                <label class="form-check-label fw-semibold" for="published">
+                                    Опубликовано
+                                </label>
+                                <div class="form-text">
+                                    Если включено, элемент будет виден на сайте.
+                                </div>
+                            </div>
+
+                            <!-- Дата создания (только для информации) -->
+                            <div th:if="${photoGalleryItem.createdAt}" class="mb-3">
+                                <label class="form-label fw-semibold">
+                                    Создано
+                                </label>
+                                <div class="form-control bg-light">
+                                    <i class="bi bi-calendar me-1"></i>
+                                    <span th:text="${#temporals.format(photoGalleryItem.createdAt, 'dd.MM.yyyy HH:mm')}">
+                                        01.01.2024 12:00
+                                    </span>
+                                </div>
+                            </div>
+
+                            <!-- Дата обновления (только для информации) -->
+                            <div th:if="${photoGalleryItem.updatedAt}" class="mb-3">
+                                <label class="form-label fw-semibold">
+                                    Обновлено
+                                </label>
+                                <div class="form-control bg-light">
+                                    <i class="bi bi-clock-history me-1"></i>
+                                    <span th:text="${#temporals.format(photoGalleryItem.updatedAt, 'dd.MM.yyyy HH:mm')}">
+                                        01.01.2024 12:00
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- ========== КНОПКИ ДЕЙСТВИЙ ========== -->
+                    <div class="sticky-top" style="top: 20px; z-index: 1000;">
+                        <div class="card border-0 shadow-sm">
+                            <div class="card-body">
+                                <div class="d-grid gap-2">
+                                    <!-- Кнопка сохранения -->
+                                    <button type="submit"
+                                            class="btn btn-primary btn-lg"
+                                            id="submitBtn">
+                                        <i class="bi bi-check-circle"></i>
+                                        Сохранить
+                                    </button>
+
+                                    <!-- Кнопка отмены -->
+                                    <a th:href="@{/admin/photo-gallery}"
+                                       class="btn btn-outline-secondary">
+                                        <i class="bi bi-x-circle me-1"></i>
+                                        Отмена
+                                    </a>
+
+                                    <!-- Кнопка удаления -->
+                                    <button type="button"
+                                            class="btn btn-outline-danger mt-3"
+                                            id="deleteBtn"
+                                            data-bs-toggle="modal"
+                                            data-bs-target="#deleteModal">
+                                        <i class="bi bi-trash me-1"></i>
+                                        Удалить элемент
+                                    </button>
+                                </div>
+
+                                <!-- Сообщение о валидации -->
+                                <div class="mt-3">
+                                    <div class="alert alert-warning mb-0 d-none" id="validationAlert">
+                                        <i class="bi bi-exclamation-triangle me-2"></i>
+                                        Проверьте форму. Есть ошибки или не заполнены обязательные поля.
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <!-- ========== МОДАЛЬНОЕ ОКНО ПОДТВЕРЖДЕНИЯ УДАЛЕНИЯ ========== -->
+    <div class="modal fade" id="deleteModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <i class="bi bi-exclamation-triangle text-danger me-2"></i>
+                        Подтверждение удаления
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <p>
+                        Вы уверены, что хотите удалить этот элемент?
+                    </p>
+                    <div class="alert alert-danger">
+                        <i class="bi bi-exclamation-octagon-fill me-2"></i>
+                        <strong>Внимание:</strong>
+                        Это действие нельзя отменить. Будут удалены все изображения, связанные с этим элементом.
+                    </div>
+                    <div th:if="${photoGalleryItem?.title}" class="mt-3">
+                        <p class="mb-0">
+                            <strong>Элемент:</strong>
+                            "<span th:text="${photoGalleryItem.title}"></span>"
+                        </p>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        <i class="bi bi-x-circle me-1"></i>
+                        Отмена
+                    </button>
+                    <form th:action="@{/admin/photo-gallery/delete/{id}(id=${photoGalleryItem.id})}"
+                          method="post"
+                          class="d-inline">
+                        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+                        <button type="submit" class="btn btn-danger">
+                            <i class="bi bi-trash me-1"></i>
+                            Удалить
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ========== УПРОЩЕННЫЙ JAVASCRIPT ДЛЯ ФОРМЫ ========== -->
+<script th:inline="javascript">
+    /*<![CDATA[*/
+
+    document.addEventListener('DOMContentLoaded', function() {
+        console.log('Инициализация формы редактирования...');
+        initFormValidation();
+        initFileUpload();
+        initDescriptionCounter();
+        initCategoryValidation();
+    });
+
+    /**
+     * Инициализация валидации формы
+     */
+    function initFormValidation() {
+        const form = document.getElementById('photoGalleryForm');
+        const validationAlert = document.getElementById('validationAlert');
+        const submitBtn = document.getElementById('submitBtn');
+
+        if (!form) {
+            console.error('Форма не найдена!');
+            return;
+        }
+
+        form.addEventListener('submit', function(event) {
+            console.log('Отправка формы редактирования...');
+
+            if (!validateForm()) {
+                event.preventDefault();
+                event.stopPropagation();
+
+                if (validationAlert) {
+                    validationAlert.classList.remove('d-none');
+                    validationAlert.scrollIntoView({ behavior: 'smooth' });
+                }
+
+                form.classList.add('was-validated');
+            } else {
+                console.log('Форма валидна, отправка...');
+                if (submitBtn) {
+                    submitBtn.disabled = true;
+                    submitBtn.innerHTML = `
+                        <span class="spinner-border spinner-border-sm me-2" role="status"></span>
+                        Сохранение...
+                    `;
+                }
+            }
+        });
+    }
+
+    /**
+     * Проверка валидности формы (для редактирования)
+     */
+    function validateForm() {
+        console.log('Проверка валидности формы редактирования...');
+        let isValid = true;
+
+        // Проверка обязательных полей
+        const title = document.getElementById('title');
+        const year = document.getElementById('year');
+
+        if (!title || !title.value.trim()) {
+            title.classList.add('is-invalid');
+            isValid = false;
+        }
+
+        if (!year || !year.value.trim()) {
+            year.classList.add('is-invalid');
+            isValid = false;
+        }
+
+        // Проверка категорий
+        const categoryCheckboxes = document.querySelectorAll('.category-checkbox:checked');
+        if (categoryCheckboxes.length === 0) {
+            const categoryContainer = document.querySelector('.border.rounded.p-3');
+            if (categoryContainer) {
+                categoryContainer.classList.add('border-danger');
+            }
+            isValid = false;
+        }
+
+        console.log('Форма валидна:', isValid);
+        return isValid;
+    }
+
+    /**
+     * Инициализация загрузки файлов (для редактирования)
+     */
+    function initFileUpload() {
+        console.log('Инициализация загрузки файлов для редактирования...');
+
+        const dropzone = document.getElementById('dropzone');
+        const fileInput = document.getElementById('fileInput');
+        const uploadedFiles = document.getElementById('uploadedFiles');
+        const fileList = document.getElementById('fileList');
+        const fileCount = document.getElementById('fileCount');
+        const clearAllBtn = document.getElementById('clearAllBtn');
+        const currentFileCount = document.getElementById('currentFileCount');
+
+        if (!fileInput) {
+            console.error('Поле для файлов не найдено!');
+            return;
+        }
+
+        // Устанавливаем существующее количество файлов
+        const existingCount = parseInt(currentFileCount.textContent) || 0;
+        if (currentFileCount) {
+            currentFileCount.setAttribute('data-existing', existingCount);
+        }
+
+        // Обработчик выбора файлов
+        fileInput.addEventListener('change', function(e) {
+            console.log('Выбрано файлов:', e.target.files.length);
+            displaySelectedFiles(e.target.files);
+        });
+
+        // Drag & Drop события
+        if (dropzone) {
+            dropzone.addEventListener('dragover', function(e) {
+                e.preventDefault();
+                dropzone.classList.add('dragover');
+            });
+
+            dropzone.addEventListener('dragleave', function() {
+                dropzone.classList.remove('dragover');
+            });
+
+            dropzone.addEventListener('drop', function(e) {
+                e.preventDefault();
+                dropzone.classList.remove('dragover');
+
+                if (e.dataTransfer.files.length) {
+                    fileInput.files = e.dataTransfer.files;
+                    fileInput.dispatchEvent(new Event('change'));
+                }
+            });
+
+            // Клик по зоне drop
+            dropzone.addEventListener('click', function() {
+                fileInput.click();
+            });
+        }
+
+        // Очистка всех файлов
+        if (clearAllBtn) {
+            clearAllBtn.addEventListener('click', function() {
+                if (confirm('Удалить все выбранные файлы?')) {
+                    fileInput.value = '';
+                    fileList.innerHTML = '';
+                    uploadedFiles.classList.add('d-none');
+                    if (fileCount) fileCount.textContent = '(0)';
+                    if (currentFileCount) {
+                        currentFileCount.textContent = existingCount;
+                    }
+                }
+            });
+        }
+
+        /**
+         * Отображение выбранных файлов
+         */
+        function displaySelectedFiles(files) {
+            if (!files || files.length === 0) {
+                uploadedFiles.classList.add('d-none');
+                return;
+            }
+
+            fileList.innerHTML = '';
+            let validFiles = 0;
+
+            // Проверяем лимит файлов
+            const maxFiles = 15;
+            const existingCount = parseInt(currentFileCount.getAttribute('data-existing') || '0');
+
+            if (files.length + existingCount > maxFiles) {
+                alert(`Максимальное количество файлов: ${maxFiles}. У вас уже есть ${existingCount} файлов, вы пытаетесь добавить еще ${files.length}.`);
+                return;
+            }
+
+            for (let i = 0; i < files.length; i++) {
+                const file = files[i];
+
+                // Проверяем тип файла
+                if (!file.type.startsWith('image/')) {
+                    alert(`Файл "${file.name}" не является изображением и будет пропущен.`);
+                    continue;
+                }
+
+                // Проверяем размер файла
+                if (file.size > 5 * 1024 * 1024) {
+                    alert(`Файл "${file.name}" слишком большой (${(file.size / (1024 * 1024)).toFixed(2)} MB). Максимальный размер: 5MB.`);
+                    continue;
+                }
+
+                validFiles++;
+
+                // Создаем элемент для файла
+                const fileElement = document.createElement('div');
+                fileElement.className = 'list-group-item';
+                fileElement.innerHTML = `
+                    <div class="d-flex align-items-center">
+                        <i class="bi bi-image text-primary me-3" style="font-size: 1.5rem;"></i>
+                        <div style="flex: 1;">
+                            <div class="fw-semibold text-truncate" title="${file.name}">
+                                ${file.name}
+                            </div>
+                            <div class="small text-muted">
+                                ${(file.size / 1024).toFixed(1)} KB
+                            </div>
+                        </div>
+                        <button type="button" class="btn btn-outline-danger btn-sm" onclick="removeFile(this)">
+                            <i class="bi bi-trash"></i>
+                        </button>
+                    </div>
+                `;
+
+                fileList.appendChild(fileElement);
+            }
+
+            // Обновляем интерфейс
+            if (validFiles > 0) {
+                uploadedFiles.classList.remove('d-none');
+                if (fileCount) fileCount.textContent = `(${validFiles})`;
+                if (currentFileCount) {
+                    currentFileCount.textContent = validFiles + existingCount;
+                }
+            } else {
+                uploadedFiles.classList.add('d-none');
+            }
+        }
+    }
+
+    /**
+     * Удаление файла из списка
+     */
+    window.removeFile = function(button) {
+        const fileItem = button.closest('.list-group-item');
+        if (fileItem) {
+            fileItem.remove();
+
+            // Обновляем счетчики
+            const fileList = document.getElementById('fileList');
+            const fileCount = document.getElementById('fileCount');
+            const currentFileCount = document.getElementById('currentFileCount');
+            const existingCount = parseInt(currentFileCount.getAttribute('data-existing') || '0');
+
+            const remainingFiles = fileList.children.length;
+
+            if (fileCount) fileCount.textContent = `(${remainingFiles})`;
+            if (currentFileCount) currentFileCount.textContent = remainingFiles + existingCount;
+
+            if (remainingFiles === 0) {
+                document.getElementById('uploadedFiles').classList.add('d-none');
+            }
+        }
+    };
+
+    /**
+     * Сортировка файлов по имени
+     */
+    window.sortFiles = function() {
+        const fileList = document.getElementById('fileList');
+        if (!fileList) return;
+
+        const items = Array.from(fileList.children);
+
+        items.sort((a, b) => {
+            const nameA = a.querySelector('.fw-semibold').title.toLowerCase();
+            const nameB = b.querySelector('.fw-semibold').title.toLowerCase();
+            return nameA.localeCompare(nameB);
+        });
+
+        // Очищаем и добавляем отсортированные элементы
+        fileList.innerHTML = '';
+        items.forEach(item => fileList.appendChild(item));
+    };
+
+    /**
+     * Инициализация счетчика символов для описания
+     */
+    function initDescriptionCounter() {
+        const description = document.getElementById('description');
+        const counter = document.getElementById('descriptionCounter');
+
+        if (description && counter) {
+            updateCounter();
+            description.addEventListener('input', updateCounter);
+
+            function updateCounter() {
+                const length = description.value.length;
+                counter.textContent = `${length}/2000`;
+                counter.classList.toggle('text-danger', length > 2000);
+            }
+        }
+    }
+
+    /**
+     * Инициализация валидации категорий
+     */
+    function initCategoryValidation() {
+        const categoryCheckboxes = document.querySelectorAll('.category-checkbox');
+        const categoryContainer = document.querySelector('.border.rounded.p-3');
+
+        if (categoryCheckboxes && categoryContainer) {
+            categoryCheckboxes.forEach(checkbox => {
+                checkbox.addEventListener('change', function() {
+                    const checkedCount = document.querySelectorAll('.category-checkbox:checked').length;
+                    if (checkedCount > 0) {
+                        categoryContainer.classList.remove('border-danger');
+                    }
+                });
+            });
+        }
+    }
+
+    /*]]>*/
+</script>
+
+<!-- Стили для формы -->
+<style>
+    /* Стили для Drag & Drop зоны */
+    .dropzone-area {
+        border: 2px dashed #dee2e6;
+        background-color: #f8f9fa;
+        transition: all 0.3s ease;
+        cursor: pointer;
+        min-height: 200px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .dropzone-area:hover,
+    .dropzone-area.dragover {
+        border-color: #0d6efd;
+        background-color: #e7f1ff;
+    }
+
+    .dropzone-area.border-danger {
+        border-color: #dc3545;
+        background-color: #f8d7da;
+    }
+
+    .dragover {
+        border-color: #0d6efd !important;
+        background-color: #e7f1ff !important;
+    }
+
+    /* Стили для списка файлов */
+    #fileList {
+        scrollbar-width: thin;
+        scrollbar-color: #adb5bd #f8f9fa;
+    }
+
+    #fileList::-webkit-scrollbar {
+        width: 8px;
+    }
+
+    #fileList::-webkit-scrollbar-track {
+        background: #f8f9fa;
+        border-radius: 4px;
+    }
+
+    #fileList::-webkit-scrollbar-thumb {
+        background: #adb5bd;
+        border-radius: 4px;
+    }
+
+    #fileList::-webkit-scrollbar-thumb:hover {
+        background: #6c757d;
+    }
+
+    /* Адаптивные стили */
+    @media (max-width: 992px) {
+        .sticky-top {
+            position: static !important;
+        }
+    }
+</style>
+</body>
+</html>
