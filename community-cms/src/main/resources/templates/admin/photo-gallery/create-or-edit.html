@@ -48,7 +48,7 @@
                         <span th:text="${isEdit} ? 'Редактирование элемента' : 'Создание нового элемента'">
                             Создание элемента
                         </span>
-                        <span th:if="${isEdit && photoGalleryItem?.title}"
+                        <span th:if="${isEdit and photoGalleryItem != null and photoGalleryItem.title != null}"
                               class="text-muted ms-2"
                               style="font-size: 1rem;">
                             "<span th:text="${photoGalleryItem.title}"></span>"
