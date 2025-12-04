@@ -252,9 +252,7 @@
                                              style="width: 60px; height: 60px; margin: 0 auto;">
                                             <div th:if="${item.primaryImage}"
                                                  class="w-100 h-100 rounded overflow-hidden border">
-                                                <img th:src="@{__${#strings.startsWith(item.primaryImage.filePath, '/static/') ?
-                                                               item.primaryImage.filePath :
-                                                               '/static/' + item.primaryImage.filePath}__}"
+                                                <img th:src="@{'/admin/photo-gallery/image/' + item.primaryImage.filePath}"
                                                      th:alt="${item.title}"
                                                      class="img-fluid w-100 h-100 object-fit-cover">
                                             </div>
@@ -313,12 +311,12 @@
                                             <span th:if="${item.published}"
                                                   class="badge bg-success">
                                                 <i class="bi bi-eye me-1"></i>
-                                                <span th:text="#{photo.gallery.status.published}">Опубликовано</span>
+                                                <span>Опубликовано</span>
                                             </span>
                                         <span th:unless="${item.published}"
                                               class="badge bg-warning text-dark">
                                                 <i class="bi bi-eye-slash me-1"></i>
-                                                <span th:text="#{photo.gallery.status.draft}">Черновик</span>
+                                                <span>Черновик</span>
                                             </span>
                                     </td>
 

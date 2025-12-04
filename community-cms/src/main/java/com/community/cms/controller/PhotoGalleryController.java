@@ -17,6 +17,12 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.ByteArrayResource;
+import org.springframework.http.ResponseEntity;
+import org.springframework.http.MediaType;
+import org.springframework.http.HttpStatus;
+
 import java.util.List;
 
 @Controller
@@ -323,5 +329,74 @@ public class PhotoGalleryController {
                 }
             }
         }
+    }
+    // ========== КАСТОМНЫЙ ENDPOINT ДЛЯ ФАЙЛОВ ==========
+
+    @GetMapping("/image/{filename:.+}")
+    public ResponseEntity<org.springframework.core.io.Resource> getImage(@PathVariable String filename) {
+        try {
+            System.out.println("Запрос изображения: " + filename);
+
+            String projectPath = System.getProperty("user.dir");
+            String filePath = projectPath + "/src/main/resources/static/" + filename;
+            java.nio.file.Path path = java.nio.file.Paths.get(filePath);
+
+            System.out.println("Ищу файл по пути: " + path.toAbsolutePath());
+
+            if (!java.nio.file.Files.exists(path)) {
+                System.out.println("Файл не найден!");
+                return ResponseEntity.notFound().build();
+            }
+
+            byte[] imageData = java.nio.file.Files.readAllBytes(path);
+            org.springframework.core.io.ByteArrayResource resource =
+                    new org.springframework.core.io.ByteArrayResource(imageData);
+
+            String mimeType = java.nio.file.Files.probeContentType(path);
+            if (mimeType == null) mimeType = "image/jpeg";
+
+            System.out.println("Файл найден, тип: " + mimeType);
+
+            return ResponseEntity.ok()
+                    .contentType(org.springframework.http.MediaType.parseMediaType(mimeType))
+                    .body(resource);
+
+        } catch (Exception e) {
+            System.out.println("Ошибка: " + e.getMessage());
+            return ResponseEntity.status(500).build();
+        }
+    }
+
+    // ========== ТЕСТОВАЯ СТРАНИЦА ==========
+
+    @GetMapping("/test-image-endpoint")
+    @org.springframework.web.bind.annotation.ResponseBody
+    public String testImageEndpoint() {
+        String projectPath = System.getProperty("user.dir");
+        String staticPath = projectPath + "/src/main/resources/static/";
+
+        StringBuilder html = new StringBuilder();
+        html.append("<h1>Тест изображений</h1>");
+        html.append("<p>Путь: ").append(staticPath).append("</p>");
+
+        String[] testFiles = {
+                "88b4ef45-4fe4-4e48-be3e-c73eb657c1b1.jpg",
+                "6f821c1d-2372-46fb-aa6c-e329723466d4.jpg"
+        };
+
+        html.append("<div style='display: flex; gap: 20px;'>");
+
+        for (String filename : testFiles) {
+            html.append("<div>");
+            html.append("<h3>").append(filename).append("</h3>");
+            html.append("<img src='/admin/photo-gallery/image/").append(filename)
+                    .append("' style='width: 200px; height: 150px;'/>");
+            html.append("<p><a href='/admin/photo-gallery/image/").append(filename)
+                    .append("' target='_blank'>Открыть</a></p>");
+            html.append("</div>");
+        }
+
+        html.append("</div>");
+        return html.toString();
     }
 }
