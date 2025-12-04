@@ -3,6 +3,7 @@ package com.community.cms.config;
 import com.community.cms.model.User;
 import com.community.cms.service.UserService;
 import com.community.cms.service.PageService;
+import com.community.cms.service.category.PublicationCategoryService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -17,18 +18,20 @@ import java.time.LocalDateTime;
  * <ul>
  *   <li>Создание административных учетных записей при первом запуске</li>
  *   <li>Создание основных страниц сайта по умолчанию</li>
+ *   <li>Создание категорий публикации для системы галереи</li>
  *   <li>Настройка ролей и прав доступа по умолчанию</li>
  *   <li>Обеспечение работоспособности системы после развертывания</li>
  * </ul>
  *
- * <p>Учетные записи и страницы создаются только если они еще не существуют в базе данных.
+ * <p>Учетные записи, страницы и категории создаются только если они еще не существуют в базе данных.
  * Это предотвращает дублирование при повторных запусках приложения.</p>
  *
  * @author Vasickin
- * @version 1.1
+ * @version 1.2
  * @since 2025
  * @see UserService
  * @see PageService
+ * @see PublicationCategoryService
  * @see User
  */
 @Component
@@ -38,8 +41,12 @@ public class DataInitializer implements CommandLineRunner {
     private final PageService pageService;
     private final PasswordEncoder passwordEncoder;
 
+    // ДОБАВЛЕН НОВЫЙ СЕРВИС
+    private PublicationCategoryService publicationCategoryService;
+
     /**
-     * Конструктор с внедрением зависимостей.
+     * Конструктор с внедрением зависимостей (ОСНОВНОЙ конструктор).
+     * Используется Spring'ом для инъекции обязательных зависимостей.
      *
      * @param userService сервис для работы с пользователями
      * @param pageService сервис для работы со страницами
@@ -53,6 +60,18 @@ public class DataInitializer implements CommandLineRunner {
     }
 
     /**
+     * ДОПОЛНИТЕЛЬНЫЙ сеттер для опциональной зависимости.
+     * Используется Spring'ом для инъекции PublicationCategoryService если он существует.
+     * Если сервис не создан - метод не вызывается, и поле остается null.
+     *
+     * @param publicationCategoryService сервис для работы с категориями публикации
+     */
+    @Autowired(required = false)
+    public void setPublicationCategoryService(PublicationCategoryService publicationCategoryService) {
+        this.publicationCategoryService = publicationCategoryService;
+    }
+
+    /**
      * Метод, выполняемый при запуске приложения.
      * Создает начальные учетные записи пользователей и страницы если они не существуют.
      *
@@ -63,10 +82,18 @@ public class DataInitializer implements CommandLineRunner {
     public void run(String... args) throws Exception {
         createDefaultUsers();
         createDefaultPages();
+
+        // ДОБАВЛЕН НОВЫЙ МЕТОД - вызывается только если сервис существует
+        if (publicationCategoryService != null) {
+            createDefaultPublicationCategories();
+        } else {
+            System.out.println("⚠️  PublicationCategoryService не найден. Пропускаем инициализацию категорий.");
+        }
     }
 
     /**
      * Создает учетные записи пользователей по умолчанию.
+     * НЕ ИЗМЕНЯЛ - рабочий метод.
      */
     private void createDefaultUsers() {
         createAdminUser();
@@ -76,6 +103,7 @@ public class DataInitializer implements CommandLineRunner {
 
     /**
      * Создает основные страницы сайта по умолчанию.
+     * НЕ ИЗМЕНЯЛ - рабочий метод.
      */
     private void createDefaultPages() {
         System.out.println("🔄 Проверка основных страниц сайта...");
@@ -97,8 +125,43 @@ public class DataInitializer implements CommandLineRunner {
     }
 
     /**
+     * НОВЫЙ МЕТОД: Создает категории публикации по умолчанию для системы галереи.
+     * Вызывается только если PublicationCategoryService существует.
+     */
+    private void createDefaultPublicationCategories() {
+        System.out.println("\n🔄 Проверка категорий публикации...");
+
+        try {
+            // Инициализируем стандартные категории
+            publicationCategoryService.initializeDefaultCategories();
+
+            // Получаем количество созданных категорий
+            long categoryCount = publicationCategoryService.getCount();
+
+            if (categoryCount > 0) {
+                System.out.println("✅ Категории публикации инициализированы: " + categoryCount + " категорий");
+
+                // Показываем список созданных категорий
+                var categories = publicationCategoryService.getAllCategories();
+                for (var category : categories) {
+                    System.out.println("   📂 " + category.getName() +
+                            " - " + (category.getDescription() != null && category.getDescription().length() > 50
+                            ? category.getDescription().substring(0, 50) + "..."
+                            : category.getDescription()));
+                }
+            } else {
+                System.out.println("⚠️  Категории публикации не были созданы");
+            }
+        } catch (Exception e) {
+            System.err.println("❌ Ошибка при создании категорий публикации: " + e.getMessage());
+            // Не бросаем исключение дальше, чтобы не ломать инициализацию других данных
+        }
+    }
+
+    /**
      * Создает учетную запись администратора системы.
      * Администратор имеет полные права доступа ко всем функциям системы.
+     * НЕ ИЗМЕНЯЛ - рабочий метод.
      */
     private void createAdminUser() {
         // Проверяем, существует ли уже пользователь с именем admin
@@ -128,6 +191,7 @@ public class DataInitializer implements CommandLineRunner {
     /**
      * Создает учетную запись редактора контента.
      * Редактор имеет права на управление контентом, но не на управление пользователями.
+     * НЕ ИЗМЕНЯЛ - рабочий метод.
      */
     private void createEditorUser() {
         // Проверяем, существует ли уже пользователь с именем editor
@@ -156,6 +220,7 @@ public class DataInitializer implements CommandLineRunner {
     /**
      * Создает тестовую учетную запись обычного пользователя.
      * Обычный пользователь имеет ограниченные права доступа.
+     * НЕ ИЗМЕНЯЛ - рабочий метод.
      */
     private void createTestUser() {
         // Проверяем, существует ли уже пользователь с именем user
@@ -182,6 +247,7 @@ public class DataInitializer implements CommandLineRunner {
 
     /**
      * Создает пример произвольной страницы для демонстрации функциональности.
+     * НЕ ИЗМЕНЯЛ - рабочий метод.
      */
     private void createSampleCustomPage() {
         String sampleSlug = "primer-stranicy";

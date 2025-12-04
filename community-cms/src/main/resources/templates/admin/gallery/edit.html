@@ -324,6 +324,17 @@
         </div>
     </div>
 
+    <!-- ИНФОРМАЦИЯ О ТИПЕ МЕДИА -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="alert alert-info">
+                <i class="bi bi-info-circle me-2"></i>
+                <strong>Тип медиа нельзя изменить после создания элемента.</strong>
+                Текущий тип сохранен и заблокирован для редактирования.
+            </div>
+        </div>
+    </div>
+
     <!-- ФОРМА РЕДАКТИРОВАНИЯ -->
     <div class="row justify-content-center">
         <div class="col-lg-10">
@@ -396,7 +407,7 @@
                             <div class="col-12">
                                 <div class="row">
                                     <div class="col-md-6 mb-3">
-                                        <div class="media-type-option" onclick="selectMediaType('PHOTO')" th:classappend="${galleryItem.mediaType.name() == 'PHOTO'} ? 'selected' : ''">
+                                        <div class="media-type-option" th:classappend="${galleryItem.mediaType.name() == 'PHOTO'} ? 'selected' : ''" style="opacity: 0.7; cursor: not-allowed;">
                                             <div class="form-check">
                                                 <input class="form-check-input"
                                                        type="radio"
@@ -404,7 +415,8 @@
                                                        id="mediaTypePhoto"
                                                        th:field="*{mediaType}"
                                                        value="PHOTO"
-                                                       required>
+                                                       required
+                                                       disabled>
                                                 <label class="form-check-label fw-bold" for="mediaTypePhoto">
                                                     <i class="bi bi-image text-primary me-2"></i>Фотография
                                                 </label>
@@ -416,14 +428,15 @@
                                     </div>
 
                                     <div class="col-md-6 mb-3">
-                                        <div class="media-type-option" onclick="selectMediaType('VIDEO')" th:classappend="${galleryItem.mediaType.name() == 'VIDEO'} ? 'selected' : ''">
+                                        <div class="media-type-option" th:classappend="${galleryItem.mediaType.name() == 'VIDEO'} ? 'selected' : ''" style="opacity: 0.7; cursor: not-allowed;">
                                             <div class="form-check">
                                                 <input class="form-check-input"
                                                        type="radio"
                                                        name="mediaType"
                                                        id="mediaTypeVideo"
                                                        th:field="*{mediaType}"
-                                                       value="VIDEO">
+                                                       value="VIDEO"
+                                                       disabled>
                                                 <label class="form-check-label fw-bold" for="mediaTypeVideo">
                                                     <i class="bi bi-play-circle text-warning me-2"></i>Видео
                                                 </label>
