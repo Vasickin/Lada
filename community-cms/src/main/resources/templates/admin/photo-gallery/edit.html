@@ -13,15 +13,6 @@
 </head>
 <body>
 <div layout:fragment="content">
-    <!-- ========== ТЕСТОВЫЙ БЛОК ========== -->
-    <div style="position: fixed; top: 0; left: 0; right: 0; background: red; color: white; padding: 20px; z-index: 9999;">
-        <h3>🚨 ТЕСТ THYMELEAF 🚨</h3>
-        <p>Файл загружен: <strong>edit.html</strong></p>
-        <p>Данные: [[${photoGalleryItem?.title}]] (ID: [[${photoGalleryItem?.id}]])</p>
-        <button class="btn btn-light">Тест кнопка 1</button>
-        <button class="btn btn-warning">Тест кнопка 2</button>
-    </div>
-    <!-- ========== КОНЕЦ ТЕСТОВОГО БЛОКА ========== -->
 
     <div class="container-fluid">
         <!-- ========== ЗАГОЛОВОК ФОРМЫ ========== -->
@@ -312,10 +303,10 @@
                                          class="col-4">
                                         <div class="position-relative border rounded overflow-hidden">
                                             <!-- Упрощенная версия без сложного выражения -->
-                                            <img th:src="@{'/static/' + image.filePath}"
+                                            <img th:src="${image.webPath}"
                                                  th:alt="${image.fileName}"
                                                  class="img-fluid w-100"
-                                                 style="height: 80px; object-fit: cover;">
+                                                 style="height: 150px; object-fit: cover;">
                                             <div class="position-absolute top-0 end-0 p-1">
                                                 <span th:if="${image.isPrimary}"
                                                       class="badge bg-success">
@@ -411,21 +402,6 @@
                             </div>
                         </div>
                     </div>
-
-
-
-                    <!-- ========== ДИАГНОСТИКА ПЕРЕД КНОПКАМИ ========== -->
-                    <div style="background: purple; color: white; padding: 20px; margin: 20px 0; border: 5px solid yellow;">
-                        <h3>🔍 ДИАГНОСТИКА: Эта точка достигнута?</h3>
-                        <p>Если этот блок ВИДЕН - значит проблема в блоке кнопок</p>
-                        <p>Если этот блок НЕ ВИДЕН - значит проблема ДО него</p>
-                        <p>Количество изображений: [[${photoGalleryItem.images != null ? photoGalleryItem.images.size() : 0}]]</p>
-                    </div>
-                    <!-- ========== КОНЕЦ ДИАГНОСТИКИ ========== -->
-
-
-
-
 
 
                     <!-- ========== КНОПКИ ДЕЙСТВИЙ ========== -->
