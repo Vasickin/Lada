@@ -1,4 +1,3 @@
-
 package com.community.cms.model.gallery;
 
 import jakarta.persistence.*;
@@ -325,6 +324,45 @@ public class MediaFile {
             return fileName.substring(lastDotIndex + 1).toLowerCase();
         }
         return "";
+    }
+
+    /**
+     * Получает только имя файла из полного пути.
+     * Gets only filename from full path.
+     *
+     * @return имя файла / filename
+     */
+    public String getFilenameFromPath() {
+        if (filePath == null || filePath.isEmpty()) {
+            return "";
+        }
+
+        // Находим последний разделитель пути
+        int lastSlashIndex = filePath.lastIndexOf('/');
+        int lastBackslashIndex = filePath.lastIndexOf('\\');
+        int separatorIndex = Math.max(lastSlashIndex, lastBackslashIndex);
+
+        // Если найден разделитель, возвращаем часть после него
+        if (separatorIndex >= 0 && separatorIndex < filePath.length() - 1) {
+            return filePath.substring(separatorIndex + 1);
+        }
+
+        // Если разделителей нет, возвращаем весь путь
+        return filePath;
+    }
+
+    /**
+     * Получает относительный веб-путь для изображения.
+     * Gets relative web path for image.
+     *
+     * @return веб-путь / web path
+     */
+    public String getWebPath() {
+        String filename = getFilenameFromPath();
+        if (filename.isEmpty()) {
+            return "";
+        }
+        return "/admin/photo-gallery/image/" + filename;
     }
 
     @Override
