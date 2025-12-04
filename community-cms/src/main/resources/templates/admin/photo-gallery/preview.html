@@ -125,7 +125,7 @@
                                data-lightbox="gallery"
                                data-title="${item.title}"
                                class="d-block">
-                                <img th:src="@{'/admin/photo-gallery/image/' + item.primaryImage.filePath}"
+                                <img th:src="${item.primaryImage.webPath}"
                                      th:alt="${item.title}"
                                      class="img-fluid rounded shadow"
                                      style="max-height: 500px; object-fit: contain;">
@@ -163,7 +163,7 @@
                                            data-lightbox="gallery"
                                            th:data-title="${item.title} + ' - ' + ${image.fileName}"
                                            class="d-block">
-                                            <img th:src="@{'/admin/photo-gallery/image/' + image.filePath}"
+                                            <img th:src="${image.webPath}"
                                                  th:alt="${image.fileName}"
                                                  class="img-fluid w-100"
                                                  style="height: 150px; object-fit: cover;">
