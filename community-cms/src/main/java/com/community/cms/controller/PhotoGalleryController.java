@@ -159,6 +159,26 @@ public class PhotoGalleryController {
         }
     }
 
+
+
+
+
+
+    @GetMapping("/test-simple")
+    public String testSimple() {
+        return "admin/photo-gallery/test-simple";
+    }
+
+
+
+
+
+
+
+
+
+
+
     @PostMapping("/edit/{id}")
     public String updatePhotoGalleryItem(
             @PathVariable Long id,

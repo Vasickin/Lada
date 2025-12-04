@@ -13,7 +13,6 @@
 </head>
 <body>
 <div layout:fragment="content">
-
     <!-- ========== ТЕСТОВЫЙ БЛОК ========== -->
     <div style="position: fixed; top: 0; left: 0; right: 0; background: red; color: white; padding: 20px; z-index: 9999;">
         <h3>🚨 ТЕСТ THYMELEAF 🚨</h3>
@@ -23,8 +22,6 @@
         <button class="btn btn-warning">Тест кнопка 2</button>
     </div>
     <!-- ========== КОНЕЦ ТЕСТОВОГО БЛОКА ========== -->
-
-
 
     <div class="container-fluid">
         <!-- ========== ЗАГОЛОВОК ФОРМЫ ========== -->
@@ -86,7 +83,7 @@
             </div>
         </div>
 
-        <!-- ========== ОСНОВНАЯ ФОРМА ========== -->
+        <!-- ========== ОСНОВНАЯ ФОРМЫ ========== -->
         <form th:action="@{/admin/photo-gallery/edit/{id}(id=${photoGalleryItem.id})}"
               th:object="${photoGalleryItem}"
               method="post"
@@ -220,7 +217,7 @@
                                 <div th:if="${#fields.hasErrors('categories')}" class="mt-2">
                                     <div class="text-danger small">
                                         <i class="bi bi-exclamation-triangle me-1"></i>
-                                        <span th:errors="*{categories}">Выберите хотя бы одну категорию</span>
+                                        <span th:errors="*{categories}">Выберите хотя бы одну категории</span>
                                     </div>
                                 </div>
 
@@ -314,17 +311,16 @@
                                     <div th:each="image : ${photoGalleryItem.images}"
                                          class="col-4">
                                         <div class="position-relative border rounded overflow-hidden">
-                                            <img th:src="@{__${#strings.startsWith(image.filePath, '/static/') ?
-                                                       image.filePath :
-                                                       '/static/' + image.filePath}__}"
+                                            <!-- Упрощенная версия без сложного выражения -->
+                                            <img th:src="@{'/static/' + image.filePath}"
                                                  th:alt="${image.fileName}"
                                                  class="img-fluid w-100"
                                                  style="height: 80px; object-fit: cover;">
                                             <div class="position-absolute top-0 end-0 p-1">
-                                                <span th:if="${image.primary}"
+                                            <!--    <span th:if="${image.primary}"
                                                       class="badge bg-success">
                                                     <i class="bi bi-star-fill"></i>
-                                                </span>
+                                                </span> -->
                                             </div>
                                             <div class="position-absolute bottom-0 start-0 end-0 bg-dark bg-opacity-75 p-1">
                                                 <small class="text-white d-block text-truncate"
@@ -416,10 +412,26 @@
                         </div>
                     </div>
 
+
+
+                    <!-- ========== ДИАГНОСТИКА ПЕРЕД КНОПКАМИ ========== -->
+                    <div style="background: purple; color: white; padding: 20px; margin: 20px 0; border: 5px solid yellow;">
+                        <h3>🔍 ДИАГНОСТИКА: Эта точка достигнута?</h3>
+                        <p>Если этот блок ВИДЕН - значит проблема в блоке кнопок</p>
+                        <p>Если этот блок НЕ ВИДЕН - значит проблема ДО него</p>
+                        <p>Количество изображений: [[${photoGalleryItem.images != null ? photoGalleryItem.images.size() : 0}]]</p>
+                    </div>
+                    <!-- ========== КОНЕЦ ДИАГНОСТИКИ ========== -->
+
+
+
+
+
+
                     <!-- ========== КНОПКИ ДЕЙСТВИЙ ========== -->
-                    <div class="sticky-top" style="top: 20px; z-index: 1000;">
-                        <div class="card border-0 shadow-sm">
-                            <div class="card-body">
+                    <div class="sticky-top" style="top: 20px; z-index: 1000; border: 3px solid lime !important;">
+                        <div class="card border-0 shadow-sm" style="border: 2px solid red !important;">
+                            <div class="card-body" style="background: cyan !important;">
                                 <div class="d-grid gap-2">
                                     <!-- Кнопка сохранения -->
                                     <button type="submit"
@@ -457,10 +469,10 @@
                             </div>
                         </div>
                     </div>
-                </div>
-            </div>
-        </form>
-    </div>
+                </div> <!-- закрытие col-lg-4 -->
+            </div> <!-- закрытие row -->
+        </form> <!-- закрытие формы -->
+    </div> <!-- закрытие container-fluid -->
 
     <!-- ========== МОДАЛЬНОЕ ОКНО ПОДТВЕРЖДЕНИЯ УДАЛЕНИЯ ========== -->
     <div class="modal fade" id="deleteModal" tabindex="-1" aria-hidden="true">
@@ -507,7 +519,7 @@
             </div>
         </div>
     </div>
-</div>
+</div> <!-- закрытие layout:fragment="content" -->
 
 <!-- ========== УПРОЩЕННЫЙ JAVASCRIPT ДЛЯ ФОРМЫ ========== -->
 <script th:inline="javascript">
