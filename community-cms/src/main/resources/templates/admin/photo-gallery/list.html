@@ -325,18 +325,19 @@
                                     <!-- Категории -->
                                     <td>
                                         <div class="d-flex flex-wrap gap-1">
-                                            <span th:each="category : ${item.categories}"
-                                                  class="badge"
-                                                  th:class="${(category.name == 'Главная') ? 'bg-danger' :
-            (category.name == 'О нас') ? 'bg-success' :
-            (category.name == 'Наши проекты') ? 'bg-primary' : 'bg-info'}"
-                                                  th:text="${category.name}">
-                                                Категория
-                                            </span>
+        <span th:each="category : ${item.categories}"
+              class="badge rounded-pill"
+              th:class="${(category.name == 'Главная') ? 'badge bg-danger' :
+                         (category.name == 'О нас') ? 'badge bg-success' :
+                         (category.name == 'Наши проекты') ? 'badge bg-primary' :
+                         'badge bg-info'}"
+              th:text="${category.name}">
+            Категория
+        </span>
                                             <span th:if="${#lists.isEmpty(item.categories)}"
                                                   class="text-muted small">
-                                                Нет категорий
-                                            </span>
+            Нет категорий
+        </span>
                                         </div>
                                     </td>
 
