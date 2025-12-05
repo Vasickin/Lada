@@ -14,11 +14,27 @@
 
     <!-- JavaScript для динамики -->
     <script th:src="@{/js/photo-gallery.js}" defer></script>
+
+    <!-- ДОБАВЛЕНО: Стили для ограничения ширины -->
+    <style>
+        /* ИЗМЕНЕНИЕ 1: Ограничение максимальной ширины */
+        .photo-gallery-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding-left: 20px;
+            padding-right: 20px;
+        }
+
+        /* ИЗМЕНЕНИЕ 2: Отступ снизу для таблицы */
+        .table-container {
+            margin-bottom: 30px;
+        }
+    </style>
 </head>
 <body>
 <div layout:fragment="content">
     <!-- ========== ЗАГОЛОВОК И СТАТИСТИКА ========== -->
-    <div class="container-fluid">
+    <div class="container-fluid photo-gallery-container">
         <div class="row mb-4">
             <div class="col-12">
                 <div class="d-flex justify-content-between align-items-center">
@@ -32,7 +48,7 @@
                         </p>
                     </div>
 
-                    <!-- ИСПРАВЛЕНИЕ 1: Добавил кнопки навигации слева -->
+                    <!-- Кнопки навигации -->
                     <div class="d-flex gap-2 align-items-center">
                         <a th:href="@{/admin}" class="btn btn-outline-secondary">
                             <i class="bi bi-speedometer2 me-1"></i>
@@ -145,7 +161,7 @@
                                        th:classappend="${isPublishedView} ? 'active' : ''">
                                         <span th:text="#{photo.gallery.filter.published}">Опубликовано</span>
                                     </a>
-                                    <!-- ИСПРАВЛЕНИЕ 2: Добавил фильтр Черновики -->
+                                    <!-- Фильтр Черновики -->
                                     <a th:href="@{/admin/photo-gallery/draft}"
                                        class="btn btn-outline-secondary"
                                        th:classappend="${isDraftView} ? 'active' : ''">
@@ -205,7 +221,8 @@
         </div>
 
         <!-- ========== ТАБЛИЦА ЭЛЕМЕНТОВ ========== -->
-        <div class="row">
+        <!-- ДОБАВЛЕНО: класс table-container для отступа снизу -->
+        <div class="row table-container">
             <div class="col-12">
                 <div class="card border-0 shadow-sm">
                     <div class="card-body p-0">
@@ -439,7 +456,7 @@
             </div>
         </div>
 
-        <!-- ИСПРАВЛЕНИЕ 3: Добавил кнопки навигации снизу -->
+        <!-- Кнопки навигации снизу -->
         <div class="row mt-4">
             <div class="col-12">
                 <div class="d-flex justify-content-between align-items-center">
@@ -501,7 +518,7 @@
             });
         }
 
-        // Поиск по названию - ИСПРАВЛЕНИЕ: Добавил debounce
+        // Поиск по названию - debounce
         const searchForm = document.querySelector('.search-form');
         if (searchForm) {
             const searchInput = searchForm.querySelector('input[name="search"]');
