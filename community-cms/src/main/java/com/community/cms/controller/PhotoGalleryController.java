@@ -48,8 +48,8 @@ public class PhotoGalleryController {
     // ========== СПИСОК ЭЛЕМЕНТОВ ==========
 
     @GetMapping("")
-    public String listPhotoGalleryItems(Model model) {
-        List<PhotoGalleryItem> items = photoGalleryService.getAllPhotoGalleryItems();
+    public String listPhotoGalleryItems(@RequestParam(required = false) String search, Model model) {
+        List<PhotoGalleryItem> items = photoGalleryService.searchPhotoGalleryItems(search);
         List<PublicationCategory> categories = publicationCategoryService.getAllCategories();
         List<Integer> availableYears = photoGalleryService.getAvailableYears();
 
@@ -141,6 +141,7 @@ public class PhotoGalleryController {
             logger.warn("Ошибки валидации: {}", bindingResult.getAllErrors());
             return prepareCreateOrEditModel(model, item, false, categoryIds);
         }
+
 
         if (categoryIds == null || categoryIds.isEmpty()) {
             bindingResult.rejectValue("categories", "error.photoGalleryItem",
