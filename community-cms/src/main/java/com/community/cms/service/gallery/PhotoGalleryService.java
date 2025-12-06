@@ -18,6 +18,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -157,6 +158,139 @@ public class PhotoGalleryService {
         logger.info("Элемент обновлен успешно. ID: {}", updatedItem.getId());
         return updatedItem;
     }
+
+
+
+    // Добавляем в PhotoGalleryService.java:
+
+    /**
+     * Обновляет элемент фото-галереи с сохранением указанных изображений.
+     * Updates photo gallery item while keeping specified images.
+     *
+     * @param id ID элемента / item ID
+     * @param item данные для обновления / data to update
+     * @param keepImageIds список ID изображений для сохранения / list of image IDs to keep
+     * @return обновленный элемент / updated item
+     */
+    public PhotoGalleryItem updatePhotoGalleryItem(Long id, PhotoGalleryItem item, List<Long> keepImageIds) {
+        logger.info("Обновление элемента с сохранением изображений. ID: {}, сохраняемые: {}",
+                id, keepImageIds);
+
+        PhotoGalleryItem existingItem = getPhotoGalleryItemById(id);
+
+        // Обновляем поля
+        existingItem.setTitle(item.getTitle());
+        existingItem.setDescription(item.getDescription());
+        existingItem.setYear(item.getYear());
+        existingItem.setPublished(item.getPublished());
+        existingItem.setCategories(item.getCategories());
+        existingItem.setUpdatedAt(LocalDateTime.now());
+
+        // Сохраняем только указанные изображения
+        if (keepImageIds != null && !keepImageIds.isEmpty()) {
+            // Удаляем изображения, которых нет в списке keepImageIds
+            Iterator<MediaFile> iterator = existingItem.getImages().iterator();
+            while (iterator.hasNext()) {
+                MediaFile image = iterator.next();
+                if (!keepImageIds.contains(image.getId())) {
+                    try {
+                        // Удаляем файл из файловой системы
+                        fileStorageService.deleteFile(image.getFilePath());
+                        iterator.remove();
+                        logger.info("Удалено изображение: {}", image.getId());
+                    } catch (Exception e) {
+                        logger.error("Ошибка при удалении файла {}: {}",
+                                image.getFilePath(), e.getMessage());
+                    }
+                }
+            }
+        }
+
+        return photoGalleryItemRepository.save(existingItem);
+    }
+
+    /**
+     * Обновляет элемент фото-галереи с загрузкой новых изображений и сохранением старых.
+     * Updates photo gallery item with new images while keeping old ones.
+     *
+     * @param id ID элемента / item ID
+     * @param item данные для обновления / data to update
+     * @param newImages новые изображения / new images
+     * @param keepImageIds список ID старых изображений для сохранения / list of old image IDs to keep
+     * @return обновленный элемент / updated item
+     * @throws IOException если произошла ошибка при загрузке файлов / if file upload error occurs
+     * @throws FileStorageService.FileStorageException если произошла ошибка при сохранении файлов / if file storage error occurs
+     */
+    public PhotoGalleryItem updatePhotoGalleryItemWithImages(Long id, PhotoGalleryItem item,
+                                                             MultipartFile[] newImages, List<Long> keepImageIds)
+            throws IOException, FileStorageService.FileStorageException {
+        logger.info("Обновление элемента с новыми изображениями. ID: {}, новые файлы: {}, сохраняемые: {}",
+                id, newImages != null ? newImages.length : 0, keepImageIds);
+
+        // Фильтруем null и пустые файлы
+        List<MultipartFile> validNewImages = new ArrayList<>();
+        if (newImages != null) {
+            for (MultipartFile image : newImages) {
+                if (image != null && !image.isEmpty() && image.getSize() > 0) {
+                    validNewImages.add(image);
+                }
+            }
+        }
+
+        // Получаем текущий элемент
+        PhotoGalleryItem existingItem = getPhotoGalleryItemById(id);
+
+        // Проверяем общее количество изображений
+        int currentImageCount = keepImageIds != null ? keepImageIds.size() : existingItem.getImagesCount();
+        if (currentImageCount + validNewImages.size() > MAX_IMAGES_PER_ITEM) {
+            throw new IllegalArgumentException(
+                    String.format("Превышено максимальное количество изображений. Сохраняемые: %d, новые: %d, максимум: %d",
+                            currentImageCount, validNewImages.size(), MAX_IMAGES_PER_ITEM)
+            );
+        }
+
+        // Сначала удаляем изображения, которые не в списке keepImageIds
+        if (keepImageIds != null && !keepImageIds.isEmpty()) {
+            Iterator<MediaFile> iterator = existingItem.getImages().iterator();
+            while (iterator.hasNext()) {
+                MediaFile image = iterator.next();
+                if (!keepImageIds.contains(image.getId())) {
+                    try {
+                        fileStorageService.deleteFile(image.getFilePath());
+                        iterator.remove();
+                        logger.info("Удалено изображение: {}", image.getId());
+                    } catch (Exception e) {
+                        logger.error("Ошибка при удалении файла {}: {}",
+                                image.getFilePath(), e.getMessage());
+                    }
+                }
+            }
+        }
+
+        // Обновляем остальные поля
+        existingItem.setTitle(item.getTitle());
+        existingItem.setDescription(item.getDescription());
+        existingItem.setYear(item.getYear());
+        existingItem.setPublished(item.getPublished());
+        existingItem.setCategories(item.getCategories());
+        existingItem.setUpdatedAt(LocalDateTime.now());
+
+        // Добавляем новые изображения
+        if (!validNewImages.isEmpty()) {
+            addImagesToPhotoGalleryItem(existingItem.getId(),
+                    validNewImages.toArray(new MultipartFile[0]));
+        }
+
+        // Сохраняем и возвращаем обновленный элемент
+        PhotoGalleryItem updatedItem = photoGalleryItemRepository.save(existingItem);
+        logger.info("Элемент успешно обновлен. ID: {}, всего изображений: {}",
+                id, updatedItem.getImagesCount());
+
+        return updatedItem;
+    }
+
+
+
 
     /**
      * Обновляет элемент фото-галереи с загрузкой новых изображений.

@@ -206,12 +206,12 @@ public class PhotoGalleryController {
             BindingResult bindingResult,
             @RequestParam(value = "files", required = false) MultipartFile[] files,
             @RequestParam(value = "categoryIds", required = false) List<Long> categoryIds,
-            @RequestParam(value = "deleteExistingImages", required = false) List<Long> deleteImageIds,
+            @RequestParam(value = "keepImageIds", required = false) List<Long> keepImageIds, // ИЗМЕНЕНИЕ: переименуем параметр
             RedirectAttributes redirectAttributes,
             Model model) {
 
-        logger.info("Редактирование элемента ID: {}, категории: {}, файлов: {}",
-                id, categoryIds, files != null ? files.length : 0);
+        logger.info("Редактирование элемента ID: {}, категории: {}, файлов: {}, сохраняемые изображения: {}",
+                id, categoryIds, files != null ? files.length : 0, keepImageIds);
 
         if (bindingResult.hasErrors()) {
             logger.warn("Ошибки валидации: {}", bindingResult.getAllErrors());
@@ -227,24 +227,20 @@ public class PhotoGalleryController {
         try {
             addSelectedCategories(item, categoryIds);
 
-            // Удаляем помеченные изображения
-            if (deleteImageIds != null && !deleteImageIds.isEmpty()) {
-                for (Long imageId : deleteImageIds) {
-                    photoGalleryService.removeImageFromPhotoGalleryItem(id, imageId);
-                }
-            }
-
-            // ИСПРАВЛЕНИЕ: Проверяем наличие новых файлов
+            // ПРОВЕРЯЕМ: есть ли новые файлы?
             PhotoGalleryItem updatedItem;
 
             if (files != null && files.length > 0) {
-                // Есть новые изображения - используем метод с изображениями
-                logger.info("Обновление элемента с новыми изображениями. ID: {}, файлов: {}", id, files.length);
-                updatedItem = photoGalleryService.updatePhotoGalleryItemWithImages(id, item, files);
+                // Есть новые изображения - используем метод с сохранением старых
+                logger.info("Обновление элемента с новыми изображениями. ID: {}, файлов: {}, сохраняемые: {}",
+                        id, files.length, keepImageIds);
+                updatedItem = photoGalleryService.updatePhotoGalleryItemWithImages(
+                        id, item, files, keepImageIds);
             } else {
                 // Нет новых изображений - используем обычный метод обновления
-                logger.info("Обновление элемента без новых изображений. ID: {}", id);
-                updatedItem = photoGalleryService.updatePhotoGalleryItem(id, item);
+                logger.info("Обновление элемента без новых изображений. ID: {}, сохраняемые: {}",
+                        id, keepImageIds);
+                updatedItem = photoGalleryService.updatePhotoGalleryItem(id, item, keepImageIds);
             }
 
             redirectAttributes.addFlashAttribute("successMessage",
@@ -365,7 +361,7 @@ public class PhotoGalleryController {
         model.addAttribute("maxFiles", MAX_UPLOAD_FILES);
         model.addAttribute("isEdit", isEdit);
 
-        return "admin/photo-gallery/create-or-edit";
+        return "admin/photo-gallery/create";
     }
 
     private void addSelectedCategories(PhotoGalleryItem item, List<Long> categoryIds) {
