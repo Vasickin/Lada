@@ -199,11 +199,6 @@ public class PhotoGalleryController {
         }
     }
 
-    @GetMapping("/test-simple")
-    public String testSimple() {
-        return "admin/photo-gallery/test-simple";
-    }
-
     @PostMapping("/edit/{id}")
     public String updatePhotoGalleryItem(
             @PathVariable Long id,
@@ -239,9 +234,18 @@ public class PhotoGalleryController {
                 }
             }
 
-            // Обновляем элемент с новыми файлами
-            PhotoGalleryItem updatedItem = photoGalleryService.updatePhotoGalleryItemWithImages(
-                    id, item, files);
+            // ИСПРАВЛЕНИЕ: Проверяем наличие новых файлов
+            PhotoGalleryItem updatedItem;
+
+            if (files != null && files.length > 0) {
+                // Есть новые изображения - используем метод с изображениями
+                logger.info("Обновление элемента с новыми изображениями. ID: {}, файлов: {}", id, files.length);
+                updatedItem = photoGalleryService.updatePhotoGalleryItemWithImages(id, item, files);
+            } else {
+                // Нет новых изображений - используем обычный метод обновления
+                logger.info("Обновление элемента без новых изображений. ID: {}", id);
+                updatedItem = photoGalleryService.updatePhotoGalleryItem(id, item);
+            }
 
             redirectAttributes.addFlashAttribute("successMessage",
                     String.format("Элемент '%s' успешно обновлен", updatedItem.getTitle()));
