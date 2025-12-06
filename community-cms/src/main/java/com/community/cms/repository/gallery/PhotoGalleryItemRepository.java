@@ -147,4 +147,14 @@ public interface PhotoGalleryItemRepository extends JpaRepository<PhotoGalleryIt
      */
     @Query("SELECT pgi FROM PhotoGalleryItem pgi WHERE pgi.images IS EMPTY")
     List<PhotoGalleryItem> findItemsWithoutImages();
+
+    /**
+     * Получает все неопубликованные элементы фото-галереи (черновики).
+     * Элементы возвращаются отсортированными по дате создания в порядке убывания:
+     * сначала самые новые, затем более старые.
+     * Используется для отображения черновиков в административной панели.
+     *
+     * @return список элементов фото-галереи со статусом "черновик"
+     */
+    List<PhotoGalleryItem> findByPublishedFalseOrderByCreatedAtDesc();
 }

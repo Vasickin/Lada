@@ -438,6 +438,17 @@ public class PhotoGalleryService {
     }
 
     /**
+     * Получает черновики элементов фото-галереи.
+     * Gets draft photo gallery items.
+     *
+     * @return список черновиков / list of draft items
+     */
+    @Transactional(readOnly = true)
+    public List<PhotoGalleryItem> getDraftPhotoGalleryItems() {
+        return photoGalleryItemRepository.findByPublishedFalseOrderByCreatedAtDesc();
+    }
+
+    /**
      * Получает опубликованные элементы по году.
      * Gets published items by year.
      *
@@ -637,43 +648,25 @@ public class PhotoGalleryService {
         return contentType != null && contentType.startsWith("image/");
     }
 
+    public MediaFileRepository getMediaFileRepository() {
+        return mediaFileRepository;
+    }
+
     // ========== КЛАСС СТАТИСТИКИ ==========
 
     /**
-     * Класс статистики фото-галереи.
-     * Photo gallery statistics class.
-     */
-    public static class PhotoGalleryStatistics {
-        private final long totalItems;
-        private final long publishedCount;
-        private final long draftCount;
-        private final long totalImages;
-        private final long itemsWithoutImages;
-        private final long itemsWithoutCategories;
-
-        public PhotoGalleryStatistics(long totalItems, long publishedCount, long draftCount,
-                                      long totalImages, long itemsWithoutImages, long itemsWithoutCategories) {
-            this.totalItems = totalItems;
-            this.publishedCount = publishedCount;
-            this.draftCount = draftCount;
-            this.totalImages = totalImages;
-            this.itemsWithoutImages = itemsWithoutImages;
-            this.itemsWithoutCategories = itemsWithoutCategories;
-        }
-
-        public long getTotalItems() { return totalItems; }
-        public long getPublishedCount() { return publishedCount; }
-        public long getDraftCount() { return draftCount; }
-        public long getTotalImages() { return totalImages; }
-        public long getItemsWithoutImages() { return itemsWithoutImages; }
-        public long getItemsWithoutCategories() { return itemsWithoutCategories; }
+         * Класс статистики фото-галереи.
+         * Photo gallery statistics class.
+         */
+        public record PhotoGalleryStatistics(long totalItems, long publishedCount, long draftCount, long totalImages,
+                                             long itemsWithoutImages, long itemsWithoutCategories) {
 
         @Override
-        public String toString() {
-            return String.format(
-                    "PhotoGalleryStatistics{totalItems=%d, published=%d, draft=%d, totalImages=%d, withoutImages=%d, withoutCategories=%d}",
-                    totalItems, publishedCount, draftCount, totalImages, itemsWithoutImages, itemsWithoutCategories
-            );
+            public String toString() {
+                return String.format(
+                        "PhotoGalleryStatistics{totalItems=%d, published=%d, draft=%d, totalImages=%d, withoutImages=%d, withoutCategories=%d}",
+                        totalItems, publishedCount, draftCount, totalImages, itemsWithoutImages, itemsWithoutCategories
+                );
+            }
         }
-    }
 }

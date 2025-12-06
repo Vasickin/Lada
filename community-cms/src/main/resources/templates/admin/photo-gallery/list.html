@@ -11,7 +11,8 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <!-- Bootstrap Icons -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
-
+    <!-- Bootstrap 5 JS Bundle (ОБЯЗАТЕЛЬНО!) -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <!-- JavaScript для динамики -->
     <script th:src="@{/js/photo-gallery.js}" defer></script>
 
@@ -324,18 +325,19 @@
                                     <!-- Категории -->
                                     <td>
                                         <div class="d-flex flex-wrap gap-1">
-                                            <span th:each="category : ${item.categories}"
-                                                  class="badge"
-                                                  th:class="${(category.name == 'Главная') ? 'bg-danger' :
-            (category.name == 'О нас') ? 'bg-success' :
-            (category.name == 'Наши проекты') ? 'bg-primary' : 'bg-info'}"
-                                                  th:text="${category.name}">
-                                                Категория
-                                            </span>
+        <span th:each="category : ${item.categories}"
+              class="badge rounded-pill"
+              th:class="${(category.name == 'Главная') ? 'badge bg-danger' :
+                         (category.name == 'О нас') ? 'badge bg-success' :
+                         (category.name == 'Наши проекты') ? 'badge bg-primary' :
+                         'badge bg-info'}"
+              th:text="${category.name}">
+            Категория
+        </span>
                                             <span th:if="${#lists.isEmpty(item.categories)}"
                                                   class="text-muted small">
-                                                Нет категорий
-                                            </span>
+            Нет категорий
+        </span>
                                         </div>
                                     </td>
 
@@ -384,22 +386,24 @@
                                             <form th:if="${item.published}"
                                                   th:action="@{/admin/photo-gallery/unpublish/{id}(id=${item.id})}"
                                                   method="post"
-                                                  class="d-inline"
-                                                  onsubmit="return confirm('Снять элемент с публикации?')">
-                                                <button type="submit"
+                                                  class="d-inline">
+                                                <button type="button"
                                                         class="btn btn-outline-warning"
+                                                        onclick="showCustomConfirm('Снять элемент с публикации?', this.closest('form'))"
                                                         title="Снять с публикации"
                                                         data-bs-toggle="tooltip">
                                                     <i class="bi bi-eye-slash"></i>
                                                 </button>
                                             </form>
+
+
                                             <form th:unless="${item.published}"
                                                   th:action="@{/admin/photo-gallery/publish/{id}(id=${item.id})}"
                                                   method="post"
-                                                  class="d-inline"
-                                                  onsubmit="return confirm('Опубликовать элемент?')">
-                                                <button type="submit"
+                                                  class="d-inline">
+                                                <button type="button"
                                                         class="btn btn-outline-success"
+                                                        onclick="showCustomConfirm('Опубликовать элемент?', this.closest('form'))"
                                                         title="Опубликовать"
                                                         data-bs-toggle="tooltip">
                                                     <i class="bi bi-eye"></i>
@@ -408,16 +412,16 @@
 
                                             <!-- Удаление -->
                                             <form th:action="@{/admin/photo-gallery/delete/{id}(id=${item.id})}"
-                                                  method="post"
-                                                  class="d-inline"
-                                                  onsubmit="return confirm('Удалить элемент? Это действие нельзя отменить.')">
-                                                <button type="submit"
-                                                        class="btn btn-outline-danger"
-                                                        title="Удалить"
-                                                        data-bs-toggle="tooltip">
-                                                    <i class="bi bi-trash"></i>
-                                                </button>
-                                            </form>
+                                                   method="post"
+                                                   class="d-inline">
+                                            <button type="button"
+                                                    class="btn btn-outline-danger"
+                                                    onclick="showCustomConfirm('Удалить элемент? Это действие нельзя отменить.', this.closest('form'))"
+                                                    title="Удалить"
+                                                    data-bs-toggle="tooltip">
+                                                <i class="bi bi-trash"></i>
+                                            </button>
+                                        </form>
                                         </div>
                                     </td>
                                 </tr>
@@ -480,13 +484,66 @@
     </div>
 </div>
 
+
+<!-- КАСТОМНОЕ ОКНО ПОДТВЕРЖДЕНИЯ -->
+<div class="modal fade" id="customConfirmModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Подтверждение</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p id="customConfirmMessage">Вы уверены?</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+                <button type="button" class="btn btn-primary" id="customConfirmButton">Подтвердить</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <!-- ========== JAVASCRIPT ДЛЯ ФИЛЬТРОВ ========== -->
 <script th:inline="javascript">
     /*<![CDATA[*/
 
-    // Инициализация tooltips
+    // ========== КАСТОМНОЕ ПОДТВЕРЖДЕНИЕ ==========
+    let currentForm = null;
+
+    function showCustomConfirm(message, form) {
+        console.log('showCustomConfirm вызвана');
+        document.getElementById('customConfirmMessage').textContent = message;
+        currentForm = form;
+
+        const modal = new bootstrap.Modal(document.getElementById('customConfirmModal'));
+        modal.show();
+    }
+
+    // ========== ИНИЦИАЛИЗАЦИЯ ==========
     document.addEventListener('DOMContentLoaded', function() {
-        // Bootstrap tooltips
+        console.log('DOM загружен');
+
+        // Кнопка подтверждения в модалке
+        const confirmBtn = document.getElementById('customConfirmButton');
+        if (confirmBtn) {
+            confirmBtn.addEventListener('click', function() {
+                console.log('Нажата кнопка подтверждения');
+                if (currentForm) {
+                    const modal = bootstrap.Modal.getInstance(document.getElementById('customConfirmModal'));
+                    if (modal) {
+                        modal.hide();
+                    }
+                    console.log('Отправляем форму');
+                    currentForm.submit();
+                }
+            });
+        }
+
+        // СУЩЕСТВУЮЩИЙ КОД - ОСТАВЛЯЕМ НЕИЗМЕННЫМ
+        // Но проверим скобки!
+
+        // Инициализация tooltips
         var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
         var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
             return new bootstrap.Tooltip(tooltipTriggerEl);
@@ -533,9 +590,11 @@
                 }, 500);
             });
         }
-    });
+
+    }); // КОНЕЦ DOMContentLoaded
 
     /*]]>*/
+</script>
 </script>
 </body>
 </html>

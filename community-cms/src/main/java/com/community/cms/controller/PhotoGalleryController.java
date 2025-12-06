@@ -48,8 +48,46 @@ public class PhotoGalleryController {
     // ========== СПИСОК ЭЛЕМЕНТОВ ==========
 
     @GetMapping("")
-    public String listPhotoGalleryItems(Model model) {
-        List<PhotoGalleryItem> items = photoGalleryService.getAllPhotoGalleryItems();
+    public String listPhotoGalleryItems(@RequestParam(required = false) String search, Model model) {
+        List<PhotoGalleryItem> items = photoGalleryService.searchPhotoGalleryItems(search);
+        List<PublicationCategory> categories = publicationCategoryService.getAllCategories();
+        List<Integer> availableYears = photoGalleryService.getAvailableYears();
+
+        model.addAttribute("items", items);
+        model.addAttribute("categories", categories);
+        model.addAttribute("totalItems", items.size());
+        model.addAttribute("statistics", photoGalleryService.getPhotoGalleryStatistics());
+        model.addAttribute("isDraftView", false);
+        model.addAttribute("isPublishedView", false);
+        model.addAttribute("selectedCategory", null);
+        model.addAttribute("selectedYear", null);
+        model.addAttribute("availableYears", availableYears);
+
+        return "admin/photo-gallery/list";
+    }
+
+    @GetMapping("/published")
+    public String showPublishedItems(Model model) {
+        List<PhotoGalleryItem> items = photoGalleryService.getPublishedPhotoGalleryItems();
+        List<PublicationCategory> categories = publicationCategoryService.getAllCategories();
+        List<Integer> availableYears = photoGalleryService.getAvailableYears();
+
+        model.addAttribute("items", items);
+        model.addAttribute("categories", categories);
+        model.addAttribute("totalItems", items.size());
+        model.addAttribute("statistics", photoGalleryService.getPhotoGalleryStatistics());
+        model.addAttribute("isPublishedView", true);
+        model.addAttribute("isDraftView", false);
+        model.addAttribute("selectedCategory", null);
+        model.addAttribute("selectedYear", null);
+        model.addAttribute("availableYears", availableYears);
+
+        return "admin/photo-gallery/list";
+    }
+
+    @GetMapping("/draft")
+    public String showDraftItems(Model model) {
+        List<PhotoGalleryItem> items = photoGalleryService.getDraftPhotoGalleryItems();
         List<PublicationCategory> categories = publicationCategoryService.getAllCategories();
         List<Integer> availableYears = photoGalleryService.getAvailableYears();
 
@@ -58,6 +96,7 @@ public class PhotoGalleryController {
         model.addAttribute("totalItems", items.size());
         model.addAttribute("statistics", photoGalleryService.getPhotoGalleryStatistics());
         model.addAttribute("isPublishedView", false);
+        model.addAttribute("isDraftView", true);
         model.addAttribute("selectedCategory", null);
         model.addAttribute("selectedYear", null);
         model.addAttribute("availableYears", availableYears);
@@ -102,6 +141,7 @@ public class PhotoGalleryController {
             logger.warn("Ошибки валидации: {}", bindingResult.getAllErrors());
             return prepareCreateOrEditModel(model, item, false, categoryIds);
         }
+
 
         if (categoryIds == null || categoryIds.isEmpty()) {
             bindingResult.rejectValue("categories", "error.photoGalleryItem",
@@ -159,25 +199,10 @@ public class PhotoGalleryController {
         }
     }
 
-
-
-
-
-
     @GetMapping("/test-simple")
     public String testSimple() {
         return "admin/photo-gallery/test-simple";
     }
-
-
-
-
-
-
-
-
-
-
 
     @PostMapping("/edit/{id}")
     public String updatePhotoGalleryItem(
