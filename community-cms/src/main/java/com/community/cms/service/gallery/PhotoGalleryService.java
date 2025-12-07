@@ -16,7 +16,9 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -124,23 +126,171 @@ public class PhotoGalleryService {
     public PhotoGalleryItem updatePhotoGalleryItem(Long id, PhotoGalleryItem item) {
         logger.info("Обновление элемента фото-галереи. ID: {}", id);
 
-        // Проверяем существование элемента
-        if (!photoGalleryItemRepository.existsById(id)) {
-            throw new EntityNotFoundException("Элемент фото-галереи не найден. ID: " + id);
+        // Получаем существующий элемент из базы данных
+        PhotoGalleryItem existingItem = getPhotoGalleryItemById(id);
+
+        // Обновляем только изменяемые поля, НЕ ТРОГАЯ изображения
+
+        // 1. Текстовые поля
+        existingItem.setTitle(item.getTitle());
+        existingItem.setDescription(item.getDescription());
+        existingItem.setYear(item.getYear());
+
+        // 2. Статус публикации
+        existingItem.setPublished(item.getPublished());
+
+        // 3. Категории (если переданы в item)
+        if (item.getCategories() != null && !item.getCategories().isEmpty()) {
+            // Очищаем старые категории и добавляем новые
+            existingItem.getCategories().clear();
+            existingItem.getCategories().addAll(item.getCategories());
         }
 
-        // Устанавливаем ID
-        item.setId(id);
+        // 4. Обновляем дату изменения
+        existingItem.setUpdatedAt(LocalDateTime.now());
 
-        // Валидация бизнес-правил
-        validatePhotoGalleryItem(item);
+        // Валидация бизнес-правил (на обновленном объекте)
+        validatePhotoGalleryItem(existingItem);
 
-        // Сохраняем обновленный элемент
-        PhotoGalleryItem updatedItem = photoGalleryItemRepository.save(item);
+        // Сохраняем обновленный элемент (со старыми изображениями)
+        PhotoGalleryItem updatedItem = photoGalleryItemRepository.save(existingItem);
 
         logger.info("Элемент обновлен успешно. ID: {}", updatedItem.getId());
         return updatedItem;
     }
+
+
+
+    // Добавляем в PhotoGalleryService.java:
+
+    /**
+     * Обновляет элемент фото-галереи с сохранением указанных изображений.
+     * Updates photo gallery item while keeping specified images.
+     *
+     * @param id ID элемента / item ID
+     * @param item данные для обновления / data to update
+     * @param keepImageIds список ID изображений для сохранения / list of image IDs to keep
+     * @return обновленный элемент / updated item
+     */
+    public PhotoGalleryItem updatePhotoGalleryItem(Long id, PhotoGalleryItem item, List<Long> keepImageIds) {
+        logger.info("Обновление элемента с сохранением изображений. ID: {}, сохраняемые: {}",
+                id, keepImageIds);
+
+        PhotoGalleryItem existingItem = getPhotoGalleryItemById(id);
+
+        // Обновляем поля
+        existingItem.setTitle(item.getTitle());
+        existingItem.setDescription(item.getDescription());
+        existingItem.setYear(item.getYear());
+        existingItem.setPublished(item.getPublished());
+        existingItem.setCategories(item.getCategories());
+        existingItem.setUpdatedAt(LocalDateTime.now());
+
+        // Сохраняем только указанные изображения
+        if (keepImageIds != null && !keepImageIds.isEmpty()) {
+            // Удаляем изображения, которых нет в списке keepImageIds
+            Iterator<MediaFile> iterator = existingItem.getImages().iterator();
+            while (iterator.hasNext()) {
+                MediaFile image = iterator.next();
+                if (!keepImageIds.contains(image.getId())) {
+                    try {
+                        // Удаляем файл из файловой системы
+                        fileStorageService.deleteFile(image.getFilePath());
+                        iterator.remove();
+                        logger.info("Удалено изображение: {}", image.getId());
+                    } catch (Exception e) {
+                        logger.error("Ошибка при удалении файла {}: {}",
+                                image.getFilePath(), e.getMessage());
+                    }
+                }
+            }
+        }
+
+        return photoGalleryItemRepository.save(existingItem);
+    }
+
+    /**
+     * Обновляет элемент фото-галереи с загрузкой новых изображений и сохранением старых.
+     * Updates photo gallery item with new images while keeping old ones.
+     *
+     * @param id ID элемента / item ID
+     * @param item данные для обновления / data to update
+     * @param newImages новые изображения / new images
+     * @param keepImageIds список ID старых изображений для сохранения / list of old image IDs to keep
+     * @return обновленный элемент / updated item
+     * @throws IOException если произошла ошибка при загрузке файлов / if file upload error occurs
+     * @throws FileStorageService.FileStorageException если произошла ошибка при сохранении файлов / if file storage error occurs
+     */
+    public PhotoGalleryItem updatePhotoGalleryItemWithImages(Long id, PhotoGalleryItem item,
+                                                             MultipartFile[] newImages, List<Long> keepImageIds)
+            throws IOException, FileStorageService.FileStorageException {
+        logger.info("Обновление элемента с новыми изображениями. ID: {}, новые файлы: {}, сохраняемые: {}",
+                id, newImages != null ? newImages.length : 0, keepImageIds);
+
+        // Фильтруем null и пустые файлы
+        List<MultipartFile> validNewImages = new ArrayList<>();
+        if (newImages != null) {
+            for (MultipartFile image : newImages) {
+                if (image != null && !image.isEmpty() && image.getSize() > 0) {
+                    validNewImages.add(image);
+                }
+            }
+        }
+
+        // Получаем текущий элемент
+        PhotoGalleryItem existingItem = getPhotoGalleryItemById(id);
+
+        // Проверяем общее количество изображений
+        int currentImageCount = keepImageIds != null ? keepImageIds.size() : existingItem.getImagesCount();
+        if (currentImageCount + validNewImages.size() > MAX_IMAGES_PER_ITEM) {
+            throw new IllegalArgumentException(
+                    String.format("Превышено максимальное количество изображений. Сохраняемые: %d, новые: %d, максимум: %d",
+                            currentImageCount, validNewImages.size(), MAX_IMAGES_PER_ITEM)
+            );
+        }
+
+        // Сначала удаляем изображения, которые не в списке keepImageIds
+        if (keepImageIds != null && !keepImageIds.isEmpty()) {
+            Iterator<MediaFile> iterator = existingItem.getImages().iterator();
+            while (iterator.hasNext()) {
+                MediaFile image = iterator.next();
+                if (!keepImageIds.contains(image.getId())) {
+                    try {
+                        fileStorageService.deleteFile(image.getFilePath());
+                        iterator.remove();
+                        logger.info("Удалено изображение: {}", image.getId());
+                    } catch (Exception e) {
+                        logger.error("Ошибка при удалении файла {}: {}",
+                                image.getFilePath(), e.getMessage());
+                    }
+                }
+            }
+        }
+
+        // Обновляем остальные поля
+        existingItem.setTitle(item.getTitle());
+        existingItem.setDescription(item.getDescription());
+        existingItem.setYear(item.getYear());
+        existingItem.setPublished(item.getPublished());
+        existingItem.setCategories(item.getCategories());
+        existingItem.setUpdatedAt(LocalDateTime.now());
+
+        // Добавляем новые изображения
+        if (!validNewImages.isEmpty()) {
+            addImagesToPhotoGalleryItem(existingItem.getId(),
+                    validNewImages.toArray(new MultipartFile[0]));
+        }
+
+        // Сохраняем и возвращаем обновленный элемент
+        PhotoGalleryItem updatedItem = photoGalleryItemRepository.save(existingItem);
+        logger.info("Элемент успешно обновлен. ID: {}, всего изображений: {}",
+                id, updatedItem.getImagesCount());
+
+        return updatedItem;
+    }
+
+
+
 
     /**
      * Обновляет элемент фото-галереи с загрузкой новых изображений.
@@ -155,31 +305,49 @@ public class PhotoGalleryService {
      */
     public PhotoGalleryItem updatePhotoGalleryItemWithImages(Long id, PhotoGalleryItem item, MultipartFile[] newImages)
             throws IOException, FileStorageService.FileStorageException {
-        logger.info("Обновление элемента с новыми изображениями. ID: {}", id);
+        logger.info("Обновление элемента с новыми изображениями. ID: {}, новые файлы: {}",
+                id, newImages != null ? newImages.length : 0);
 
-        // Получаем текущий элемент
+        // ПРОВЕРКА: Если нет новых изображений - просто обновляем элемент
+        if (newImages == null || newImages.length == 0) {
+            logger.info("Нет новых изображений, выполняем обычное обновление элемента ID: {}", id);
+            return updatePhotoGalleryItem(id, item);
+        }
+
+        // Фильтруем null и пустые файлы
+        List<MultipartFile> validNewImages = new ArrayList<>();
+        for (MultipartFile image : newImages) {
+            if (image != null && !image.isEmpty() && image.getSize() > 0) {
+                validNewImages.add(image);
+            }
+        }
+
+        // Если после фильтрации не осталось валидных изображений
+        if (validNewImages.isEmpty()) {
+            logger.info("После фильтрации не осталось валидных изображений. Обычное обновление элемента ID: {}", id);
+            return updatePhotoGalleryItem(id, item);
+        }
+
+        // Получаем текущий элемент для проверки лимита
         PhotoGalleryItem existingItem = getPhotoGalleryItemById(id);
 
-        // Проверяем общее количество изображений
+        // Проверяем общее количество изображений с учётом валидных новых
         int currentImageCount = existingItem.getImagesCount();
-        if (newImages != null && (currentImageCount + newImages.length) > MAX_IMAGES_PER_ITEM) {
+        if (currentImageCount + validNewImages.size() > MAX_IMAGES_PER_ITEM) {
             throw new IllegalArgumentException(
                     String.format("Превышено максимальное количество изображений. Текущее: %d, новые: %d, максимум: %d",
-                            currentImageCount, newImages.length, MAX_IMAGES_PER_ITEM)
+                            currentImageCount, validNewImages.size(), MAX_IMAGES_PER_ITEM)
             );
         }
 
         // Обновляем элемент
         PhotoGalleryItem updatedItem = updatePhotoGalleryItem(id, item);
 
-        // Добавляем новые изображения если есть
-        if (newImages != null && newImages.length > 0) {
-            addImagesToPhotoGalleryItem(id, newImages);
-            // Перезагружаем элемент с изображениями
-            updatedItem = getPhotoGalleryItemById(id);
-        }
+        // Добавляем валидные новые изображения
+        addImagesToPhotoGalleryItem(id, validNewImages.toArray(new MultipartFile[0]));
 
-        return updatedItem;
+        // Перезагружаем элемент с изображениями
+        return getPhotoGalleryItemById(id);
     }
 
     /**
@@ -241,25 +409,47 @@ public class PhotoGalleryService {
      */
     public void addImagesToPhotoGalleryItem(Long itemId, MultipartFile[] images)
             throws IOException, FileStorageService.FileStorageException {
+
+        // ДОБАВИТЬ: Проверка на null или пустой массив
+        if (images == null || images.length == 0) {
+            logger.warn("Попытка добавить пустой массив изображений для элемента ID: {}", itemId);
+            return; // Ничего не делаем
+        }
+
         logger.info("Добавление изображений к элементу. ID: {}, количество: {}", itemId, images.length);
 
         PhotoGalleryItem item = getPhotoGalleryItemById(itemId);
 
-        // Проверяем лимит изображений
-        if (item.getImagesCount() + images.length > MAX_IMAGES_PER_ITEM) {
+        // ДОБАВИТЬ: Фильтрация null файлов
+        List<MultipartFile> validImages = new ArrayList<>();
+        for (MultipartFile image : images) {
+            if (image != null && !image.isEmpty()) {
+                validImages.add(image);
+            }
+        }
+
+        if (validImages.isEmpty()) {
+            logger.warn("Нет валидных изображений для добавления. Элемент ID: {}", itemId);
+            return;
+        }
+
+        // Проверяем лимит изображений с учётом отфильтрованных
+        if (item.getImagesCount() + validImages.size() > MAX_IMAGES_PER_ITEM) {
             throw new IllegalArgumentException(
                     String.format("Превышен лимит изображений. Текущее: %d, добавляемые: %d, максимум: %d",
-                            item.getImagesCount(), images.length, MAX_IMAGES_PER_ITEM)
+                            item.getImagesCount(), validImages.size(), MAX_IMAGES_PER_ITEM)
             );
         }
 
-        // Загружаем файлы
-        List<String> storedFilePaths = fileStorageService.storeFiles(images);
+        // Загружаем только валидные файлы
+        List<String> storedFilePaths = fileStorageService.storeFiles(
+                validImages.toArray(new MultipartFile[0])
+        );
 
         List<MediaFile> mediaFiles = new ArrayList<>();
 
-        for (int i = 0; i < images.length; i++) {
-            MultipartFile image = images[i];
+        for (int i = 0; i < validImages.size(); i++) {
+            MultipartFile image = validImages.get(i);
             String storedFilePath = storedFilePaths.get(i);
 
             // Валидация типа файла
