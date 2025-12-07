@@ -263,7 +263,7 @@
                                     Выбранные изображения
                                     <small class="text-muted" id="fileCount">(0)</small>
                                 </h6>
-                                <div id="fileList" class="list-group mb-3" style="max-height: 300px; overflow-y: auto;">
+                                <div id="fileList" class="row g-2 mb-3">
                                     <!-- Здесь будут отображаться выбранные файлы -->
                                 </div>
 
@@ -510,117 +510,150 @@
             });
         }
 
-        // Очистка всех файлов
-        if (clearAllBtn) {
-            clearAllBtn.addEventListener('click', function() {
-                if (confirm('Удалить все выбранные файлы?')) {
-                    fileInput.value = '';
-                    fileList.innerHTML = '';
-                    uploadedFiles.classList.add('d-none');
-                    if (fileCount) fileCount.textContent = '(0)';
-                    if (currentFileCount) {
-                        currentFileCount.textContent = '0';
-                    }
-                }
-            });
+       // Очистка всех файлов
+if (clearAllBtn) {
+    clearAllBtn.addEventListener('click', function() {
+        if (confirm('Удалить все выбранные файлы?')) {
+            fileInput.value = '';
+
+            // ОЧИЩАЕМ ПРЕВЬЮ
+            const fileList = document.getElementById('fileList');
+            if (fileList) {
+                fileList.innerHTML = '';
+            }
+
+            uploadedFiles.classList.add('d-none');
+            if (fileCount) fileCount.textContent = '(0)';
+            if (currentFileCount) {
+                currentFileCount.textContent = 0;
+            }
         }
+    });
+}
 
         /**
          * Отображение выбранных файлов
          */
         function displaySelectedFiles(files) {
-            if (!files || files.length === 0) {
-                uploadedFiles.classList.add('d-none');
-                return;
-            }
+    const fileList = document.getElementById('fileList');
+    const uploadedFiles = document.getElementById('uploadedFiles');
+    const fileCount = document.getElementById('fileCount');
+    const currentFileCount = document.getElementById('currentFileCount');
 
-            fileList.innerHTML = '';
-            let validFiles = 0;
+    if (!files || files.length === 0) {
+        uploadedFiles.classList.add('d-none');
+        return;
+    }
 
-            // Проверяем лимит файлов
-            const maxFiles = 15;
+    // Проверяем лимит файлов
+    const maxFiles = 15;
 
-            if (files.length > maxFiles) {
-                alert(`Максимальное количество файлов: ${maxFiles}. Вы пытаетесь добавить ${files.length} файлов.`);
-                return;
-            }
+    if (files.length > maxFiles) {
+        alert(`Максимальное количество файлов: ${maxFiles}. Вы пытаетесь добавить ${files.length} файлов.`);
+        return;
+    }
 
-            for (let i = 0; i < files.length; i++) {
-                const file = files[i];
+    fileList.innerHTML = '';
+    let validFiles = 0;
 
-                // Проверяем тип файла
-                if (!file.type.startsWith('image/')) {
-                    alert(`Файл "${file.name}" не является изображением и будет пропущен.`);
-                    continue;
-                }
+    for (let i = 0; i < files.length; i++) {
+        const file = files[i];
 
-                // Проверяем размер файла
-                if (file.size > 5 * 1024 * 1024) {
-                    alert(`Файл "${file.name}" слишком большой (${(file.size / (1024 * 1024)).toFixed(2)} MB). Максимальный размер: 5MB.`);
-                    continue;
-                }
-
-                validFiles++;
-
-                // Создаем элемент для файла
-                const fileElement = document.createElement('div');
-                fileElement.className = 'list-group-item';
-                fileElement.innerHTML = `
-                    <div class="d-flex align-items-center">
-                        <i class="bi bi-image text-primary me-3" style="font-size: 1.5rem;"></i>
-                        <div style="flex: 1;">
-                            <div class="fw-semibold text-truncate" title="${file.name}">
-                                ${file.name}
-                            </div>
-                            <div class="small text-muted">
-                                ${(file.size / 1024).toFixed(1)} KB
-                            </div>
-                        </div>
-                        <button type="button" class="btn btn-outline-danger btn-sm" onclick="removeFile(this)">
-                            <i class="bi bi-trash"></i>
-                        </button>
-                    </div>
-                `;
-
-                fileList.appendChild(fileElement);
-            }
-
-            // Обновляем интерфейс
-            if (validFiles > 0) {
-                uploadedFiles.classList.remove('d-none');
-                if (fileCount) fileCount.textContent = `(${validFiles})`;
-                if (currentFileCount) {
-                    currentFileCount.textContent = validFiles;
-                }
-            } else {
-                uploadedFiles.classList.add('d-none');
-            }
+        // Проверяем тип файла
+        if (!file.type.startsWith('image/')) {
+            alert(`Файл "${file.name}" не является изображением и будет пропущен.`);
+            continue;
         }
+
+        // Проверяем размер файла
+        if (file.size > 5 * 1024 * 1024) {
+            alert(`Файл "${file.name}" слишком большой (${(file.size / (1024 * 1024)).toFixed(2)} MB). Максимальный размер: 5MB.`);
+            continue;
+        }
+
+        validFiles++;
+
+        // СОЗДАЕМ ПРЕВЬЮ ДЛЯ КАЖДОГО ФАЙЛА
+        createImagePreview(file, i);
+    }
+
+    // Обновляем интерфейс
+    if (validFiles > 0) {
+        uploadedFiles.classList.remove('d-none');
+        if (fileCount) fileCount.textContent = `(${validFiles})`;
+        if (currentFileCount) {
+            currentFileCount.textContent = validFiles;
+        }
+    } else {
+        uploadedFiles.classList.add('d-none');
+    }
+}
+
+/**
+ * Создает превью изображения
+ */
+function createImagePreview(file, index) {
+    const reader = new FileReader();
+
+    reader.onload = function(e) {
+        const fileList = document.getElementById('fileList');
+
+        const previewElement = document.createElement('div');
+        previewElement.className = 'col-6 col-md-4 col-lg-3';
+        previewElement.innerHTML = `
+            <div class="card h-100 border position-relative">
+                <!-- Превью изображения -->
+                <img src="${e.target.result}"
+                     alt="${file.name}"
+                     class="card-img-top"
+                     style="height: 120px; object-fit: cover;">
+
+                <!-- Информация о файле -->
+                <div class="card-body p-2">
+                    <div class="small text-truncate mb-1" title="${file.name}">
+                        ${file.name}
+                    </div>
+                    <div class="text-muted x-small">
+                        ${(file.size / 1024).toFixed(1)} KB
+                    </div>
+                </div>
+
+                <!-- Кнопка удаления -->
+                <button type="button"
+                        class="btn btn-danger btn-sm position-absolute top-0 end-0 m-1"
+                        style="width: 30px; height: 30px; padding: 0;"
+                        onclick="removeSingleFile(${index})">
+                    <i class="bi bi-x"></i>
+                </button>
+            </div>
+        `;
+
+        fileList.appendChild(previewElement);
+    };
+
+    reader.readAsDataURL(file); // Читаем файл как Data URL для превью
+}
+
     }
 
     /**
-     * Удаление файла из списка
-     */
-    window.removeFile = function(button) {
-        const fileItem = button.closest('.list-group-item');
-        if (fileItem) {
-            fileItem.remove();
+ * Удаление файла из списка
+ */
+window.removeFile = function(index) {
+    const fileInput = document.getElementById('fileInput');
+    const dt = new DataTransfer();
 
-            // Обновляем счетчики
-            const fileList = document.getElementById('fileList');
-            const fileCount = document.getElementById('fileCount');
-            const currentFileCount = document.getElementById('currentFileCount');
-
-            const remainingFiles = fileList.children.length;
-
-            if (fileCount) fileCount.textContent = `(${remainingFiles})`;
-            if (currentFileCount) currentFileCount.textContent = remainingFiles;
-
-            if (remainingFiles === 0) {
-                document.getElementById('uploadedFiles').classList.add('d-none');
-            }
+    for (let i = 0; i < fileInput.files.length; i++) {
+        if (i !== index) {
+            dt.items.add(fileInput.files[i]);
         }
-    };
+    }
+
+    fileInput.files = dt.files;
+
+    // ВЫЗЫВАЕМ ФУНКЦИЮ displaySelectedFiles ДЛЯ ПЕРЕРИСОВКИ ПРЕВЬЮ
+    displaySelectedFiles(fileInput.files);
+};
 
     /**
      * Сортировка файлов по имени
@@ -744,6 +777,50 @@
             position: static !important;
         }
     }
+
+    /* Стили для превью новых изображений */
+#fileList .card {
+    transition: all 0.3s ease;
+    overflow: hidden;
+}
+
+#fileList .card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+#fileList .card-img-top {
+    transition: transform 0.3s ease;
+}
+
+#fileList .card:hover .card-img-top {
+    transform: scale(1.05);
+}
+
+/* Улучшаем кнопку удаления на превью */
+#fileList .btn-danger {
+    opacity: 0.8;
+    transition: opacity 0.3s;
+}
+
+#fileList .btn-danger:hover {
+    opacity: 1;
+}
+
+/* Адаптивность превью */
+@media (max-width: 768px) {
+    #fileList .col-6 {
+        flex: 0 0 50%;
+        max-width: 50%;
+    }
+}
+
+@media (max-width: 576px) {
+    #fileList .col-6 {
+        flex: 0 0 100%;
+        max-width: 100%;
+    }
+}
 </style>
 </body>
 </html>
