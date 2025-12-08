@@ -146,6 +146,19 @@ public class Project {
     @Column(nullable = false)
     private ProjectStatus status = ProjectStatus.ACTIVE;
 
+    // ================== ИСПРАВЛЕНИЕ: ДОБАВЛЕНО ПОЛЕ sortOrder ==================
+    /**
+     * Порядок сортировки в списке проектов.
+     * Меньшее значение = выше в списке.
+     * Используется для ручной сортировки в админке.
+     *
+     * ВНИМАНИЕ: Это поле было добавлено для исправления ошибки компиляции,
+     * когда ProjectRepository пытался сортировать по несуществующему полю.
+     */
+    @Column(name = "sort_order", nullable = false)
+    private Integer sortOrder = 0;
+    // ================== КОНЕЦ ИСПРАВЛЕНИЯ ==================
+
     /**
      * Путь к обложке проекта (featured image).
      * Используется для превью, карточек и OG-изображений.
@@ -279,6 +292,7 @@ public class Project {
         this.slug = slug;
         this.category = category;
         this.status = ProjectStatus.ACTIVE;
+        this.sortOrder = 0; // ИСПРАВЛЕНИЕ: Установка значения по умолчанию
     }
 
     // ================== ГЕТТЕРЫ И СЕТТЕРЫ ==================
@@ -370,6 +384,16 @@ public class Project {
     public void setStatus(ProjectStatus status) {
         this.status = status;
     }
+
+    // ================== ИСПРАВЛЕНИЕ: ГЕТТЕР И СЕТТЕР ДЛЯ sortOrder ==================
+    public Integer getSortOrder() {
+        return sortOrder;
+    }
+
+    public void setSortOrder(Integer sortOrder) {
+        this.sortOrder = sortOrder;
+    }
+    // ================== КОНЕЦ ИСПРАВЛЕНИЯ ==================
 
     public String getFeaturedImagePath() {
         return featuredImagePath;
@@ -609,6 +633,7 @@ public class Project {
                 ", slug='" + slug + '\'' +
                 ", category='" + category + '\'' +
                 ", status=" + status +
+                ", sortOrder=" + sortOrder + // ИСПРАВЛЕНИЕ: Добавлен в toString
                 ", createdAt=" + createdAt +
                 '}';
     }
@@ -623,6 +648,11 @@ public class Project {
         if (status == null) {
             status = ProjectStatus.ACTIVE;
         }
+        // ================== ИСПРАВЛЕНИЕ: Установка значения по умолчанию для sortOrder ==================
+        if (sortOrder == null) {
+            sortOrder = 0;
+        }
+        // ================== КОНЕЦ ИСПРАВЛЕНИЯ ==================
         if (sectionsOrder == null || sectionsOrder.trim().isEmpty()) {
             sectionsOrder = "description,photos,videos,team,participation,partners,related";
         }
