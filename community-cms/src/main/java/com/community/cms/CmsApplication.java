@@ -2,6 +2,8 @@ package com.community.cms;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.cache.annotation.EnableCaching;
+import org.springframework.scheduling.annotation.EnableScheduling;
 
 /**
  * Главный класс Spring Boot приложения Community CMS.
@@ -20,11 +22,13 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
  * и предоставляет функционал создания, редактирования и публикации страниц.</p>
  *
  * @author Vasickin
- * @version 1.0
+ * @version 1.1
  * @since 2025
  * @see <a href="https://spring.io/projects/spring-boot">Spring Boot Documentation</a>
  */
 @SpringBootApplication
+@EnableCaching
+@EnableScheduling
 public class CmsApplication {
 
     /**

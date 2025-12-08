@@ -1,0 +1,45 @@
+version: '3.8'
+
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: lada-mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: lada_db
+      MYSQL_USER: lada_user
+      MYSQL_PASSWORD: lada_pass
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./src/main/resources/db/migration:/docker-entrypoint-initdb.d
+    command: --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
+    networks:
+      - lada-network
+
+  app:
+    build: .
+    container_name: lada-app
+    depends_on:
+      - mysql
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/lada_db?useUnicode=true&characterEncoding=utf8&useSSL=false&serverTimezone=UTC
+      SPRING_DATASOURCE_USERNAME: lada_user
+      SPRING_DATASOURCE_PASSWORD: lada_pass
+    ports:
+      - "8080:8080"
+    volumes:
+      - uploads_data:/app/uploads
+      - logs_data:/app/logs
+    networks:
+      - lada-network
+
+volumes:
+  mysql_data:
+  uploads_data:
+  logs_data:
+
+networks:
+  lada-network:
+    driver: bridge
