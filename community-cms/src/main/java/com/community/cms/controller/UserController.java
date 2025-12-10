@@ -12,6 +12,9 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -71,7 +74,31 @@ public class UserController {
     @GetMapping
     public String listUsers(Model model) {
         List<User> users = userService.findAllUsers();
+
+        // Добавляем проверку для каждого пользователя
+        Map<Long, Boolean> canDeleteMap = new HashMap<>();
+        User currentUser = getCurrentUser();
+
+        for (User user : users) {
+            boolean canDelete = true;
+
+            // Нельзя удалить самого себя
+            if (user.getId().equals(currentUser.getId())) {
+                canDelete = false;
+            }
+            // Нельзя удалить последнего администратора
+            else if (user.hasRole("ADMIN")) {
+                long activeAdminCount = userService.findUsersByRole("ADMIN").stream()
+                        .filter(User::isEnabled)
+                        .count();
+                canDelete = activeAdminCount > 1;
+            }
+
+            canDeleteMap.put(user.getId(), canDelete);
+        }
+
         model.addAttribute("users", users);
+        model.addAttribute("canDeleteMap", canDeleteMap);
         return "admin/users/list";
     }
 
@@ -359,5 +386,52 @@ public class UserController {
      */
     private Set<String> getAvailableRoles() {
         return Set.of("ADMIN", "EDITOR", "USER");
+    }
+
+    /**
+     * Удаляет пользователя из системы.
+     * Проверяет можно ли удалить пользователя (нельзя удалить самого себя или последнего администратора).
+     *
+     * @param id идентификатор пользователя для удаления
+     * @param redirectAttributes атрибуты для перенаправления
+     * @return перенаправление на список пользователей
+     */
+    @PostMapping("/delete/{id}")
+    public String deleteUser(@PathVariable Long id, RedirectAttributes redirectAttributes) {
+        try {
+            User userToDelete = userService.findUserById(id)
+                    .orElseThrow(() -> new IllegalArgumentException("Пользователь не найден"));
+
+            // Проверяем можно ли удалить пользователя
+            if (!canDeleteUser(userToDelete)) {
+                if (userToDelete.getId().equals(getCurrentUser().getId())) {
+                    redirectAttributes.addFlashAttribute("error",
+                            "Нельзя удалить собственную учетную запись");
+                } else {
+                    redirectAttributes.addFlashAttribute("error",
+                            "Нельзя удалить последнего администратора");
+                }
+                return "redirect:/admin/users";
+            }
+
+            userService.deleteUser(id);
+            redirectAttributes.addFlashAttribute("success",
+                    "Пользователь " + userToDelete.getUsername() + " успешно удален");
+
+        } catch (IllegalArgumentException e) {
+            redirectAttributes.addFlashAttribute("error", e.getMessage());
+        }
+        return "redirect:/admin/users";
+    }
+
+    /**
+     * Проверяет, можно ли удалить пользователя.
+     * Запрещает удаление самого себя и последнего администратора.
+     *
+     * @param user пользователь для проверки
+     * @return true если удаление разрешено, false если запрещено
+     */
+    private boolean canDeleteUser(User user) {
+        return canDisableUser(user); // Используем ту же логику что и для блокировки
     }
 }

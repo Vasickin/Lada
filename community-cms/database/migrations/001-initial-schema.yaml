@@ -1,0 +1,98 @@
+databaseChangeLog:
+  - changeSet:
+      id: 001-1-create-projects-table
+      author: Lex
+      changes:
+        - createTable:
+            tableName: projects
+            columns:
+              - column: {name: id, type: BIGINT, autoIncrement: true, constraints: {primaryKey: true, nullable: false}}
+              - column: {name: title, type: VARCHAR(255), constraints: {nullable: false}}
+              - column: {name: slug, type: VARCHAR(255), constraints: {nullable: false, unique: true}}
+              - column: {name: short_description, type: VARCHAR(500)}
+              - column: {name: full_description, type: TEXT}
+              - column: {name: location, type: VARCHAR(255)}
+              - column: {name: category, type: VARCHAR(100)}
+              - column: {name: status, type: VARCHAR(20)}
+              - column: {name: sort_order, type: INT, defaultValueNumeric: 0}
+              - column: {name: start_date, type: DATE}
+              - column: {name: end_date, type: DATE}
+              - column: {name: event_date, type: DATE}
+              - column: {name: show_description, type: BOOLEAN, defaultValueBoolean: true}
+              - column: {name: show_photos, type: BOOLEAN, defaultValueBoolean: true}
+              - column: {name: show_videos, type: BOOLEAN, defaultValueBoolean: true}
+              - column: {name: show_team, type: BOOLEAN, defaultValueBoolean: true}
+              - column: {name: show_participation, type: BOOLEAN, defaultValueBoolean: true}
+              - column: {name: show_partners, type: BOOLEAN, defaultValueBoolean: true}
+              - column: {name: show_related, type: BOOLEAN, defaultValueBoolean: true}
+              - column: {name: sections_order, type: VARCHAR(255)}
+              - column: {name: featured_image_path, type: VARCHAR(500)}
+              - column: {name: og_image_path, type: VARCHAR(500)}
+              - column: {name: meta_title, type: VARCHAR(255)}
+              - column: {name: meta_description, type: VARCHAR(500)}
+              - column: {name: meta_keywords, type: VARCHAR(500)}
+              - column: {name: created_at, type: TIMESTAMP, defaultValueComputed: "CURRENT_TIMESTAMP"}
+              - column: {name: updated_at, type: TIMESTAMP, defaultValueComputed: "CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP"}
+
+  - changeSet:
+      id: 001-2-create-project-videos-table
+      author: Lex
+      changes:
+        - createTable:
+            tableName: project_videos
+            columns:
+              - column: {name: id, type: BIGINT, autoIncrement: true, constraints: {primaryKey: true, nullable: false}}
+              - column: {name: project_id, type: BIGINT, constraints: {nullable: false}}
+              - column: {name: title, type: VARCHAR(255), constraints: {nullable: false}}
+              - column: {name: description, type: VARCHAR(1000)}
+              - column: {name: youtube_url, type: VARCHAR(500), constraints: {nullable: false}}
+              - column: {name: video_type, type: VARCHAR(20)}
+              - column: {name: video_id, type: VARCHAR(100)}
+              - column: {name: is_main, type: BOOLEAN, defaultValueBoolean: false}
+              - column: {name: duration_seconds, type: INT}
+              - column: {name: sort_order, type: INT, defaultValueNumeric: 0}
+              - column: {name: added_at, type: TIMESTAMP, defaultValueComputed: "CURRENT_TIMESTAMP"}
+              - column: {name: updated_at, type: TIMESTAMP, defaultValueComputed: "CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP"}
+
+  - changeSet:
+      id: 001-3-create-project-partners-table
+      author: Lex
+      changes:
+        - createTable:
+            tableName: project_partners
+            columns:
+              - column: {name: id, type: BIGINT, autoIncrement: true, constraints: {primaryKey: true, nullable: false}}
+              - column: {name: project_id, type: BIGINT, constraints: {nullable: false}}
+              - column: {name: name, type: VARCHAR(255), constraints: {nullable: false}}
+              - column: {name: description, type: VARCHAR(1000)}
+              - column: {name: partner_type, type: VARCHAR(50)}
+              - column: {name: logo_path, type: VARCHAR(500)}
+              - column: {name: website_url, type: VARCHAR(500)}
+              - column: {name: contact_email, type: VARCHAR(100)}
+              - column: {name: contact_phone, type: VARCHAR(50)}
+              - column: {name: contact_person, type: VARCHAR(100)}
+              - column: {name: sort_order, type: INT, defaultValueNumeric: 0}
+              - column: {name: active, type: BOOLEAN, defaultValueBoolean: true}
+              - column: {name: added_at, type: TIMESTAMP, defaultValueComputed: "CURRENT_TIMESTAMP"}
+
+  - changeSet:
+      id: 001-4-add-foreign-keys
+      author: Lex
+      changes:
+        - addForeignKeyConstraint:
+            baseTableName: project_videos
+            baseColumnNames: project_id
+            referencedTableName: projects
+            referencedColumnNames: id
+            constraintName: fk_project_videos_project
+            onDelete: CASCADE
+            onUpdate: CASCADE
+
+        - addForeignKeyConstraint:
+            baseTableName: project_partners
+            baseColumnNames: project_id
+            referencedTableName: projects
+            referencedColumnNames: id
+            constraintName: fk_project_partners_project
+            onDelete: CASCADE
+            onUpdate: CASCADE

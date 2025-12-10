@@ -280,4 +280,5 @@ public class DataInitializer implements CommandLineRunner {
             System.out.println("✅ Создана демонстрационная страница: " + samplePage.getTitle());
         }
     }
+
 }

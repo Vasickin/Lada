@@ -11,6 +11,8 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Collectors;
 
 /**
  * Основная сущность проекта организации "ЛАДА".
@@ -623,6 +625,41 @@ public class Project {
             return new String[]{"description", "photos", "videos", "team", "participation", "partners", "related"};
         }
         return sectionsOrder.split(",");
+    }
+
+    // ================== СВЯЗИ С КОМАНДОЙ ==================
+
+    /**
+     * Связь с промежуточной сущностью TeamMemberProjectRole.
+     */
+    @OneToMany(mappedBy = "project")
+    private Set<TeamMemberProjectRole> teamMemberProjectRoles = new HashSet<>();
+
+    /**
+     * Получает список членов команды, участвующих в этом проекте.
+     */
+    public Set<TeamMember> getTeamMembers() {
+        return teamMemberProjectRoles.stream()
+                .map(TeamMemberProjectRole::getTeamMember)
+                .collect(Collectors.toSet());
+    }
+
+    /**
+     * Получает членов команды по определенной роли.
+     */
+    public Set<TeamMember> getTeamMembersByRole(String role) {
+        return teamMemberProjectRoles.stream()
+                .filter(tmpr -> tmpr.getRole().equalsIgnoreCase(role))
+                .map(TeamMemberProjectRole::getTeamMember)
+                .collect(Collectors.toSet());
+    }
+
+    public Set<TeamMemberProjectRole> getTeamMemberProjectRoles() {
+        return teamMemberProjectRoles;
+    }
+
+    public void setTeamMemberProjectRoles(Set<TeamMemberProjectRole> teamMemberProjectRoles) {
+        this.teamMemberProjectRoles = teamMemberProjectRoles;
     }
 
     @Override

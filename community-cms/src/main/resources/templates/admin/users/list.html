@@ -149,6 +149,17 @@
                                         ✅
                                     </button>
                                 </form>
+                                <!-- УДАЛЕНИЕ -->
+                                <form th:action="@{/admin/users/delete/{id}(id=${user.id})}"
+                                      method="post"
+                                      class="d-inline"
+                                      th:onclick="return confirm('ВНИМАНИЕ: Удаление пользователя «' + '${user.username}' + '» приведет к безвозвратной потере всех данных. Продолжить?')">
+                                    <button type="submit" class="btn btn-outline-success"
+                                            title="Удалить пользователя"
+                                            th:disabled="${!canDeleteMap.get(user.id)}">
+                                        🗑️
+                                    </button>
+                                </form>
                             </div>
                         </td>
                     </tr>
