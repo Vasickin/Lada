@@ -1,0 +1,35 @@
+databaseChangeLog:
+  - changeSet:
+      id: 004-1-create-pages-table
+      author: Lex
+      preConditions:
+        - onFail: MARK_RAN
+        - not:
+            - tableExists:
+                tableName: pages
+      changes:
+        - createTable:
+            tableName: pages
+            columns:
+              - column: {name: id, type: BIGINT, autoIncrement: true, constraints: {primaryKey: true, nullable: false}}
+              - column: {name: title, type: VARCHAR(255), constraints: {nullable: false}}
+              - column: {name: content, type: TEXT, constraints: {nullable: false}}
+              - column: {name: slug, type: VARCHAR(255), constraints: {nullable: false, unique: true}}
+              - column: {name: page_type, type: VARCHAR(50), constraints: {nullable: false}}
+              - column: {name: meta_description, type: TEXT}
+              - column: {name: featured_image, type: VARCHAR(500)}
+              - column: {name: published, type: BOOLEAN, defaultValueBoolean: false}
+              - column: {name: created_at, type: TIMESTAMP, defaultValueComputed: "CURRENT_TIMESTAMP"}
+              - column: {name: updated_at, type: TIMESTAMP, defaultValueComputed: "CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP"}
+        
+        - createIndex:
+            indexName: idx_pages_slug
+            tableName: pages
+            columns:
+              - column: {name: slug}
+        
+        - createIndex:
+            indexName: idx_pages_published
+            tableName: pages
+            columns:
+              - column: {name: published}

@@ -1,0 +1,65 @@
+databaseChangeLog:
+  - changeSet:
+      id: 005-1-create-publication-categories-table
+      author: Lex
+      preConditions:
+        - onFail: MARK_RAN
+        - not:
+            - tableExists:
+                tableName: publication_categories
+      changes:
+        - createTable:
+            tableName: publication_categories
+            columns:
+              - column: {name: id, type: BIGINT, autoIncrement: true, constraints: {primaryKey: true, nullable: false}}
+              - column: {name: name, type: VARCHAR(100), constraints: {nullable: false, unique: true}}
+              - column: {name: description, type: TEXT}
+              - column: {name: created_at, type: TIMESTAMP, defaultValueComputed: "CURRENT_TIMESTAMP"}
+              - column: {name: updated_at, type: TIMESTAMP}
+
+  - changeSet:
+      id: 005-2-insert-default-categories
+      author: Lex
+      changes:
+        # Основные категории для сайта
+        - insert:
+            tableName: publication_categories
+            columns:
+              - column: {name: name, value: "Главная"}
+              - column: {name: description, value: "Публикации на главной странице"}
+        
+        - insert:
+            tableName: publication_categories
+            columns:
+              - column: {name: name, value: "О нас"}
+              - column: {name: description, value: "Публикации на странице 'О нас'"}
+        
+        - insert:
+            tableName: publication_categories
+            columns:
+              - column: {name: name, value: "Наши проекты"}
+              - column: {name: description, value: "Публикации в разделе проектов"}
+        
+        - insert:
+            tableName: publication_categories
+            columns:
+              - column: {name: name, value: "Галерея"}
+              - column: {name: description, value: "Публикации в галерее"}
+        
+        - insert:
+            tableName: publication_categories
+            columns:
+              - column: {name: name, value: "Новости"}
+              - column: {name: description, value: "Новостные публикации"}
+        
+        - insert:
+            tableName: publication_categories
+            columns:
+              - column: {name: name, value: "Мероприятия"}
+              - column: {name: description, value: "Публикации о мероприятиях"}
+        
+        - insert:
+            tableName: publication_categories
+            columns:
+              - column: {name: name, value: "Партнеры"}
+              - column: {name: description, value: "Публикации о партнерах"}

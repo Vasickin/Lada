@@ -11,6 +11,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * Сущность члена команды организации "ЛАДА".
@@ -115,9 +116,9 @@ public class TeamMember {
 
     /**
      * Проекты, в которых участвует член команды.
-     * Связь многие-ко-многим через промежуточную таблицу.
+     * Связь одного-ко-многим через промежуточную таблицу.
      */
-    @ManyToMany
+    @OneToMany
     @JoinTable(
             name = "team_member_projects",
             joinColumns = @JoinColumn(name = "team_member_id"),
@@ -135,6 +136,13 @@ public class TeamMember {
      */
     @Transient
     private Map<Long, String> projectRoles = new HashMap<>();
+
+    /**
+     * Связь с промежуточной сущностью TeamMemberProjectRole.
+     * Используется для хранения ролей в проектах в БД.
+     */
+    @OneToMany(mappedBy = "teamMember")
+    private Set<TeamMemberProjectRole> teamMemberProjectRoles = new HashSet<>();
 
     // ================== СИСТЕМНЫЕ ПОЛЯ ==================
 
