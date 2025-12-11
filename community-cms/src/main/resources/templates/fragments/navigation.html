@@ -80,6 +80,12 @@
                     <a class="nav-link fw-semibold" href="/patrons" th:href="@{/patrons}">
                         Меценатам
                     </a>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link fw-semibold" href="/patrons" th:href="@{/patrons}">
+                        Наша команда
+                    </a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link fw-semibold" href="/contact" th:href="@{/contact}">
@@ -95,7 +101,7 @@
                 -->
                 <li class="nav-item" sec:authorize="isAuthenticated()">
                     <a class="nav-link fw-semibold text-success" href="/admin" th:href="@{/admin}">
-                        <span class="me-1">⚙️</span>Управление
+                        <span class="me-1">⚙️</span>
                     </a>
                 </li>
             </ul>
