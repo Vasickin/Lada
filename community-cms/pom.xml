@@ -56,15 +56,6 @@
             <scope>runtime</scope>
         </dependency>
 
-        <!-- Liquibase -->
-       <!--
-        <dependency>
-            <groupId>org.liquibase</groupId>
-            <artifactId>liquibase-core</artifactId>
-            <version>${liquibase.version}</version>
-        </dependency>
-        -->
-
         <!-- Development -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
