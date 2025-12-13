@@ -118,7 +118,7 @@ public class TeamMember {
      * Проекты, в которых участвует член команды.
      * Связь одного-ко-многим через промежуточную таблицу.
      */
-    @OneToMany
+    @ManyToMany
     @JoinTable(
             name = "team_member_projects",
             joinColumns = @JoinColumn(name = "team_member_id"),
