@@ -33,4 +33,4 @@ application.properties# Backup files
 /backups/logs/*.log
 uploads/
 ../uploads/
-uploads/
+

@@ -25,7 +25,7 @@ import java.util.UUID;
 @Service
 public class FileStorageService {
 
-    @Value("${file.upload-dir:src/main/resources/static}")
+    @Value("${file.upload-dir:uploads}")
     private String uploadDir;
 
     @Value("${file.allowed-image-types:image/jpeg,image/png,image/gif,image/webp}")
@@ -55,26 +55,14 @@ public class FileStorageService {
     public String storeFile(MultipartFile file) throws IOException, FileStorageException {
         validateFile(file);
 
-        // Генерируем уникальное имя файла
         String originalFileName = file.getOriginalFilename();
         String fileExtension = getFileExtension(originalFileName);
         String fileName = generateUniqueFileName(fileExtension);
 
-        // Сохраняем в target/classes/static (для разработки)
-        Path targetPath = Paths.get("target/classes/static");
-        if (!Files.exists(targetPath)) {
-            Files.createDirectories(targetPath);
-        }
-        Path targetLocation = targetPath.resolve(fileName);
-        Files.copy(file.getInputStream(), targetLocation, StandardCopyOption.REPLACE_EXISTING);
-
-        // Также сохраняем в src/main/resources/static (для гита)
-        Path srcPath = Paths.get("src/main/resources/static");
-        if (!Files.exists(srcPath)) {
-            Files.createDirectories(srcPath);
-        }
-        Path srcLocation = srcPath.resolve(fileName);
-        Files.copy(file.getInputStream(), srcLocation, StandardCopyOption.REPLACE_EXISTING);
+        // ↓↓↓ ТОЛЬКО В UPLOADS ↓↓↓
+        Path uploadPath = Paths.get(uploadDir).resolve(fileName).normalize();
+        Files.createDirectories(uploadPath.getParent());
+        Files.copy(file.getInputStream(), uploadPath, StandardCopyOption.REPLACE_EXISTING);
 
         return fileName;
     }
