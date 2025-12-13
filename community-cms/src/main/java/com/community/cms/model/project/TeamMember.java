@@ -137,14 +137,7 @@ public class TeamMember {
     @Transient
     private Map<Long, String> projectRoles = new HashMap<>();
 
-    /**
-     * Связь с промежуточной сущностью TeamMemberProjectRole.
-     * Используется для хранения ролей в проектах в БД.
-     */
-    @OneToMany(mappedBy = "teamMember")
-    private Set<TeamMemberProjectRole> teamMemberProjectRoles = new HashSet<>();
-
-    // ================== СИСТЕМНЫЕ ПОЛЯ ==================
+      // ================== СИСТЕМНЫЕ ПОЛЯ ==================
 
     /**
      * Дата и время создания записи.
