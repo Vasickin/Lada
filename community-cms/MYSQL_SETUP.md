@@ -28,3 +28,4 @@ FLUSH PRIVILEGES;
 EXIT;
  mysql -u lada_user -p lada_cms
 LadaCMS2025
+удаление временного проекта "Наши проекты" DELETE FROM projects WHERE slug='test-project';
