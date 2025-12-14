@@ -32,6 +32,9 @@
             border-radius: 5px;
             margin-bottom: 20px;
         }
+        .badge-status-active { background-color: #28a745; }
+        .badge-status-annual { background-color: #17a2b8; }
+        .badge-status-archived { background-color: #6c757d; }
     </style>
 </head>
 <body>
@@ -355,6 +358,96 @@
                                 </div>
                             </div>
 
+                            <!-- ===== КОМАНДА ПРОЕКТА ===== -->
+                            <div class="form-section">
+                                <h3 class="section-title">
+                                    <i class="bi bi-people me-2"></i>
+                                    Команда проекта
+                                </h3>
+
+                                <div class="row mb-3">
+                                    <div class="col-12">
+                                        <div class="card">
+                                            <div class="card-body">
+                                                <div class="d-flex justify-content-between align-items-center mb-3">
+                                                    <label class="form-label mb-0">
+                                                        <i class="bi bi-person-badge me-1"></i>
+                                                        Выберите участников команды
+                                                    </label>
+                                                    <span class="badge bg-info">
+                                                        <span id="totalMembersCount" th:text="${allTeamMembers != null ? allTeamMembers.size() : 0}">0</span> доступно
+                                                    </span>
+                                                </div>
+
+                                                <!-- Мультиселект для выбора команды -->
+                                                <select th:field="*{teamMembers}"
+                                                        class="form-select"
+                                                        id="teamMembers"
+                                                        multiple
+                                                        size="8">
+                                                    <option th:each="member : ${allTeamMembers}"
+                                                            th:value="${member.id}"
+                                                            th:selected="${project.teamMembers != null && project.teamMembers.contains(member)}"
+                                                            th:text="${member.fullName} + ' - ' + ${member.position}">
+                                                        ФИО - Должность
+                                                    </option>
+                                                </select>
+
+                                                <div class="mt-2">
+                                                    <small class="text-muted">
+                                                        • Удерживайте Ctrl (Cmd на Mac) для выбора нескольких участников<br>
+                                                        • Выбрано: <span id="selectedCount" class="badge bg-success">0</span> участников
+                                                    </small>
+                                                </div>
+
+                                                <!-- Статистика -->
+                                                <div class="mt-3 pt-3 border-top">
+                                                    <div class="row">
+                                                        <div class="col-md-4">
+                                                            <div class="d-flex align-items-center">
+                                                                <div class="bg-info rounded-circle p-2 me-3">
+                                                                    <i class="bi bi-people text-white"></i>
+                                                                </div>
+                                                                <div>
+                                                                    <h6 class="mb-0" th:text="${allTeamMembers != null ? allTeamMembers.size() : 0}">0</h6>
+                                                                    <small class="text-muted">Всего в команде</small>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                        <div class="col-md-4">
+                                                            <div class="d-flex align-items-center">
+                                                                <div class="bg-success rounded-circle p-2 me-3">
+                                                                    <i class="bi bi-person-check text-white"></i>
+                                                                </div>
+                                                                <div>
+                                                                    <h6 class="mb-0" th:text="${project.teamMembers != null ? project.teamMembers.size() : 0}">0</h6>
+                                                                    <small class="text-muted">Участников в проекте</small>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                        <div class="col-md-4">
+                                                            <div class="d-flex align-items-center">
+                                                                <div class="bg-primary rounded-circle p-2 me-3">
+                                                                    <i class="bi bi-plus-circle text-white"></i>
+                                                                </div>
+                                                                <div>
+                                                                    <a th:href="@{/admin/team-members/create}"
+                                                                       class="btn btn-link p-0 text-decoration-none"
+                                                                       target="_blank">
+                                                                        <h6 class="mb-0 text-primary">Добавить члена</h6>
+                                                                        <small class="text-muted">Откроется в новой вкладке</small>
+                                                                    </a>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
                             <!-- ===== СЕКЦИИ ПРОЕКТА ===== -->
                             <div class="form-section">
                                 <h3 class="section-title">
@@ -488,6 +581,22 @@
                 }, false)
             })
     })()
+</script>
+
+<!-- Скрипт для подсчёта выбранных участников команды -->
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const teamSelect = document.getElementById('teamMembers');
+        const selectedCount = document.getElementById('selectedCount');
+
+        function updateSelectedCount() {
+            const selected = teamSelect.selectedOptions.length;
+            selectedCount.textContent = selected;
+        }
+
+        teamSelect.addEventListener('change', updateSelectedCount);
+        updateSelectedCount(); // Инициализация при загрузке
+    });
 </script>
 </body>
 </html>

@@ -665,4 +665,16 @@ public class Project {
         }
         updatedAt = LocalDateTime.now();
     }
+
+    @ManyToMany(mappedBy = "projects")
+    private Set<TeamMember> teamMembers = new HashSet<>();
+
+    // И getter/setter:
+    public Set<TeamMember> getTeamMembers() {
+        return teamMembers;
+    }
+
+    public void setTeamMembers(Set<TeamMember> teamMembers) {
+        this.teamMembers = teamMembers;
+    }
 }
