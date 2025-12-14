@@ -302,6 +302,7 @@ public class ProjectAdminController {
      * @param redirectAttributes атрибуты для редиректа
      * @return редирект на страницу списка
      */
+
     @PostMapping("/delete/{id}")
     public String deleteProject(@PathVariable Long id, RedirectAttributes redirectAttributes) {
         try {
@@ -314,6 +315,9 @@ public class ProjectAdminController {
     }
 
     // ================== УПРАВЛЕНИЕ СТАТУСОМ ==================
+
+
+
 
     /**
      * Активирует проект.

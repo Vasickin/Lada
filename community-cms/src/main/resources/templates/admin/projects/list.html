@@ -170,11 +170,16 @@
                                            class="btn btn-sm btn-outline-secondary">
                                             <i class="bi bi-pencil"></i>
                                         </a>
-                                        <a th:href="@{/admin/projects/delete/{id}(id=${project.id})}"
-                                           class="btn btn-sm btn-outline-danger"
-                                           onclick="return confirm('Удалить проект?')">
+                                        <button type="button"
+                                                class="btn btn-sm btn-outline-danger"
+                                                data-bs-toggle="modal"
+                                                data-bs-target="#deleteProjectModal"
+                                                data-project-id="${project.id}"
+                                                data-project-title="${project.title}"
+                                                data-project-slug="${project.slug}"
+                                                data-project-category="${project.category}">
                                             <i class="bi bi-trash"></i>
-                                        </a>
+                                        </button>
                                     </td>
                                 </tr>
 
@@ -199,6 +204,109 @@
                     </div>
                 </div>
             </div>
+        </div>
+    </div>
+</div>
+
+<!-- ========== МОДАЛЬНОЕ ОКНО ПОДТВЕРЖДЕНИЯ УДАЛЕНИЯ ========== -->
+<div class="modal fade" id="deleteProjectModal" tabindex="-1" aria-labelledby="deleteProjectModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title" id="deleteProjectModalLabel">
+                    <i class="bi bi-exclamation-triangle me-2"></i>
+                    Подтверждение удаления
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="alert alert-warning">
+                    <i class="bi bi-exclamation-octagon me-2"></i>
+                    <strong>Внимание!</strong> Это действие нельзя отменить.
+                </div>
+                <p>Вы уверены, что хотите удалить проект:</p>
+                <h6 class="text-danger" id="projectToDeleteTitle">Название проекта</h6>
+                <p class="text-muted small mb-0">ID: <span id="projectToDeleteId">0</span></p>
+                <p class="text-muted small">Slug: <span id="projectToDeleteSlug">slug</span></p>
+
+                <div class="mt-3 p-3 bg-light rounded">
+                    <h6 class="text-secondary">Что будет удалено:</h6>
+                    <ul class="small mb-0">
+                        <li>Сам проект</li>
+                        <li>Связи с участниками команды</li>
+                        <li>Видео проекта (если есть)</li>
+                        <li>Партнёры проекта (если есть)</li>
+                        <li>Статьи проекта (если есть)</li>
+                        <li>Изображения проекта (если есть)</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="bi bi-x-circle me-1"></i>
+                    Отмена
+                </button>
+                <form id="deleteProjectForm" method="post" style="display: inline;">
+                    <input type="hidden" name="_method" value="DELETE">
+                    <button type="submit" class="btn btn-danger">
+                        <i class="bi bi-trash me-1"></i>
+                        Удалить проект
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- JavaScript для модального окна удаления -->
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const deleteModal = document.getElementById('deleteProjectModal');
+        const deleteForm = document.getElementById('deleteProjectForm');
+        const projectTitle = document.getElementById('projectToDeleteTitle');
+        const projectId = document.getElementById('projectToDeleteId');
+        const projectSlug = document.getElementById('projectToDeleteSlug');
+
+        deleteModal.addEventListener('show.bs.modal', function(event) {
+            // Кнопка, которая открыла модальное окно
+            const button = event.relatedTarget;
+
+            // Получаем данные из data-* атрибутов
+            const id = button.getAttribute('data-project-id');
+            const title = button.getAttribute('data-project-title');
+            const slug = button.getAttribute('data-project-slug');
+            const category = button.getAttribute('data-project-category');
+
+            // Заполняем модальное окно
+            projectTitle.textContent = title;
+            projectId.textContent = id;
+            projectSlug.textContent = slug;
+
+            // Устанавливаем action формы
+            deleteForm.action = '/admin/projects/delete/' + id;
+        });
+
+        // Обработка успешного удаления (если нужно показать toast сообщение)
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.has('deleted')) {
+            const toast = new bootstrap.Toast(document.getElementById('successToast'));
+            toast.show();
+        }
+    });
+</script>
+
+<!-- Toast сообщение об успешном удалении -->
+<div class="toast-container position-fixed bottom-0 end-0 p-3">
+    <div id="successToast" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
+        <div class="toast-header bg-success text-white">
+            <strong class="me-auto">
+                <i class="bi bi-check-circle me-2"></i>
+                Успешно
+            </strong>
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="toast"></button>
+        </div>
+        <div class="toast-body">
+            Проект успешно удалён
         </div>
     </div>
 </div>
