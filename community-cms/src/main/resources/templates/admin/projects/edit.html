@@ -1,10 +1,493 @@
 <!DOCTYPE html>
-<html lang="en">
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{fragments/layout}">
 <head>
-    <meta charset="UTF-8">
-    <title>Title</title>
+    <title>Редактировать проект - Админ панель</title>
+
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+
+    <style>
+        .edit-project-container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding-left: 20px;
+            padding-right: 20px;
+        }
+        .form-section {
+            margin-bottom: 30px;
+        }
+        .section-title {
+            border-bottom: 2px solid #dee2e6;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+        }
+        .project-header {
+            background-color: #f8f9fa;
+            border-left: 4px solid #0d6efd;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+    </style>
 </head>
 <body>
+<div layout:fragment="content">
+    <div class="container-fluid edit-project-container">
 
+        <!-- ========== ХЛЕБНЫЕ КРОШКИ И ЗАГОЛОВОК ========== -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item">
+                            <a th:href="@{/admin}">Главная</a>
+                        </li>
+                        <li class="breadcrumb-item">
+                            <a th:href="@{/admin/projects}">Проекты</a>
+                        </li>
+                        <li class="breadcrumb-item active" aria-current="page">
+                            Редактировать проект
+                        </li>
+                    </ol>
+                </nav>
+
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h1 class="h2 mb-0">
+                            <i class="bi bi-pencil me-2"></i>
+                            Редактировать проект
+                        </h1>
+                        <p class="text-muted mb-0 mt-1">
+                            ID: <strong th:text="${project.id}">#</strong> |
+                            Создан: <strong th:text="${project.createdAt != null} ? ${#temporals.format(project.createdAt, 'dd.MM.yyyy HH:mm')} : '—'">—</strong>
+                        </p>
+                    </div>
+                    <div>
+                        <a th:href="@{/admin/projects}" class="btn btn-outline-secondary">
+                            <i class="bi bi-arrow-left me-1"></i>
+                            Назад к списку
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ========== ИНФОРМАЦИЯ О ПРОЕКТЕ ========== -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="project-header">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h3 class="h5 mb-1" th:text="${project.title}">Название проекта</h3>
+                            <p class="mb-0 text-muted" th:text="${project.shortDescription} ?: 'Нет краткого описания'">
+                                Краткое описание
+                            </p>
+                        </div>
+                        <div>
+                            <a th:href="@{/projects/{slug}(slug=${project.slug})}"
+                               class="btn btn-outline-info btn-sm"
+                               target="_blank">
+                                <i class="bi bi-eye me-1"></i>
+                                Просмотр на сайте
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ========== ФОРМА РЕДАКТИРОВАНИЯ ПРОЕКТА ========== -->
+        <div class="row">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-body">
+                        <form th:action="@{/admin/projects/edit/{id}(id=${project.id})}"
+                              th:object="${project}"
+                              method="post"
+                              class="needs-validation" novalidate>
+
+                            <!-- Hidden поле для ID -->
+                            <input type="hidden" th:field="*{id}" />
+
+                            <!-- Сообщения об ошибках -->
+                            <div th:if="${#fields.hasErrors('*')}" class="alert alert-danger">
+                                <h5 class="alert-heading">Исправьте следующие ошибки:</h5>
+                                <ul>
+                                    <li th:each="err : ${#fields.errors('*')}"
+                                        th:text="${err}">Ошибка</li>
+                                </ul>
+                            </div>
+
+                            <!-- Сообщение об успехе -->
+                            <div th:if="${successMessage != null}" class="alert alert-success">
+                                <i class="bi bi-check-circle me-2"></i>
+                                <span th:text="${successMessage}">Проект успешно обновлён!</span>
+                            </div>
+
+                            <!-- Сообщение об ошибке -->
+                            <div th:if="${errorMessage != null}" class="alert alert-danger">
+                                <i class="bi bi-exclamation-triangle me-2"></i>
+                                <span th:text="${errorMessage}">Ошибка при обновлении проекта!</span>
+                            </div>
+
+                            <!-- ===== ОСНОВНАЯ ИНФОРМАЦИЯ ===== -->
+                            <div class="form-section">
+                                <h3 class="section-title">
+                                    <i class="bi bi-info-circle me-2"></i>
+                                    Основная информация
+                                </h3>
+
+                                <!-- Название проекта -->
+                                <div class="row mb-3">
+                                    <div class="col-md-8">
+                                        <label for="title" class="form-label">
+                                            Название проекта *
+                                        </label>
+                                        <input type="text"
+                                               th:field="*{title}"
+                                               class="form-control"
+                                               id="title"
+                                               required
+                                               minlength="3"
+                                               maxlength="255">
+                                        <div class="invalid-feedback">
+                                            Введите название проекта (от 3 до 255 символов)
+                                        </div>
+                                        <small class="form-text text-muted">
+                                            Полное название проекта, которое будет отображаться на сайте
+                                        </small>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label for="slug" class="form-label">
+                                            URL-адрес (slug) *
+                                        </label>
+                                        <input type="text"
+                                               th:field="*{slug}"
+                                               class="form-control"
+                                               id="slug"
+                                               pattern="^[a-z0-9-]+$"
+                                               required>
+                                        <div class="invalid-feedback">
+                                            Используйте только латинские буквы в нижнем регистре, цифры и дефисы
+                                        </div>
+                                        <small class="form-text text-muted">
+                                            Текущий: <code th:text="${project.slug}">slug</code>
+                                        </small>
+                                    </div>
+                                </div>
+
+                                <!-- Категория и статус -->
+                                <div class="row mb-3">
+                                    <div class="col-md-6">
+                                        <label for="category" class="form-label">
+                                            Категория *
+                                        </label>
+                                        <select th:field="*{category}"
+                                                class="form-select"
+                                                id="category"
+                                                required>
+                                            <option value="">Выберите категорию...</option>
+                                            <option th:each="cat : ${categories}"
+                                                    th:value="${cat}"
+                                                    th:selected="${cat == project.category}"
+                                                    th:text="${cat}">
+                                                Категория
+                                            </option>
+                                        </select>
+                                        <div class="invalid-feedback">
+                                            Выберите категорию проекта
+                                        </div>
+                                        <small class="form-text text-muted">
+                                            Текущая: <span th:text="${project.category} ?: 'Не указана'"></span>
+                                        </small>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label for="status" class="form-label">
+                                            Статус *
+                                        </label>
+                                        <select th:field="*{status}"
+                                                class="form-select"
+                                                id="status"
+                                                required>
+                                            <option value="">Выберите статус...</option>
+                                            <option th:each="status : ${statuses}"
+                                                    th:value="${status}"
+                                                    th:selected="${status == project.status}"
+                                                    th:text="${status.name() == 'ACTIVE' ? 'Активный' :
+                                                              status.name() == 'ANNUAL' ? 'Ежегодный' :
+                                                              'Архивный'}">
+                                                Статус
+                                            </option>
+                                        </select>
+                                        <div class="invalid-feedback">
+                                            Выберите статус проекта
+                                        </div>
+                                        <small class="form-text text-muted">
+                                            Текущий:
+                                            <span th:if="${project.status != null}"
+                                                  th:classappend="'badge badge-status-' + ${project.status.name().toLowerCase()}"
+                                                  th:text="${project.status.name() == 'ACTIVE' ? 'Активный' :
+                                                           project.status.name() == 'ANNUAL' ? 'Ежегодный' :
+                                                           'Архивный'}">
+                                                Статус
+                                            </span>
+                                        </small>
+                                    </div>
+                                </div>
+
+                                <!-- Краткое описание -->
+                                <div class="row mb-3">
+                                    <div class="col-12">
+                                        <label for="shortDescription" class="form-label">
+                                            Краткое описание
+                                        </label>
+                                        <textarea th:field="*{shortDescription}"
+                                                  class="form-control"
+                                                  id="shortDescription"
+                                                  rows="3"
+                                                  maxlength="500"
+                                                  placeholder="Краткое описание проекта (до 500 символов)..."></textarea>
+                                        <small class="form-text text-muted">
+                                            До 500 символов. Будет отображаться в карточке проекта.
+                                            <span class="float-end">
+                                                Символов: <span th:text="${#strings.length(project.shortDescription ?: '')}">0</span>/500
+                                            </span>
+                                        </small>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- ===== ДАТЫ И МЕСТО ПРОВЕДЕНИЯ ===== -->
+                            <div class="form-section">
+                                <h3 class="section-title">
+                                    <i class="bi bi-calendar-event me-2"></i>
+                                    Даты и место проведения
+                                </h3>
+
+                                <div class="row mb-3">
+                                    <div class="col-md-4">
+                                        <label for="startDate" class="form-label">
+                                            Дата начала
+                                        </label>
+                                        <input type="date"
+                                               th:field="*{startDate}"
+                                               th:value="${project.startDate != null} ? ${#temporals.format(project.startDate, 'yyyy-MM-dd')} : ''"
+                                               class="form-control"
+                                               id="startDate">
+                                        <small class="form-text text-muted" th:if="${project.startDate != null}">
+                                            Текущая: <span th:text="${#temporals.format(project.startDate, 'dd.MM.yyyy')}"></span>
+                                        </small>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label for="endDate" class="form-label">
+                                            Дата окончания
+                                        </label>
+                                        <input type="date"
+                                               th:field="*{endDate}"
+                                               th:value="${project.endDate != null} ? ${#temporals.format(project.endDate, 'yyyy-MM-dd')} : ''"
+                                               class="form-control"
+                                               id="endDate">
+                                        <small class="form-text text-muted" th:if="${project.endDate != null}">
+                                            Текущая: <span th:text="${#temporals.format(project.endDate, 'dd.MM.yyyy')}"></span>
+                                        </small>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label for="eventDate" class="form-label">
+                                            Дата события
+                                        </label>
+                                        <input type="date"
+                                               th:field="*{eventDate}"
+                                               th:value="${project.eventDate != null} ? ${#temporals.format(project.eventDate, 'yyyy-MM-dd')} : ''"
+                                               class="form-control"
+                                               id="eventDate">
+                                        <small class="form-text text-muted" th:if="${project.eventDate != null}">
+                                            Текущая: <span th:text="${#temporals.format(project.eventDate, 'dd.MM.yyyy')}"></span>
+                                        </small>
+                                    </div>
+                                </div>
+
+                                <div class="row mb-3">
+                                    <div class="col-12">
+                                        <label for="location" class="form-label">
+                                            Место проведения
+                                        </label>
+                                        <input type="text"
+                                               th:field="*{location}"
+                                               class="form-control"
+                                               id="location"
+                                               maxlength="255"
+                                               placeholder="Например: г. Москва, Культурный центр 'ЛАДА'...">
+                                        <small class="form-text text-muted" th:if="${project.location != null}">
+                                            Текущее: <span th:text="${project.location}"></span>
+                                        </small>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- ===== ПОЛНОЕ ОПИСАНИЕ ===== -->
+                            <div class="form-section">
+                                <h3 class="section-title">
+                                    <i class="bi bi-text-paragraph me-2"></i>
+                                    Полное описание
+                                </h3>
+
+                                <div class="row mb-3">
+                                    <div class="col-12">
+                                        <label for="fullDescription" class="form-label">
+                                            Полное описание проекта
+                                        </label>
+                                        <textarea th:field="*{fullDescription}"
+                                                  class="form-control"
+                                                  id="fullDescription"
+                                                  rows="12"
+                                                  placeholder="Подробное описание целей, задач, этапов проекта..."></textarea>
+                                        <small class="form-text text-muted">
+                                            Поддерживается HTML-разметка.
+                                            <span class="float-end">
+                                                Символов: <span th:text="${#strings.length(project.fullDescription ?: '')}">0</span>
+                                            </span>
+                                        </small>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- ===== СЕКЦИИ ПРОЕКТА ===== -->
+                            <div class="form-section">
+                                <h3 class="section-title">
+                                    <i class="bi bi-toggle-on me-2"></i>
+                                    Отображение секций
+                                </h3>
+
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="form-check form-switch mb-2">
+                                            <input th:field="*{showDescription}"
+                                                   class="form-check-input"
+                                                   type="checkbox"
+                                                   id="showDescription">
+                                            <label class="form-check-label" for="showDescription">
+                                                Описание проекта
+                                            </label>
+                                        </div>
+                                        <div class="form-check form-switch mb-2">
+                                            <input th:field="*{showPhotos}"
+                                                   class="form-check-input"
+                                                   type="checkbox"
+                                                   id="showPhotos">
+                                            <label class="form-check-label" for="showPhotos">
+                                                Фотогалерея
+                                            </label>
+                                        </div>
+                                        <div class="form-check form-switch mb-2">
+                                            <input th:field="*{showVideos}"
+                                                   class="form-check-input"
+                                                   type="checkbox"
+                                                   id="showVideos">
+                                            <label class="form-check-label" for="showVideos">
+                                                Видео
+                                            </label>
+                                        </div>
+                                        <div class="form-check form-switch mb-2">
+                                            <input th:field="*{showTeam}"
+                                                   class="form-check-input"
+                                                   type="checkbox"
+                                                   id="showTeam">
+                                            <label class="form-check-label" for="showTeam">
+                                                Команда проекта
+                                            </label>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-check form-switch mb-2">
+                                            <input th:field="*{showParticipation}"
+                                                   class="form-check-input"
+                                                   type="checkbox"
+                                                   id="showParticipation">
+                                            <label class="form-check-label" for="showParticipation">
+                                                Как участвовать
+                                            </label>
+                                        </div>
+                                        <div class="form-check form-switch mb-2">
+                                            <input th:field="*{showPartners}"
+                                                   class="form-check-input"
+                                                   type="checkbox"
+                                                   id="showPartners">
+                                            <label class="form-check-label" for="showPartners">
+                                                Партнёры
+                                            </label>
+                                        </div>
+                                        <div class="form-check form-switch mb-2">
+                                            <input th:field="*{showRelated}"
+                                                   class="form-check-input"
+                                                   type="checkbox"
+                                                   id="showRelated">
+                                            <label class="form-check-label" for="showRelated">
+                                                Похожие проекты
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                                <small class="form-text text-muted">
+                                    Отметьте какие секции показывать на публичной странице проекта
+                                </small>
+                            </div>
+
+                            <!-- ===== КНОПКИ ОТПРАВКИ ===== -->
+                            <div class="form-section">
+                                <div class="d-flex justify-content-between">
+                                    <div>
+                                        <a th:href="@{/admin/projects}" class="btn btn-outline-secondary me-2">
+                                            <i class="bi bi-x-circle me-1"></i>
+                                            Отмена
+                                        </a>
+                                        <a th:href="@{/admin/projects/create}" class="btn btn-outline-success">
+                                            <i class="bi bi-plus-circle me-1"></i>
+                                            Создать новый
+                                        </a>
+                                    </div>
+                                    <div>
+                                        <button type="submit" class="btn btn-primary">
+                                            <i class="bi bi-check-circle me-1"></i>
+                                            Обновить проект
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Bootstrap JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+<!-- Скрипт для валидации формы -->
+<script>
+    // Валидация Bootstrap
+    (function () {
+        'use strict'
+
+        var forms = document.querySelectorAll('.needs-validation')
+
+        Array.prototype.slice.call(forms)
+            .forEach(function (form) {
+                form.addEventListener('submit', function (event) {
+                    if (!form.checkValidity()) {
+                        event.preventDefault()
+                        event.stopPropagation()
+                    }
+
+                    form.classList.add('was-validated')
+                }, false)
+            })
+    })()
+</script>
 </body>
 </html>
