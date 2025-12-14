@@ -1,10 +1,327 @@
 <!DOCTYPE html>
-<html lang="en">
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{fragments/layout}">
 <head>
-    <meta charset="UTF-8">
-    <title>Title</title>
+    <title>Добавить проект - Админ панель</title>
+
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+
+    <style>
+        .create-project-container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding-left: 20px;
+            padding-right: 20px;
+        }
+        .form-section {
+            margin-bottom: 30px;
+        }
+        .section-title {
+            border-bottom: 2px solid #dee2e6;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+        }
+    </style>
 </head>
 <body>
+<div layout:fragment="content">
+    <div class="container-fluid create-project-container">
 
+        <!-- ========== ХЛЕБНЫЕ КРОШКИ И ЗАГОЛОВОК ========== -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item">
+                            <a th:href="@{/admin}">Главная</a>
+                        </li>
+                        <li class="breadcrumb-item">
+                            <a th:href="@{/admin/projects}">Проекты</a>
+                        </li>
+                        <li class="breadcrumb-item active" aria-current="page">
+                            Добавить проект
+                        </li>
+                    </ol>
+                </nav>
+
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h1 class="h2 mb-0">
+                            <i class="bi bi-plus-circle me-2"></i>
+                            Добавить новый проект
+                        </h1>
+                        <p class="text-muted mb-0 mt-1">
+                            Заполните информацию о новом проекте организации
+                        </p>
+                    </div>
+                    <div>
+                        <a th:href="@{/admin/projects}" class="btn btn-outline-secondary">
+                            <i class="bi bi-arrow-left me-1"></i>
+                            Назад к списку
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ========== ФОРМА СОЗДАНИЯ ПРОЕКТА ========== -->
+        <div class="row">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-body">
+                        <form th:action="@{/admin/projects/create}"
+                              th:object="${project}"
+                              method="post"
+                              class="needs-validation" novalidate>
+
+                            <!-- Сообщения об ошибках -->
+                            <div th:if="${#fields.hasErrors('*')}" class="alert alert-danger">
+                                <h5 class="alert-heading">Исправьте следующие ошибки:</h5>
+                                <ul>
+                                    <li th:each="err : ${#fields.errors('*')}"
+                                        th:text="${err}">Ошибка</li>
+                                </ul>
+                            </div>
+
+                            <!-- Сообщение об успехе -->
+                            <div th:if="${successMessage != null}" class="alert alert-success">
+                                <i class="bi bi-check-circle me-2"></i>
+                                <span th:text="${successMessage}">Проект успешно создан!</span>
+                            </div>
+
+                            <!-- ===== ОСНОВНАЯ ИНФОРМАЦИЯ ===== -->
+                            <div class="form-section">
+                                <h3 class="section-title">
+                                    <i class="bi bi-info-circle me-2"></i>
+                                    Основная информация
+                                </h3>
+
+                                <!-- Название проекта -->
+                                <div class="row mb-3">
+                                    <div class="col-md-8">
+                                        <label for="title" class="form-label">
+                                            Название проекта *
+                                        </label>
+                                        <input type="text"
+                                               th:field="*{title}"
+                                               class="form-control"
+                                               id="title"
+                                               required
+                                               minlength="3"
+                                               maxlength="255">
+                                        <div class="invalid-feedback">
+                                            Введите название проекта (от 3 до 255 символов)
+                                        </div>
+                                        <small class="form-text text-muted">
+                                            Полное название проекта, которое будет отображаться на сайте
+                                        </small>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label for="slug" class="form-label">
+                                            URL-адрес (slug) *
+                                        </label>
+                                        <input type="text"
+                                               th:field="*{slug}"
+                                               class="form-control"
+                                               id="slug"
+                                               pattern="^[a-z0-9-]+$"
+                                               required>
+                                        <div class="invalid-feedback">
+                                            Используйте только латинские буквы в нижнем регистре, цифры и дефисы
+                                        </div>
+                                        <small class="form-text text-muted">
+                                            Например: new-year-festival-2024
+                                        </small>
+                                    </div>
+                                </div>
+
+                                <!-- Категория и статус -->
+                                <div class="row mb-3">
+                                    <div class="col-md-6">
+                                        <label for="category" class="form-label">
+                                            Категория *
+                                        </label>
+                                        <select th:field="*{category}"
+                                                class="form-select"
+                                                id="category"
+                                                required>
+                                            <option value="">Выберите категорию...</option>
+                                            <option th:each="cat : ${categories}"
+                                                    th:value="${cat}"
+                                                    th:text="${cat}">
+                                                Категория
+                                            </option>
+                                        </select>
+                                        <div class="invalid-feedback">
+                                            Выберите категорию проекта
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label for="status" class="form-label">
+                                            Статус *
+                                        </label>
+                                        <select th:field="*{status}"
+                                                class="form-select"
+                                                id="status"
+                                                required>
+                                            <option value="">Выберите статус...</option>
+                                            <option th:each="status : ${statuses}"
+                                                    th:value="${status}"
+                                                    th:text="${status.name() == 'ACTIVE' ? 'Активный' :
+                                                              status.name() == 'ANNUAL' ? 'Ежегодный' :
+                                                              'Архивный'}">
+                                                Статус
+                                            </option>
+                                        </select>
+                                        <div class="invalid-feedback">
+                                            Выберите статус проекта
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Краткое описание -->
+                                <div class="row mb-3">
+                                    <div class="col-12">
+                                        <label for="shortDescription" class="form-label">
+                                            Краткое описание
+                                        </label>
+                                        <textarea th:field="*{shortDescription}"
+                                                  class="form-control"
+                                                  id="shortDescription"
+                                                  rows="3"
+                                                  maxlength="500"></textarea>
+                                        <small class="form-text text-muted">
+                                            До 500 символов. Будет отображаться в карточке проекта.
+                                        </small>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- ===== ДАТЫ И МЕСТО ПРОВЕДЕНИЯ ===== -->
+                            <div class="form-section">
+                                <h3 class="section-title">
+                                    <i class="bi bi-calendar-event me-2"></i>
+                                    Даты и место проведения
+                                </h3>
+
+                                <div class="row mb-3">
+                                    <div class="col-md-4">
+                                        <label for="startDate" class="form-label">
+                                            Дата начала
+                                        </label>
+                                        <input type="date"
+                                               th:field="*{startDate}"
+                                               class="form-control"
+                                               id="startDate">
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label for="endDate" class="form-label">
+                                            Дата окончания
+                                        </label>
+                                        <input type="date"
+                                               th:field="*{endDate}"
+                                               class="form-control"
+                                               id="endDate">
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label for="eventDate" class="form-label">
+                                            Дата события
+                                        </label>
+                                        <input type="date"
+                                               th:field="*{eventDate}"
+                                               class="form-control"
+                                               id="eventDate">
+                                    </div>
+                                </div>
+
+                                <div class="row mb-3">
+                                    <div class="col-12">
+                                        <label for="location" class="form-label">
+                                            Место проведения
+                                        </label>
+                                        <input type="text"
+                                               th:field="*{location}"
+                                               class="form-control"
+                                               id="location"
+                                               maxlength="255">
+                                        <small class="form-text text-muted">
+                                            Например: г. Москва, Культурный центр "ЛАДА"
+                                        </small>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- ===== ПОЛНОЕ ОПИСАНИЕ ===== -->
+                            <div class="form-section">
+                                <h3 class="section-title">
+                                    <i class="bi bi-text-paragraph me-2"></i>
+                                    Полное описание
+                                </h3>
+
+                                <div class="row mb-3">
+                                    <div class="col-12">
+                                        <label for="fullDescription" class="form-label">
+                                            Полное описание проекта
+                                        </label>
+                                        <textarea th:field="*{fullDescription}"
+                                                  class="form-control"
+                                                  id="fullDescription"
+                                                  rows="8"></textarea>
+                                        <small class="form-text text-muted">
+                                            Подробное описание целей, задач, этапов проекта. Поддерживается HTML-разметка.
+                                        </small>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- ===== КНОПКИ ОТПРАВКИ ===== -->
+                            <div class="form-section">
+                                <div class="d-flex justify-content-between">
+                                    <a th:href="@{/admin/projects}" class="btn btn-outline-secondary">
+                                        <i class="bi bi-x-circle me-1"></i>
+                                        Отмена
+                                    </a>
+                                    <button type="submit" class="btn btn-primary">
+                                        <i class="bi bi-check-circle me-1"></i>
+                                        Создать проект
+                                    </button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Bootstrap JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+<!-- Скрипт для валидации формы -->
+<script>
+    // Валидация Bootstrap
+    (function () {
+        'use strict'
+
+        var forms = document.querySelectorAll('.needs-validation')
+
+        Array.prototype.slice.call(forms)
+            .forEach(function (form) {
+                form.addEventListener('submit', function (event) {
+                    if (!form.checkValidity()) {
+                        event.preventDefault()
+                        event.stopPropagation()
+                    }
+
+                    form.classList.add('was-validated')
+                }, false)
+            })
+    })()
+</script>
 </body>
 </html>

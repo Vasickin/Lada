@@ -15,6 +15,7 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -141,6 +142,7 @@ public class ProjectAdminController {
      * @param model модель для передачи данных в шаблон
      * @return имя шаблона для отображения
      */
+
     @GetMapping("/create")
     public String showCreateForm(Model model) {
         model.addAttribute("project", new Project());
@@ -162,21 +164,35 @@ public class ProjectAdminController {
                                 BindingResult bindingResult,
                                 RedirectAttributes redirectAttributes) {
 
+        System.out.println("=== DEBUG CREATE PROJECT ===");
+        System.out.println("Title: " + project.getTitle());
+        System.out.println("Slug: " + project.getSlug());
+        System.out.println("Has errors? " + bindingResult.hasErrors());
+
         if (bindingResult.hasErrors()) {
+            System.out.println("Errors: " + bindingResult.getAllErrors());
             return "admin/projects/create";
         }
 
         // Проверка уникальности slug
         if (projectService.existsBySlug(project.getSlug())) {
+            System.out.println("Slug already exists: " + project.getSlug());
             bindingResult.rejectValue("slug", "error.project", "Проект с таким URL уже существует");
             return "admin/projects/create";
         }
 
         try {
+            System.out.println("Saving project...");
             projectService.save(project);
+            System.out.println("Project saved with ID: " + project.getId());
+
             redirectAttributes.addFlashAttribute("successMessage", "Проект успешно создан");
             return "redirect:/admin/projects";
+
         } catch (Exception e) {
+            System.out.println("ERROR saving project: " + e.getMessage());
+            e.printStackTrace();
+
             bindingResult.reject("error.project", "Ошибка при создании проекта: " + e.getMessage());
             return "admin/projects/create";
         }
