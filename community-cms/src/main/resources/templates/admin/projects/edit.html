@@ -35,6 +35,20 @@
         .badge-status-active { background-color: #28a745; }
         .badge-status-annual { background-color: #17a2b8; }
         .badge-status-archived { background-color: #6c757d; }
+
+        .video-preview-card {
+    border: 1px solid #e9ecef;
+    border-radius: 8px;
+    padding: 15px;
+    background-color: #f8f9fa;
+}
+.video-thumbnail-small {
+    width: 120px;
+    height: 68px;
+    object-fit: cover;
+    border-radius: 4px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
     </style>
 </head>
 <body>
@@ -440,6 +454,431 @@
                                                                 </div>
                                                             </div>
                                                         </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+
+                            <!-- ===== ПАРТНЁРЫ ПРОЕКТА ===== -->
+                            <div class="form-section" th:if="${project.showPartners}">
+                                <h3 class="section-title">
+                                    <i class="bi bi-handshake me-2"></i>
+                                    Партнёры проекта
+                                    <span class="badge bg-info ms-2">
+            <i class="bi bi-building"></i>
+            <span th:text="${projectPartnersCount != null ? projectPartnersCount : 0}">0</span>
+        </span>
+                                </h3>
+
+                                <div class="row mb-3">
+                                    <div class="col-12">
+                                        <div class="card">
+                                            <div class="card-body">
+                                                <!-- Логотипы партнёров -->
+                                                <div th:if="${projectPartners != null && !projectPartners.isEmpty()}" class="mb-4">
+                                                    <h6 class="mb-3">
+                                                        <i class="bi bi-building-check me-1"></i>
+                                                        Партнёры проекта
+                                                    </h6>
+
+                                                    <div class="row g-3">
+                                                        <div class="col-6 col-md-4 col-lg-3" th:each="partner : ${projectPartners}">
+                                                            <div class="card border-0 text-center h-100">
+                                                                <div class="card-body">
+                                                                    <!-- Логотип партнёра -->
+                                                                    <div class="mb-3" style="height: 60px; display: flex; align-items: center; justify-content: center;">
+                                                                        <img th:if="${partner.logoPath != null}"
+                                                                             th:src="${partner.logoPath}"
+                                                                             style="max-height: 60px; max-width: 100%; object-fit: contain;"
+                                                                             th:alt="${partner.name}">
+                                                                        <div th:unless="${partner.logoPath != null}"
+                                                                             class="bg-light rounded d-flex align-items-center justify-content-center"
+                                                                             style="width: 100%; height: 60px;">
+                                                                            <i class="bi bi-building fs-3 text-muted"></i>
+                                                                        </div>
+                                                                    </div>
+
+                                                                    <!-- Информация -->
+                                                                    <h6 class="mb-1" th:text="${partner.name}"></h6>
+                                                                    <small class="text-muted d-block mb-1"
+                                                                           th:text="${partner.partnerType} ?: 'Партнёр'">
+                                                                    </small>
+
+                                                                    <!-- Статус -->
+                                                                    <span th:if="${partner.active}"
+                                                                          class="badge bg-success small">
+                                            Активен
+                                        </span>
+                                                                    <span th:unless="${partner.active}"
+                                                                          class="badge bg-secondary small">
+                                            Неактивен
+                                        </span>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                <!-- Если нет партнёров -->
+                                                <div th:if="${projectPartners == null || projectPartners.isEmpty()}" class="text-center py-4">
+                                                    <div class="mb-3">
+                                                        <i class="bi bi-handshake display-4 text-muted"></i>
+                                                    </div>
+                                                    <h6>Партнёры проекта не добавлены</h6>
+                                                    <p class="text-muted small mb-3">
+                                                        Добавьте партнёров проекта для отображения логотипов на странице
+                                                    </p>
+                                                </div>
+
+                                                <!-- Типы партнёрства -->
+                                                <div class="row g-3 mb-4">
+                                                    <div class="col-md-6">
+                                                        <div class="card border-0 bg-light">
+                                                            <div class="card-body">
+                                                                <h6 class="mb-2">
+                                                                    <i class="bi bi-award text-primary me-1"></i>
+                                                                    Типы партнёрства
+                                                                </h6>
+                                                                <ul class="small mb-0">
+                                                                    <li><strong>Генеральный партнёр</strong> - основной спонсор</li>
+                                                                    <li><strong>Спонсор</strong> - финансовая поддержка</li>
+                                                                    <li><strong>Информационный партнёр</strong> - медиаподдержка</li>
+                                                                    <li><strong>Организационный партнёр</strong> - помощь в организации</li>
+                                                                    <li><strong>Технический партнёр</strong> - техническая поддержка</li>
+                                                                </ul>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-md-6">
+                                                        <div class="card border-0 bg-light">
+                                                            <div class="card-body">
+                                                                <h6 class="mb-2">
+                                                                    <i class="bi bi-megaphone text-success me-1"></i>
+                                                                    Что даёт партнёрство?
+                                                                </h6>
+                                                                <ul class="small mb-0">
+                                                                    <li>Логотип на странице проекта</li>
+                                                                    <li>Упоминание в публикациях</li>
+                                                                    <li>Участие в мероприятиях</li>
+                                                                    <li>Реклама на ресурсах организации</li>
+                                                                    <li>Совместные PR-акции</li>
+                                                                </ul>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                <!-- Кнопки управления -->
+                                                <div class="mt-3 pt-3 border-top">
+                                                    <div class="row g-2">
+                                                        <div class="col-md-6">
+                                                            <div class="d-grid">
+                                                                <a th:href="@{/admin/projects/{id}/partners(id=${project.id})}"
+                                                                   class="btn btn-outline-primary">
+                                                                    <i class="bi bi-handshake me-1"></i>
+                                                                    <span th:if="${projectPartnersCount != null && projectPartnersCount > 0}">
+                                            Управление партнёрами (<span th:text="${projectPartnersCount}">0</span>)
+                                        </span>
+                                                                    <span th:unless="${projectPartnersCount != null && projectPartnersCount > 0}">
+                                            Добавить партнёров
+                                        </span>
+                                                                </a>
+                                                            </div>
+                                                        </div>
+                                                        <div class="col-md-6">
+                                                            <div class="d-grid">
+                                                                <button type="button" class="btn btn-outline-success">
+                                                                    <i class="bi bi-envelope me-1"></i>
+                                                                    Кнопка "Стать партнёром"
+                                                                </button>
+                                                                <small class="text-muted d-block mt-1">
+                                                                    Будет отображаться на публичной странице
+                                                                </small>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+
+                            <!-- ===== ФОТОГРАФИИ ПРОЕКТА ===== -->
+                            <div class="form-section" th:if="${project.showPhotos}">
+                                <h3 class="section-title">
+                                    <i class="bi bi-images me-2"></i>
+                                    Фотографии проекта
+                                    <span class="badge bg-info ms-2">
+            <i class="bi bi-camera"></i>
+            <span th:text="${projectImagesCount != null ? projectImagesCount : 0}">0</span>
+        </span>
+                                </h3>
+
+                                <div class="row mb-3">
+                                    <div class="col-12">
+                                        <div class="card">
+                                            <div class="card-body">
+                                                <!-- Ключевые фотографии (3-5 шт) -->
+                                                <div th:if="${keyImages != null && !keyImages.isEmpty()}" class="mb-4">
+                                                    <h6 class="mb-3">
+                                                        <i class="bi bi-star-fill text-warning me-1"></i>
+                                                        Ключевые фотографии
+                                                        <small class="text-muted">(будут показаны на странице проекта)</small>
+                                                    </h6>
+
+                                                    <div class="row g-2">
+                                                        <div class="col-6 col-md-3" th:each="image, stat : ${keyImages}"
+                                                             th:if="${stat.index < 4}">
+                                                            <div class="card border-0 position-relative">
+                                                                <img th:src="${image.webPath}"
+                                                                     class="img-fluid rounded"
+                                                                     style="height: 120px; object-fit: cover;"
+                                                                     th:alt="${image.altText} ?: 'Фото проекта'">
+                                                                <div class="position-absolute top-0 end-0 m-1">
+                                        <span th:if="${image.featured}"
+                                              class="badge bg-warning">
+                                            <i class="bi bi-star-fill"></i>
+                                        </span>
+                                                                </div>
+                                                                <div class="card-body p-2">
+                                                                    <p class="small mb-0 text-truncate"
+                                                                       th:text="${image.caption} ?: 'Без подписи'">
+                                                                    </p>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+
+                                                        <!-- Показать ещё фотографии -->
+                                                        <div th:if="${keyImages.size() > 4}" class="col-6 col-md-3">
+                                                            <div class="card border-0 bg-light h-100">
+                                                                <div class="card-body d-flex align-items-center justify-content-center">
+                                                                    <a th:href="@{/admin/projects/{id}/images(id=${project.id})}"
+                                                                       class="text-decoration-none text-center">
+                                                                        <i class="bi bi-plus-circle d-block fs-4 text-primary mb-1"></i>
+                                                                        <small class="text-muted">
+                                                                            ещё <span th:text="${keyImages.size() - 4}">0</span>
+                                                                        </small>
+                                                                    </a>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                <!-- Если нет фотографий -->
+                                                <div th:if="${keyImages == null || keyImages.isEmpty()}" class="text-center py-4">
+                                                    <div class="mb-3">
+                                                        <i class="bi bi-camera display-4 text-muted"></i>
+                                                    </div>
+                                                    <h6>Фотографии проекта не добавлены</h6>
+                                                    <p class="text-muted small mb-3">
+                                                        Добавьте ключевые фотографии (3-5 шт) для отображения на странице проекта
+                                                    </p>
+                                                </div>
+
+                                                <!-- Связь с галереей -->
+                                                <div class="alert alert-info">
+                                                    <div class="d-flex align-items-center">
+                                                        <i class="bi bi-link-45deg fs-4 me-3"></i>
+                                                        <div>
+                                                            <h6 class="mb-1">Интеграция с галереей сайта</h6>
+                                                            <p class="mb-0 small">
+                                                                Фотографии проекта связаны с основной галереей сайта.
+                                                                Все загруженные фото доступны для выбора.
+                                                            </p>
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                <!-- Кнопки управления -->
+                                                <div class="mt-3 pt-3 border-top">
+                                                    <div class="row g-2">
+                                                        <div class="col-md-6">
+                                                            <div class="d-grid">
+                                                                <a th:href="@{/admin/projects/{id}/images(id=${project.id})}"
+                                                                   class="btn btn-outline-primary">
+                                                                    <i class="bi bi-images me-1"></i>
+                                                                    <span th:if="${projectImagesCount != null && projectImagesCount > 0}">
+                                            Управление фото (<span th:text="${projectImagesCount}">0</span>)
+                                        </span>
+                                                                    <span th:unless="${projectImagesCount != null && projectImagesCount > 0}">
+                                            Добавить фотографии
+                                        </span>
+                                                                </a>
+                                                            </div>
+                                                        </div>
+                                                        <div class="col-md-6">
+                                                            <div class="d-grid">
+                                                                <a th:href="@{/admin/photo-gallery}"
+                                                                   class="btn btn-outline-secondary"
+                                                                   target="_blank">
+                                                                    <i class="bi bi-box-arrow-up-right me-1"></i>
+                                                                    Вся галерея сайта
+                                                                </a>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div class="text-center mt-2">
+                                                        <small class="text-muted">
+                                                            Рекомендуется 3-5 ключевых фотографий для проекта
+                                                        </small>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+
+                            <!-- ===== ВИДЕО ПРОЕКТА ===== -->
+                            <div class="form-section" th:if="${project.showVideos}">
+                                <h3 class="section-title">
+                                    <i class="bi bi-play-btn me-2"></i>
+                                    Видео проекта
+                                    <span class="badge bg-info ms-2">
+            <i class="bi bi-film"></i>
+            <span th:text="${projectVideosCount != null ? projectVideosCount : 0}">0</span>
+        </span>
+                                </h3>
+
+                                <div class="row mb-3">
+                                    <div class="col-12">
+                                        <div class="card">
+                                            <div class="card-body">
+                                                <!-- Информация о видео -->
+                                                <div th:if="${mainVideo != null}" class="mb-4">
+                                                    <div class="d-flex align-items-center mb-3">
+                                                        <h6 class="mb-0 me-3">
+                                                            <i class="bi bi-star-fill text-warning me-1"></i>
+                                                            Главное видео:
+                                                        </h6>
+                                                        <span class="badge bg-success">
+                                <i class="bi bi-check-circle me-1"></i>
+                                Установлено
+                            </span>
+                                                    </div>
+
+                                                    <div class="video-preview-card">
+                                                        <div class="row align-items-center">
+                                                            <div class="col-auto">
+                                                                <img th:src="${mainVideo.thumbnailUrl}"
+                                                                     class="video-thumbnail-small"
+                                                                     alt="Главное видео"
+                                                                     style="width: 120px; height: 68px; object-fit: cover; border-radius: 4px;">
+                                                            </div>
+                                                            <div class="col">
+                                                                <h6 class="mb-1" th:text="${mainVideo.title}">Название видео</h6>
+                                                                <p class="mb-1 text-muted small">
+                                                                    <i class="bi bi-clock me-1"></i>
+                                                                    <span th:text="${mainVideo.durationFormatted}">0:00</span>
+                                                                    <span class="ms-2">
+                                            <i class="bi bi-eye me-1"></i>
+                                            <span th:text="${mainVideo.videoType == 'YOUTUBE' ? 'YouTube' : 'Vimeo'}">
+                                                YouTube
+                                            </span>
+                                        </span>
+                                                                </p>
+                                                                <div class="small">
+                                                                    <a th:href="@{/admin/project-videos/project/{projectId}(projectId=${project.id})}"
+                                                                       class="text-decoration-none">
+                                                                        <i class="bi bi-arrow-right me-1"></i>
+                                                                        Перейти к управлению видео
+                                                                    </a>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                <!-- Если нет видео -->
+                                                <div th:if="${mainVideo == null}" class="text-center py-3">
+                                                    <div class="mb-3">
+                                                        <i class="bi bi-play-circle display-4 text-muted"></i>
+                                                    </div>
+                                                    <h6>Видео проекта не добавлены</h6>
+                                                    <p class="text-muted small mb-3">
+                                                        Добавьте YouTube или Vimeo видео для отображения на странице проекта
+                                                    </p>
+                                                </div>
+
+                                                <!-- Все видео проекта -->
+                                                <div th:if="${projectVideos != null && !projectVideos.isEmpty() && projectVideos.size() > 1}"
+                                                     class="mt-3 pt-3 border-top">
+                                                    <div class="d-flex justify-content-between align-items-center mb-2">
+                                                        <h6 class="mb-0">
+                                                            <i class="bi bi-collection-play me-1"></i>
+                                                            Все видео проекта
+                                                        </h6>
+                                                        <span class="badge bg-secondary">
+                                <span th:text="${projectVideos.size()}">0</span> видео
+                            </span>
+                                                    </div>
+
+                                                    <div class="row g-2">
+                                                        <div class="col-6 col-md-4" th:each="video, stat : ${projectVideos}"
+                                                             th:if="${!video.main && stat.index < 3}">
+                                                            <div class="card border-0 bg-light">
+                                                                <div class="card-body p-2">
+                                                                    <div class="d-flex align-items-center">
+                                                                        <div class="me-2">
+                                                                            <img th:src="${video.thumbnailUrl}"
+                                                                                 style="width: 60px; height: 34px; object-fit: cover; border-radius: 3px;"
+                                                                                 alt="Видео">
+                                                                        </div>
+                                                                        <div class="flex-grow-1">
+                                                                            <p class="mb-0 small text-truncate"
+                                                                               th:text="${video.title}"
+                                                                               style="max-width: 120px;">
+                                                                                Название
+                                                                            </p>
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+
+                                                        <!-- Показать ещё -->
+                                                        <div th:if="${projectVideos.size() > 4}" class="col-6 col-md-4">
+                                                            <div class="card border-0 bg-light h-100">
+                                                                <div class="card-body d-flex align-items-center justify-content-center p-2">
+                                                                    <a th:href="@{/admin/project-videos/project/{projectId}(projectId=${project.id})}"
+                                                                       class="text-decoration-none text-center">
+                                                                        <i class="bi bi-plus-circle d-block fs-4 text-primary"></i>
+                                                                        <small class="text-muted">
+                                                                            ещё <span th:text="${projectVideos.size() - 3}">0</span>
+                                                                        </small>
+                                                                    </a>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                <!-- Кнопка управления -->
+                                                <div class="mt-3 pt-3 border-top">
+                                                    <div class="d-grid">
+                                                        <a th:href="@{/admin/project-videos/project/{projectId}(projectId=${project.id})}"
+                                                           class="btn btn-outline-primary">
+                                                            <i class="bi bi-play-btn me-1"></i>
+                                                            <span th:if="${projectVideosCount != null && projectVideosCount > 0}">
+                                    Управление видео (<span th:text="${projectVideosCount}">0</span>)
+                                </span>
+                                                            <span th:unless="${projectVideosCount != null && projectVideosCount > 0}">
+                                    Добавить видео
+                                </span>
+                                                        </a>
+                                                    </div>
+                                                    <div class="text-center mt-2">
+                                                        <small class="text-muted">
+                                                            Поддерживаются YouTube и Vimeo
+                                                        </small>
                                                     </div>
                                                 </div>
                                             </div>
