@@ -316,10 +316,9 @@ public class ProjectAdminController {
         return "redirect:/admin/projects";
     }
 
+
+
     // ================== УПРАВЛЕНИЕ СТАТУСОМ ==================
-
-
-
 
     /**
      * Активирует проект.
