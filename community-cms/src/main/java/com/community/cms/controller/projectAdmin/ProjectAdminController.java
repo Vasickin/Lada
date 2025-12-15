@@ -159,25 +159,99 @@ public class ProjectAdminController {
      * @param redirectAttributes атрибуты для редиректа
      * @return редирект на страницу списка или форму с ошибками
      */
+//    @PostMapping("/create")
+//    public String createProject(@Valid @ModelAttribute("project") Project project,
+//                                BindingResult bindingResult,
+//                                RedirectAttributes redirectAttributes) {
+//
+//        System.out.println("=== DEBUG CREATE PROJECT ===");
+//        System.out.println("Title: " + project.getTitle());
+//        System.out.println("Slug: " + project.getSlug());
+//        System.out.println("Has errors? " + bindingResult.hasErrors());
+//
+//        if (bindingResult.hasErrors()) {
+//            System.out.println("Errors: " + bindingResult.getAllErrors());
+//            return "admin/projects/create";
+//        }
+//
+//        // Проверка уникальности slug
+//        if (projectService.existsBySlug(project.getSlug())) {
+//            System.out.println("Slug already exists: " + project.getSlug());
+//            bindingResult.rejectValue("slug", "error.project", "Проект с таким URL уже существует");
+//            return "admin/projects/create";
+//        }
+//
+//        try {
+//            System.out.println("Saving project...");
+//            projectService.save(project);
+//            System.out.println("Project saved with ID: " + project.getId());
+//
+//            redirectAttributes.addFlashAttribute("successMessage", "Проект успешно создан");
+//            return "redirect:/admin/projects";
+//
+//        } catch (Exception e) {
+//            System.out.println("ERROR saving project: " + e.getMessage());
+//            e.printStackTrace();
+//
+//            bindingResult.reject("error.project", "Ошибка при создании проекта: " + e.getMessage());
+//            return "admin/projects/create";
+//        }
+//    }
+
     @PostMapping("/create")
     public String createProject(@Valid @ModelAttribute("project") Project project,
                                 BindingResult bindingResult,
-                                RedirectAttributes redirectAttributes) {
+                                RedirectAttributes redirectAttributes,
+                                Model model,  // ДОБАВИЛ: для восстановления списка категорий
+                                @RequestParam(value = "newCategoryName", required = false) String newCategoryName) {
 
         System.out.println("=== DEBUG CREATE PROJECT ===");
         System.out.println("Title: " + project.getTitle());
         System.out.println("Slug: " + project.getSlug());
+        System.out.println("Category from select: " + project.getCategory());
+        System.out.println("New category name: " + newCategoryName);
         System.out.println("Has errors? " + bindingResult.hasErrors());
+
+        // ===== НОВЫЙ КОД: ОБРАБОТКА КАТЕГОРИИ =====
+        // Восстанавливаем списки для формы (на случай ошибки)
+        model.addAttribute("categories", projectService.findAllDistinctCategories());
+        model.addAttribute("statuses", Project.ProjectStatus.values());
+
+        // Если пользователь выбрал "Добавить новую категорию"
+        if ("__NEW__".equals(project.getCategory())) {
+            System.out.println("User selected: CREATE NEW CATEGORY");
+
+            // Проверяем, что название новой категории указано
+            if (newCategoryName == null || newCategoryName.trim().isEmpty()) {
+                System.out.println("ERROR: New category name is empty!");
+                bindingResult.rejectValue("category", "error.project",
+                        "Введите название новой категории");
+            } else {
+                // Устанавливаем новую категорию в проект
+                String cleanedCategory = newCategoryName.trim();
+                System.out.println("Setting new category: " + cleanedCategory);
+                project.setCategory(cleanedCategory);
+            }
+        }
+        // Если категория не выбрана вообще
+        else if (project.getCategory() == null || project.getCategory().trim().isEmpty()) {
+            System.out.println("ERROR: No category selected!");
+            bindingResult.rejectValue("category", "error.project",
+                    "Выберите категорию проекта");
+        }
+        // ===== КОНЕЦ НОВОГО КОДА =====
 
         if (bindingResult.hasErrors()) {
             System.out.println("Errors: " + bindingResult.getAllErrors());
+            // Списки уже добавлены в модель выше
             return "admin/projects/create";
         }
 
-        // Проверка уникальности slug
+        // Проверка уникальности slug (СТАРЫЙ КОД - БЕЗ ИЗМЕНЕНИЙ)
         if (projectService.existsBySlug(project.getSlug())) {
             System.out.println("Slug already exists: " + project.getSlug());
             bindingResult.rejectValue("slug", "error.project", "Проект с таким URL уже существует");
+            // Списки уже добавлены в модель выше
             return "admin/projects/create";
         }
 
@@ -194,6 +268,7 @@ public class ProjectAdminController {
             e.printStackTrace();
 
             bindingResult.reject("error.project", "Ошибка при создании проекта: " + e.getMessage());
+            // Списки уже добавлены в модель выше
             return "admin/projects/create";
         }
     }
