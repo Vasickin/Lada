@@ -189,9 +189,9 @@
                                         </label>
 
                                         <!-- Выпадающий список с существующими категориями -->
-                                        <select th:field="*{category}"  <!-- ВОЗВРАЩАЕМ th:field! -->
+                                        <select th:field="*{category}"
                                         class="form-select"
-                                        id="categorySelect"
+                                        id="category"
                                         required>
                                         <option value="">Выберите категорию...</option>
                                         <option th:each="cat : ${categories}"
