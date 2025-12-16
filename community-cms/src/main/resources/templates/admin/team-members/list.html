@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{fragments/layout}">
+<head>
+    <title>Члены команды - Админ панель</title>
+
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <!-- Bootstrap 5 JS Bundle -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <style>
+        .team-members-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding-left: 20px;
+            padding-right: 20px;
+        }
+
+        .table-container {
+            margin-bottom: 30px;
+        }
+
+        .avatar-small {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid #dee2e6;
+        }
+
+        .avatar-placeholder {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: #6c757d;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 14px;
+            border: 2px solid #dee2e6;
+        }
+
+        .badge-status-active {
+            background-color: #28a745;
+            color: white;
+        }
+
+        .badge-status-inactive {
+            background-color: #6c757d;
+            color: white;
+        }
+
+        .projects-count-badge {
+            background-color: #0d6efd;
+            color: white;
+        }
+
+        .action-buttons {
+            min-width: 150px;
+        }
+
+        .table th {
+            font-weight: 600;
+            background-color: #f8f9fa;
+        }
+
+        .member-info-cell {
+            min-width: 250px;
+        }
+
+        .status-filter-buttons .btn {
+            border-radius: 20px;
+            padding: 0.25rem 1rem;
+            font-size: 0.875rem;
+        }
+    </style>
+</head>
+<body>
+<div layout:fragment="content">
+    <!-- ========== КОНТЕЙНЕР И ЗАГОЛОВОК ========== -->
+    <div class="container-fluid team-members-container">
+
+        <!-- Заголовок и кнопка добавления -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h1 class="h2 mb-0">
+                            <i class="bi bi-people me-2"></i>
+                            Члены команды
+                        </h1>
+                        <p class="text-muted mb-0 mt-1">
+                            Управление членами команды организации "ЛАДА"
+                        </p>
+                    </div>
+                    <div>
+                        <a th:href="@{/admin/team-members/create}" class="btn btn-primary">
+                            <i class="bi bi-person-plus me-1"></i>
+                            Добавить члена команды
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ========== ФИЛЬТРЫ И ПОИСК ========== -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-body">
+                        <!-- Фильтры по статусу -->
+                        <div class="status-filter-buttons mb-3">
+                            <a th:href="@{/admin/team-members}"
+                               class="btn btn-outline-primary me-2"
+                               th:classappend="${showInactive == null} ? 'active' : ''">
+                                <i class="bi bi-person-check me-1"></i>
+                                Активные
+                            </a>
+                            <a th:href="@{/admin/team-members/inactive}"
+                               class="btn btn-outline-secondary"
+                               th:classappend="${showInactive} ? 'active' : ''">
+                                <i class="bi bi-person-x me-1"></i>
+                                Неактивные
+                            </a>
+                        </div>
+
+                        <!-- Форма поиска -->
+                        <form th:action="@{/admin/team-members/search}" method="get" class="row g-3">
+                            <div class="col-md-8">
+                                <div class="input-group">
+                                    <span class="input-group-text">
+                                        <i class="bi bi-search"></i>
+                                    </span>
+                                    <input type="text"
+                                           name="searchTerm"
+                                           class="form-control"
+                                           placeholder="Поиск по имени или должности..."
+                                           th:value="${searchTerm}"
+                                           required>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="d-grid">
+                                    <button type="submit" class="btn btn-primary">
+                                        <i class="bi bi-search me-1"></i>
+                                        Найти
+                                    </button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ========== СООБЩЕНИЯ ОБ УСПЕХЕ/ОШИБКЕ ========== -->
+        <div class="row mb-3" th:if="${successMessage} or ${errorMessage}">
+            <div class="col-12">
+                <div th:if="${successMessage}"
+                     class="alert alert-success alert-dismissible fade show">
+                    <i class="bi bi-check-circle me-2"></i>
+                    <span th:text="${successMessage}"></span>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+                <div th:if="${errorMessage}"
+                     class="alert alert-danger alert-dismissible fade show">
+                    <i class="bi bi-exclamation-triangle me-2"></i>
+                    <span th:text="${errorMessage}"></span>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            </div>
+        </div>
+
+        <!-- ========== ТАБЛИЦА ЧЛЕНОВ КОМАНДЫ ========== -->
+        <div class="row">
+            <div class="col-12">
+                <div class="card table-container">
+                    <div class="card-body">
+
+                        <!-- Статистика -->
+                        <div class="row mb-3" th:if="${teamMembers != null and !teamMembers.isEmpty()}">
+                            <div class="col-12">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div class="text-muted small">
+                                        Показано <strong th:text="${teamMembers != null ? teamMembers.size() : 0}">0</strong> членов команды
+                                    </div>
+                                    <div class="text-muted small">
+                                        <a th:href="@{/admin/team-members}"
+                                           th:if="${showInactive}">
+                                            <i class="bi bi-arrow-left me-1"></i>
+                                            Вернуться к активным
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Таблица -->
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle">
+                                <thead>
+                                <tr>
+                                    <th width="60">ID</th>
+                                    <th>Член команды</th>
+                                    <th>Должность</th>
+                                    <th width="120">Проекты</th>
+                                    <th width="100">Статус</th>
+                                    <th width="100">Порядок</th>
+                                    <th width="180" class="text-end">Действия</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+
+                                <!-- Если список пуст -->
+                                <tr th:if="${teamMembers == null or teamMembers.isEmpty()}">
+                                    <td colspan="7" class="text-center py-5">
+                                        <i class="bi bi-people display-5 text-muted mb-3 d-block"></i>
+                                        <h5 class="text-muted">Членов команды не найдено</h5>
+                                        <p class="text-muted mb-0" th:if="${showInactive}">
+                                            Нет неактивных членов команды
+                                        </p>
+                                        <p class="text-muted mb-0" th:unless="${showInactive}">
+                                            <a th:href="@{/admin/team-members/create}" class="btn btn-primary mt-2">
+                                                <i class="bi bi-person-plus me-1"></i>
+                                                Добавить первого члена команды
+                                            </a>
+                                        </p>
+                                    </td>
+                                </tr>
+
+                                <!-- Список членов команды -->
+                                <tr th:each="member : ${teamMembers}" th:classappend="${!member.active} ? 'table-secondary' : ''">
+                                    <!-- ID -->
+                                    <td>
+                                        <span class="text-muted" th:text="${member.id}">1</span>
+                                    </td>
+
+                                    <!-- Член команды (с аватаром) -->
+                                    <td class="member-info-cell">
+                                        <div class="d-flex align-items-center">
+                                            <!-- Аватар -->
+                                            <div class="me-3">
+                                                <img th:if="${member.avatarPath != null and member.avatarPath != ''}"
+                                                     th:src="@{${member.avatarPath}}"
+                                                     alt="Аватар"
+                                                     class="avatar-small">
+                                                <div th:unless="${member.avatarPath != null and member.avatarPath != ''}"
+                                                     class="avatar-placeholder"
+                                                     th:text="${member.initials}">
+                                                    ИП
+                                                </div>
+                                            </div>
+
+                                            <!-- Информация -->
+                                            <div>
+                                                <div class="fw-medium" th:text="${member.fullName}">
+                                                    Иванов Иван Иванович
+                                                </div>
+                                                <div class="text-muted small" th:if="${member.email}">
+                                                    <i class="bi bi-envelope me-1"></i>
+                                                    <span th:text="${member.email}">ivanov@example.com</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </td>
+
+                                    <!-- Должность -->
+                                    <td>
+                                        <span th:text="${member.position} ?: 'Должность не указана'">
+                                            Руководитель проекта
+                                        </span>
+                                    </td>
+
+                                    <!-- Проекты -->
+                                    <td>
+                                        <a th:href="@{/admin/team-members/projects/{id}(id=${member.id})}"
+                                           class="badge projects-count-badge text-decoration-none"
+                                           title="Управление проектами"
+                                           data-bs-toggle="tooltip">
+                                            <i class="bi bi-kanban me-1"></i>
+                                            <span th:text="${member.projectsCount}">3</span>
+                                        </a>
+                                    </td>
+
+                                    <!-- Статус -->
+                                    <td>
+                                        <span th:if="${member.active}"
+                                              class="badge badge-status-active">
+                                            <i class="bi bi-check-circle me-1"></i>
+                                            Активен
+                                        </span>
+                                        <span th:unless="${member.active}"
+                                              class="badge badge-status-inactive">
+                                            <i class="bi bi-x-circle me-1"></i>
+                                            Неактивен
+                                        </span>
+                                    </td>
+
+                                    <!-- Порядок сортировки -->
+                                    <td>
+                                        <span class="badge bg-light text-dark border"
+                                              th:text="${member.sortOrder}">
+                                            1
+                                        </span>
+                                    </td>
+
+                                    <!-- Действия -->
+                                    <td class="text-end action-buttons">
+                                        <div class="btn-group btn-group-sm" role="group">
+                                            <!-- Предпросмотр (если есть slug) -->
+                                            <a th:if="${member.active}"
+                                               th:href="@{/team/member/{id}(id=${member.id})}"
+                                               title="Предпросмотр"
+                                               class="btn btn-outline-primary"
+                                               target="_blank">
+                                                <i class="bi bi-eye"></i>
+                                            </a>
+
+                                            <!-- Редактировать -->
+                                            <a th:href="@{/admin/team-members/edit/{id}(id=${member.id})}"
+                                               title="Редактировать"
+                                               class="btn btn-outline-secondary">
+                                                <i class="bi bi-pencil"></i>
+                                            </a>
+
+                                            <!-- Активация/деактивация -->
+                                            <form th:action="@{${member.active} ?
+                                                             '/admin/team-members/deactivate/' + ${member.id} :
+                                                             '/admin/team-members/activate/' + ${member.id}}"
+                                                  method="post"
+                                                  class="d-inline">
+                                                <button type="submit"
+                                                        class="btn btn-outline-warning"
+                                                        title="${member.active} ? 'Деактивировать' : 'Активировать'"
+                                                        data-bs-toggle="tooltip"
+                                                        onclick="return confirm('${member.active} ?
+                                                                                 'Деактивировать члена команды?' :
+                                                                                 'Активировать члена команды?')">
+                                                    <i th:class="${member.active} ?
+                                                                 'bi bi-person-dash' :
+                                                                 'bi bi-person-check'"></i>
+                                                </button>
+                                            </form>
+
+                                            <!-- Удаление -->
+                                            <a th:href="@{/admin/team-members/delete/{id}(id=${member.id})}"
+                                               title="Удалить"
+                                               class="btn btn-outline-danger">
+                                                <i class="bi bi-trash"></i>
+                                            </a>
+                                        </div>
+                                    </td>
+                                </tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- Подсказки -->
+                        <div class="row mt-4">
+                            <div class="col-12">
+                                <div class="alert alert-light border">
+                                    <div class="row">
+                                        <div class="col-md-4">
+                                            <h6><i class="bi bi-info-circle me-2"></i>Как использовать</h6>
+                                            <ul class="small mb-0">
+                                                <li>Нажмите на имя для детального просмотра</li>
+                                                <li>Используйте значок <i class="bi bi-kanfan"></i> для управления проектами</li>
+                                                <li>Сортировка по полю "Порядок"</li>
+                                            </ul>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <h6><i class="bi bi-shield-check me-2"></i>Безопасность</h6>
+                                            <ul class="small mb-0">
+                                                <li>Деактивация вместо удаления</li>
+                                                <li>Подтверждение критических действий</li>
+                                                <li>Сохранение истории изменений</li>
+                                            </ul>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <h6><i class="bi bi-lightbulb me-2"></i>Советы</h6>
+                                            <ul class="small mb-0">
+                                                <li>Используйте порядок для приоритета отображения</li>
+                                                <li>Загружайте фото для лучшего восприятия</li>
+                                                <li>Регулярно обновляйте информацию</li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ========== JAVASCRIPT ========== -->
+<script th:inline="javascript">
+    /*<![CDATA[*/
+
+    // Инициализация при загрузке страницы
+    document.addEventListener('DOMContentLoaded', function() {
+        console.log('Страница управления командой загружена');
+
+        // Инициализация тултипов Bootstrap
+        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+        var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl);
+        });
+
+        // Авто-фокус на поле поиска при загрузке
+        const searchInput = document.querySelector('input[name="searchTerm"]');
+        if (searchInput && !searchInput.value) {
+            searchInput.focus();
+        }
+
+        // Обработка кнопок статуса (активные/неактивные)
+        const statusButtons = document.querySelectorAll('.status-filter-buttons .btn');
+        statusButtons.forEach(btn => {
+            btn.addEventListener('click', function(e) {
+                // Удаляем класс active у всех кнопок
+                statusButtons.forEach(b => b.classList.remove('active'));
+                // Добавляем класс active текущей кнопке
+                this.classList.add('active');
+            });
+        });
+
+    }); // КОНЕЦ DOMContentLoaded
+
+    /*]]>*/
+</script>
+</body>
+</html>
