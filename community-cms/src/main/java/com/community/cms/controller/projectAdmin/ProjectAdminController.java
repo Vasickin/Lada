@@ -253,6 +253,8 @@ public class ProjectAdminController {
                     }
                 }
 
+
+
                 if (alreadyExists) {
                     System.out.println("ERROR: Category already exists: " + existingCategory);
                     bindingResult.rejectValue("category", "error.project",

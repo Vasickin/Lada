@@ -126,7 +126,8 @@
                                                id="title"
                                                required
                                                minlength="3"
-                                               maxlength="255">
+                                               maxlength="255"
+                                               oninput="generateSlugFromTitle()">
                                         <div class="invalid-feedback">
                                             Введите название проекта (от 3 до 255 символов)
                                         </div>
@@ -135,21 +136,47 @@
                                         </small>
                                     </div>
                                     <div class="col-md-4">
-                                        <label for="slug" class="form-label">
-                                            URL-адрес (slug) *
-                                        </label>
-                                        <input type="text"
+                                        <!-- СКРЫТОЕ ПОЛЕ SLUG -->
+                                        <input type="hidden"
                                                th:field="*{slug}"
-                                               class="form-control"
                                                id="slug"
-                                               pattern="^[a-z0-9-]+$"
                                                required>
-                                        <div class="invalid-feedback">
-                                            Используйте только латинские буквы в нижнем регистре, цифры и дефисы
+
+                                        <!-- Статус генерации (опционально) -->
+                                        <div class="alert alert-light border mt-2 small" id="slugStatus" style="display: none;">
+                                            <i class="bi bi-link-45deg me-1"></i>
+                                            URL: <code id="slugPreview">example-slug</code>
+                                            <button type="button" class="btn btn-sm btn-outline-secondary ms-2"
+                                                    onclick="toggleSlugField()">
+                                                <i class="bi bi-pencil"></i> Изменить
+                                            </button>
                                         </div>
-                                        <small class="form-text text-muted">
-                                            Например: new-year-festival-2024
-                                        </small>
+
+                                        <!-- Расширенное поле slug (скрыто по умолчанию) -->
+                                        <div id="slugAdvancedField" style="display: none;" class="mt-2">
+                                            <label for="slugManual" class="form-label">
+                                                URL-адрес (только для продвинутых)
+                                            </label>
+                                            <div class="input-group">
+                                                <input type="text"
+                                                       class="form-control"
+                                                       id="slugManual"
+                                                       pattern="^[a-z0-9-]+$">
+                                                <button type="button" class="btn btn-outline-secondary"
+                                                        onclick="updateSlugFromManual()">
+                                                    <i class="bi bi-check"></i>
+                                                </button>
+                                            </div>
+                                            <small class="form-text text-muted">
+                                                Только латинские буквы, цифры и дефисы
+                                            </small>
+                                            <div class="mt-1">
+                                                <button type="button" class="btn btn-sm btn-outline-secondary"
+                                                        onclick="hideSlugField()">
+                                                    <i class="bi bi-eye-slash"></i> Скрыть
+                                                </button>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
 
@@ -553,7 +580,7 @@
                                     <div class="col-12">
                                         <div class="card">
                                             <div class="card-body">
-                                                <!-- Ключевые фотографии (3-5 шт) -->
+                                                <!-- Ключевые фотографии (3-5 шт.) -->
                                                 <div th:if="${keyImages != null && !keyImages.isEmpty()}" class="mb-4">
                                                     <h6 class="mb-3">
                                                         <i class="bi bi-star-fill text-warning me-1"></i>
@@ -607,7 +634,7 @@
                                                     </div>
                                                     <h6>Фотографии проекта не добавлены</h6>
                                                     <p class="text-muted small mb-3">
-                                                        Добавьте ключевые фотографии (3-5 шт) для отображения на странице проекта
+                                                        Добавьте ключевые фотографии (3-5 шт.) для отображения на странице проекта
                                                     </p>
                                                 </div>
 
@@ -1028,6 +1055,125 @@
                 event.stopPropagation();
             }
         });
+    });
+</script>
+
+<!-- Скрипт для автогенерации slug -->
+<script>
+    // Функция генерации slug из названия
+    function generateSlugFromTitle() {
+        const titleInput = document.getElementById('title');
+        const slugInput = document.getElementById('slug');
+        const slugPreview = document.getElementById('slugPreview');
+
+        if (!titleInput.value.trim()) return;
+
+        // Генерация slug (простая версия)
+        let slug = titleInput.value
+            .toLowerCase()
+            .replace(/[а-яё]/g, function(match) {
+                const map = {
+                    'а':'a','б':'b','в':'v','г':'g','д':'d','е':'e','ё':'yo',
+                    'ж':'zh','з':'z','и':'i','й':'y','к':'k','л':'l','м':'m',
+                    'н':'n','о':'o','п':'p','р':'r','с':'s','т':'t','у':'u',
+                    'ф':'f','х':'h','ц':'ts','ч':'ch','ш':'sh','щ':'shch',
+                    'ъ':'','ы':'y','ь':'','э':'e','ю':'yu','я':'ya',
+                    ' ':'-','_':'-','.':'-',',':'-','!':'','?':'',':':'',';':'',
+                    '(':'',')':'','[':'',']':'','{':'','}':'','\'':'','"':''
+                };
+                return map[match] || match;
+            })
+            .replace(/[^a-z0-9-]/g, '-')  // Все остальное в дефисы
+            .replace(/-+/g, '-')          // Множественные дефисы в один
+            .replace(/^-|-$/g, '');       // Убираем дефисы с краев
+
+        // Сохраняем в скрытое поле
+        slugInput.value = slug;
+
+        // Показываем превью
+        if (slugPreview) {
+            slugPreview.textContent = slug;
+            document.getElementById('slugStatus').style.display = 'block';
+        }
+
+        // Проверяем доступность (если нужно)
+        checkSlugAvailability(slug);
+    }
+
+    // Проверка доступности slug
+    function checkSlugAvailability(slug) {
+        if (!slug) return;
+
+        // Можно добавить AJAX запрос к /admin/projects/check-slug
+        // Пока просто логируем
+        console.log('Generated slug:', slug);
+    }
+
+    // Показать/скрыть расширенное поле
+    function toggleSlugField() {
+        const advancedField = document.getElementById('slugAdvancedField');
+        const manualInput = document.getElementById('slugManual');
+        const slugInput = document.getElementById('slug');
+
+        if (advancedField.style.display === 'none') {
+            advancedField.style.display = 'block';
+            document.getElementById('slugStatus').style.display = 'none';
+            manualInput.value = slugInput.value;
+            manualInput.focus();
+        } else {
+            advancedField.style.display = 'none';
+            document.getElementById('slugStatus').style.display = 'block';
+        }
+    }
+
+    function hideSlugField() {
+        document.getElementById('slugAdvancedField').style.display = 'none';
+        document.getElementById('slugStatus').style.display = 'block';
+    }
+
+    // Обновить slug из ручного ввода
+    function updateSlugFromManual() {
+        const manualInput = document.getElementById('slugManual');
+        const slugInput = document.getElementById('slug');
+        const slugPreview = document.getElementById('slugPreview');
+
+        let manualSlug = manualInput.value
+            .toLowerCase()
+            .replace(/[^a-z0-9-]/g, '-')
+            .replace(/-+/g, '-')
+            .replace(/^-|-$/g, '');
+
+        if (manualSlug) {
+            slugInput.value = manualSlug;
+            slugPreview.textContent = manualSlug;
+            hideSlugField();
+            checkSlugAvailability(manualSlug);
+        }
+    }
+
+    // Инициализация при загрузке
+    document.addEventListener('DOMContentLoaded', function() {
+        // Генерируем slug если название уже есть
+        const titleInput = document.getElementById('title');
+        if (titleInput && titleInput.value) {
+            setTimeout(generateSlugFromTitle, 100);
+        }
+
+        // Автогенерация при вводе
+        if (titleInput) {
+            titleInput.addEventListener('input', generateSlugFromTitle);
+        }
+
+        // Enter в ручном поле
+        const manualInput = document.getElementById('slugManual');
+        if (manualInput) {
+            manualInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    updateSlugFromManual();
+                }
+            });
+        }
     });
 </script>
 </body>
