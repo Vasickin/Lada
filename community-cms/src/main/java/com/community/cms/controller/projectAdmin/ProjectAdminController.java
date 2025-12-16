@@ -17,6 +17,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Контроллер для админ-панели управления проектами.
@@ -202,7 +203,7 @@ public class ProjectAdminController {
     public String createProject(@Valid @ModelAttribute("project") Project project,
                                 BindingResult bindingResult,
                                 RedirectAttributes redirectAttributes,
-                                Model model,  // ДОБАВИЛ: для восстановления списка категорий
+                                Model model,
                                 @RequestParam(value = "newCategoryName", required = false) String newCategoryName) {
 
         System.out.println("=== DEBUG CREATE PROJECT ===");
@@ -212,11 +213,11 @@ public class ProjectAdminController {
         System.out.println("New category name: " + newCategoryName);
         System.out.println("Has errors? " + bindingResult.hasErrors());
 
-        // ===== НОВЫЙ КОД: ОБРАБОТКА КАТЕГОРИИ =====
         // Восстанавливаем списки для формы (на случай ошибки)
         model.addAttribute("categories", projectService.findAllDistinctCategories());
         model.addAttribute("statuses", Project.ProjectStatus.values());
 
+        // ===== ОБРАБОТКА КАТЕГОРИИ =====
         // Если пользователь выбрал "Добавить новую категорию"
         if ("__NEW__".equals(project.getCategory())) {
             System.out.println("User selected: CREATE NEW CATEGORY");
@@ -226,11 +227,40 @@ public class ProjectAdminController {
                 System.out.println("ERROR: New category name is empty!");
                 bindingResult.rejectValue("category", "error.project",
                         "Введите название новой категории");
+                return "admin/projects/create";
             } else {
                 // Устанавливаем новую категорию в проект
                 String cleanedCategory = newCategoryName.trim();
                 System.out.println("Setting new category: " + cleanedCategory);
                 project.setCategory(cleanedCategory);
+
+                // ===== ПРОВЕРКА УНИКАЛЬНОСТИ КАТЕГОРИИ =====
+                List<String> allCategories = projectService.findAllDistinctCategories();
+                boolean alreadyExists = false;
+                String existingCategory = null;
+
+                for (String cat : allCategories) {
+                    if (cat != null && cleanedCategory != null) {
+                        // Нормализуем для сравнения (без регистра, без лишних пробелов)
+                        String normalizedExisting = cat.trim().toLowerCase().replaceAll("\\s+", " ");
+                        String normalizedNew = cleanedCategory.trim().toLowerCase().replaceAll("\\s+", " ");
+
+                        if (normalizedExisting.equals(normalizedNew)) {
+                            alreadyExists = true;
+                            existingCategory = cat; // Запоминаем оригинальное написание
+                            break;
+                        }
+                    }
+                }
+
+                if (alreadyExists) {
+                    System.out.println("ERROR: Category already exists: " + existingCategory);
+                    bindingResult.rejectValue("category", "error.project",
+                            "Категория \"" + existingCategory + "\" уже существует. " +
+                                    "Используйте существующую или введите другое название.");
+                    return "admin/projects/create";
+                }
+                // ===== КОНЕЦ ПРОВЕРКИ УНИКАЛЬНОСТИ =====
             }
         }
         // Если категория не выбрана вообще
@@ -238,25 +268,23 @@ public class ProjectAdminController {
             System.out.println("ERROR: No category selected!");
             bindingResult.rejectValue("category", "error.project",
                     "Выберите категорию проекта");
-        }
-        // ===== КОНЕЦ НОВОГО КОДА =====
-
-        if (bindingResult.hasErrors()) {
-            System.out.println("Errors: " + bindingResult.getAllErrors());
-            // Списки уже добавлены в модель выше
             return "admin/projects/create";
         }
 
-        // Проверка уникальности slug (СТАРЫЙ КОД - БЕЗ ИЗМЕНЕНИЙ)
+        if (bindingResult.hasErrors()) {
+            System.out.println("Errors: " + bindingResult.getAllErrors());
+            return "admin/projects/create";
+        }
+
+        // Проверка уникальности slug
         if (projectService.existsBySlug(project.getSlug())) {
             System.out.println("Slug already exists: " + project.getSlug());
             bindingResult.rejectValue("slug", "error.project", "Проект с таким URL уже существует");
-            // Списки уже добавлены в модель выше
             return "admin/projects/create";
         }
 
         try {
-            System.out.println("Saving project...");
+            System.out.println("Saving project with category: " + project.getCategory());
             projectService.save(project);
             System.out.println("Project saved with ID: " + project.getId());
 
@@ -268,7 +296,6 @@ public class ProjectAdminController {
             e.printStackTrace();
 
             bindingResult.reject("error.project", "Ошибка при создании проекта: " + e.getMessage());
-            // Списки уже добавлены в модель выше
             return "admin/projects/create";
         }
     }

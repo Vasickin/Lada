@@ -15,6 +15,8 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * Сервис для управления проектами организации "ЛАДА".
@@ -275,6 +277,36 @@ public class ProjectService {
     @Transactional(readOnly = true)
     public List<Project> findActiveOnDate(LocalDate date) {
         return projectRepository.findActiveOnDate(date);
+    }
+
+    /**
+     * Находит все уникальные категории проектов (нормализованные).
+     * Используется для проверки уникальности.
+     *
+     * @return множество нормализованных названий категорий
+     */
+    @Transactional(readOnly = true)
+    public Set<String> findAllNormalizedCategories() {
+        List<String> categories = projectRepository.findAllDistinctCategories();
+        return categories.stream()
+                .map(this::normalizeCategoryName)
+                .collect(Collectors.toSet());
+    }
+
+    /**
+     * Нормализует название категории для сравнения.
+     * Убирает пробелы, приводит к нижнему регистру.
+     *
+     * @param categoryName исходное название категории
+     * @return нормализованное название
+     */
+    private String normalizeCategoryName(String categoryName) {
+        if (categoryName == null) {
+            return "";
+        }
+        return categoryName.trim()
+                .toLowerCase()
+                .replaceAll("\\s+", " "); // заменяем множественные пробелы на один
     }
 
     // ================== ПАГИНАЦИЯ С ФИЛЬТРАЦИЕЙ ==================
