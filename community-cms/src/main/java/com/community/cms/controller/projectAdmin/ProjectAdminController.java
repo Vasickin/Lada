@@ -191,7 +191,58 @@ public class ProjectAdminController {
         model.addAttribute("allTeamMembers", teamMemberService.findAllActiveOrderBySortOrder()); // ← ДОБАВИТЬ
 
         // ===== ОБРАБОТКА КАТЕГОРИИ =====
-        // ... существующий код обработки категории ...
+        // Если пользователь выбрал "Добавить новую категорию"
+        if ("__NEW__".equals(project.getCategory())) {
+            System.out.println("User selected: CREATE NEW CATEGORY");
+
+            // Проверяем, что название новой категории указано
+            if (newCategoryName == null || newCategoryName.trim().isEmpty()) {
+                System.out.println("ERROR: New category name is empty!");
+                bindingResult.rejectValue("category", "error.project",
+                        "Введите название новой категории");
+                return "admin/projects/create";
+            } else {
+                // Устанавливаем новую категорию в проект
+                String cleanedCategory = newCategoryName.trim();
+                System.out.println("Setting new category: " + cleanedCategory);
+                project.setCategory(cleanedCategory);
+
+                // ===== ПРОВЕРКА УНИКАЛЬНОСТИ КАТЕГОРИИ =====
+                List<String> allCategories = projectService.findAllDistinctCategories();
+                boolean alreadyExists = false;
+                String existingCategory = null;
+
+                for (String cat : allCategories) {
+                    if (cat != null && cleanedCategory != null) {
+                        // Нормализуем для сравнения (без регистра, без лишних пробелов)
+                        String normalizedExisting = cat.trim().toLowerCase().replaceAll("\\s+", " ");
+                        String normalizedNew = cleanedCategory.trim().toLowerCase().replaceAll("\\s+", " ");
+
+                        if (normalizedExisting.equals(normalizedNew)) {
+                            alreadyExists = true;
+                            existingCategory = cat; // Запоминаем оригинальное написание
+                            break;
+                        }
+                    }
+                }
+
+                if (alreadyExists) {
+                    System.out.println("ERROR: Category already exists: " + existingCategory);
+                    bindingResult.rejectValue("category", "error.project",
+                            "Категория \"" + existingCategory + "\" уже существует. " +
+                                    "Используйте существующую или введите другое название.");
+                    return "admin/projects/create";
+                }
+                // ===== КОНЕЦ ПРОВЕРКИ УНИКАЛЬНОСТИ =====
+            }
+        }
+// Если категория не выбрана вообще
+        else if (project.getCategory() == null || project.getCategory().trim().isEmpty()) {
+            System.out.println("ERROR: No category selected!");
+            bindingResult.rejectValue("category", "error.project",
+                    "Выберите категорию проекта");
+            return "admin/projects/create";
+        }
 
         if (bindingResult.hasErrors()) {
             System.out.println("Errors: " + bindingResult.getAllErrors());
