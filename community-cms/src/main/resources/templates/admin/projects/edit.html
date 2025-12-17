@@ -51,6 +51,77 @@
     border-radius: 4px;
     box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
+
+/* Для левой колонки (Доступные члены команды) */
+#availableMembersContainer .member-draggable {
+    background-color: #e3f2fd; /* Светло-синий фон */
+    border: 1px solid #bbdefb; /* Синяя граница */
+}
+
+#availableMembersContainer .member-draggable:hover {
+    background-color: #bbdefb; /* Чуть темнее при наведении */
+    border-color: #90caf9;
+}
+
+#availableMembersContainer .member-draggable.selected {
+    background-color: #bbdefb; /* Мягкое выделение */
+    border: 2px solid #2196f3; /* Синяя граница выделения */
+    box-shadow: 0 2px 4px rgba(33, 150, 243, 0.2);
+}
+
+/* Для правой колонки (Команда проекта) */
+#projectTeamContainer .member-draggable {
+    background-color: #e8f5e9; /* Светло-зеленый фон */
+    border: 1px solid #c8e6c9; /* Зеленая граница */
+    color: #1b5e20; /* Темно-зеленый текст */
+}
+
+#projectTeamContainer .member-draggable:hover {
+    background-color: #c8e6c9; /* Чуть темнее при наведении */
+    border-color: #a5d6a7;
+}
+
+#projectTeamContainer .member-draggable.selected {
+    background-color: #c8e6c9; /* Мягкое выделение */
+    border: 2px solid #4caf50; /* Зеленая граница выделения */
+    box-shadow: 0 2px 4px rgba(76, 175, 80, 0.2);
+}
+
+/* Общие стили */
+.member-draggable {
+    transition: all 0.2s ease;
+    cursor: pointer;
+}
+
+.member-draggable.dragging {
+    opacity: 0.7;
+    transform: scale(0.98);
+}
+
+/* Убираем слишком сильные стили Bootstrap если есть */
+.member-draggable.bg-light {
+    background-color: #e3f2fd !important; /* Переопределяем для левой колонки */
+}
+
+.member-draggable.bg-success {
+    background-color: #e8f5e9 !important; /* Переопределяем для правой колонки */
+    color: #1b5e20 !important;
+}
+
+/* Для иконок в правой колонке */
+#projectTeamContainer .member-draggable .bi-person-check {
+    color: #4caf50; /* Зеленые иконки */
+}
+
+/* Для иконок в левой колонке */
+#availableMembersContainer .member-draggable .bi-person-circle {
+    color: #2196f3; /* Синие иконки */
+}
+
+        .drop-zone-active {
+    background-color: rgba(13, 110, 253, 0.05) !important;
+    border: 2px dashed #0d6efd !important;
+}
     </style>
 </head>
 <body>
@@ -188,7 +259,7 @@
                                                th:field="*{slug}"
                                                class="form-control"
                                                id="slug"
-                                               pattern="^[a-z0-9-]+$"
+
                                                required>
                                         <div class="invalid-feedback">
                                             Используйте только латинские буквы в нижнем регистре, цифры и дефисы
@@ -402,7 +473,7 @@
 
                                                 <div th:if="${availableMembers != null && !availableMembers.isEmpty()}">
                                                     <div th:each="member : ${availableMembers}"
-                                                         class="member-draggable mb-2 p-2 border rounded bg-light"
+                                                         class="member-draggable mb-2 p-2 border rounded"
                                                          draggable="true"
                                                          th:data-member-id="${member.id}"
                                                          th:id="'member-' + ${member.id}"
@@ -476,7 +547,7 @@
 
                                                 <div th:if="${projectTeamMembers != null && !projectTeamMembers.isEmpty()}">
                                                     <div th:each="member : ${projectTeamMembers}"
-                                                         class="member-draggable mb-2 p-2 border rounded bg-success text-white"
+                                                         class="member-draggable mb-2 p-2 border rounded"
                                                          draggable="true"
                                                          th:data-member-id="${member.id}"
                                                          th:id="'project-member-' + ${member.id}"
@@ -1192,223 +1263,207 @@
 <!-- JavaScript для Drag and Drop (редактирование) -->
 <script>
     // Глобальные переменные для редактирования
-    let draggedMember = null;
-    let selectedAvailableMembers = new Set();
-    let selectedProjectMembers = new Set();
+document.addEventListener('DOMContentLoaded', function() {
+    // Инициализация перетаскивания
+    initDragAndDrop();
+    updateCounters();
+});
 
-    // Разрешить перетаскивание
-    function allowDrop(event) {
-        event.preventDefault();
+
+function allowDrop(event) {
+    event.preventDefault();
+}
+
+function dragMember(event) {
+    event.dataTransfer.setData('text/plain', event.target.getAttribute('data-member-id'));
+    event.target.classList.add('dragging');
+}
+
+function dropMember(event) {
+    event.preventDefault();
+    const memberId = event.dataTransfer.getData('text/plain');
+    const draggedElement = document.querySelector(`[data-member-id="${memberId}"]`);
+    const targetContainer = event.target.closest('#availableMembersContainer, #projectTeamContainer');
+
+    if (draggedElement && targetContainer && draggedElement.parentElement !== targetContainer) {
+        const isMovingToProject = targetContainer.id === 'projectTeamContainer';
+        moveMemberToContainer(memberId, targetContainer.id);
     }
 
-    // Начать перетаскивание
-    function dragMember(event) {
-        draggedMember = event.target;
-        event.dataTransfer.setData("text/plain", event.target.id);
-        event.target.classList.add('dragging');
-    }
+    // Убираем класс dragging со всех элементов
+    document.querySelectorAll('.dragging').forEach(el => el.classList.remove('dragging'));
+}
 
-    // Бросить элемент
-    function dropMember(event) {
-        event.preventDefault();
+function initDragAndDrop() {
+    // Настраиваем перетаскивание для всех членов команды
+    document.querySelectorAll('.member-draggable').forEach(item => {
+        item.setAttribute('draggable', 'true');
 
-        if (draggedMember) {
-            const memberId = draggedMember.getAttribute('data-member-id');
-            const isInProject = draggedMember.closest('#projectTeamContainer');
-
-            if (isInProject) {
-                // Уже в проекте - ничего не делаем
-                draggedMember.classList.remove('dragging');
-                draggedMember = null;
-                return;
-            }
-
-            // Проверяем, не добавлен ли уже этот член
-            if (!document.querySelector(`#projectTeamContainer [data-member-id="${memberId}"]`)) {
-                // Клонируем элемент
-                const cloned = draggedMember.cloneNode(true);
-                cloned.classList.remove('bg-light');
-                cloned.classList.add('bg-success', 'text-white');
-                cloned.setAttribute('ondblclick', `removeMemberFromProject('${memberId}')`);
-                cloned.setAttribute('title', 'Двойной клик для удаления');
-
-                // Меняем иконку и статус
-                const icon = cloned.querySelector('.bi-person-circle');
-                if (icon) icon.className = 'bi bi-person-check fs-4';
-
-                const badge = cloned.querySelector('.badge');
-                if (badge) {
-                    badge.className = 'badge bg-light text-dark';
-                    badge.textContent = 'В проекте';
-                }
-
-                // Добавляем в правую колонку
-                document.getElementById('projectTeamContainer').appendChild(cloned);
-
-                // Удаляем из левой колонки
-                draggedMember.remove();
-
-                // Обновляем счетчики и hidden input
-                updateCounters();
-                updateHiddenInput();
-
-                // Скрываем сообщение о пустой команде если нужно
-                if (document.querySelectorAll('#projectTeamContainer [data-member-id]').length > 0) {
-                    const emptyMsg = document.getElementById('emptyTeamMessage');
-                    if (emptyMsg) emptyMsg.style.display = 'none';
-                }
-            }
-
-            draggedMember.classList.remove('dragging');
-            draggedMember = null;
-        }
-    }
-
-    // Удалить члена из проекта (по двойному клику)
-    function removeMemberFromProject(memberId) {
-        const memberElement = document.querySelector(`#projectTeamContainer [data-member-id="${memberId}"]`);
-        if (memberElement) {
-            // Клонируем обратно в левую колонку
-            const cloned = memberElement.cloneNode(true);
-            cloned.classList.remove('bg-success', 'text-white');
-            cloned.classList.add('bg-light');
-            cloned.removeAttribute('ondblclick');
-            cloned.removeAttribute('title');
-
-            const icon = cloned.querySelector('.bi-person-check');
-            if (icon) icon.className = 'bi bi-person-circle fs-4';
-
-            const badge = cloned.querySelector('.badge');
-            if (badge) {
-                badge.className = 'badge bg-success';
-                badge.textContent = 'Доступен';
-            }
-
-            // Добавляем в левую колонку
-            document.getElementById('availableMembersContainer').appendChild(cloned);
-
-            // Удаляем из правой
-            memberElement.remove();
-
-            // Обновляем счетчики
-            updateCounters();
-            updateHiddenInput();
-
-            // Показываем сообщение если команда пуста
-            if (document.querySelectorAll('#projectTeamContainer [data-member-id]').length === 0) {
-                const emptyMsg = document.getElementById('emptyTeamMessage');
-                if (emptyMsg) emptyMsg.style.display = 'block';
-            }
-        }
-    }
-
-    // Добавить выбранных в проект
-    function addSelectedToProject() {
-        const selected = Array.from(selectedAvailableMembers);
-        selected.forEach(memberId => {
-            const memberElement = document.querySelector(`#availableMembersContainer [data-member-id="${memberId}"]`);
-            if (memberElement && !document.querySelector(`#projectTeamContainer [data-member-id="${memberId}"]`)) {
-                const cloned = memberElement.cloneNode(true);
-                cloned.classList.remove('bg-light');
-                cloned.classList.add('bg-success', 'text-white');
-                cloned.setAttribute('ondblclick', `removeMemberFromProject('${memberId}')`);
-                cloned.setAttribute('title', 'Двойной клик для удаления');
-
-                const icon = cloned.querySelector('.bi-person-circle');
-                if (icon) icon.className = 'bi bi-person-check fs-4';
-
-                const badge = cloned.querySelector('.badge');
-                if (badge) {
-                    badge.className = 'badge bg-light text-dark';
-                    badge.textContent = 'В проекте';
-                }
-
-                document.getElementById('projectTeamContainer').appendChild(cloned);
-                memberElement.remove();
-            }
+        item.addEventListener('dragstart', function(e) {
+            e.dataTransfer.setData('text/plain', this.getAttribute('data-member-id'));
+            this.classList.add('dragging');
         });
 
-        selectedAvailableMembers.clear();
-        updateCounters();
-        updateHiddenInput();
-        document.getElementById('emptyTeamMessage').style.display = 'none';
-    }
-
-    // Убрать выбранных из проекта
-    function removeSelectedFromProject() {
-        const selected = Array.from(selectedProjectMembers);
-        selected.forEach(memberId => {
-            removeMemberFromProject(memberId);
+        item.addEventListener('dragend', function() {
+            this.classList.remove('dragging');
         });
-        selectedProjectMembers.clear();
-    }
 
-    // Выбор члена в левой колонке
-    document.getElementById('availableMembersContainer').addEventListener('click', function(e) {
-        const memberCard = e.target.closest('.member-draggable');
-        if (memberCard) {
-            const memberId = memberCard.getAttribute('data-member-id');
-            if (memberCard.classList.contains('selected')) {
-                memberCard.classList.remove('selected', 'border-primary');
-                selectedAvailableMembers.delete(memberId);
-            } else {
-                memberCard.classList.add('selected', 'border-primary');
-                selectedAvailableMembers.add(memberId);
+        // Клик для выделения
+        item.addEventListener('click', function(e) {
+            if (!e.ctrlKey && !e.metaKey) {
+                // Снимаем выделение со всех
+                document.querySelectorAll('.member-draggable.selected').forEach(el => {
+                    el.classList.remove('selected');
+                });
             }
-        }
+            this.classList.toggle('selected');
+            updateSelectionButtons();
+        });
     });
 
-    // Выбор члена в правой колонке
-    document.getElementById('projectTeamContainer').addEventListener('click', function(e) {
-        const memberCard = e.target.closest('.member-draggable');
-        if (memberCard) {
-            const memberId = memberCard.getAttribute('data-member-id');
-            if (memberCard.classList.contains('selected')) {
-                memberCard.classList.remove('selected', 'border-danger');
-                selectedProjectMembers.delete(memberId);
-            } else {
-                memberCard.classList.add('selected', 'border-danger');
-                selectedProjectMembers.add(memberId);
+    // Настраиваем зоны drop
+    const availableContainer = document.getElementById('availableMembersContainer');
+    const projectContainer = document.getElementById('projectTeamContainer');
+
+    [availableContainer, projectContainer].forEach(container => {
+        container.addEventListener('dragover', function(e) {
+            e.preventDefault();
+            this.classList.add('drop-zone-active');
+        });
+
+        container.addEventListener('dragleave', function() {
+            this.classList.remove('drop-zone-active');
+        });
+
+        container.addEventListener('drop', function(e) {
+            e.preventDefault();
+            this.classList.remove('drop-zone-active');
+
+            const memberId = e.dataTransfer.getData('text/plain');
+            const draggedElement = document.querySelector(`[data-member-id="${memberId}"]`);
+
+            if (draggedElement && draggedElement.parentElement !== this) {
+                moveMemberToContainer(memberId, this.id);
             }
-        }
+        });
     });
+}
 
-    // Обновить счетчики
-    function updateCounters() {
-        const availableCount = document.querySelectorAll('#availableMembersContainer [data-member-id]').length;
-        const projectCount = document.querySelectorAll('#projectTeamContainer [data-member-id]').length;
+function moveMemberToContainer(memberId, targetContainerId) {
+    const memberElement = document.querySelector(`[data-member-id="${memberId}"]`);
+    if (!memberElement) return;
 
-        document.getElementById('availableCount').textContent = availableCount;
-        document.getElementById('projectTeamCount').textContent = projectCount;
+    const targetContainer = document.getElementById(targetContainerId);
+    const isMovingToProject = targetContainerId === 'projectTeamContainer';
+
+    // Клонируем элемент с новыми стилями
+    const cloned = memberElement.cloneNode(true);
+
+    if (isMovingToProject) {
+    // Перемещаем в проект - меняем только иконку и бейдж
+    const icon = cloned.querySelector('.bi-person-circle');
+    if (icon) icon.className = 'bi bi-person-check fs-4 text-success';
+
+    const badge = cloned.querySelector('.badge');
+    if (badge) {
+        badge.className = 'badge bg-success text-white';
+        badge.textContent = 'В проекте';
     }
+} else {
+    // Перемещаем обратно в доступные - меняем только иконку и бейдж
+    const icon = cloned.querySelector('.bi-person-check');
+    if (icon) icon.className = 'bi bi-person-circle fs-4 text-primary';
 
-    // Обновить hidden input
-    function updateHiddenInput() {
-        const selectedElements = document.querySelectorAll('#projectTeamContainer [data-member-id]');
-        const ids = Array.from(selectedElements).map(el => el.getAttribute('data-member-id'));
+    const badge = cloned.querySelector('.badge');
+    if (badge) {
+        badge.className = 'badge bg-primary text-white';
+        badge.textContent = 'Доступен';
+    }
+}
 
-        document.getElementById('selectedTeamMemberIds').value = ids.join(',');
+    // Удаляем старый элемент
+    memberElement.remove();
 
-        // Синхронизируем с мультиселектом
-        const teamSelect = document.getElementById('teamMembers');
-        if (teamSelect) {
-            Array.from(teamSelect.options).forEach(option => {
-                option.selected = ids.includes(option.value);
+    // Добавляем новый в целевую колонку
+    targetContainer.appendChild(cloned);
+
+    // Реинициализируем события для нового элемента
+    cloned.setAttribute('draggable', 'true');
+    cloned.addEventListener('dragstart', function(e) {
+        e.dataTransfer.setData('text/plain', this.getAttribute('data-member-id'));
+        this.classList.add('dragging');
+    });
+    cloned.addEventListener('dragend', function() {
+        this.classList.remove('dragging');
+    });
+    cloned.addEventListener('click', function(e) {
+        if (!e.ctrlKey && !e.metaKey) {
+            document.querySelectorAll('.member-draggable.selected').forEach(el => {
+                el.classList.remove('selected');
             });
         }
-    }
-
-    // Инициализация при загрузке
-    document.addEventListener('DOMContentLoaded', function() {
-        updateCounters();
-        updateHiddenInput();
-
-        // Скрываем пустое сообщение если есть участники
-        if (document.querySelectorAll('#projectTeamContainer [data-member-id]').length > 0) {
-            const emptyMsg = document.getElementById('emptyTeamMessage');
-            if (emptyMsg) emptyMsg.style.display = 'none';
-        }
+        this.classList.toggle('selected');
+        updateSelectionButtons();
     });
+
+    // Обновляем UI
+    updateCounters();
+    updateHiddenInput();
+
+    // Скрываем/показываем сообщения о пустоте
+    const projectEmptyMsg = document.getElementById('emptyTeamMessage');
+    if (projectEmptyMsg) {
+        projectEmptyMsg.style.display =
+            document.querySelectorAll('#projectTeamContainer .member-draggable').length === 0 ? 'block' : 'none';
+    }
+}
+
+// Кнопки для массового перемещения
+function addSelectedToProject() {
+    const selected = document.querySelectorAll('#availableMembersContainer .member-draggable.selected');
+    selected.forEach(member => {
+        const memberId = member.getAttribute('data-member-id');
+        moveMemberToContainer(memberId, 'projectTeamContainer');
+    });
+}
+
+function removeSelectedFromProject() {
+    const selected = document.querySelectorAll('#projectTeamContainer .member-draggable.selected');
+    selected.forEach(member => {
+        const memberId = member.getAttribute('data-member-id');
+        moveMemberToContainer(memberId, 'availableMembersContainer');
+    });
+}
+
+function updateSelectionButtons() {
+    const hasAvailableSelected = document.querySelectorAll('#availableMembersContainer .member-draggable.selected').length > 0;
+    const hasProjectSelected = document.querySelectorAll('#projectTeamContainer .member-draggable.selected').length > 0;
+
+    // Можно добавить визуальную индикацию для кнопок если нужно
+}
+
+function updateCounters() {
+    const availableCount = document.querySelectorAll('#availableMembersContainer .member-draggable').length;
+    const projectCount = document.querySelectorAll('#projectTeamContainer .member-draggable').length;
+
+    document.getElementById('availableCount').textContent = availableCount;
+    document.getElementById('projectTeamCount').textContent = projectCount;
+}
+
+function updateHiddenInput() {
+    const selectedElements = document.querySelectorAll('#projectTeamContainer [data-member-id]');
+    const ids = Array.from(selectedElements).map(el => el.getAttribute('data-member-id'));
+
+    document.getElementById('selectedTeamMemberIds').value = ids.join(',');
+
+    // Синхронизируем с мультиселектом
+    const teamSelect = document.getElementById('teamMembers');
+    if (teamSelect) {
+        Array.from(teamSelect.options).forEach(option => {
+            option.selected = ids.includes(option.value);
+        });
+    }
+}
 </script>
 </body>
 </html>
