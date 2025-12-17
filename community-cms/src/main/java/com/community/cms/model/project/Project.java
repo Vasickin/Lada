@@ -666,7 +666,12 @@ public class Project {
         updatedAt = LocalDateTime.now();
     }
 
-    @ManyToMany(mappedBy = "projects")
+    @ManyToMany
+    @JoinTable(
+            name = "team_member_projects",
+            joinColumns = @JoinColumn(name = "project_id"),
+            inverseJoinColumns = @JoinColumn(name = "team_member_id")
+    )
     private Set<TeamMember> teamMembers = new HashSet<>();
 
     // И getter/setter:

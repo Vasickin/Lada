@@ -7,6 +7,8 @@
 
     <!-- Bootstrap 5 CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <!-- Bootstrap Icons -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
 
@@ -371,6 +373,156 @@
                                     </div>
                                 </div>
                             </div>
+
+
+                            <!-- ===== РАСШИРЕННОЕ УПРАВЛЕНИЕ КОМАНДОЙ (DRAG AND DROP) ===== -->
+                            <div class="mt-4 pt-4 border-top">
+                                <div class="d-flex justify-content-between align-items-center mb-3">
+                                    <h6 class="mb-0">
+                                        <i class="bi bi-arrows-move text-primary me-2"></i>
+                                        Расширенное управление командой
+                                    </h6>
+                                    <small class="text-muted">Перетаскивайте членов команды между колонками</small>
+                                </div>
+
+                                <div class="row">
+                                    <!-- Левая колонка: Доступные члены команды (не в проекте) -->
+                                    <div class="col-md-5">
+                                        <div class="card h-100 border-primary">
+                                            <div class="card-header bg-primary text-white">
+                                                <h6 class="mb-0">
+                                                    <i class="bi bi-people me-1"></i>
+                                                    Доступные члены команды
+                                                    <span class="badge bg-light text-dark ms-2" id="availableCount">0</span>
+                                                </h6>
+                                            </div>
+                                            <div class="card-body"
+                                                 id="availableMembersContainer"
+                                                 style="min-height: 200px; max-height: 300px; overflow-y: auto;">
+
+                                                <div th:if="${availableMembers != null && !availableMembers.isEmpty()}">
+                                                    <div th:each="member : ${availableMembers}"
+                                                         class="member-draggable mb-2 p-2 border rounded bg-light"
+                                                         draggable="true"
+                                                         th:data-member-id="${member.id}"
+                                                         th:id="'member-' + ${member.id}"
+                                                         ondragstart="dragMember(event)">
+                                                        <div class="d-flex align-items-center">
+                                                            <div class="me-3">
+                                                                <i class="bi bi-person-circle fs-4"></i>
+                                                            </div>
+                                                            <div class="flex-grow-1">
+                                                                <strong th:text="${member.fullName}"></strong><br>
+                                                                <small class="text-muted" th:text="${member.position} ?: 'Должность не указана'"></small>
+                                                            </div>
+                                                            <div class="text-end">
+                                                                <span class="badge bg-success">Доступен</span>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                <div th:if="${availableMembers == null || availableMembers.isEmpty()}"
+                                                     class="text-center py-4">
+                                                    <i class="bi bi-people display-6 text-muted"></i>
+                                                    <p class="mt-2">Все члены команды уже в проекте</p>
+                                                    <a th:href="@{/admin/team-members/create}"
+                                                       class="btn btn-sm btn-outline-primary"
+                                                       target="_blank">
+                                                        <i class="bi bi-person-plus"></i> Создать нового
+                                                    </a>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Центральная колонка: Управление -->
+                                    <div class="col-md-2 d-flex flex-column align-items-center justify-content-center">
+                                        <div class="text-center">
+                                            <i class="bi bi-arrow-right-circle fs-1 text-primary mb-2"></i>
+                                            <p class="small mb-1">Добавить в проект</p>
+
+                                            <button type="button" class="btn btn-sm btn-outline-primary mb-2" onclick="addSelectedToProject()">
+                                                <i class="bi bi-arrow-right"></i> Выбранные
+                                            </button>
+
+                                            <div class="my-3 border-top pt-2">
+                                                <i class="bi bi-arrow-left-circle fs-1 text-danger mb-2"></i>
+                                                <p class="small mb-1">Убрать из проекта</p>
+                                                <button type="button" class="btn btn-sm btn-outline-danger" onclick="removeSelectedFromProject()">
+                                                    <i class="bi bi-arrow-left"></i> Выбранные
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Правая колонка: Команда проекта -->
+                                    <div class="col-md-5">
+                                        <div class="card h-100 border-success">
+                                            <div class="card-header bg-success text-white">
+                                                <h6 class="mb-0">
+                                                    <i class="bi bi-person-check me-1"></i>
+                                                    Команда проекта
+                                                    <span class="badge bg-light text-dark ms-2" id="projectTeamCount">
+                            <span th:text="${projectTeamMembers != null ? projectTeamMembers.size() : 0}">0</span>
+                        </span>
+                                                </h6>
+                                            </div>
+                                            <div class="card-body"
+                                                 id="projectTeamContainer"
+                                                 style="min-height: 200px; max-height: 300px; overflow-y: auto;"
+                                                 ondrop="dropMember(event)"
+                                                 ondragover="allowDrop(event)">
+
+                                                <div th:if="${projectTeamMembers != null && !projectTeamMembers.isEmpty()}">
+                                                    <div th:each="member : ${projectTeamMembers}"
+                                                         class="member-draggable mb-2 p-2 border rounded bg-success text-white"
+                                                         draggable="true"
+                                                         th:data-member-id="${member.id}"
+                                                         th:id="'project-member-' + ${member.id}"
+                                                         ondragstart="dragMember(event)"
+                                                         ondblclick="removeMemberFromProject('${member.id}')"
+                                                         title="Двойной клик для удаления">
+                                                        <div class="d-flex align-items-center">
+                                                            <div class="me-3">
+                                                                <i class="bi bi-person-check fs-4"></i>
+                                                            </div>
+                                                            <div class="flex-grow-1">
+                                                                <strong th:text="${member.fullName}"></strong><br>
+                                                                <small th:text="${member.position} ?: 'Должность не указана'"></small>
+                                                            </div>
+                                                            <div class="text-end">
+                                                                <span class="badge bg-light text-dark">В проекте</span>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                <div th:if="${projectTeamMembers == null || projectTeamMembers.isEmpty()}"
+                                                     id="emptyTeamMessage" class="text-center py-4">
+                                                    <i class="bi bi-person-plus display-6 text-muted"></i>
+                                                    <p class="mt-2">Нет участников проекта</p>
+                                                    <p class="small text-muted">Добавьте членов команды</p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Hidden inputs для синхронизации с мультиселектом -->
+                                <input type="hidden" id="selectedTeamMemberIds" name="selectedTeamMemberIds"
+                                       th:value="${projectTeamMembers != null ? #strings.listJoin(projectTeamMembers.![id], ',') : ''}">
+
+                                <!-- Информация -->
+                                <div class="alert alert-info mt-3">
+                                    <i class="bi bi-info-circle me-2"></i>
+                                    <small>
+                                        Изменения в команде проекта сохранятся при нажатии "Обновить проект".
+                                        Также можно выбрать/убрать членов команды через мультиселект выше.
+                                    </small>
+                                </div>
+                            </div>
+
 
                             <!-- ===== КОМАНДА ПРОЕКТА ===== -->
                             <div class="form-section">
@@ -997,8 +1149,7 @@
     </div>
 </div>
 
-<!-- Bootstrap JS -->
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
 
 <!-- Скрипт для валидации формы -->
 <script>
@@ -1035,6 +1186,228 @@
 
         teamSelect.addEventListener('change', updateSelectedCount);
         updateSelectedCount(); // Инициализация при загрузке
+    });
+</script>
+
+<!-- JavaScript для Drag and Drop (редактирование) -->
+<script>
+    // Глобальные переменные для редактирования
+    let draggedMember = null;
+    let selectedAvailableMembers = new Set();
+    let selectedProjectMembers = new Set();
+
+    // Разрешить перетаскивание
+    function allowDrop(event) {
+        event.preventDefault();
+    }
+
+    // Начать перетаскивание
+    function dragMember(event) {
+        draggedMember = event.target;
+        event.dataTransfer.setData("text/plain", event.target.id);
+        event.target.classList.add('dragging');
+    }
+
+    // Бросить элемент
+    function dropMember(event) {
+        event.preventDefault();
+
+        if (draggedMember) {
+            const memberId = draggedMember.getAttribute('data-member-id');
+            const isInProject = draggedMember.closest('#projectTeamContainer');
+
+            if (isInProject) {
+                // Уже в проекте - ничего не делаем
+                draggedMember.classList.remove('dragging');
+                draggedMember = null;
+                return;
+            }
+
+            // Проверяем, не добавлен ли уже этот член
+            if (!document.querySelector(`#projectTeamContainer [data-member-id="${memberId}"]`)) {
+                // Клонируем элемент
+                const cloned = draggedMember.cloneNode(true);
+                cloned.classList.remove('bg-light');
+                cloned.classList.add('bg-success', 'text-white');
+                cloned.setAttribute('ondblclick', `removeMemberFromProject('${memberId}')`);
+                cloned.setAttribute('title', 'Двойной клик для удаления');
+
+                // Меняем иконку и статус
+                const icon = cloned.querySelector('.bi-person-circle');
+                if (icon) icon.className = 'bi bi-person-check fs-4';
+
+                const badge = cloned.querySelector('.badge');
+                if (badge) {
+                    badge.className = 'badge bg-light text-dark';
+                    badge.textContent = 'В проекте';
+                }
+
+                // Добавляем в правую колонку
+                document.getElementById('projectTeamContainer').appendChild(cloned);
+
+                // Удаляем из левой колонки
+                draggedMember.remove();
+
+                // Обновляем счетчики и hidden input
+                updateCounters();
+                updateHiddenInput();
+
+                // Скрываем сообщение о пустой команде если нужно
+                if (document.querySelectorAll('#projectTeamContainer [data-member-id]').length > 0) {
+                    const emptyMsg = document.getElementById('emptyTeamMessage');
+                    if (emptyMsg) emptyMsg.style.display = 'none';
+                }
+            }
+
+            draggedMember.classList.remove('dragging');
+            draggedMember = null;
+        }
+    }
+
+    // Удалить члена из проекта (по двойному клику)
+    function removeMemberFromProject(memberId) {
+        const memberElement = document.querySelector(`#projectTeamContainer [data-member-id="${memberId}"]`);
+        if (memberElement) {
+            // Клонируем обратно в левую колонку
+            const cloned = memberElement.cloneNode(true);
+            cloned.classList.remove('bg-success', 'text-white');
+            cloned.classList.add('bg-light');
+            cloned.removeAttribute('ondblclick');
+            cloned.removeAttribute('title');
+
+            const icon = cloned.querySelector('.bi-person-check');
+            if (icon) icon.className = 'bi bi-person-circle fs-4';
+
+            const badge = cloned.querySelector('.badge');
+            if (badge) {
+                badge.className = 'badge bg-success';
+                badge.textContent = 'Доступен';
+            }
+
+            // Добавляем в левую колонку
+            document.getElementById('availableMembersContainer').appendChild(cloned);
+
+            // Удаляем из правой
+            memberElement.remove();
+
+            // Обновляем счетчики
+            updateCounters();
+            updateHiddenInput();
+
+            // Показываем сообщение если команда пуста
+            if (document.querySelectorAll('#projectTeamContainer [data-member-id]').length === 0) {
+                const emptyMsg = document.getElementById('emptyTeamMessage');
+                if (emptyMsg) emptyMsg.style.display = 'block';
+            }
+        }
+    }
+
+    // Добавить выбранных в проект
+    function addSelectedToProject() {
+        const selected = Array.from(selectedAvailableMembers);
+        selected.forEach(memberId => {
+            const memberElement = document.querySelector(`#availableMembersContainer [data-member-id="${memberId}"]`);
+            if (memberElement && !document.querySelector(`#projectTeamContainer [data-member-id="${memberId}"]`)) {
+                const cloned = memberElement.cloneNode(true);
+                cloned.classList.remove('bg-light');
+                cloned.classList.add('bg-success', 'text-white');
+                cloned.setAttribute('ondblclick', `removeMemberFromProject('${memberId}')`);
+                cloned.setAttribute('title', 'Двойной клик для удаления');
+
+                const icon = cloned.querySelector('.bi-person-circle');
+                if (icon) icon.className = 'bi bi-person-check fs-4';
+
+                const badge = cloned.querySelector('.badge');
+                if (badge) {
+                    badge.className = 'badge bg-light text-dark';
+                    badge.textContent = 'В проекте';
+                }
+
+                document.getElementById('projectTeamContainer').appendChild(cloned);
+                memberElement.remove();
+            }
+        });
+
+        selectedAvailableMembers.clear();
+        updateCounters();
+        updateHiddenInput();
+        document.getElementById('emptyTeamMessage').style.display = 'none';
+    }
+
+    // Убрать выбранных из проекта
+    function removeSelectedFromProject() {
+        const selected = Array.from(selectedProjectMembers);
+        selected.forEach(memberId => {
+            removeMemberFromProject(memberId);
+        });
+        selectedProjectMembers.clear();
+    }
+
+    // Выбор члена в левой колонке
+    document.getElementById('availableMembersContainer').addEventListener('click', function(e) {
+        const memberCard = e.target.closest('.member-draggable');
+        if (memberCard) {
+            const memberId = memberCard.getAttribute('data-member-id');
+            if (memberCard.classList.contains('selected')) {
+                memberCard.classList.remove('selected', 'border-primary');
+                selectedAvailableMembers.delete(memberId);
+            } else {
+                memberCard.classList.add('selected', 'border-primary');
+                selectedAvailableMembers.add(memberId);
+            }
+        }
+    });
+
+    // Выбор члена в правой колонке
+    document.getElementById('projectTeamContainer').addEventListener('click', function(e) {
+        const memberCard = e.target.closest('.member-draggable');
+        if (memberCard) {
+            const memberId = memberCard.getAttribute('data-member-id');
+            if (memberCard.classList.contains('selected')) {
+                memberCard.classList.remove('selected', 'border-danger');
+                selectedProjectMembers.delete(memberId);
+            } else {
+                memberCard.classList.add('selected', 'border-danger');
+                selectedProjectMembers.add(memberId);
+            }
+        }
+    });
+
+    // Обновить счетчики
+    function updateCounters() {
+        const availableCount = document.querySelectorAll('#availableMembersContainer [data-member-id]').length;
+        const projectCount = document.querySelectorAll('#projectTeamContainer [data-member-id]').length;
+
+        document.getElementById('availableCount').textContent = availableCount;
+        document.getElementById('projectTeamCount').textContent = projectCount;
+    }
+
+    // Обновить hidden input
+    function updateHiddenInput() {
+        const selectedElements = document.querySelectorAll('#projectTeamContainer [data-member-id]');
+        const ids = Array.from(selectedElements).map(el => el.getAttribute('data-member-id'));
+
+        document.getElementById('selectedTeamMemberIds').value = ids.join(',');
+
+        // Синхронизируем с мультиселектом
+        const teamSelect = document.getElementById('teamMembers');
+        if (teamSelect) {
+            Array.from(teamSelect.options).forEach(option => {
+                option.selected = ids.includes(option.value);
+            });
+        }
+    }
+
+    // Инициализация при загрузке
+    document.addEventListener('DOMContentLoaded', function() {
+        updateCounters();
+        updateHiddenInput();
+
+        // Скрываем пустое сообщение если есть участники
+        if (document.querySelectorAll('#projectTeamContainer [data-member-id]').length > 0) {
+            const emptyMsg = document.getElementById('emptyTeamMessage');
+            if (emptyMsg) emptyMsg.style.display = 'none';
+        }
     });
 </script>
 </body>
