@@ -106,6 +106,7 @@
                                     <th>ID</th>
                                     <th>Название</th>
                                     <th>Категория</th>
+                                    <th>Участники</th> <!-- НОВЫЙ СТОЛБЕЦ -->
                                     <th>Статус</th>
                                     <th>Дата события</th>
                                     <th>Создан</th>
@@ -113,10 +114,6 @@
                                 </tr>
                                 </thead>
                                 <tbody>
-
-
-                                <!-- РЕАЛЬНЫЕ ДАННЫЕ (РАСКОММЕНТИРОВАТЬ ПОТОМ) -->
-
                                 <tr th:each="project : ${projectsPage.content}">
                                     <td th:text="${project.id}">1</td>
                                     <td>
@@ -126,15 +123,28 @@
                                         </a>
                                     </td>
                                     <td>
-                                        <span class="badge bg-info" th:text="${project.category}">
-                                            Категория
-                                        </span>
+            <span class="badge bg-info" th:text="${project.category}">
+                Категория
+            </span>
                                     </td>
+                                    <!-- НОВЫЙ СТОЛБЕЦ: КОЛИЧЕСТВО УЧАСТНИКОВ -->
                                     <td>
-                                        <span th:classappend="'badge badge-status-' + ${project.status.name().toLowerCase()}"
-                                            th:text="${project.status.name()}">
-                                            Статус
-                                            </span>
+            <span th:if="${project.teamMembers != null && project.teamMembers.size() > 0}"
+                  class="badge bg-primary">
+                <i class="bi bi-people"></i>
+                <span th:text="${project.teamMembers.size()}">0</span>
+            </span>
+                                        <span th:if="${project.teamMembers == null || project.teamMembers.size() == 0}"
+                                              class="text-muted small">
+                Нет
+            </span>
+                                    </td>
+                                    <!-- КОНЕЦ НОВОГО СТОЛБЦА -->
+                                    <td>
+            <span th:classappend="'badge badge-status-' + ${project.status.name().toLowerCase()}"
+                  th:text="${project.status.name()}">
+                Статус
+            </span>
                                     </td>
                                     <td th:text="${project.eventDate != null} ? ${#temporals.format(project.eventDate, 'dd.MM.yyyy')} : '—'">
                                         15.12.2024
@@ -154,10 +164,6 @@
                                            class="btn btn-sm btn-outline-secondary">
                                             <i class="bi bi-pencil"></i>
                                         </a>
-
-
-                                        <!-- ============== КНОПКА УДАЛЕНИЯ ПРОЕКТА =========== -->
-
                                         <form th:action="@{/admin/projects/delete/{id}(id=${project.id})}"
                                               method="post"
                                               class="d-inline">
