@@ -2,6 +2,7 @@ package com.community.cms.controller.projectAdmin;
 
 import com.community.cms.model.project.Project;
 import com.community.cms.model.project.TeamMember;
+import com.community.cms.repository.project.ProjectRepository;
 import com.community.cms.service.project.ProjectService;
 import com.community.cms.service.project.TeamMemberService;
 import jakarta.persistence.EntityNotFoundException;
@@ -39,7 +40,7 @@ public class ProjectAdminController {
 
     private final ProjectService projectService;
     private final TeamMemberService teamMemberService;
-
+    private final ProjectRepository projectRepository;
 
     /**
      * Конструктор с инъекцией зависимостей.
@@ -47,9 +48,10 @@ public class ProjectAdminController {
      * @param projectService сервис для работы с проектами
      */
     @Autowired
-    public ProjectAdminController(ProjectService projectService, TeamMemberService teamMemberService) {
+    public ProjectAdminController(ProjectService projectService, TeamMemberService teamMemberService, ProjectRepository projectRepository) {
         this.projectService = projectService;
         this.teamMemberService = teamMemberService;
+        this.projectRepository = projectRepository;
     }
 
     // ================== СПИСОК ПРОЕКТОВ ==================
@@ -206,7 +208,7 @@ public class ProjectAdminController {
                 project.setCategory(cleanedCategory);
 
                 // ===== ПРОВЕРКА УНИКАЛЬНОСТИ КАТЕГОРИИ =====
-                List<String> allCategories = projectService.findAllDistinctCategories();
+                List<String> allCategories = projectRepository.findAllDistinctCategories();
                 boolean alreadyExists = false;
                 String existingCategory = null;
 
