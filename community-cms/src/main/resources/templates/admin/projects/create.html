@@ -465,13 +465,6 @@
                                     <div class="col-12">
                                         <div class="card">
                                             <div class="card-body">
-                                                <div class="mt-2">
-                                                    <small class="text-muted">
-                                                        • Удерживайте Ctrl (Cmd на Mac) для выбора нескольких участников<br>
-                                                        • Выбрано: <span id="selectedCount" class="badge bg-success">0</span> участников
-                                                    </small>
-                                                </div>
-
                                                 <!-- Статистика -->
                                                 <div class="mt-3 pt-3 border-top">
                                                     <div class="row">
@@ -492,7 +485,7 @@
                                                                     <i class="bi bi-person-check text-white"></i>
                                                                 </div>
                                                                 <div>
-                                                                    <h6 class="mb-0" th:text="${project.teamMembers != null ? project.teamMembers.size() : 0}">0</h6>
+                                                                    <h6 class="mb-0" id="projectMembersCount" th:text="${project.teamMembers != null ? project.teamMembers.size() : 0}">0</h6>
                                                                     <small class="text-muted">Участников в проекте</small>
                                                                 </div>
                                                             </div>
@@ -1584,6 +1577,9 @@ function updateCounters() {
 
     document.getElementById('availableCount').textContent = availableCount;
     document.getElementById('projectTeamCount').textContent = projectCount;
+
+    // ОБНОВЛЯЕМ СТАТИСТИКУ
+    updateProjectMembersCount();
 }
 
 function updateHiddenInput() {
@@ -1599,25 +1595,21 @@ function updateHiddenInput() {
             option.selected = ids.includes(option.value);
         });
     }
+
+    // ОБНОВЛЯЕМ СТАТИСТИКУ
+    updateProjectMembersCount();
 }
-</script>
 
-<!-- Скрипт для подсчёта выбранных участников команды -->
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        const teamSelect = document.getElementById('teamMembers');
-        const selectedCount = document.getElementById('selectedCount');
+// Функция для обновления счетчика в статистике
+function updateProjectMembersCount() {
+    const projectMembers = document.querySelectorAll('#projectTeamContainer .member-draggable');
+    const count = projectMembers.length;
 
-        function updateSelectedCount() {
-            const selected = teamSelect.selectedOptions.length;
-            selectedCount.textContent = selected;
-        }
-
-        if (teamSelect) {
-            teamSelect.addEventListener('change', updateSelectedCount);
-            updateSelectedCount(); // Инициализация при загрузке
-        }
-    });
+    const statElement = document.getElementById('projectMembersCount');
+    if (statElement) {
+        statElement.textContent = count;
+    }
+}
 </script>
 </body>
 </html>
