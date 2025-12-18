@@ -1,7 +1,10 @@
 package com.community.cms.controller.projectAdmin;
 
 import com.community.cms.model.project.Project;
+import com.community.cms.model.project.TeamMember;
 import com.community.cms.service.project.ProjectService;
+import com.community.cms.service.project.TeamMemberService;
+import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -15,9 +18,9 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.Set;
+
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * Контроллер для админ-панели управления проектами.
@@ -34,6 +37,8 @@ import java.util.Set;
 public class ProjectAdminController {
 
     private final ProjectService projectService;
+    private final TeamMemberService teamMemberService;
+
 
     /**
      * Конструктор с инъекцией зависимостей.
@@ -41,8 +46,9 @@ public class ProjectAdminController {
      * @param projectService сервис для работы с проектами
      */
     @Autowired
-    public ProjectAdminController(ProjectService projectService) {
+    public ProjectAdminController(ProjectService projectService, TeamMemberService teamMemberService) {
         this.projectService = projectService;
+        this.teamMemberService = teamMemberService;
     }
 
     // ================== СПИСОК ПРОЕКТОВ ==================
@@ -146,9 +152,10 @@ public class ProjectAdminController {
 
     @GetMapping("/create")
     public String showCreateForm(Model model) {
-        model.addAttribute("project", new Project());
+        model.addAttribute("project", new Project()); // Только новый объект, без сохранения!
         model.addAttribute("categories", projectService.findAllDistinctCategories());
         model.addAttribute("statuses", Project.ProjectStatus.values());
+        model.addAttribute("allTeamMembers", teamMemberService.findAllActiveOrderBySortOrder());
         return "admin/projects/create";
     }
 
@@ -160,62 +167,28 @@ public class ProjectAdminController {
      * @param redirectAttributes атрибуты для редиректа
      * @return редирект на страницу списка или форму с ошибками
      */
-//    @PostMapping("/create")
-//    public String createProject(@Valid @ModelAttribute("project") Project project,
-//                                BindingResult bindingResult,
-//                                RedirectAttributes redirectAttributes) {
-//
-//        System.out.println("=== DEBUG CREATE PROJECT ===");
-//        System.out.println("Title: " + project.getTitle());
-//        System.out.println("Slug: " + project.getSlug());
-//        System.out.println("Has errors? " + bindingResult.hasErrors());
-//
-//        if (bindingResult.hasErrors()) {
-//            System.out.println("Errors: " + bindingResult.getAllErrors());
-//            return "admin/projects/create";
-//        }
-//
-//        // Проверка уникальности slug
-//        if (projectService.existsBySlug(project.getSlug())) {
-//            System.out.println("Slug already exists: " + project.getSlug());
-//            bindingResult.rejectValue("slug", "error.project", "Проект с таким URL уже существует");
-//            return "admin/projects/create";
-//        }
-//
-//        try {
-//            System.out.println("Saving project...");
-//            projectService.save(project);
-//            System.out.println("Project saved with ID: " + project.getId());
-//
-//            redirectAttributes.addFlashAttribute("successMessage", "Проект успешно создан");
-//            return "redirect:/admin/projects";
-//
-//        } catch (Exception e) {
-//            System.out.println("ERROR saving project: " + e.getMessage());
-//            e.printStackTrace();
-//
-//            bindingResult.reject("error.project", "Ошибка при создании проекта: " + e.getMessage());
-//            return "admin/projects/create";
-//        }
-//    }
+
 
     @PostMapping("/create")
     public String createProject(@Valid @ModelAttribute("project") Project project,
                                 BindingResult bindingResult,
                                 RedirectAttributes redirectAttributes,
                                 Model model,
-                                @RequestParam(value = "newCategoryName", required = false) String newCategoryName) {
+                                @RequestParam(value = "newCategoryName", required = false) String newCategoryName,
+                                @RequestParam(value = "selectedTeamMemberIds", required = false) String selectedTeamMemberIds) { // ← ДОБАВИТЬ ЭТОТ ПАРАМЕТР
 
         System.out.println("=== DEBUG CREATE PROJECT ===");
         System.out.println("Title: " + project.getTitle());
         System.out.println("Slug: " + project.getSlug());
         System.out.println("Category from select: " + project.getCategory());
         System.out.println("New category name: " + newCategoryName);
+        System.out.println("Selected team member IDs: " + selectedTeamMemberIds); // ← ДОБАВИТЬ
         System.out.println("Has errors? " + bindingResult.hasErrors());
 
         // Восстанавливаем списки для формы (на случай ошибки)
         model.addAttribute("categories", projectService.findAllDistinctCategories());
         model.addAttribute("statuses", Project.ProjectStatus.values());
+        model.addAttribute("allTeamMembers", teamMemberService.findAllActiveOrderBySortOrder()); // ← ДОБАВИТЬ
 
         // ===== ОБРАБОТКА КАТЕГОРИИ =====
         // Если пользователь выбрал "Добавить новую категорию"
@@ -253,8 +226,6 @@ public class ProjectAdminController {
                     }
                 }
 
-
-
                 if (alreadyExists) {
                     System.out.println("ERROR: Category already exists: " + existingCategory);
                     bindingResult.rejectValue("category", "error.project",
@@ -265,7 +236,7 @@ public class ProjectAdminController {
                 // ===== КОНЕЦ ПРОВЕРКИ УНИКАЛЬНОСТИ =====
             }
         }
-        // Если категория не выбрана вообще
+// Если категория не выбрана вообще
         else if (project.getCategory() == null || project.getCategory().trim().isEmpty()) {
             System.out.println("ERROR: No category selected!");
             bindingResult.rejectValue("category", "error.project",
@@ -287,10 +258,39 @@ public class ProjectAdminController {
 
         try {
             System.out.println("Saving project with category: " + project.getCategory());
-            projectService.save(project);
-            System.out.println("Project saved with ID: " + project.getId());
+            Project savedProject = projectService.save(project); // Сохраняем проект
 
-            redirectAttributes.addFlashAttribute("successMessage", "Проект успешно создан");
+            // ===== ОБРАБОТКА ВЫБРАННЫХ ЧЛЕНОВ КОМАНДЫ =====
+            if (selectedTeamMemberIds != null && !selectedTeamMemberIds.trim().isEmpty()) {
+                System.out.println("Processing team members: " + selectedTeamMemberIds);
+                String[] ids = selectedTeamMemberIds.split(",");
+
+                for (String idStr : ids) {
+                    try {
+                        Long memberId = Long.parseLong(idStr.trim());
+                        teamMemberService.findById(memberId).ifPresent(member -> {
+                            // Добавляем проект к члену команды
+                            if (member.getProjects() == null) {
+                                member.setProjects(new HashSet<>());
+                            }
+                            member.getProjects().add(savedProject);
+                            teamMemberService.save(member);
+                            System.out.println("Added team member: " + member.getFullName() + " (ID: " + memberId + ")");
+                        });
+                    } catch (NumberFormatException e) {
+                        System.out.println("Invalid member ID format: " + idStr);
+                    }
+                }
+            } else {
+                System.out.println("No team members selected for project");
+            }
+            // ===== КОНЕЦ ОБРАБОТКИ КОМАНДЫ =====
+
+            System.out.println("Project saved with ID: " + savedProject.getId());
+
+            redirectAttributes.addFlashAttribute("successMessage", "Проект успешно создан" +
+                    (selectedTeamMemberIds != null && !selectedTeamMemberIds.trim().isEmpty() ?
+                            " с командой из " + selectedTeamMemberIds.split(",").length + " человек" : ""));
             return "redirect:/admin/projects";
 
         } catch (Exception e) {
@@ -318,9 +318,24 @@ public class ProjectAdminController {
     public String showEditForm(@PathVariable Long id, Model model, RedirectAttributes redirectAttributes) {
         return projectService.findById(id)
                 .map(project -> {
+                    // Получаем всех членов команды
+                    List<TeamMember> allTeamMembers = teamMemberService.findAllActiveOrderBySortOrder();
+
+                    // Получаем членов команды, уже входящих в этот проект
+                    List<TeamMember> projectTeamMembers = teamMemberService.findByProject(project);
+
+                    // Получаем членов команды, НЕ входящих в проект
+                    List<TeamMember> availableMembers = allTeamMembers.stream()
+                            .filter(member -> !projectTeamMembers.contains(member))
+                            .collect(Collectors.toList());
+
                     model.addAttribute("project", project);
                     model.addAttribute("categories", projectService.findAllDistinctCategories());
                     model.addAttribute("statuses", Project.ProjectStatus.values());
+                    model.addAttribute("allTeamMembers", allTeamMembers);
+                    model.addAttribute("projectTeamMembers", projectTeamMembers); // ← ДОБАВИТЬ
+                    model.addAttribute("availableMembers", availableMembers); // ← ДОБАВИТЬ
+
                     return "admin/projects/edit";
                 })
                 .orElseGet(() -> {
@@ -342,17 +357,21 @@ public class ProjectAdminController {
     public String updateProject(@PathVariable Long id,
                                 @Valid @ModelAttribute("project") Project project,
                                 BindingResult bindingResult,
-                                RedirectAttributes redirectAttributes) {
+                                RedirectAttributes redirectAttributes,
+                                @RequestParam(value = "selectedTeamMemberIds", required = false) String selectedTeamMemberIds) { // ← ДОБАВИТЬ ПАРАМЕТР
 
         if (bindingResult.hasErrors()) {
             return "admin/projects/edit";
         }
 
         // Проверка что проект с таким ID существует
-        if (!projectService.findById(id).isPresent()) {
+        Optional<Project> existingProjectOpt = projectService.findById(id);
+        if (!existingProjectOpt.isPresent()) {
             redirectAttributes.addFlashAttribute("errorMessage", "Проект не найден");
             return "redirect:/admin/projects";
         }
+
+        Project existingProject = existingProjectOpt.get();
 
         // Проверка уникальности slug (исключая текущий проект)
         projectService.findBySlug(project.getSlug())
@@ -366,10 +385,48 @@ public class ProjectAdminController {
         }
 
         try {
+            // Обновляем основные данные проекта
             project.setId(id);
-            projectService.update(project);
+            Project updatedProject = projectService.update(project);
+
+            // ===== ОБРАБОТКА ОБНОВЛЕНИЯ КОМАНДЫ =====
+            if (selectedTeamMemberIds != null) {
+                System.out.println("Updating team members for project " + id + ": " + selectedTeamMemberIds);
+
+                // Получаем текущих членов команды
+                List<TeamMember> currentMembers = teamMemberService.findByProject(existingProject);
+
+                // Удаляем всех текущих членов из проекта
+                for (TeamMember member : currentMembers) {
+                    member.getProjects().remove(existingProject);
+                    teamMemberService.save(member);
+                }
+
+                // Добавляем новых членов (если есть)
+                if (!selectedTeamMemberIds.trim().isEmpty()) {
+                    String[] ids = selectedTeamMemberIds.split(",");
+                    for (String idStr : ids) {
+                        try {
+                            Long memberId = Long.parseLong(idStr.trim());
+                            teamMemberService.findById(memberId).ifPresent(member -> {
+                                if (member.getProjects() == null) {
+                                    member.setProjects(new HashSet<>());
+                                }
+                                member.getProjects().add(updatedProject);
+                                teamMemberService.save(member);
+                                System.out.println("Added team member to project: " + member.getFullName());
+                            });
+                        } catch (NumberFormatException e) {
+                            System.out.println("Invalid member ID format: " + idStr);
+                        }
+                    }
+                }
+            }
+            // ===== КОНЕЦ ОБРАБОТКИ КОМАНДЫ =====
+
             redirectAttributes.addFlashAttribute("successMessage", "Проект успешно обновлен");
             return "redirect:/admin/projects";
+
         } catch (Exception e) {
             bindingResult.reject("error.project", "Ошибка при обновлении проекта: " + e.getMessage());
             return "admin/projects/edit";
@@ -579,6 +636,67 @@ public class ProjectAdminController {
             redirectAttributes.addFlashAttribute("errorMessage", "Ошибка при очистке кэша: " + e.getMessage());
         }
         return "redirect:/admin/projects";
+    }
+
+    // ProjectAdminController.java - добавьте эти методы:
+
+    @GetMapping("/{id}/team-management")
+    public String manageProjectTeam(@PathVariable Long id, Model model) {
+        Project project = projectService.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Project not found with id: " + id));
+
+        // Получаем всех активных членов команды
+        List<TeamMember> allTeamMembers = teamMemberService.findAllActiveOrderBySortOrder();
+
+        // Получаем членов команды, уже входящих в этот проект
+        List<TeamMember> projectTeamMembers = teamMemberService.findByProject(project);
+
+        // Получаем членов команды, НЕ входящих в проект
+        List<TeamMember> availableTeamMembers = allTeamMembers.stream()
+                .filter(member -> !projectTeamMembers.contains(member))
+                .collect(Collectors.toList());
+
+        model.addAttribute("project", project);
+        model.addAttribute("availableMembers", availableTeamMembers);
+        model.addAttribute("projectMembers", projectTeamMembers);
+        model.addAttribute("allTeamMembers", allTeamMembers);
+        return "admin/projects/project-team-management";
+    }
+
+    @PostMapping("/{id}/team-management/update")
+    public String updateProjectTeam(@PathVariable Long id,
+                                    @RequestParam(value = "teamMemberIds", required = false) List<Long> teamMemberIds,
+                                    RedirectAttributes redirectAttributes) {
+        try {
+            Project project = projectService.findById(id)
+                    .orElseThrow(() -> new EntityNotFoundException("Project not found"));
+
+            // Получаем текущих членов команды проекта
+            List<TeamMember> currentMembers = teamMemberService.findByProject(project);
+
+            // Удаляем всех текущих членов из проекта
+            for (TeamMember member : currentMembers) {
+                member.getProjects().remove(project);
+                teamMemberService.save(member);
+            }
+
+            // Добавляем новых членов (если есть)
+            if (teamMemberIds != null && !teamMemberIds.isEmpty()) {
+                for (Long memberId : teamMemberIds) {
+                    TeamMember member = teamMemberService.findById(memberId)
+                            .orElseThrow(() -> new EntityNotFoundException("TeamMember not found"));
+                    member.getProjects().add(project);
+                    teamMemberService.save(member);
+                }
+            }
+
+            redirectAttributes.addFlashAttribute("successMessage", "Команда проекта успешно обновлена!");
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("errorMessage",
+                    "Ошибка при обновлении команды: " + e.getMessage());
+        }
+
+        return "redirect:/admin/projects/" + id + "/team-management";
     }
 
 

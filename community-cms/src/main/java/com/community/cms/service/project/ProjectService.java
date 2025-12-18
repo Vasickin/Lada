@@ -73,7 +73,10 @@ public class ProjectService {
      * @param project проект для сохранения
      * @return сохраненный проект
      */
-    @CacheEvict(value = {"projects-list", "projects-by-category"}, allEntries = true)
+    @Caching(evict = {
+            @CacheEvict(value = {"projects-list", "projects-by-category"}, allEntries = true),
+            @CacheEvict(value = "project-categories", allEntries = true)
+    })
     public Project save(Project project) {
         validateProject(project);
         return projectRepository.save(project);
@@ -89,7 +92,8 @@ public class ProjectService {
     @Caching(evict = {
             @CacheEvict(value = "project-by-id", key = "#project.id"),
             @CacheEvict(value = "project-by-slug", key = "#project.slug"),
-            @CacheEvict(value = {"projects-list", "projects-by-category"}, allEntries = true)
+            @CacheEvict(value = {"projects-list", "projects-by-category"}, allEntries = true),
+            @CacheEvict(value = "project-categories", allEntries = true)  // ← ДОБАВИТЬ
     })
     public Project update(Project project) {
         validateProject(project);
@@ -142,7 +146,8 @@ public class ProjectService {
      */
     @Caching(evict = {
             @CacheEvict(value = "project-by-id", key = "#id"),
-            @CacheEvict(value = {"projects-list", "projects-by-category"}, allEntries = true)
+            @CacheEvict(value = {"projects-list", "projects-by-category"}, allEntries = true),
+            @CacheEvict(value = "project-categories", allEntries = true)  // ← ДОБАВИТЬ
     })
     public void deleteById(Long id) {
         projectRepository.deleteById(id);
