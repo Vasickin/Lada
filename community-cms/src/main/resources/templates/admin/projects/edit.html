@@ -364,7 +364,7 @@
                                             Дата начала
                                         </label>
                                         <input type="date"
-                                               th:field="*{startDate}"
+                                               name="startDate"
                                                th:value="${project.startDate != null} ? ${#temporals.format(project.startDate, 'yyyy-MM-dd')} : ''"
                                                class="form-control"
                                                id="startDate">
@@ -377,7 +377,7 @@
                                             Дата окончания
                                         </label>
                                         <input type="date"
-                                               th:field="*{endDate}"
+                                               name="endDate"
                                                th:value="${project.endDate != null} ? ${#temporals.format(project.endDate, 'yyyy-MM-dd')} : ''"
                                                class="form-control"
                                                id="endDate">
@@ -390,7 +390,7 @@
                                             Дата события
                                         </label>
                                         <input type="date"
-                                               th:field="*{eventDate}"
+                                               name="eventDate"
                                                th:value="${project.eventDate != null} ? ${#temporals.format(project.eventDate, 'yyyy-MM-dd')} : ''"
                                                class="form-control"
                                                id="eventDate">

@@ -136,14 +136,14 @@
             </span>
                                         <span th:if="${project.teamMembers == null || project.teamMembers.size() == 0}"
                                               class="text-muted small">
-                Нет
-            </span>
+                                                Нет
+                                        </span>
                                     </td>
                                     <!-- КОНЕЦ НОВОГО СТОЛБЦА -->
                                     <td>
-            <span th:classappend="'badge badge-status-' + ${project.status.name().toLowerCase()}"
-                  th:text="${project.status.name()}">
-                Статус
+                                        <span th:classappend="'badge badge-status-' + ${project.status.name().toLowerCase()}"
+                                            th:text="${project.status.name()}">
+                                            Статус
             </span>
                                     </td>
                                     <td th:text="${project.eventDate != null} ? ${#temporals.format(project.eventDate, 'dd.MM.yyyy')} : '—'">
