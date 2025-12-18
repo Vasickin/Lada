@@ -9,6 +9,8 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <!-- Bootstrap Icons -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
     <style>
         .create-project-container {
@@ -39,6 +41,111 @@
     border-radius: 4px;
     box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
+    </style>
+
+
+    <!-- === DROP END DROPS === -->
+    <style>
+        .create-project-container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding-left: 20px;
+            padding-right: 20px;
+        }
+        .form-section {
+            margin-bottom: 30px;
+        }
+        .section-title {
+            border-bottom: 2px solid #dee2e6;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+        }
+
+        .video-preview-card {
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            padding: 15px;
+            background-color: #f8f9fa;
+        }
+        .video-thumbnail-small {
+            width: 120px;
+            height: 68px;
+            object-fit: cover;
+            border-radius: 4px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        /* === СТИЛИ ДЛЯ DRAG-AND-DROP КАК В EDIT.HTML === */
+        /* Для левой колонки (Доступные члены команды) */
+        #availableMembersContainer .member-draggable {
+            background-color: #e3f2fd; /* Светло-синий фон */
+            border: 1px solid #bbdefb; /* Синяя граница */
+        }
+
+        #availableMembersContainer .member-draggable:hover {
+            background-color: #bbdefb; /* Чуть темнее при наведении */
+            border-color: #90caf9;
+        }
+
+        #availableMembersContainer .member-draggable.selected {
+            background-color: #bbdefb; /* Мягкое выделение */
+            border: 2px solid #2196f3; /* Синяя граница выделения */
+            box-shadow: 0 2px 4px rgba(33, 150, 243, 0.2);
+        }
+
+        /* Для правой колонки (Команда проекта) */
+        #projectTeamContainer .member-draggable {
+            background-color: #e8f5e9; /* Светло-зеленый фон */
+            border: 1px solid #c8e6c9; /* Зеленая граница */
+            color: #1b5e20; /* Темно-зеленый текст */
+        }
+
+        #projectTeamContainer .member-draggable:hover {
+            background-color: #c8e6c9; /* Чуть темнее при наведении */
+            border-color: #a5d6a7;
+        }
+
+        #projectTeamContainer .member-draggable.selected {
+            background-color: #c8e6c9; /* Мягкое выделение */
+            border: 2px solid #4caf50; /* Зеленая граница выделения */
+            box-shadow: 0 2px 4px rgba(76, 175, 80, 0.2);
+        }
+
+        /* Общие стили */
+        .member-draggable {
+            transition: all 0.2s ease;
+            cursor: pointer;
+        }
+
+        .member-draggable.dragging {
+            opacity: 0.7;
+            transform: scale(0.98);
+        }
+
+        /* Убираем слишком сильные стили Bootstrap если есть */
+        .member-draggable.bg-light {
+            background-color: #e3f2fd !important; /* Переопределяем для левой колонки */
+        }
+
+        .member-draggable.bg-success {
+            background-color: #e8f5e9 !important; /* Переопределяем для правой колонки */
+            color: #1b5e20 !important;
+        }
+
+        /* Для иконок в правой колонке */
+        #projectTeamContainer .member-draggable .bi-person-check {
+            color: #4caf50; /* Зеленые иконки */
+        }
+
+        /* Для иконок в левой колонке */
+        #availableMembersContainer .member-draggable .bi-person-circle {
+            color: #2196f3; /* Синие иконки */
+        }
+
+        .drop-zone-active {
+            background-color: rgba(13, 110, 253, 0.05) !important;
+            border: 2px dashed #0d6efd !important;
+        }
     </style>
 </head>
 <body>
@@ -358,26 +465,26 @@
                                 </div>
 
                                 <div class="row">
-                                    <!-- Левая колонка: Все члены команды -->
+                                    <!-- Левая колонка: Доступные члены команды (не в проекте) -->
                                     <div class="col-md-5">
                                         <div class="card h-100 border-primary">
                                             <div class="card-header bg-primary text-white">
                                                 <h6 class="mb-0">
                                                     <i class="bi bi-people me-1"></i>
-                                                    Все члены команды организации
+                                                    Доступные члены команды
+                                                    <span class="badge bg-light text-dark ms-2" id="availableCount">0</span>
                                                 </h6>
                                             </div>
                                             <div class="card-body"
-                                                 id="allMembersContainer"
+                                                 id="availableMembersContainer"
                                                  style="min-height: 200px; max-height: 300px; overflow-y: auto;">
 
                                                 <div th:if="${allTeamMembers != null && !allTeamMembers.isEmpty()}">
                                                     <div th:each="member : ${allTeamMembers}"
-                                                         class="member-draggable mb-2 p-2 border rounded bg-light"
+                                                         class="member-draggable mb-2 p-2 border rounded"
                                                          draggable="true"
                                                          th:data-member-id="${member.id}"
-                                                         th:id="'member-' + ${member.id}"
-                                                         ondragstart="dragMember(event)">
+                                                         th:id="'member-' + ${member.id}">
                                                         <div class="d-flex align-items-center">
                                                             <div class="me-3">
                                                                 <i class="bi bi-person-circle fs-4"></i>
@@ -398,26 +505,32 @@
                                                     <i class="bi bi-people display-6 text-muted"></i>
                                                     <p class="mt-2">Нет членов команды</p>
                                                     <a th:href="@{/admin/team-members/create}"
-                                                       class="btn btn-sm btn-outline-primary">
-                                                        <i class="bi bi-person-plus"></i> Создать первого
+                                                       class="btn btn-sm btn-outline-primary"
+                                                       target="_blank">
+                                                        <i class="bi bi-person-plus"></i> Создать нового
                                                     </a>
                                                 </div>
                                             </div>
                                         </div>
                                     </div>
 
-                                    <!-- Центральная колонка: Инструкция -->
+                                    <!-- Центральная колонка: Управление -->
                                     <div class="col-md-2 d-flex flex-column align-items-center justify-content-center">
                                         <div class="text-center">
                                             <i class="bi bi-arrow-right-circle fs-1 text-primary mb-2"></i>
-                                            <p class="small mb-1">Перетащите</p>
-                                            <p class="small text-muted">или</p>
-                                            <button type="button" class="btn btn-sm btn-outline-primary mb-2" onclick="addAllToProject()">
-                                                <i class="bi bi-arrow-right"></i> Все
+                                            <p class="small mb-1">Добавить в проект</p>
+
+                                            <button type="button" class="btn btn-sm btn-outline-primary mb-2" onclick="addSelectedToProject()">
+                                                <i class="bi bi-arrow-right"></i> Выбранные
                                             </button>
-                                            <button type="button" class="btn btn-sm btn-outline-danger" onclick="removeAllFromProject()">
-                                                <i class="bi bi-arrow-left"></i> Все
-                                            </button>
+
+                                            <div class="my-3 border-top pt-2">
+                                                <i class="bi bi-arrow-left-circle fs-1 text-danger mb-2"></i>
+                                                <p class="small mb-1">Убрать из проекта</p>
+                                                <button type="button" class="btn btn-sm btn-outline-danger" onclick="removeSelectedFromProject()">
+                                                    <i class="bi bi-arrow-left"></i> Выбранные
+                                                </button>
+                                            </div>
                                         </div>
                                     </div>
 
@@ -433,14 +546,12 @@
                                             </div>
                                             <div class="card-body"
                                                  id="projectTeamContainer"
-                                                 style="min-height: 200px; max-height: 300px; overflow-y: auto;"
-                                                 ondrop="dropMember(event)"
-                                                 ondragover="allowDrop(event)">
+                                                 style="min-height: 200px; max-height: 300px; overflow-y: auto;">
 
                                                 <div id="emptyTeamMessage" class="text-center py-4">
                                                     <i class="bi bi-person-plus display-6 text-muted"></i>
-                                                    <p class="mt-2">Перетащите сюда членов команды</p>
-                                                    <p class="small text-muted">Или используйте кнопки слева</p>
+                                                    <p class="mt-2">Нет участников проекта</p>
+                                                    <p class="small text-muted">Добавьте членов команды</p>
                                                 </div>
                                                 <!-- Сюда будут добавляться выбранные члены -->
                                             </div>
@@ -448,15 +559,15 @@
                                     </div>
                                 </div>
 
-                                <!-- Hidden input для хранения выбранных ID -->
+                                <!-- Hidden inputs для синхронизации с мультиселектом -->
                                 <input type="hidden" id="selectedTeamMemberIds" name="selectedTeamMemberIds" value="">
 
                                 <!-- Информация -->
                                 <div class="alert alert-info mt-3">
                                     <i class="bi bi-info-circle me-2"></i>
                                     <small>
-                                        Выбранные члены команды автоматически добавятся в проект при сохранении.
-                                        Также можно выбрать членов команды через мультиселект выше.
+                                        Изменения в команде проекта сохранятся при нажатии "Создать проект".
+                                        Также можно выбрать/убрать членов команды через мультиселект выше.
                                     </small>
                                 </div>
                             </div>
@@ -1063,8 +1174,6 @@
     </div>
 </div>
 
-<!-- Bootstrap JS -->
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
 <!-- Скрипт для валидации формы -->
 <script>
@@ -1294,139 +1403,227 @@
     });
 </script>
 
-<!-- JavaScript для Drag and Drop -->
+<!-- JavaScript для Drag and Drop (редактирование) -->
 <script>
-    // Глобальные переменные
-    let draggedMember = null;
+    // Глобальные переменные для редактирования
+document.addEventListener('DOMContentLoaded', function() {
+    // Инициализация перетаскивания
+    initDragAndDrop();
+    updateCounters();
+});
 
-    // Разрешить перетаскивание
-    function allowDrop(event) {
-        event.preventDefault();
+
+function allowDrop(event) {
+    event.preventDefault();
+}
+
+function dragMember(event) {
+    event.dataTransfer.setData('text/plain', event.target.getAttribute('data-member-id'));
+    event.target.classList.add('dragging');
+}
+
+function dropMember(event) {
+    event.preventDefault();
+    const memberId = event.dataTransfer.getData('text/plain');
+    const draggedElement = document.querySelector(`[data-member-id="${memberId}"]`);
+    const targetContainer = event.target.closest('#availableMembersContainer, #projectTeamContainer');
+
+    if (draggedElement && targetContainer && draggedElement.parentElement !== targetContainer) {
+        const isMovingToProject = targetContainer.id === 'projectTeamContainer';
+        moveMemberToContainer(memberId, targetContainer.id);
     }
 
-    // Начать перетаскивание
-    function dragMember(event) {
-        draggedMember = event.target;
-        event.dataTransfer.setData("text/plain", event.target.id);
-        event.target.classList.add('dragging');
-    }
+    // Убираем класс dragging со всех элементов
+    document.querySelectorAll('.dragging').forEach(el => el.classList.remove('dragging'));
+}
 
-    // Бросить элемент
-    function dropMember(event) {
-        event.preventDefault();
+function initDragAndDrop() {
+    // Настраиваем перетаскивание для всех членов команды
+    document.querySelectorAll('.member-draggable').forEach(item => {
+        item.setAttribute('draggable', 'true');
 
-        if (draggedMember) {
-            const memberId = draggedMember.getAttribute('data-member-id');
-
-            // Проверяем, не добавлен ли уже этот член
-            if (!document.querySelector(`#projectTeamContainer [data-member-id="${memberId}"]`)) {
-                // Клонируем элемент
-                const cloned = draggedMember.cloneNode(true);
-                cloned.classList.remove('bg-light');
-                cloned.classList.add('bg-success', 'text-white');
-                cloned.setAttribute('ondblclick', `removeMemberFromProject('${memberId}')`);
-                cloned.setAttribute('title', 'Двойной клик для удаления');
-
-                // Меняем иконку и статус
-                const icon = cloned.querySelector('.bi-person-circle');
-                if (icon) icon.className = 'bi bi-person-check fs-4';
-
-                const badge = cloned.querySelector('.badge');
-                if (badge) {
-                    badge.className = 'badge bg-light text-dark';
-                    badge.textContent = 'В проекте';
-                }
-
-                // Добавляем в правую колонку
-                document.getElementById('projectTeamContainer').appendChild(cloned);
-
-                // Обновляем счетчик и hidden input
-                updateProjectTeam();
-
-                // Скрываем сообщение о пустой команде
-                document.getElementById('emptyTeamMessage').style.display = 'none';
-            }
-
-            // Убираем класс dragging
-            draggedMember.classList.remove('dragging');
-            draggedMember = null;
-        }
-    }
-
-    // Удалить члена из проекта (по двойному клику)
-    function removeMemberFromProject(memberId) {
-        const memberElement = document.querySelector(`#projectTeamContainer [data-member-id="${memberId}"]`);
-        if (memberElement) {
-            memberElement.remove();
-            updateProjectTeam();
-
-            // Показываем сообщение если команда пуста
-            if (document.querySelectorAll('#projectTeamContainer [data-member-id]').length === 0) {
-                document.getElementById('emptyTeamMessage').style.display = 'block';
-            }
-        }
-    }
-
-    // Добавить всех в проект
-    function addAllToProject() {
-        const allMembers = document.querySelectorAll('#allMembersContainer .member-draggable');
-        allMembers.forEach(member => {
-            const memberId = member.getAttribute('data-member-id');
-            if (!document.querySelector(`#projectTeamContainer [data-member-id="${memberId}"]`)) {
-                const cloned = member.cloneNode(true);
-                cloned.classList.remove('bg-light');
-                cloned.classList.add('bg-success', 'text-white');
-                cloned.setAttribute('ondblclick', `removeMemberFromProject('${memberId}')`);
-                cloned.setAttribute('title', 'Двойной клик для удаления');
-
-                const icon = cloned.querySelector('.bi-person-circle');
-                if (icon) icon.className = 'bi bi-person-check fs-4';
-
-                const badge = cloned.querySelector('.badge');
-                if (badge) {
-                    badge.className = 'badge bg-light text-dark';
-                    badge.textContent = 'В проекте';
-                }
-
-                document.getElementById('projectTeamContainer').appendChild(cloned);
-            }
+        item.addEventListener('dragstart', function(e) {
+            e.dataTransfer.setData('text/plain', this.getAttribute('data-member-id'));
+            this.classList.add('dragging');
         });
 
-        document.getElementById('emptyTeamMessage').style.display = 'none';
-        updateProjectTeam();
+        item.addEventListener('dragend', function() {
+            this.classList.remove('dragging');
+        });
+
+        // Клик для выделения
+        item.addEventListener('click', function(e) {
+            if (!e.ctrlKey && !e.metaKey) {
+                // Снимаем выделение со всех
+                document.querySelectorAll('.member-draggable.selected').forEach(el => {
+                    el.classList.remove('selected');
+                });
+            }
+            this.classList.toggle('selected');
+            updateSelectionButtons();
+        });
+    });
+
+    // Настраиваем зоны drop
+    const availableContainer = document.getElementById('availableMembersContainer');
+    const projectContainer = document.getElementById('projectTeamContainer');
+
+    [availableContainer, projectContainer].forEach(container => {
+        container.addEventListener('dragover', function(e) {
+            e.preventDefault();
+            this.classList.add('drop-zone-active');
+        });
+
+        container.addEventListener('dragleave', function() {
+            this.classList.remove('drop-zone-active');
+        });
+
+        container.addEventListener('drop', function(e) {
+            e.preventDefault();
+            this.classList.remove('drop-zone-active');
+
+            const memberId = e.dataTransfer.getData('text/plain');
+            const draggedElement = document.querySelector(`[data-member-id="${memberId}"]`);
+
+            if (draggedElement && draggedElement.parentElement !== this) {
+                moveMemberToContainer(memberId, this.id);
+            }
+        });
+    });
+}
+
+function moveMemberToContainer(memberId, targetContainerId) {
+    const memberElement = document.querySelector(`[data-member-id="${memberId}"]`);
+    if (!memberElement) return;
+
+    const targetContainer = document.getElementById(targetContainerId);
+    const isMovingToProject = targetContainerId === 'projectTeamContainer';
+
+    // Клонируем элемент с новыми стилями
+    const cloned = memberElement.cloneNode(true);
+
+    if (isMovingToProject) {
+    // Перемещаем в проект - меняем только иконку и бейдж
+    const icon = cloned.querySelector('.bi-person-circle');
+    if (icon) icon.className = 'bi bi-person-check fs-4 text-success';
+
+    const badge = cloned.querySelector('.badge');
+    if (badge) {
+        badge.className = 'badge bg-success text-white';
+        badge.textContent = 'В проекте';
     }
+} else {
+    // Перемещаем обратно в доступные - меняем только иконку и бейдж
+    const icon = cloned.querySelector('.bi-person-check');
+    if (icon) icon.className = 'bi bi-person-circle fs-4 text-primary';
 
-    // Удалить всех из проекта
-    function removeAllFromProject() {
-        document.querySelectorAll('#projectTeamContainer [data-member-id]').forEach(member => member.remove());
-        document.getElementById('emptyTeamMessage').style.display = 'block';
-        updateProjectTeam();
+    const badge = cloned.querySelector('.badge');
+    if (badge) {
+        badge.className = 'badge bg-primary text-white';
+        badge.textContent = 'Доступен';
     }
+}
 
-    // Обновить счетчик и hidden input
-    function updateProjectTeam() {
-        const selectedElements = document.querySelectorAll('#projectTeamContainer [data-member-id]');
-        const ids = Array.from(selectedElements).map(el => el.getAttribute('data-member-id'));
+    // Удаляем старый элемент
+    memberElement.remove();
 
-        // Обновляем счетчик
-        document.getElementById('projectTeamCount').textContent = ids.length;
+    // Добавляем новый в целевую колонку
+    targetContainer.appendChild(cloned);
 
-        // Обновляем hidden input
-        document.getElementById('selectedTeamMemberIds').value = ids.join(',');
-
-        // Также обновляем мультиселект для совместимости
-        const teamSelect = document.getElementById('teamMembers');
-        if (teamSelect) {
-            Array.from(teamSelect.options).forEach(option => {
-                option.selected = ids.includes(option.value);
+    // Реинициализируем события для нового элемента
+    cloned.setAttribute('draggable', 'true');
+    cloned.addEventListener('dragstart', function(e) {
+        e.dataTransfer.setData('text/plain', this.getAttribute('data-member-id'));
+        this.classList.add('dragging');
+    });
+    cloned.addEventListener('dragend', function() {
+        this.classList.remove('dragging');
+    });
+    cloned.addEventListener('click', function(e) {
+        if (!e.ctrlKey && !e.metaKey) {
+            document.querySelectorAll('.member-draggable.selected').forEach(el => {
+                el.classList.remove('selected');
             });
         }
-    }
+        this.classList.toggle('selected');
+        updateSelectionButtons();
+    });
 
-    // Инициализация при загрузке страницы
+    // Обновляем UI
+    updateCounters();
+    updateHiddenInput();
+
+    // Скрываем/показываем сообщения о пустоте
+    const projectEmptyMsg = document.getElementById('emptyTeamMessage');
+    if (projectEmptyMsg) {
+        projectEmptyMsg.style.display =
+            document.querySelectorAll('#projectTeamContainer .member-draggable').length === 0 ? 'block' : 'none';
+    }
+}
+
+// Кнопки для массового перемещения
+function addSelectedToProject() {
+    const selected = document.querySelectorAll('#availableMembersContainer .member-draggable.selected');
+    selected.forEach(member => {
+        const memberId = member.getAttribute('data-member-id');
+        moveMemberToContainer(memberId, 'projectTeamContainer');
+    });
+}
+
+function removeSelectedFromProject() {
+    const selected = document.querySelectorAll('#projectTeamContainer .member-draggable.selected');
+    selected.forEach(member => {
+        const memberId = member.getAttribute('data-member-id');
+        moveMemberToContainer(memberId, 'availableMembersContainer');
+    });
+}
+
+function updateSelectionButtons() {
+    const hasAvailableSelected = document.querySelectorAll('#availableMembersContainer .member-draggable.selected').length > 0;
+    const hasProjectSelected = document.querySelectorAll('#projectTeamContainer .member-draggable.selected').length > 0;
+
+    // Можно добавить визуальную индикацию для кнопок если нужно
+}
+
+function updateCounters() {
+    const availableCount = document.querySelectorAll('#availableMembersContainer .member-draggable').length;
+    const projectCount = document.querySelectorAll('#projectTeamContainer .member-draggable').length;
+
+    document.getElementById('availableCount').textContent = availableCount;
+    document.getElementById('projectTeamCount').textContent = projectCount;
+}
+
+function updateHiddenInput() {
+    const selectedElements = document.querySelectorAll('#projectTeamContainer [data-member-id]');
+    const ids = Array.from(selectedElements).map(el => el.getAttribute('data-member-id'));
+
+    document.getElementById('selectedTeamMemberIds').value = ids.join(',');
+
+    // Синхронизируем с мультиселектом
+    const teamSelect = document.getElementById('teamMembers');
+    if (teamSelect) {
+        Array.from(teamSelect.options).forEach(option => {
+            option.selected = ids.includes(option.value);
+        });
+    }
+}
+</script>
+
+<!-- Скрипт для подсчёта выбранных участников команды -->
+<script>
     document.addEventListener('DOMContentLoaded', function() {
-        // Инициализируем счетчик
-        updateProjectTeam();
+        const teamSelect = document.getElementById('teamMembers');
+        const selectedCount = document.getElementById('selectedCount');
+
+        function updateSelectedCount() {
+            const selected = teamSelect.selectedOptions.length;
+            selectedCount.textContent = selected;
+        }
+
+        if (teamSelect) {
+            teamSelect.addEventListener('change', updateSelectedCount);
+            updateSelectedCount(); // Инициализация при загрузке
+        }
     });
 </script>
 </body>
