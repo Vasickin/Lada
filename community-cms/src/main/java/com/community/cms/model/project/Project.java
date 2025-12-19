@@ -629,39 +629,6 @@ public class Project {
 
     // ================== СВЯЗИ С КОМАНДОЙ ==================
 
-    /**
-     * Связь с промежуточной сущностью TeamMemberProjectRole.
-     */
-    @OneToMany(mappedBy = "project")
-    private Set<TeamMemberProjectRole> teamMemberProjectRoles = new HashSet<>();
-
-    /**
-     * Получает список членов команды, участвующих в этом проекте.
-     */
-    public Set<TeamMember> getTeamMembers() {
-        return teamMemberProjectRoles.stream()
-                .map(TeamMemberProjectRole::getTeamMember)
-                .collect(Collectors.toSet());
-    }
-
-    /**
-     * Получает членов команды по определенной роли.
-     */
-    public Set<TeamMember> getTeamMembersByRole(String role) {
-        return teamMemberProjectRoles.stream()
-                .filter(tmpr -> tmpr.getRole().equalsIgnoreCase(role))
-                .map(TeamMemberProjectRole::getTeamMember)
-                .collect(Collectors.toSet());
-    }
-
-    public Set<TeamMemberProjectRole> getTeamMemberProjectRoles() {
-        return teamMemberProjectRoles;
-    }
-
-    public void setTeamMemberProjectRoles(Set<TeamMemberProjectRole> teamMemberProjectRoles) {
-        this.teamMemberProjectRoles = teamMemberProjectRoles;
-    }
-
     @Override
     public String toString() {
         return "Project{" +
@@ -697,5 +664,22 @@ public class Project {
             createdAt = LocalDateTime.now();
         }
         updatedAt = LocalDateTime.now();
+    }
+
+    @ManyToMany
+    @JoinTable(
+            name = "team_member_projects",
+            joinColumns = @JoinColumn(name = "project_id"),
+            inverseJoinColumns = @JoinColumn(name = "team_member_id")
+    )
+    private Set<TeamMember> teamMembers = new HashSet<>();
+
+    // И getter/setter:
+    public Set<TeamMember> getTeamMembers() {
+        return teamMembers;
+    }
+
+    public void setTeamMembers(Set<TeamMember> teamMembers) {
+        this.teamMembers = teamMembers;
     }
 }

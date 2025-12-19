@@ -118,12 +118,7 @@ public class TeamMember {
      * Проекты, в которых участвует член команды.
      * Связь одного-ко-многим через промежуточную таблицу.
      */
-    @OneToMany
-    @JoinTable(
-            name = "team_member_projects",
-            joinColumns = @JoinColumn(name = "team_member_id"),
-            inverseJoinColumns = @JoinColumn(name = "project_id")
-    )
+    @ManyToMany(mappedBy = "teamMembers")
     private Set<Project> projects = new HashSet<>();
 
     /**
@@ -137,14 +132,7 @@ public class TeamMember {
     @Transient
     private Map<Long, String> projectRoles = new HashMap<>();
 
-    /**
-     * Связь с промежуточной сущностью TeamMemberProjectRole.
-     * Используется для хранения ролей в проектах в БД.
-     */
-    @OneToMany(mappedBy = "teamMember")
-    private Set<TeamMemberProjectRole> teamMemberProjectRoles = new HashSet<>();
-
-    // ================== СИСТЕМНЫЕ ПОЛЯ ==================
+      // ================== СИСТЕМНЫЕ ПОЛЯ ==================
 
     /**
      * Дата и время создания записи.
