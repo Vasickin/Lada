@@ -180,6 +180,25 @@ public class ProjectAdminController {
                                 @RequestParam(value = "newCategoryName", required = false) String newCategoryName,
                                 @RequestParam(value = "selectedTeamMemberIds", required = false) String selectedTeamMemberIds) {
 
+        // ===== ВАЛИДАЦИЯ ДАТ (ТАК ЖЕ КАК В UPDATE) =====
+        if (project.getStartDate() != null && project.getEndDate() != null) {
+            if (project.getStartDate().isAfter(project.getEndDate())) {
+                System.out.println("ERROR: Start date is after end date");
+                bindingResult.rejectValue("startDate", "error.project",
+                        "Дата начала не может быть позже даты окончания");
+            }
+        }
+
+        if (project.getEventDate() != null && project.getStartDate() != null && project.getEndDate() != null) {
+            if (project.getEventDate().isBefore(project.getStartDate()) ||
+                    project.getEventDate().isAfter(project.getEndDate())) {
+                System.out.println("ERROR: Event date is outside project dates");
+                bindingResult.rejectValue("eventDate", "error.project",
+                        "Дата события должна быть в рамках проекта");
+            }
+        }
+        // ===== КОНЕЦ ВАЛИДАЦИИ ДАТ =====
+
         System.out.println("=== DEBUG CREATE PROJECT ===");
         System.out.println("Title: " + project.getTitle());
         System.out.println("Slug: " + project.getSlug());
@@ -375,6 +394,25 @@ public class ProjectAdminController {
                                 Model model,
                                 @RequestParam(value = "newCategoryName", required = false) String newCategoryName,
                                 @RequestParam(value = "selectedTeamMemberIds", required = false) String selectedTeamMemberIds) {
+
+        // ===== ВАЛИДАЦИЯ ДАТ =====
+        if (project.getStartDate() != null && project.getEndDate() != null) {
+            if (project.getStartDate().isAfter(project.getEndDate())) {
+                System.out.println("ERROR: Start date is after end date");
+                bindingResult.rejectValue("startDate", "error.project",
+                        "Дата начала не может быть позже даты окончания");
+            }
+        }
+
+        if (project.getEventDate() != null && project.getStartDate() != null && project.getEndDate() != null) {
+            if (project.getEventDate().isBefore(project.getStartDate()) ||
+                    project.getEventDate().isAfter(project.getEndDate())) {
+                System.out.println("ERROR: Event date is outside project dates");
+                bindingResult.rejectValue("eventDate", "error.project",
+                        "Дата события должна быть в рамках проекта");
+            }
+        }
+        // ===== КОНЕЦ ВАЛИДАЦИИ ДАТ =====
 
         System.out.println("=== DEBUG UPDATE PROJECT ===");
         System.out.println("Project ID: " + id);
