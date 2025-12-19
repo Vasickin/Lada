@@ -391,6 +391,9 @@
                                                th:field="*{startDate}"
                                                class="form-control"
                                                id="startDate">
+                                        <div class="invalid-feedback" th:if="${#fields.hasErrors('startDate')}">
+                                            <span th:errors="*{startDate}">Ошибка даты начала</span>
+                                        </div>
                                     </div>
                                     <div class="col-md-4">
                                         <label for="endDate" class="form-label">
@@ -400,6 +403,9 @@
                                                th:field="*{endDate}"
                                                class="form-control"
                                                id="endDate">
+                                        <div class="invalid-feedback" th:if="${#fields.hasErrors('endDate')}">
+                                            <span th:errors="*{endDate}">Ошибка даты окончания</span>
+                                        </div>
                                     </div>
                                     <div class="col-md-4">
                                         <label for="eventDate" class="form-label">
@@ -409,6 +415,9 @@
                                                th:field="*{eventDate}"
                                                class="form-control"
                                                id="eventDate">
+                                        <div class="invalid-feedback" th:if="${#fields.hasErrors('eventDate')}">
+                                            <span th:errors="*{eventDate}">Ошибка даты события</span>
+                                        </div>
                                     </div>
                                 </div>
 

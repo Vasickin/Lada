@@ -2,9 +2,11 @@ package com.community.cms.controller.projectAdmin;
 
 import com.community.cms.model.project.Project;
 import com.community.cms.model.project.TeamMember;
+import com.community.cms.repository.project.ProjectRepository;
 import com.community.cms.service.project.ProjectService;
 import com.community.cms.service.project.TeamMemberService;
 import jakarta.persistence.EntityNotFoundException;
+import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -38,7 +40,7 @@ public class ProjectAdminController {
 
     private final ProjectService projectService;
     private final TeamMemberService teamMemberService;
-
+    private final ProjectRepository projectRepository;
 
     /**
      * Конструктор с инъекцией зависимостей.
@@ -46,9 +48,10 @@ public class ProjectAdminController {
      * @param projectService сервис для работы с проектами
      */
     @Autowired
-    public ProjectAdminController(ProjectService projectService, TeamMemberService teamMemberService) {
+    public ProjectAdminController(ProjectService projectService, TeamMemberService teamMemberService, ProjectRepository projectRepository) {
         this.projectService = projectService;
         this.teamMemberService = teamMemberService;
+        this.projectRepository = projectRepository;
     }
 
     // ================== СПИСОК ПРОЕКТОВ ==================
@@ -168,59 +171,74 @@ public class ProjectAdminController {
      * @return редирект на страницу списка или форму с ошибками
      */
 
-
     @PostMapping("/create")
+    @Transactional
     public String createProject(@Valid @ModelAttribute("project") Project project,
                                 BindingResult bindingResult,
                                 RedirectAttributes redirectAttributes,
                                 Model model,
                                 @RequestParam(value = "newCategoryName", required = false) String newCategoryName,
-                                @RequestParam(value = "selectedTeamMemberIds", required = false) String selectedTeamMemberIds) { // ← ДОБАВИТЬ ЭТОТ ПАРАМЕТР
+                                @RequestParam(value = "selectedTeamMemberIds", required = false) String selectedTeamMemberIds) {
+
+        // ===== ВАЛИДАЦИЯ ДАТ (ТАК ЖЕ КАК В UPDATE) =====
+        if (project.getStartDate() != null && project.getEndDate() != null) {
+            if (project.getStartDate().isAfter(project.getEndDate())) {
+                System.out.println("ERROR: Start date is after end date");
+                bindingResult.rejectValue("startDate", "error.project",
+                        "Дата начала не может быть позже даты окончания");
+            }
+        }
+
+        if (project.getEventDate() != null && project.getStartDate() != null && project.getEndDate() != null) {
+            if (project.getEventDate().isBefore(project.getStartDate()) ||
+                    project.getEventDate().isAfter(project.getEndDate())) {
+                System.out.println("ERROR: Event date is outside project dates");
+                bindingResult.rejectValue("eventDate", "error.project",
+                        "Дата события должна быть в рамках проекта");
+            }
+        }
+        // ===== КОНЕЦ ВАЛИДАЦИИ ДАТ =====
 
         System.out.println("=== DEBUG CREATE PROJECT ===");
         System.out.println("Title: " + project.getTitle());
         System.out.println("Slug: " + project.getSlug());
         System.out.println("Category from select: " + project.getCategory());
         System.out.println("New category name: " + newCategoryName);
-        System.out.println("Selected team member IDs: " + selectedTeamMemberIds); // ← ДОБАВИТЬ
+        System.out.println("Selected team member IDs: " + selectedTeamMemberIds);
         System.out.println("Has errors? " + bindingResult.hasErrors());
 
         // Восстанавливаем списки для формы (на случай ошибки)
         model.addAttribute("categories", projectService.findAllDistinctCategories());
         model.addAttribute("statuses", Project.ProjectStatus.values());
-        model.addAttribute("allTeamMembers", teamMemberService.findAllActiveOrderBySortOrder()); // ← ДОБАВИТЬ
+        model.addAttribute("allTeamMembers", teamMemberService.findAllActiveOrderBySortOrder());
 
         // ===== ОБРАБОТКА КАТЕГОРИИ =====
-        // Если пользователь выбрал "Добавить новую категорию"
         if ("__NEW__".equals(project.getCategory())) {
             System.out.println("User selected: CREATE NEW CATEGORY");
 
-            // Проверяем, что название новой категории указано
             if (newCategoryName == null || newCategoryName.trim().isEmpty()) {
                 System.out.println("ERROR: New category name is empty!");
                 bindingResult.rejectValue("category", "error.project",
                         "Введите название новой категории");
                 return "admin/projects/create";
             } else {
-                // Устанавливаем новую категорию в проект
                 String cleanedCategory = newCategoryName.trim();
                 System.out.println("Setting new category: " + cleanedCategory);
                 project.setCategory(cleanedCategory);
 
                 // ===== ПРОВЕРКА УНИКАЛЬНОСТИ КАТЕГОРИИ =====
-                List<String> allCategories = projectService.findAllDistinctCategories();
+                List<String> allCategories = projectRepository.findAllDistinctCategories();
                 boolean alreadyExists = false;
                 String existingCategory = null;
 
                 for (String cat : allCategories) {
                     if (cat != null && cleanedCategory != null) {
-                        // Нормализуем для сравнения (без регистра, без лишних пробелов)
                         String normalizedExisting = cat.trim().toLowerCase().replaceAll("\\s+", " ");
                         String normalizedNew = cleanedCategory.trim().toLowerCase().replaceAll("\\s+", " ");
 
                         if (normalizedExisting.equals(normalizedNew)) {
                             alreadyExists = true;
-                            existingCategory = cat; // Запоминаем оригинальное написание
+                            existingCategory = cat;
                             break;
                         }
                     }
@@ -233,11 +251,8 @@ public class ProjectAdminController {
                                     "Используйте существующую или введите другое название.");
                     return "admin/projects/create";
                 }
-                // ===== КОНЕЦ ПРОВЕРКИ УНИКАЛЬНОСТИ =====
             }
-        }
-// Если категория не выбрана вообще
-        else if (project.getCategory() == null || project.getCategory().trim().isEmpty()) {
+        } else if (project.getCategory() == null || project.getCategory().trim().isEmpty()) {
             System.out.println("ERROR: No category selected!");
             bindingResult.rejectValue("category", "error.project",
                     "Выберите категорию проекта");
@@ -257,10 +272,18 @@ public class ProjectAdminController {
         }
 
         try {
-            System.out.println("Saving project with category: " + project.getCategory());
-            Project savedProject = projectService.save(project); // Сохраняем проект
+            // 1. Инициализируем команду проекта ПЕРЕД сохранением
+            if (project.getTeamMembers() == null) {
+                project.setTeamMembers(new HashSet<>());
+            }
 
-            // ===== ОБРАБОТКА ВЫБРАННЫХ ЧЛЕНОВ КОМАНДЫ =====
+            System.out.println("Saving project with category: " + project.getCategory());
+
+            // 2. Сохраняем проект (сначала без команды)
+            Project savedProject = projectService.save(project);
+            System.out.println("Project saved with ID: " + savedProject.getId());
+
+            // 3. ОБНОВЛЕННАЯ ОБРАБОТКА КОМАНДЫ
             if (selectedTeamMemberIds != null && !selectedTeamMemberIds.trim().isEmpty()) {
                 System.out.println("Processing team members: " + selectedTeamMemberIds);
                 String[] ids = selectedTeamMemberIds.split(",");
@@ -269,11 +292,18 @@ public class ProjectAdminController {
                     try {
                         Long memberId = Long.parseLong(idStr.trim());
                         teamMemberService.findById(memberId).ifPresent(member -> {
-                            // Добавляем проект к члену команды
+                            // 3.1. Инициализируем projects у TeamMember если нужно
                             if (member.getProjects() == null) {
                                 member.setProjects(new HashSet<>());
                             }
+
+                            // 3.2. Добавляем проект к члену команды
                             member.getProjects().add(savedProject);
+
+                            // 3.3. Добавляем члена команды к проекту
+                            savedProject.getTeamMembers().add(member);
+
+                            // 3.4. Сохраняем обновленного члена команды
                             teamMemberService.save(member);
                             System.out.println("Added team member: " + member.getFullName() + " (ID: " + memberId + ")");
                         });
@@ -281,12 +311,14 @@ public class ProjectAdminController {
                         System.out.println("Invalid member ID format: " + idStr);
                     }
                 }
+
+                // 4. Сохраняем проект с обновленной командой
+                projectService.save(savedProject);
+                System.out.println("Project re-saved with team members count: " + savedProject.getTeamMembers().size());
+
             } else {
                 System.out.println("No team members selected for project");
             }
-            // ===== КОНЕЦ ОБРАБОТКИ КОМАНДЫ =====
-
-            System.out.println("Project saved with ID: " + savedProject.getId());
 
             redirectAttributes.addFlashAttribute("successMessage", "Проект успешно создан" +
                     (selectedTeamMemberIds != null && !selectedTeamMemberIds.trim().isEmpty() ?
@@ -301,7 +333,6 @@ public class ProjectAdminController {
             return "admin/projects/create";
         }
     }
-
 
 
     // ================== РЕДАКТИРОВАНИЕ ПРОЕКТА ==================
@@ -353,25 +384,155 @@ public class ProjectAdminController {
      * @param redirectAttributes атрибуты для редиректа
      * @return редирект на страницу списка или форму с ошибками
      */
+
     @PostMapping("/edit/{id}")
+    @Transactional
     public String updateProject(@PathVariable Long id,
                                 @Valid @ModelAttribute("project") Project project,
                                 BindingResult bindingResult,
                                 RedirectAttributes redirectAttributes,
-                                @RequestParam(value = "selectedTeamMemberIds", required = false) String selectedTeamMemberIds) { // ← ДОБАВИТЬ ПАРАМЕТР
+                                Model model,
+                                @RequestParam(value = "newCategoryName", required = false) String newCategoryName,
+                                @RequestParam(value = "selectedTeamMemberIds", required = false) String selectedTeamMemberIds) {
 
-        if (bindingResult.hasErrors()) {
+        // ===== ВАЛИДАЦИЯ ДАТ =====
+        if (project.getStartDate() != null && project.getEndDate() != null) {
+            if (project.getStartDate().isAfter(project.getEndDate())) {
+                System.out.println("ERROR: Start date is after end date");
+                bindingResult.rejectValue("startDate", "error.project",
+                        "Дата начала не может быть позже даты окончания");
+            }
+        }
+
+        if (project.getEventDate() != null && project.getStartDate() != null && project.getEndDate() != null) {
+            if (project.getEventDate().isBefore(project.getStartDate()) ||
+                    project.getEventDate().isAfter(project.getEndDate())) {
+                System.out.println("ERROR: Event date is outside project dates");
+                bindingResult.rejectValue("eventDate", "error.project",
+                        "Дата события должна быть в рамках проекта");
+            }
+        }
+        // ===== КОНЕЦ ВАЛИДАЦИИ ДАТ =====
+
+        System.out.println("=== DEBUG UPDATE PROJECT ===");
+        System.out.println("Project ID: " + id);
+        System.out.println("Title: " + project.getTitle());
+        System.out.println("Selected team member IDs: " + selectedTeamMemberIds);
+        System.out.println("Has errors? " + bindingResult.hasErrors());
+
+        // Восстанавливаем списки для формы (на случай ошибки)
+        model.addAttribute("categories", projectService.findAllDistinctCategories());
+        model.addAttribute("statuses", Project.ProjectStatus.values());
+        model.addAttribute("allTeamMembers", teamMemberService.findAllActiveOrderBySortOrder());
+
+        // ===== ОБРАБОТКА КАТЕГОРИИ =====
+        if ("__NEW__".equals(project.getCategory())) {
+            System.out.println("User selected: CREATE NEW CATEGORY");
+
+            if (newCategoryName == null || newCategoryName.trim().isEmpty()) {
+                System.out.println("ERROR: New category name is empty!");
+                bindingResult.rejectValue("category", "error.project",
+                        "Введите название новой категории");
+
+                // Восстанавливаем данные команды для формы
+                Project existingProject = projectService.findById(id).orElse(null);
+                if (existingProject != null) {
+                    List<TeamMember> projectTeamMembers = teamMemberService.findByProject(existingProject);
+                    List<TeamMember> allTeamMembers = teamMemberService.findAllActiveOrderBySortOrder();
+                    List<TeamMember> availableMembers = allTeamMembers.stream()
+                            .filter(member -> !projectTeamMembers.contains(member))
+                            .collect(Collectors.toList());
+
+                    model.addAttribute("projectTeamMembers", projectTeamMembers);
+                    model.addAttribute("availableMembers", availableMembers);
+                }
+
+                return "admin/projects/edit";
+            } else {
+                // Устанавливаем новую категорию в проект
+                String cleanedCategory = newCategoryName.trim();
+                System.out.println("Setting new category: " + cleanedCategory);
+                project.setCategory(cleanedCategory);
+
+                // Проверка уникальности категории
+                List<String> allCategories = projectService.findAllDistinctCategories();
+                boolean alreadyExists = false;
+                String existingCategory = null;
+
+                for (String cat : allCategories) {
+                    if (cat != null && cleanedCategory != null) {
+                        String normalizedExisting = cat.trim().toLowerCase().replaceAll("\\s+", " ");
+                        String normalizedNew = cleanedCategory.trim().toLowerCase().replaceAll("\\s+", " ");
+
+                        if (normalizedExisting.equals(normalizedNew)) {
+                            alreadyExists = true;
+                            existingCategory = cat;
+                            break;
+                        }
+                    }
+                }
+
+                if (alreadyExists) {
+                    System.out.println("ERROR: Category already exists: " + existingCategory);
+                    bindingResult.rejectValue("category", "error.project",
+                            "Категория \"" + existingCategory + "\" уже существует. " +
+                                    "Используйте существующую или введите другое название.");
+
+                    // Восстанавливаем данные команды для формы
+                    Project existingProject = projectService.findById(id).orElse(null);
+                    if (existingProject != null) {
+                        List<TeamMember> projectTeamMembers = teamMemberService.findByProject(existingProject);
+                        List<TeamMember> allTeamMembers = teamMemberService.findAllActiveOrderBySortOrder();
+                        List<TeamMember> availableMembers = allTeamMembers.stream()
+                                .filter(member -> !projectTeamMembers.contains(member))
+                                .collect(Collectors.toList());
+
+                        model.addAttribute("projectTeamMembers", projectTeamMembers);
+                        model.addAttribute("availableMembers", availableMembers);
+                    }
+
+                    return "admin/projects/edit";
+                }
+            }
+        } else if (project.getCategory() == null || project.getCategory().trim().isEmpty()) {
+            System.out.println("ERROR: No category selected!");
+            bindingResult.rejectValue("category", "error.project",
+                    "Выберите категорию проекта");
+
+            // Восстанавливаем данные команды для формы
+            Project existingProject = projectService.findById(id).orElse(null);
+            if (existingProject != null) {
+                List<TeamMember> projectTeamMembers = teamMemberService.findByProject(existingProject);
+                List<TeamMember> allTeamMembers = teamMemberService.findAllActiveOrderBySortOrder();
+                List<TeamMember> availableMembers = allTeamMembers.stream()
+                        .filter(member -> !projectTeamMembers.contains(member))
+                        .collect(Collectors.toList());
+
+                model.addAttribute("projectTeamMembers", projectTeamMembers);
+                model.addAttribute("availableMembers", availableMembers);
+            }
+
             return "admin/projects/edit";
         }
 
-        // Проверка что проект с таким ID существует
-        Optional<Project> existingProjectOpt = projectService.findById(id);
-        if (!existingProjectOpt.isPresent()) {
-            redirectAttributes.addFlashAttribute("errorMessage", "Проект не найден");
-            return "redirect:/admin/projects";
-        }
+        if (bindingResult.hasErrors()) {
+            System.out.println("Errors: " + bindingResult.getAllErrors());
 
-        Project existingProject = existingProjectOpt.get();
+            // Восстанавливаем данные команды для формы при ошибках валидации
+            Project existingProject = projectService.findById(id).orElse(null);
+            if (existingProject != null) {
+                List<TeamMember> projectTeamMembers = teamMemberService.findByProject(existingProject);
+                List<TeamMember> allTeamMembers = teamMemberService.findAllActiveOrderBySortOrder();
+                List<TeamMember> availableMembers = allTeamMembers.stream()
+                        .filter(member -> !projectTeamMembers.contains(member))
+                        .collect(Collectors.toList());
+
+                model.addAttribute("projectTeamMembers", projectTeamMembers);
+                model.addAttribute("availableMembers", availableMembers);
+            }
+
+            return "admin/projects/edit";
+        }
 
         // Проверка уникальности slug (исключая текущий проект)
         projectService.findBySlug(project.getSlug())
@@ -381,53 +542,140 @@ public class ProjectAdminController {
                 });
 
         if (bindingResult.hasErrors()) {
+            // Восстанавливаем данные команды для формы
+            Project existingProject = projectService.findById(id).orElse(null);
+            if (existingProject != null) {
+                List<TeamMember> projectTeamMembers = teamMemberService.findByProject(existingProject);
+                List<TeamMember> allTeamMembers = teamMemberService.findAllActiveOrderBySortOrder();
+                List<TeamMember> availableMembers = allTeamMembers.stream()
+                        .filter(member -> !projectTeamMembers.contains(member))
+                        .collect(Collectors.toList());
+
+                model.addAttribute("projectTeamMembers", projectTeamMembers);
+                model.addAttribute("availableMembers", availableMembers);
+            }
+
             return "admin/projects/edit";
         }
 
         try {
-            // Обновляем основные данные проекта
-            project.setId(id);
-            Project updatedProject = projectService.update(project);
+            // Получаем существующий проект из БД
+            Project existingProject = projectService.findById(id)
+                    .orElseThrow(() -> new EntityNotFoundException("Проект не найден"));
+
+            System.out.println("DEBUG: Found existing project with " + existingProject.getTeamMembers().size() + " team members");
+
+            // Обновляем основные поля проекта
+            existingProject.setTitle(project.getTitle());
+            existingProject.setSlug(project.getSlug());
+            existingProject.setCategory(project.getCategory());
+            existingProject.setStatus(project.getStatus());
+            existingProject.setShortDescription(project.getShortDescription());
+            existingProject.setFullDescription(project.getFullDescription());
+            existingProject.setStartDate(project.getStartDate());
+            existingProject.setEndDate(project.getEndDate());
+            existingProject.setEventDate(project.getEventDate());
+            existingProject.setLocation(project.getLocation());
+            existingProject.setShowDescription(project.isShowDescription());
+            existingProject.setShowPhotos(project.isShowPhotos());
+            existingProject.setShowVideos(project.isShowVideos());
+            existingProject.setShowTeam(project.isShowTeam());
+            existingProject.setShowParticipation(project.isShowParticipation());
+            existingProject.setShowPartners(project.isShowPartners());
+            existingProject.setShowRelated(project.isShowRelated());
 
             // ===== ОБРАБОТКА ОБНОВЛЕНИЯ КОМАНДЫ =====
-            if (selectedTeamMemberIds != null) {
-                System.out.println("Updating team members for project " + id + ": " + selectedTeamMemberIds);
+            System.out.println("DEBUG: Updating team members for project " + id);
+            System.out.println("DEBUG: Selected team member IDs: " + selectedTeamMemberIds);
 
-                // Получаем текущих членов команды
-                List<TeamMember> currentMembers = teamMemberService.findByProject(existingProject);
+            // Получаем текущих членов команды проекта
+            List<TeamMember> currentMembers = teamMemberService.findByProject(existingProject);
+            System.out.println("DEBUG: Current team members count: " + currentMembers.size());
 
-                // Удаляем всех текущих членов из проекта
-                for (TeamMember member : currentMembers) {
+            // 1. Удаляем всех текущих членов из проекта
+            for (TeamMember member : currentMembers) {
+                // Удаляем проект из члена команды
+                if (member.getProjects() != null) {
                     member.getProjects().remove(existingProject);
-                    teamMemberService.save(member);
+                    System.out.println("DEBUG: Removed project from member: " + member.getFullName());
                 }
+                // Сохраняем обновленного члена команды
+                teamMemberService.save(member);
+            }
 
-                // Добавляем новых членов (если есть)
-                if (!selectedTeamMemberIds.trim().isEmpty()) {
-                    String[] ids = selectedTeamMemberIds.split(",");
-                    for (String idStr : ids) {
-                        try {
-                            Long memberId = Long.parseLong(idStr.trim());
-                            teamMemberService.findById(memberId).ifPresent(member -> {
-                                if (member.getProjects() == null) {
-                                    member.setProjects(new HashSet<>());
-                                }
-                                member.getProjects().add(updatedProject);
-                                teamMemberService.save(member);
-                                System.out.println("Added team member to project: " + member.getFullName());
-                            });
-                        } catch (NumberFormatException e) {
-                            System.out.println("Invalid member ID format: " + idStr);
-                        }
+            // 2. Очищаем команду в проекте
+            existingProject.getTeamMembers().clear();
+            System.out.println("DEBUG: Cleared team members from project");
+
+            // 3. Добавляем новых членов (если есть)
+            if (selectedTeamMemberIds != null && !selectedTeamMemberIds.trim().isEmpty()) {
+                String[] ids = selectedTeamMemberIds.split(",");
+                System.out.println("DEBUG: Adding " + ids.length + " new team members");
+
+                for (String idStr : ids) {
+                    try {
+                        Long memberId = Long.parseLong(idStr.trim());
+                        teamMemberService.findById(memberId).ifPresent(member -> {
+                            // Добавляем проект к члену команды
+                            if (member.getProjects() == null) {
+                                member.setProjects(new HashSet<>());
+                            }
+                            if (!member.getProjects().contains(existingProject)) {
+                                member.getProjects().add(existingProject);
+                                System.out.println("DEBUG: Added project to member: " + member.getFullName());
+                            }
+
+                            // Добавляем члена команды к проекту
+                            existingProject.getTeamMembers().add(member);
+
+                            // Сохраняем обновленного члена команды
+                            teamMemberService.save(member);
+                            System.out.println("DEBUG: Saved member: " + member.getFullName() + " (ID: " + memberId + ")");
+                        });
+                    } catch (NumberFormatException e) {
+                        System.out.println("ERROR: Invalid member ID format: " + idStr);
                     }
                 }
+            } else {
+                System.out.println("DEBUG: No new team members selected");
             }
+
+            // 4. Сохраняем проект с обновленной командой
+            System.out.println("DEBUG: Saving project with " + existingProject.getTeamMembers().size() + " team members");
+            Project updatedProject = projectService.save(existingProject);
+
+            // 5. Проверяем результат
+            System.out.println("DEBUG: Project saved with ID: " + updatedProject.getId());
+            System.out.println("DEBUG: Final team members count: " + updatedProject.getTeamMembers().size());
+
+            // 6. Получаем обновленный проект для проверки
+            Project finalProject = projectService.findById(updatedProject.getId())
+                    .orElseThrow(() -> new EntityNotFoundException("Проект не найден после сохранения"));
+            System.out.println("DEBUG: Verified team members count: " + finalProject.getTeamMembers().size());
             // ===== КОНЕЦ ОБРАБОТКИ КОМАНДЫ =====
 
-            redirectAttributes.addFlashAttribute("successMessage", "Проект успешно обновлен");
+            redirectAttributes.addFlashAttribute("successMessage", "Проект успешно обновлен" +
+                    (selectedTeamMemberIds != null && !selectedTeamMemberIds.trim().isEmpty() ?
+                            " с командой из " + selectedTeamMemberIds.split(",").length + " человек" : ""));
             return "redirect:/admin/projects";
 
         } catch (Exception e) {
+            System.err.println("ERROR saving project: " + e.getMessage());
+            e.printStackTrace();
+
+            // Восстанавливаем данные команды для формы при ошибке
+            Project existingProject = projectService.findById(id).orElse(null);
+            if (existingProject != null) {
+                List<TeamMember> projectTeamMembers = teamMemberService.findByProject(existingProject);
+                List<TeamMember> allTeamMembers = teamMemberService.findAllActiveOrderBySortOrder();
+                List<TeamMember> availableMembers = allTeamMembers.stream()
+                        .filter(member -> !projectTeamMembers.contains(member))
+                        .collect(Collectors.toList());
+
+                model.addAttribute("projectTeamMembers", projectTeamMembers);
+                model.addAttribute("availableMembers", availableMembers);
+            }
+
             bindingResult.reject("error.project", "Ошибка при обновлении проекта: " + e.getMessage());
             return "admin/projects/edit";
         }
