@@ -44,13 +44,19 @@
                     <a th:href="@{/admin/site-pages}" class="btn btn-outline-success me-2">
                         🌐 Основные страницы
                     </a>
-                    <!-- НОВАЯ КНОПКА: ГАЛЕРЕЯ -->
-                    <a th:href="@{/admin/photo-gallery}" class="btn btn-outline-info me-2">
-                        🖼️ Галерея
+
+                    <!-- ПЕРЕХОД НА САЙТ -->
+                    <a th:href="@{/}" class="btn btn-outline-secondary">
+                        <i class="bi bi-house me-1"></i>На сайт
                     </a>
-                    <a th:href="@{/pages/create}" class="btn btn-primary">
-                        ➕ Создать страницу
-                    </a>
+
+                    <!-- КНОПКА ВЫХОДА -->
+                    <form th:action="@{/logout}" method="post" class="d-inline">
+                        <button type="submit" class="btn btn-outline-danger"
+                                th:onclick="return confirm('Вы уверены что хотите выйти?')">
+                            <i class="bi bi-box-arrow-right me-1"></i>Выйти
+                        </button>
+                    </form>
                 </div>
             </div>
         </div>
@@ -274,7 +280,7 @@
                     </a>
 
                     <!-- УПРАВЛЕНИЕ ГАЛЕРЕЕЙ -->
-                    <a th:href="@{/admin/gallery}" class="btn btn-light w-100 text-start p-3 quick-action-card border-0 rounded-0">
+                    <a th:href="@{/admin/photo-gallery}" class="btn btn-light w-100 text-start p-3 quick-action-card border-0 rounded-0">
                         <div class="d-flex align-items-center">
                             <span class="bg-info text-white rounded p-2 me-3">
                                 <i class="bi bi-images"></i>
@@ -324,6 +330,21 @@
                 </div>
                 <div class="card-body">
                     <!-- ИНФОРМАЦИЯ О ПОЛЬЗОВАТЕЛЕ -->
+
+                    <!-- УПРАВЛЕНИЕ ПОЛЬЗОВАТЕЛЯМИ -->
+                    <a th:href="@{/admin/users}" class="btn btn-light w-100 text-start p-3 quick-action-card border-0 rounded-0 border-bottom rounded-bottom">
+                        <div class="d-flex align-items-center">
+                            <span class="bg-dark text-white rounded p-2 me-3">
+                                <i class="bi bi-people"></i>
+                            </span>
+                            <div>
+                                <strong>Управление пользователями</strong>
+                                <br>
+                                <small class="text-muted">Роли и права доступа</small>
+                            </div>
+                        </div>
+                    </a>
+
                     <div class="mb-3">
                         <strong><i class="bi bi-person me-2"></i>Текущий пользователь:</strong>
                         <div class="mt-1">

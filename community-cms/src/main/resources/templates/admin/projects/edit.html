@@ -1,0 +1,1449 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{fragments/layout}">
+<head>
+    <title>Редактировать проект - Админ панель</title>
+
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+
+    <style>
+        .edit-project-container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding-left: 20px;
+            padding-right: 20px;
+        }
+        .form-section {
+            margin-bottom: 30px;
+        }
+        .section-title {
+            border-bottom: 2px solid #dee2e6;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+        }
+        .project-header {
+            background-color: #f8f9fa;
+            border-left: 4px solid #0d6efd;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+        .badge-status-active { background-color: #28a745; }
+        .badge-status-annual { background-color: #17a2b8; }
+        .badge-status-archived { background-color: #6c757d; }
+
+        .video-preview-card {
+    border: 1px solid #e9ecef;
+    border-radius: 8px;
+    padding: 15px;
+    background-color: #f8f9fa;
+}
+.video-thumbnail-small {
+    width: 120px;
+    height: 68px;
+    object-fit: cover;
+    border-radius: 4px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+/* Для левой колонки (Доступные члены команды) */
+#availableMembersContainer .member-draggable {
+    background-color: #e3f2fd; /* Светло-синий фон */
+    border: 1px solid #bbdefb; /* Синяя граница */
+}
+
+#availableMembersContainer .member-draggable:hover {
+    background-color: #bbdefb; /* Чуть темнее при наведении */
+    border-color: #90caf9;
+}
+
+#availableMembersContainer .member-draggable.selected {
+    background-color: #bbdefb; /* Мягкое выделение */
+    border: 2px solid #2196f3; /* Синяя граница выделения */
+    box-shadow: 0 2px 4px rgba(33, 150, 243, 0.2);
+}
+
+/* Для правой колонки (Команда проекта) */
+#projectTeamContainer .member-draggable {
+    background-color: #e8f5e9; /* Светло-зеленый фон */
+    border: 1px solid #c8e6c9; /* Зеленая граница */
+    color: #1b5e20; /* Темно-зеленый текст */
+}
+
+#projectTeamContainer .member-draggable:hover {
+    background-color: #c8e6c9; /* Чуть темнее при наведении */
+    border-color: #a5d6a7;
+}
+
+#projectTeamContainer .member-draggable.selected {
+    background-color: #c8e6c9; /* Мягкое выделение */
+    border: 2px solid #4caf50; /* Зеленая граница выделения */
+    box-shadow: 0 2px 4px rgba(76, 175, 80, 0.2);
+}
+
+/* Общие стили */
+.member-draggable {
+    transition: all 0.2s ease;
+    cursor: pointer;
+}
+
+.member-draggable.dragging {
+    opacity: 0.7;
+    transform: scale(0.98);
+}
+
+/* Убираем слишком сильные стили Bootstrap если есть */
+.member-draggable.bg-light {
+    background-color: #e3f2fd !important; /* Переопределяем для левой колонки */
+}
+
+.member-draggable.bg-success {
+    background-color: #e8f5e9 !important; /* Переопределяем для правой колонки */
+    color: #1b5e20 !important;
+}
+
+/* Для иконок в правой колонке */
+#projectTeamContainer .member-draggable .bi-person-check {
+    color: #4caf50; /* Зеленые иконки */
+}
+
+/* Для иконок в левой колонке */
+#availableMembersContainer .member-draggable .bi-person-circle {
+    color: #2196f3; /* Синие иконки */
+}
+
+        .drop-zone-active {
+    background-color: rgba(13, 110, 253, 0.05) !important;
+    border: 2px dashed #0d6efd !important;
+}
+    </style>
+</head>
+<body>
+<div layout:fragment="content">
+    <div class="container-fluid edit-project-container">
+
+        <!-- ========== ХЛЕБНЫЕ КРОШКИ И ЗАГОЛОВОК ========== -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item">
+                            <a th:href="@{/admin}">Главная</a>
+                        </li>
+                        <li class="breadcrumb-item">
+                            <a th:href="@{/admin/projects}">Проекты</a>
+                        </li>
+                        <li class="breadcrumb-item active" aria-current="page">
+                            Редактировать проект
+                        </li>
+                    </ol>
+                </nav>
+
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h1 class="h2 mb-0">
+                            <i class="bi bi-pencil me-2"></i>
+                            Редактировать проект
+                        </h1>
+                        <p class="text-muted mb-0 mt-1">
+                            ID: <strong th:text="${project.id}">#</strong> |
+                            Создан: <strong th:text="${project.createdAt != null} ? ${#temporals.format(project.createdAt, 'dd.MM.yyyy HH:mm')} : '—'">—</strong>
+                        </p>
+                    </div>
+                    <div>
+                        <a th:href="@{/admin/projects}" class="btn btn-outline-secondary">
+                            <i class="bi bi-arrow-left me-1"></i>
+                            Назад к списку
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ========== ИНФОРМАЦИЯ О ПРОЕКТЕ ========== -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="project-header">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h3 class="h5 mb-1" th:text="${project.title}">Название проекта</h3>
+                            <p class="mb-0 text-muted" th:text="${project.shortDescription} ?: 'Нет краткого описания'">
+                                Краткое описание
+                            </p>
+                        </div>
+                        <div>
+                            <a th:href="@{/projects/{slug}(slug=${project.slug})}"
+                               class="btn btn-outline-info btn-sm"
+                               target="_blank">
+                                <i class="bi bi-eye me-1"></i>
+                                Просмотр на сайте
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ========== ФОРМА РЕДАКТИРОВАНИЯ ПРОЕКТА ========== -->
+        <div class="row">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-body">
+                        <form th:action="@{/admin/projects/edit/{id}(id=${project.id})}"
+                              th:object="${project}"
+                              method="post"
+                              class="needs-validation" novalidate>
+
+                            <!-- Hidden поле для ID -->
+                            <input type="hidden" th:field="*{id}" />
+
+                            <!-- Сообщения об ошибках -->
+                            <div th:if="${#fields.hasErrors('*')}" class="alert alert-danger">
+                                <h5 class="alert-heading">Исправьте следующие ошибки:</h5>
+                                <ul>
+                                    <li th:each="err : ${#fields.errors('*')}"
+                                        th:text="${err}">Ошибка</li>
+                                </ul>
+                            </div>
+
+                            <!-- Сообщение об успехе -->
+                            <div th:if="${successMessage != null}" class="alert alert-success">
+                                <i class="bi bi-check-circle me-2"></i>
+                                <span th:text="${successMessage}">Проект успешно обновлён!</span>
+                            </div>
+
+                            <!-- Сообщение об ошибке -->
+                            <div th:if="${errorMessage != null}" class="alert alert-danger">
+                                <i class="bi bi-exclamation-triangle me-2"></i>
+                                <span th:text="${errorMessage}">Ошибка при обновлении проекта!</span>
+                            </div>
+
+                            <!-- ===== ОСНОВНАЯ ИНФОРМАЦИЯ ===== -->
+                            <div class="form-section">
+                                <h3 class="section-title">
+                                    <i class="bi bi-info-circle me-2"></i>
+                                    Основная информация
+                                </h3>
+
+                                <!-- Название проекта -->
+                                <div class="row mb-3">
+                                    <div class="col-md-8">
+                                        <label for="title" class="form-label">
+                                            Название проекта *
+                                        </label>
+                                        <input type="text"
+                                               th:field="*{title}"
+                                               class="form-control"
+                                               id="title"
+                                               required
+                                               minlength="3"
+                                               maxlength="255">
+                                        <div class="invalid-feedback">
+                                            Введите название проекта (от 3 до 255 символов)
+                                        </div>
+                                        <small class="form-text text-muted">
+                                            Полное название проекта, которое будет отображаться на сайте
+                                        </small>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label for="slug" class="form-label">
+                                            URL-адрес (slug) *
+                                        </label>
+                                        <input type="text"
+                                               th:field="*{slug}"
+                                               class="form-control"
+                                               id="slug"
+
+                                               required>
+                                        <div class="invalid-feedback">
+                                            Используйте только латинские буквы в нижнем регистре, цифры и дефисы
+                                        </div>
+                                        <small class="form-text text-muted">
+                                            Текущий: <code th:text="${project.slug}">slug</code>
+                                        </small>
+                                    </div>
+                                </div>
+
+                                <!-- Категория и статус -->
+                                <div class="row mb-3">
+                                    <div class="col-md-6">
+                                        <label for="category" class="form-label">
+                                            Категория *
+                                        </label>
+                                        <select th:field="*{category}"
+                                                class="form-select"
+                                                id="category"
+                                                required>
+                                            <option value="">Выберите категорию...</option>
+                                            <option th:each="cat : ${categories}"
+                                                    th:value="${cat}"
+                                                    th:selected="${cat == project.category}"
+                                                    th:text="${cat}">
+                                                Категория
+                                            </option>
+                                        </select>
+                                        <div class="invalid-feedback">
+                                            Выберите категорию проекта
+                                        </div>
+                                        <small class="form-text text-muted">
+                                            Текущая: <span th:text="${project.category} ?: 'Не указана'"></span>
+                                        </small>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label for="status" class="form-label">
+                                            Статус *
+                                        </label>
+                                        <select th:field="*{status}"
+                                                class="form-select"
+                                                id="status"
+                                                required>
+                                            <option value="">Выберите статус...</option>
+                                            <option th:each="status : ${statuses}"
+                                                    th:value="${status}"
+                                                    th:selected="${status == project.status}"
+                                                    th:text="${status.name() == 'ACTIVE' ? 'Активный' :
+                                                              status.name() == 'ANNUAL' ? 'Ежегодный' :
+                                                              'Архивный'}">
+                                                Статус
+                                            </option>
+                                        </select>
+                                        <div class="invalid-feedback">
+                                            Выберите статус проекта
+                                        </div>
+                                        <small class="form-text text-muted">
+                                            Текущий:
+                                            <span th:if="${project.status != null}"
+                                                  th:classappend="'badge badge-status-' + ${project.status.name().toLowerCase()}"
+                                                  th:text="${project.status.name() == 'ACTIVE' ? 'Активный' :
+                                                           project.status.name() == 'ANNUAL' ? 'Ежегодный' :
+                                                           'Архивный'}">
+                                                Статус
+                                            </span>
+                                        </small>
+                                    </div>
+                                </div>
+
+                                <!-- Краткое описание -->
+                                <div class="row mb-3">
+                                    <div class="col-12">
+                                        <label for="shortDescription" class="form-label">
+                                            Краткое описание
+                                        </label>
+                                        <textarea th:field="*{shortDescription}"
+                                                  class="form-control"
+                                                  id="shortDescription"
+                                                  rows="3"
+                                                  maxlength="500"
+                                                  placeholder="Краткое описание проекта (до 500 символов)..."></textarea>
+                                        <small class="form-text text-muted">
+                                            До 500 символов. Будет отображаться в карточке проекта.
+                                            <span class="float-end">
+                                                Символов: <span th:text="${#strings.length(project.shortDescription ?: '')}">0</span>/500
+                                            </span>
+                                        </small>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- ===== ДАТЫ И МЕСТО ПРОВЕДЕНИЯ ===== -->
+                            <div class="form-section">
+                                <h3 class="section-title">
+                                    <i class="bi bi-calendar-event me-2"></i>
+                                    Даты и место проведения
+                                </h3>
+
+                                <div class="row mb-3">
+                                    <div class="col-md-4">
+                                        <label for="startDate" class="form-label">
+                                            Дата начала
+                                        </label>
+                                        <input type="date"
+                                               name="startDate"
+                                               th:value="${project.startDate != null} ? ${#temporals.format(project.startDate, 'yyyy-MM-dd')} : ''"
+                                               class="form-control"
+                                               id="startDate">
+                                        <div class="invalid-feedback" th:if="${#fields.hasErrors('startDate')}">
+                                            <span th:errors="*{startDate}">Ошибка даты начала</span>
+                                        </div>
+                                        <small class="form-text text-muted" th:if="${project.startDate != null}">
+                                            Текущая: <span th:text="${#temporals.format(project.startDate, 'dd.MM.yyyy')}"></span>
+                                        </small>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label for="endDate" class="form-label">
+                                            Дата окончания
+                                        </label>
+                                        <input type="date"
+                                               name="endDate"
+                                               th:value="${project.endDate != null} ? ${#temporals.format(project.endDate, 'yyyy-MM-dd')} : ''"
+                                               class="form-control"
+                                               id="endDate">
+                                        <div class="invalid-feedback" th:if="${#fields.hasErrors('endDate')}">
+                                            <span th:errors="*{endDate}">Ошибка даты окончания</span>
+                                        </div>
+                                        <small class="form-text text-muted" th:if="${project.endDate != null}">
+                                            Текущая: <span th:text="${#temporals.format(project.endDate, 'dd.MM.yyyy')}"></span>
+                                        </small>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label for="eventDate" class="form-label">
+                                            Дата события
+                                        </label>
+                                        <input type="date"
+                                               name="eventDate"
+                                               th:value="${project.eventDate != null} ? ${#temporals.format(project.eventDate, 'yyyy-MM-dd')} : ''"
+                                               class="form-control"
+                                               id="eventDate">
+                                        <div class="invalid-feedback" th:if="${#fields.hasErrors('eventDate')}">
+                                            <span th:errors="*{eventDate}">Ошибка даты события</span>
+                                        </div>
+                                        <small class="form-text text-muted" th:if="${project.eventDate != null}">
+                                            Текущая: <span th:text="${#temporals.format(project.eventDate, 'dd.MM.yyyy')}"></span>
+                                        </small>
+                                    </div>
+                                </div>
+
+                                <div class="row mb-3">
+                                    <div class="col-12">
+                                        <label for="location" class="form-label">
+                                            Место проведения
+                                        </label>
+                                        <input type="text"
+                                               th:field="*{location}"
+                                               class="form-control"
+                                               id="location"
+                                               maxlength="255"
+                                               placeholder="Например: г. Москва, Культурный центр 'ЛАДА'...">
+                                        <small class="form-text text-muted" th:if="${project.location != null}">
+                                            Текущее: <span th:text="${project.location}"></span>
+                                        </small>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- ===== ПОЛНОЕ ОПИСАНИЕ ===== -->
+                            <div class="form-section">
+                                <h3 class="section-title">
+                                    <i class="bi bi-text-paragraph me-2"></i>
+                                    Полное описание
+                                </h3>
+
+                                <div class="row mb-3">
+                                    <div class="col-12">
+                                        <label for="fullDescription" class="form-label">
+                                            Полное описание проекта
+                                        </label>
+                                        <textarea th:field="*{fullDescription}"
+                                                  class="form-control"
+                                                  id="fullDescription"
+                                                  rows="12"
+                                                  placeholder="Подробное описание целей, задач, этапов проекта..."></textarea>
+                                        <small class="form-text text-muted">
+                                            Поддерживается HTML-разметка.
+                                            <span class="float-end">
+                                                Символов: <span th:text="${#strings.length(project.fullDescription ?: '')}">0</span>
+                                            </span>
+                                        </small>
+                                    </div>
+                                </div>
+                            </div>
+
+
+
+                            <!-- ===== КОМАНДА ПРОЕКТА ===== -->
+                            <div class="form-section">
+                                <h3 class="section-title">
+                                    <i class="bi bi-people me-2"></i>
+                                    Команда проекта
+                                </h3>
+
+                                <div class="row mb-3">
+                                    <div class="col-12">
+                                        <div class="card">
+                                            <div class="card-body">
+                                                <!-- Статистика -->
+                                                <div class="mt-3 pt-3 border-top">
+                                                    <div class="row">
+                                                        <div class="col-md-4">
+                                                            <div class="d-flex align-items-center">
+                                                                <div class="bg-info rounded-circle p-2 me-3">
+                                                                    <i class="bi bi-people text-white"></i>
+                                                                </div>
+                                                                <div>
+                                                                    <h6 class="mb-0" th:text="${allTeamMembers != null ? allTeamMembers.size() : 0}">0</h6>
+                                                                    <small class="text-muted">Всего в команде</small>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                        <div class="col-md-4">
+                                                            <div class="d-flex align-items-center">
+                                                                <div class="bg-success rounded-circle p-2 me-3">
+                                                                    <i class="bi bi-person-check text-white"></i>
+                                                                </div>
+                                                                <div>
+                                                                    <h6 class="mb-0" id="projectMembersCount" th:text="${project.teamMembers != null ? project.teamMembers.size() : 0}">0</h6>
+                                                                    <small class="text-muted">Участников в проекте</small>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                        <div class="col-md-4">
+                                                            <div class="d-flex align-items-center">
+                                                                <div class="bg-primary rounded-circle p-2 me-3">
+                                                                    <i class="bi bi-plus-circle text-white"></i>
+                                                                </div>
+                                                                <div>
+                                                                    <a th:href="@{/admin/team-members/create}"
+                                                                       class="btn btn-link p-0 text-decoration-none"
+                                                                       target="_blank">
+                                                                        <h6 class="mb-0 text-primary">Добавить члена</h6>
+                                                                        <small class="text-muted">Откроется в новой вкладке</small>
+                                                                    </a>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- ===== РАСШИРЕННОЕ УПРАВЛЕНИЕ КОМАНДОЙ (DRAG AND DROP) ===== -->
+                            <div class="mt-4 pt-4 border-top">
+                                <div class="d-flex justify-content-between align-items-center mb-3">
+                                    <h6 class="mb-0">
+                                        <i class="bi bi-arrows-move text-primary me-2"></i>
+                                        Расширенное управление командой
+                                    </h6>
+                                    <small class="text-muted">Перетаскивайте членов команды между колонками</small>
+                                </div>
+
+                                <div class="row">
+                                    <!-- Левая колонка: Доступные члены команды (не в проекте) -->
+                                    <div class="col-md-5">
+                                        <div class="card h-100 border-primary">
+                                            <div class="card-header bg-primary text-white">
+                                                <h6 class="mb-0">
+                                                    <i class="bi bi-people me-1"></i>
+                                                    Доступные члены команды
+                                                    <span class="badge bg-light text-dark ms-2" id="availableCount">0</span>
+                                                </h6>
+                                            </div>
+                                            <div class="card-body"
+                                                 id="availableMembersContainer"
+                                                 style="min-height: 200px; max-height: 300px; overflow-y: auto;">
+
+                                                <div th:if="${availableMembers != null && !availableMembers.isEmpty()}">
+                                                    <div th:each="member : ${availableMembers}"
+                                                         class="member-draggable mb-2 p-2 border rounded"
+                                                         draggable="true"
+                                                         th:data-member-id="${member.id}"
+                                                         th:id="'member-' + ${member.id}"
+                                                         ondragstart="dragMember(event)">
+                                                        <div class="d-flex align-items-center">
+                                                            <div class="me-3">
+                                                                <i class="bi bi-person-circle fs-4"></i>
+                                                            </div>
+                                                            <div class="flex-grow-1">
+                                                                <strong th:text="${member.fullName}"></strong><br>
+                                                                <small class="text-muted" th:text="${member.position} ?: 'Должность не указана'"></small>
+                                                            </div>
+                                                            <div class="text-end">
+                                                                <span class="badge bg-success">Доступен</span>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                <div th:if="${availableMembers == null || availableMembers.isEmpty()}"
+                                                     class="text-center py-4">
+                                                    <i class="bi bi-people display-6 text-muted"></i>
+                                                    <p class="mt-2">Все члены команды уже в проекте</p>
+                                                    <a th:href="@{/admin/team-members/create}"
+                                                       class="btn btn-sm btn-outline-primary"
+                                                       target="_blank">
+                                                        <i class="bi bi-person-plus"></i> Создать нового
+                                                    </a>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Центральная колонка: Управление -->
+                                    <div class="col-md-2 d-flex flex-column align-items-center justify-content-center">
+                                        <div class="text-center">
+                                            <i class="bi bi-arrow-right-circle fs-1 text-primary mb-2"></i>
+                                            <p class="small mb-1">Добавить в проект</p>
+
+                                            <button type="button" class="btn btn-sm btn-outline-primary mb-2" onclick="addSelectedToProject()">
+                                                <i class="bi bi-arrow-right"></i> Выбранные
+                                            </button>
+
+                                            <div class="my-3 border-top pt-2">
+                                                <i class="bi bi-arrow-left-circle fs-1 text-danger mb-2"></i>
+                                                <p class="small mb-1">Убрать из проекта</p>
+                                                <button type="button" class="btn btn-sm btn-outline-danger" onclick="removeSelectedFromProject()">
+                                                    <i class="bi bi-arrow-left"></i> Выбранные
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Правая колонка: Команда проекта -->
+                                    <div class="col-md-5">
+                                        <div class="card h-100 border-success">
+                                            <div class="card-header bg-success text-white">
+                                                <h6 class="mb-0">
+                                                    <i class="bi bi-person-check me-1"></i>
+                                                    Команда проекта
+                                                    <span class="badge bg-light text-dark ms-2" id="projectTeamCount">
+                            <span th:text="${projectTeamMembers != null ? projectTeamMembers.size() : 0}">0</span>
+                        </span>
+                                                </h6>
+                                            </div>
+                                            <div class="card-body"
+                                                 id="projectTeamContainer"
+                                                 style="min-height: 200px; max-height: 300px; overflow-y: auto;"
+                                                 ondrop="dropMember(event)"
+                                                 ondragover="allowDrop(event)">
+
+                                                <div th:if="${projectTeamMembers != null && !projectTeamMembers.isEmpty()}">
+                                                    <div th:each="member : ${projectTeamMembers}"
+                                                         class="member-draggable mb-2 p-2 border rounded"
+                                                         draggable="true"
+                                                         th:data-member-id="${member.id}"
+                                                         th:id="'project-member-' + ${member.id}"
+                                                         ondragstart="dragMember(event)"
+                                                         ondblclick="removeMemberFromProject('${member.id}')"
+                                                         title="Двойной клик для удаления">
+                                                        <div class="d-flex align-items-center">
+                                                            <div class="me-3">
+                                                                <i class="bi bi-person-check fs-4"></i>
+                                                            </div>
+                                                            <div class="flex-grow-1">
+                                                                <strong th:text="${member.fullName}"></strong><br>
+                                                                <small th:text="${member.position} ?: 'Должность не указана'"></small>
+                                                            </div>
+                                                            <div class="text-end">
+                                                                <span class="badge bg-light text-dark">В проекте</span>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                <div th:if="${projectTeamMembers == null || projectTeamMembers.isEmpty()}"
+                                                     id="emptyTeamMessage" class="text-center py-4">
+                                                    <i class="bi bi-person-plus display-6 text-muted"></i>
+                                                    <p class="mt-2">Нет участников проекта</p>
+                                                    <p class="small text-muted">Добавьте членов команды</p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Hidden inputs для синхронизации с мультиселектом -->
+                                <input type="hidden" id="selectedTeamMemberIds" name="selectedTeamMemberIds"
+                                       th:value="${projectTeamMembers != null ? #strings.listJoin(projectTeamMembers.![id], ',') : ''}">
+
+                                <!-- Информация -->
+                                <div class="alert alert-info mt-3">
+                                    <i class="bi bi-info-circle me-2"></i>
+                                    <small>
+                                        Изменения в команде проекта сохранятся при нажатии "Обновить проект".
+                                        Также можно выбрать/убрать членов команды через мультиселект выше.
+                                    </small>
+                                </div>
+                            </div>
+
+
+                            <!-- ===== ПАРТНЁРЫ ПРОЕКТА ===== -->
+                            <div class="form-section" th:if="${project.showPartners}">
+                                <h3 class="section-title">
+                                    <i class="bi bi-handshake me-2"></i>
+                                    Партнёры проекта
+                                    <span class="badge bg-info ms-2">
+            <i class="bi bi-building"></i>
+            <span th:text="${projectPartnersCount != null ? projectPartnersCount : 0}">0</span>
+        </span>
+                                </h3>
+
+                                <div class="row mb-3">
+                                    <div class="col-12">
+                                        <div class="card">
+                                            <div class="card-body">
+                                                <!-- Логотипы партнёров -->
+                                                <div th:if="${projectPartners != null && !projectPartners.isEmpty()}" class="mb-4">
+                                                    <h6 class="mb-3">
+                                                        <i class="bi bi-building-check me-1"></i>
+                                                        Партнёры проекта
+                                                    </h6>
+
+                                                    <div class="row g-3">
+                                                        <div class="col-6 col-md-4 col-lg-3" th:each="partner : ${projectPartners}">
+                                                            <div class="card border-0 text-center h-100">
+                                                                <div class="card-body">
+                                                                    <!-- Логотип партнёра -->
+                                                                    <div class="mb-3" style="height: 60px; display: flex; align-items: center; justify-content: center;">
+                                                                        <img th:if="${partner.logoPath != null}"
+                                                                             th:src="${partner.logoPath}"
+                                                                             style="max-height: 60px; max-width: 100%; object-fit: contain;"
+                                                                             th:alt="${partner.name}">
+                                                                        <div th:unless="${partner.logoPath != null}"
+                                                                             class="bg-light rounded d-flex align-items-center justify-content-center"
+                                                                             style="width: 100%; height: 60px;">
+                                                                            <i class="bi bi-building fs-3 text-muted"></i>
+                                                                        </div>
+                                                                    </div>
+
+                                                                    <!-- Информация -->
+                                                                    <h6 class="mb-1" th:text="${partner.name}"></h6>
+                                                                    <small class="text-muted d-block mb-1"
+                                                                           th:text="${partner.partnerType} ?: 'Партнёр'">
+                                                                    </small>
+
+                                                                    <!-- Статус -->
+                                                                    <span th:if="${partner.active}"
+                                                                          class="badge bg-success small">
+                                            Активен
+                                        </span>
+                                                                    <span th:unless="${partner.active}"
+                                                                          class="badge bg-secondary small">
+                                            Неактивен
+                                        </span>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                <!-- Если нет партнёров -->
+                                                <div th:if="${projectPartners == null || projectPartners.isEmpty()}" class="text-center py-4">
+                                                    <div class="mb-3">
+                                                        <i class="bi bi-handshake display-4 text-muted"></i>
+                                                    </div>
+                                                    <h6>Партнёры проекта не добавлены</h6>
+                                                    <p class="text-muted small mb-3">
+                                                        Добавьте партнёров проекта для отображения логотипов на странице
+                                                    </p>
+                                                </div>
+
+                                                <!-- Типы партнёрства -->
+                                                <div class="row g-3 mb-4">
+                                                    <div class="col-md-6">
+                                                        <div class="card border-0 bg-light">
+                                                            <div class="card-body">
+                                                                <h6 class="mb-2">
+                                                                    <i class="bi bi-award text-primary me-1"></i>
+                                                                    Типы партнёрства
+                                                                </h6>
+                                                                <ul class="small mb-0">
+                                                                    <li><strong>Генеральный партнёр</strong> - основной спонсор</li>
+                                                                    <li><strong>Спонсор</strong> - финансовая поддержка</li>
+                                                                    <li><strong>Информационный партнёр</strong> - медиаподдержка</li>
+                                                                    <li><strong>Организационный партнёр</strong> - помощь в организации</li>
+                                                                    <li><strong>Технический партнёр</strong> - техническая поддержка</li>
+                                                                </ul>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-md-6">
+                                                        <div class="card border-0 bg-light">
+                                                            <div class="card-body">
+                                                                <h6 class="mb-2">
+                                                                    <i class="bi bi-megaphone text-success me-1"></i>
+                                                                    Что даёт партнёрство?
+                                                                </h6>
+                                                                <ul class="small mb-0">
+                                                                    <li>Логотип на странице проекта</li>
+                                                                    <li>Упоминание в публикациях</li>
+                                                                    <li>Участие в мероприятиях</li>
+                                                                    <li>Реклама на ресурсах организации</li>
+                                                                    <li>Совместные PR-акции</li>
+                                                                </ul>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                <!-- Кнопки управления -->
+                                                <div class="mt-3 pt-3 border-top">
+                                                    <div class="row g-2">
+                                                        <div class="col-md-6">
+                                                            <div class="d-grid">
+                                                                <a th:href="@{/admin/projects/{id}/partners(id=${project.id})}"
+                                                                   class="btn btn-outline-primary">
+                                                                    <i class="bi bi-handshake me-1"></i>
+                                                                    <span th:if="${projectPartnersCount != null && projectPartnersCount > 0}">
+                                            Управление партнёрами (<span th:text="${projectPartnersCount}">0</span>)
+                                        </span>
+                                                                    <span th:unless="${projectPartnersCount != null && projectPartnersCount > 0}">
+                                            Добавить партнёров
+                                        </span>
+                                                                </a>
+                                                            </div>
+                                                        </div>
+                                                        <div class="col-md-6">
+                                                            <div class="d-grid">
+                                                                <button type="button" class="btn btn-outline-success">
+                                                                    <i class="bi bi-envelope me-1"></i>
+                                                                    Кнопка "Стать партнёром"
+                                                                </button>
+                                                                <small class="text-muted d-block mt-1">
+                                                                    Будет отображаться на публичной странице
+                                                                </small>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+
+                            <!-- ===== ФОТОГРАФИИ ПРОЕКТА ===== -->
+                            <div class="form-section" th:if="${project.showPhotos}">
+                                <h3 class="section-title">
+                                    <i class="bi bi-images me-2"></i>
+                                    Фотографии проекта
+                                    <span class="badge bg-info ms-2">
+            <i class="bi bi-camera"></i>
+            <span th:text="${projectImagesCount != null ? projectImagesCount : 0}">0</span>
+        </span>
+                                </h3>
+
+                                <div class="row mb-3">
+                                    <div class="col-12">
+                                        <div class="card">
+                                            <div class="card-body">
+                                                <!-- Ключевые фотографии (3-5 шт) -->
+                                                <div th:if="${keyImages != null && !keyImages.isEmpty()}" class="mb-4">
+                                                    <h6 class="mb-3">
+                                                        <i class="bi bi-star-fill text-warning me-1"></i>
+                                                        Ключевые фотографии
+                                                        <small class="text-muted">(будут показаны на странице проекта)</small>
+                                                    </h6>
+
+                                                    <div class="row g-2">
+                                                        <div class="col-6 col-md-3" th:each="image, stat : ${keyImages}"
+                                                             th:if="${stat.index < 4}">
+                                                            <div class="card border-0 position-relative">
+                                                                <img th:src="${image.webPath}"
+                                                                     class="img-fluid rounded"
+                                                                     style="height: 120px; object-fit: cover;"
+                                                                     th:alt="${image.altText} ?: 'Фото проекта'">
+                                                                <div class="position-absolute top-0 end-0 m-1">
+                                        <span th:if="${image.featured}"
+                                              class="badge bg-warning">
+                                            <i class="bi bi-star-fill"></i>
+                                        </span>
+                                                                </div>
+                                                                <div class="card-body p-2">
+                                                                    <p class="small mb-0 text-truncate"
+                                                                       th:text="${image.caption} ?: 'Без подписи'">
+                                                                    </p>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+
+                                                        <!-- Показать ещё фотографии -->
+                                                        <div th:if="${keyImages.size() > 4}" class="col-6 col-md-3">
+                                                            <div class="card border-0 bg-light h-100">
+                                                                <div class="card-body d-flex align-items-center justify-content-center">
+                                                                    <a th:href="@{/admin/projects/{id}/images(id=${project.id})}"
+                                                                       class="text-decoration-none text-center">
+                                                                        <i class="bi bi-plus-circle d-block fs-4 text-primary mb-1"></i>
+                                                                        <small class="text-muted">
+                                                                            ещё <span th:text="${keyImages.size() - 4}">0</span>
+                                                                        </small>
+                                                                    </a>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                <!-- Если нет фотографий -->
+                                                <div th:if="${keyImages == null || keyImages.isEmpty()}" class="text-center py-4">
+                                                    <div class="mb-3">
+                                                        <i class="bi bi-camera display-4 text-muted"></i>
+                                                    </div>
+                                                    <h6>Фотографии проекта не добавлены</h6>
+                                                    <p class="text-muted small mb-3">
+                                                        Добавьте ключевые фотографии (3-5 шт) для отображения на странице проекта
+                                                    </p>
+                                                </div>
+
+                                                <!-- Связь с галереей -->
+                                                <div class="alert alert-info">
+                                                    <div class="d-flex align-items-center">
+                                                        <i class="bi bi-link-45deg fs-4 me-3"></i>
+                                                        <div>
+                                                            <h6 class="mb-1">Интеграция с галереей сайта</h6>
+                                                            <p class="mb-0 small">
+                                                                Фотографии проекта связаны с основной галереей сайта.
+                                                                Все загруженные фото доступны для выбора.
+                                                            </p>
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                <!-- Кнопки управления -->
+                                                <div class="mt-3 pt-3 border-top">
+                                                    <div class="row g-2">
+                                                        <div class="col-md-6">
+                                                            <div class="d-grid">
+                                                                <a th:href="@{/admin/projects/{id}/images(id=${project.id})}"
+                                                                   class="btn btn-outline-primary">
+                                                                    <i class="bi bi-images me-1"></i>
+                                                                    <span th:if="${projectImagesCount != null && projectImagesCount > 0}">
+                                            Управление фото (<span th:text="${projectImagesCount}">0</span>)
+                                        </span>
+                                                                    <span th:unless="${projectImagesCount != null && projectImagesCount > 0}">
+                                            Добавить фотографии
+                                        </span>
+                                                                </a>
+                                                            </div>
+                                                        </div>
+                                                        <div class="col-md-6">
+                                                            <div class="d-grid">
+                                                                <a th:href="@{/admin/photo-gallery}"
+                                                                   class="btn btn-outline-secondary"
+                                                                   target="_blank">
+                                                                    <i class="bi bi-box-arrow-up-right me-1"></i>
+                                                                    Вся галерея сайта
+                                                                </a>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div class="text-center mt-2">
+                                                        <small class="text-muted">
+                                                            Рекомендуется 3-5 ключевых фотографий для проекта
+                                                        </small>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+
+                            <!-- ===== ВИДЕО ПРОЕКТА ===== -->
+                            <div class="form-section" th:if="${project.showVideos}">
+                                <h3 class="section-title">
+                                    <i class="bi bi-play-btn me-2"></i>
+                                    Видео проекта
+                                    <span class="badge bg-info ms-2">
+            <i class="bi bi-film"></i>
+            <span th:text="${projectVideosCount != null ? projectVideosCount : 0}">0</span>
+        </span>
+                                </h3>
+
+                                <div class="row mb-3">
+                                    <div class="col-12">
+                                        <div class="card">
+                                            <div class="card-body">
+                                                <!-- Информация о видео -->
+                                                <div th:if="${mainVideo != null}" class="mb-4">
+                                                    <div class="d-flex align-items-center mb-3">
+                                                        <h6 class="mb-0 me-3">
+                                                            <i class="bi bi-star-fill text-warning me-1"></i>
+                                                            Главное видео:
+                                                        </h6>
+                                                        <span class="badge bg-success">
+                                <i class="bi bi-check-circle me-1"></i>
+                                Установлено
+                            </span>
+                                                    </div>
+
+                                                    <div class="video-preview-card">
+                                                        <div class="row align-items-center">
+                                                            <div class="col-auto">
+                                                                <img th:src="${mainVideo.thumbnailUrl}"
+                                                                     class="video-thumbnail-small"
+                                                                     alt="Главное видео"
+                                                                     style="width: 120px; height: 68px; object-fit: cover; border-radius: 4px;">
+                                                            </div>
+                                                            <div class="col">
+                                                                <h6 class="mb-1" th:text="${mainVideo.title}">Название видео</h6>
+                                                                <p class="mb-1 text-muted small">
+                                                                    <i class="bi bi-clock me-1"></i>
+                                                                    <span th:text="${mainVideo.durationFormatted}">0:00</span>
+                                                                    <span class="ms-2">
+                                            <i class="bi bi-eye me-1"></i>
+                                            <span th:text="${mainVideo.videoType == 'YOUTUBE' ? 'YouTube' : 'Vimeo'}">
+                                                YouTube
+                                            </span>
+                                        </span>
+                                                                </p>
+                                                                <div class="small">
+                                                                    <a th:href="@{/admin/project-videos/project/{projectId}(projectId=${project.id})}"
+                                                                       class="text-decoration-none">
+                                                                        <i class="bi bi-arrow-right me-1"></i>
+                                                                        Перейти к управлению видео
+                                                                    </a>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                <!-- Если нет видео -->
+                                                <div th:if="${mainVideo == null}" class="text-center py-3">
+                                                    <div class="mb-3">
+                                                        <i class="bi bi-play-circle display-4 text-muted"></i>
+                                                    </div>
+                                                    <h6>Видео проекта не добавлены</h6>
+                                                    <p class="text-muted small mb-3">
+                                                        Добавьте YouTube или Vimeo видео для отображения на странице проекта
+                                                    </p>
+                                                </div>
+
+                                                <!-- Все видео проекта -->
+                                                <div th:if="${projectVideos != null && !projectVideos.isEmpty() && projectVideos.size() > 1}"
+                                                     class="mt-3 pt-3 border-top">
+                                                    <div class="d-flex justify-content-between align-items-center mb-2">
+                                                        <h6 class="mb-0">
+                                                            <i class="bi bi-collection-play me-1"></i>
+                                                            Все видео проекта
+                                                        </h6>
+                                                        <span class="badge bg-secondary">
+                                <span th:text="${projectVideos.size()}">0</span> видео
+                            </span>
+                                                    </div>
+
+                                                    <div class="row g-2">
+                                                        <div class="col-6 col-md-4" th:each="video, stat : ${projectVideos}"
+                                                             th:if="${!video.main && stat.index < 3}">
+                                                            <div class="card border-0 bg-light">
+                                                                <div class="card-body p-2">
+                                                                    <div class="d-flex align-items-center">
+                                                                        <div class="me-2">
+                                                                            <img th:src="${video.thumbnailUrl}"
+                                                                                 style="width: 60px; height: 34px; object-fit: cover; border-radius: 3px;"
+                                                                                 alt="Видео">
+                                                                        </div>
+                                                                        <div class="flex-grow-1">
+                                                                            <p class="mb-0 small text-truncate"
+                                                                               th:text="${video.title}"
+                                                                               style="max-width: 120px;">
+                                                                                Название
+                                                                            </p>
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+
+                                                        <!-- Показать ещё -->
+                                                        <div th:if="${projectVideos.size() > 4}" class="col-6 col-md-4">
+                                                            <div class="card border-0 bg-light h-100">
+                                                                <div class="card-body d-flex align-items-center justify-content-center p-2">
+                                                                    <a th:href="@{/admin/project-videos/project/{projectId}(projectId=${project.id})}"
+                                                                       class="text-decoration-none text-center">
+                                                                        <i class="bi bi-plus-circle d-block fs-4 text-primary"></i>
+                                                                        <small class="text-muted">
+                                                                            ещё <span th:text="${projectVideos.size() - 3}">0</span>
+                                                                        </small>
+                                                                    </a>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                <!-- Кнопка управления -->
+                                                <div class="mt-3 pt-3 border-top">
+                                                    <div class="d-grid">
+                                                        <a th:href="@{/admin/project-videos/project/{projectId}(projectId=${project.id})}"
+                                                           class="btn btn-outline-primary">
+                                                            <i class="bi bi-play-btn me-1"></i>
+                                                            <span th:if="${projectVideosCount != null && projectVideosCount > 0}">
+                                    Управление видео (<span th:text="${projectVideosCount}">0</span>)
+                                </span>
+                                                            <span th:unless="${projectVideosCount != null && projectVideosCount > 0}">
+                                    Добавить видео
+                                </span>
+                                                        </a>
+                                                    </div>
+                                                    <div class="text-center mt-2">
+                                                        <small class="text-muted">
+                                                            Поддерживаются YouTube и Vimeo
+                                                        </small>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- ===== СЕКЦИИ ПРОЕКТА ===== -->
+                            <div class="form-section">
+                                <h3 class="section-title">
+                                    <i class="bi bi-toggle-on me-2"></i>
+                                    Отображение секций
+                                </h3>
+
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="form-check form-switch mb-2">
+                                            <input th:field="*{showDescription}"
+                                                   class="form-check-input"
+                                                   type="checkbox"
+                                                   id="showDescription">
+                                            <label class="form-check-label" for="showDescription">
+                                                Описание проекта
+                                            </label>
+                                        </div>
+                                        <div class="form-check form-switch mb-2">
+                                            <input th:field="*{showPhotos}"
+                                                   class="form-check-input"
+                                                   type="checkbox"
+                                                   id="showPhotos">
+                                            <label class="form-check-label" for="showPhotos">
+                                                Фотогалерея
+                                            </label>
+                                        </div>
+                                        <div class="form-check form-switch mb-2">
+                                            <input th:field="*{showVideos}"
+                                                   class="form-check-input"
+                                                   type="checkbox"
+                                                   id="showVideos">
+                                            <label class="form-check-label" for="showVideos">
+                                                Видео
+                                            </label>
+                                        </div>
+                                        <div class="form-check form-switch mb-2">
+                                            <input th:field="*{showTeam}"
+                                                   class="form-check-input"
+                                                   type="checkbox"
+                                                   id="showTeam">
+                                            <label class="form-check-label" for="showTeam">
+                                                Команда проекта
+                                            </label>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-check form-switch mb-2">
+                                            <input th:field="*{showParticipation}"
+                                                   class="form-check-input"
+                                                   type="checkbox"
+                                                   id="showParticipation">
+                                            <label class="form-check-label" for="showParticipation">
+                                                Как участвовать
+                                            </label>
+                                        </div>
+                                        <div class="form-check form-switch mb-2">
+                                            <input th:field="*{showPartners}"
+                                                   class="form-check-input"
+                                                   type="checkbox"
+                                                   id="showPartners">
+                                            <label class="form-check-label" for="showPartners">
+                                                Партнёры
+                                            </label>
+                                        </div>
+                                        <div class="form-check form-switch mb-2">
+                                            <input th:field="*{showRelated}"
+                                                   class="form-check-input"
+                                                   type="checkbox"
+                                                   id="showRelated">
+                                            <label class="form-check-label" for="showRelated">
+                                                Похожие проекты
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                                <small class="form-text text-muted">
+                                    Отметьте какие секции показывать на публичной странице проекта
+                                </small>
+                            </div>
+
+                            <!-- ===== КНОПКИ ОТПРАВКИ ===== -->
+                            <div class="form-section">
+                                <div class="d-flex justify-content-between">
+                                    <div>
+                                        <a th:href="@{/admin/projects}" class="btn btn-outline-secondary me-2">
+                                            <i class="bi bi-x-circle me-1"></i>
+                                            Отмена
+                                        </a>
+                                        <a th:href="@{/admin/projects/create}" class="btn btn-outline-success">
+                                            <i class="bi bi-plus-circle me-1"></i>
+                                            Создать новый
+                                        </a>
+                                    </div>
+                                    <div>
+                                        <button type="submit" class="btn btn-primary">
+                                            <i class="bi bi-check-circle me-1"></i>
+                                            Обновить проект
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+<!-- Скрипт для валидации формы -->
+<script>
+    // Валидация Bootstrap
+    (function () {
+        'use strict'
+
+        var forms = document.querySelectorAll('.needs-validation')
+
+        Array.prototype.slice.call(forms)
+            .forEach(function (form) {
+                form.addEventListener('submit', function (event) {
+                    if (!form.checkValidity()) {
+                        event.preventDefault()
+                        event.stopPropagation()
+                    }
+
+                    form.classList.add('was-validated')
+                }, false)
+            })
+    })()
+</script>
+
+
+<!-- JavaScript для Drag and Drop (редактирование) -->
+<script>
+    // Глобальные переменные для редактирования
+document.addEventListener('DOMContentLoaded', function() {
+    // Инициализация перетаскивания
+    initDragAndDrop();
+    updateCounters();
+});
+
+
+function allowDrop(event) {
+    event.preventDefault();
+}
+
+function dragMember(event) {
+    event.dataTransfer.setData('text/plain', event.target.getAttribute('data-member-id'));
+    event.target.classList.add('dragging');
+}
+
+function dropMember(event) {
+    event.preventDefault();
+    const memberId = event.dataTransfer.getData('text/plain');
+    const draggedElement = document.querySelector(`[data-member-id="${memberId}"]`);
+    const targetContainer = event.target.closest('#availableMembersContainer, #projectTeamContainer');
+
+    if (draggedElement && targetContainer && draggedElement.parentElement !== targetContainer) {
+        const isMovingToProject = targetContainer.id === 'projectTeamContainer';
+        moveMemberToContainer(memberId, targetContainer.id);
+    }
+
+    // Убираем класс dragging со всех элементов
+    document.querySelectorAll('.dragging').forEach(el => el.classList.remove('dragging'));
+}
+
+function initDragAndDrop() {
+    // Настраиваем перетаскивание для всех членов команды
+    document.querySelectorAll('.member-draggable').forEach(item => {
+        item.setAttribute('draggable', 'true');
+
+        item.addEventListener('dragstart', function(e) {
+            e.dataTransfer.setData('text/plain', this.getAttribute('data-member-id'));
+            this.classList.add('dragging');
+        });
+
+        item.addEventListener('dragend', function() {
+            this.classList.remove('dragging');
+        });
+
+        // Клик для выделения
+        item.addEventListener('click', function(e) {
+            if (!e.ctrlKey && !e.metaKey) {
+                // Снимаем выделение со всех
+                document.querySelectorAll('.member-draggable.selected').forEach(el => {
+                    el.classList.remove('selected');
+                });
+            }
+            this.classList.toggle('selected');
+            updateSelectionButtons();
+        });
+    });
+
+    // Настраиваем зоны drop
+    const availableContainer = document.getElementById('availableMembersContainer');
+    const projectContainer = document.getElementById('projectTeamContainer');
+
+    [availableContainer, projectContainer].forEach(container => {
+        container.addEventListener('dragover', function(e) {
+            e.preventDefault();
+            this.classList.add('drop-zone-active');
+        });
+
+        container.addEventListener('dragleave', function() {
+            this.classList.remove('drop-zone-active');
+        });
+
+        container.addEventListener('drop', function(e) {
+            e.preventDefault();
+            this.classList.remove('drop-zone-active');
+
+            const memberId = e.dataTransfer.getData('text/plain');
+            const draggedElement = document.querySelector(`[data-member-id="${memberId}"]`);
+
+            if (draggedElement && draggedElement.parentElement !== this) {
+                moveMemberToContainer(memberId, this.id);
+            }
+        });
+    });
+}
+
+function moveMemberToContainer(memberId, targetContainerId) {
+    const memberElement = document.querySelector(`[data-member-id="${memberId}"]`);
+    if (!memberElement) return;
+
+    const targetContainer = document.getElementById(targetContainerId);
+    const isMovingToProject = targetContainerId === 'projectTeamContainer';
+
+    // Клонируем элемент с новыми стилями
+    const cloned = memberElement.cloneNode(true);
+
+    if (isMovingToProject) {
+    // Перемещаем в проект - меняем только иконку и бейдж
+    const icon = cloned.querySelector('.bi-person-circle');
+    if (icon) icon.className = 'bi bi-person-check fs-4 text-success';
+
+    const badge = cloned.querySelector('.badge');
+    if (badge) {
+        badge.className = 'badge bg-success text-white';
+        badge.textContent = 'В проекте';
+    }
+} else {
+    // Перемещаем обратно в доступные - меняем только иконку и бейдж
+    const icon = cloned.querySelector('.bi-person-check');
+    if (icon) icon.className = 'bi bi-person-circle fs-4 text-primary';
+
+    const badge = cloned.querySelector('.badge');
+    if (badge) {
+        badge.className = 'badge bg-primary text-white';
+        badge.textContent = 'Доступен';
+    }
+}
+
+    // Удаляем старый элемент
+    memberElement.remove();
+
+    // Добавляем новый в целевую колонку
+    targetContainer.appendChild(cloned);
+
+    // Реинициализируем события для нового элемента
+    cloned.setAttribute('draggable', 'true');
+    cloned.addEventListener('dragstart', function(e) {
+        e.dataTransfer.setData('text/plain', this.getAttribute('data-member-id'));
+        this.classList.add('dragging');
+    });
+    cloned.addEventListener('dragend', function() {
+        this.classList.remove('dragging');
+    });
+    cloned.addEventListener('click', function(e) {
+        if (!e.ctrlKey && !e.metaKey) {
+            document.querySelectorAll('.member-draggable.selected').forEach(el => {
+                el.classList.remove('selected');
+            });
+        }
+        this.classList.toggle('selected');
+        updateSelectionButtons();
+    });
+
+    // Обновляем UI
+    updateCounters();
+    updateHiddenInput();
+
+    // Скрываем/показываем сообщения о пустоте
+    const projectEmptyMsg = document.getElementById('emptyTeamMessage');
+    if (projectEmptyMsg) {
+        projectEmptyMsg.style.display =
+            document.querySelectorAll('#projectTeamContainer .member-draggable').length === 0 ? 'block' : 'none';
+    }
+}
+
+// Кнопки для массового перемещения
+function addSelectedToProject() {
+    const selected = document.querySelectorAll('#availableMembersContainer .member-draggable.selected');
+    selected.forEach(member => {
+        const memberId = member.getAttribute('data-member-id');
+        moveMemberToContainer(memberId, 'projectTeamContainer');
+    });
+}
+
+function removeSelectedFromProject() {
+    const selected = document.querySelectorAll('#projectTeamContainer .member-draggable.selected');
+    selected.forEach(member => {
+        const memberId = member.getAttribute('data-member-id');
+        moveMemberToContainer(memberId, 'availableMembersContainer');
+    });
+}
+
+function updateSelectionButtons() {
+    const hasAvailableSelected = document.querySelectorAll('#availableMembersContainer .member-draggable.selected').length > 0;
+    const hasProjectSelected = document.querySelectorAll('#projectTeamContainer .member-draggable.selected').length > 0;
+
+    // Можно добавить визуальную индикацию для кнопок если нужно
+}
+
+function updateCounters() {
+    const availableCount = document.querySelectorAll('#availableMembersContainer .member-draggable').length;
+    const projectCount = document.querySelectorAll('#projectTeamContainer .member-draggable').length;
+
+    document.getElementById('availableCount').textContent = availableCount;
+    document.getElementById('projectTeamCount').textContent = projectCount;
+
+    // ОБНОВЛЯЕМ СТАТИСТИКУ
+    updateProjectMembersCount();
+}
+
+function updateHiddenInput() {
+    const selectedElements = document.querySelectorAll('#projectTeamContainer [data-member-id]');
+    const ids = Array.from(selectedElements).map(el => el.getAttribute('data-member-id'));
+
+    document.getElementById('selectedTeamMemberIds').value = ids.join(',');
+
+    // Синхронизируем с мультиселектом
+    const teamSelect = document.getElementById('teamMembers');
+    if (teamSelect) {
+        Array.from(teamSelect.options).forEach(option => {
+            option.selected = ids.includes(option.value);
+        });
+    }
+
+    // ОБНОВЛЯЕМ СТАТИСТИКУ
+    updateProjectMembersCount();
+}
+
+// Функция для обновления счетчика в статистике
+function updateProjectMembersCount() {
+    const projectMembers = document.querySelectorAll('#projectTeamContainer .member-draggable');
+    const count = projectMembers.length;
+
+    const statElement = document.getElementById('projectMembersCount');
+    if (statElement) {
+        statElement.textContent = count;
+    }
+}
+</script>
+</body>
+</html>

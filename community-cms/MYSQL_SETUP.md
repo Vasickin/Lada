@@ -26,3 +26,6 @@ CREATE USER 'lada_user'@'localhost' IDENTIFIED BY 'your_secure_password_here';
 GRANT ALL PRIVILEGES ON lada_cms.* TO 'lada_user'@'localhost';
 FLUSH PRIVILEGES;
 EXIT;
+ mysql -u lada_user -p lada_cms
+LadaCMS2025
+удаление временного проекта "Наши проекты" DELETE FROM projects WHERE slug='test-project';

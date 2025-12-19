@@ -5,12 +5,17 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
+
+import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Конфигурация безопасности Spring Security для Community CMS.
@@ -59,13 +64,13 @@ public class SecurityConfig {
                         // PUBLIC ENDPOINTS / ПУБЛИЧНЫЕ ENDPOINTS
                         // Accessible without authentication / Доступны без аутентификации
                         //
-                        .requestMatchers("/", "/h2-console/**", "/css/**", "/js/**", "/images/**", "/error").permitAll()
+                        .requestMatchers("/", "/h2-console/**", "/css/**", "/js/**", "/images/**", "/error", "/test-auth").permitAll()
 
                         //
                         // PUBLIC PAGES / ПУБЛИЧНЫЕ СТРАНИЦЫ
                         // About and Contact pages are public / Страницы "О нас" и "Контакты" публичные
                         //
-                        .requestMatchers("/about", "/contact").permitAll()
+                        .requestMatchers("/about", "/contact", "/projects", "/gallery", "/patrons", "/team").permitAll()
 
                         //
                         // PUBLIC PAGE VIEWING / ПУБЛИЧНЫЙ ПРОСМОТР СТРАНИЦ
@@ -149,20 +154,32 @@ public class SecurityConfig {
     @Bean
     public UserDetailsService userDetailsService(UserService userService, PasswordEncoder passwordEncoder) {
         return username -> {
+            System.out.println("=== DEBUG: Поиск пользователя: " + username + " ===");
+
             // Ищем пользователя в базе данных по имени пользователя
             com.community.cms.model.User user = userService.findUserByUsername(username)
-                    .orElseThrow(() -> new UsernameNotFoundException("Пользователь не найден: " + username));
+                    .orElseThrow(() -> {
+                        System.out.println("=== DEBUG: Пользователь НЕ НАЙДЕН: " + username + " ===");
+                        return new UsernameNotFoundException("Пользователь не найден: " + username);
+                    });
 
             // Проверяем, активна ли учетная запись
             if (!user.isEnabled()) {
+                System.out.println("=== DEBUG: Учетная запись отключена: " + username + " ===");
                 throw new UsernameNotFoundException("Учетная запись заблокирована: " + username);
             }
+
+            // Преобразуем наши роли в authorities (ДОБАВЛЯЕМ ПРЕФИКС ROLE_)
+            List<GrantedAuthority> authorities = user.getRoles().stream()
+                    .map(role -> "ROLE_" + role)  // Добавляем префикс
+                    .map(role -> new SimpleGrantedAuthority(role))
+                    .collect(Collectors.toList());
 
             // Преобразуем нашего User в Spring Security UserDetails
             return org.springframework.security.core.userdetails.User.builder()
                     .username(user.getUsername())
                     .password(user.getPassword())
-                    .roles(user.getRoles().toArray(new String[0]))
+                    .authorities(authorities)
                     .disabled(!user.isEnabled())
                     .build();
         };
