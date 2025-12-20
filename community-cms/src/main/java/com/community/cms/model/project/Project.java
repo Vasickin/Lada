@@ -9,7 +9,9 @@ import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Collectors;
@@ -516,6 +518,103 @@ public class Project {
     public void setUpdatedAt(LocalDateTime updatedAt) {
         this.updatedAt = updatedAt;
     }
+
+
+    // В разделе "ГЕТТЕРЫ И СЕТТЕРЫ" добавьте этот код (можно после featuredImagePath):
+
+    /**
+     * Список ID ключевых фотографий из галереи для проекта.
+     * Хранит до 5 ID фотографий из PhotoGalleryItem.
+     *
+     * Key photo IDs from gallery for the project.
+     * Stores up to 5 photo IDs from PhotoGalleryItem.
+     */
+    @ElementCollection
+    @CollectionTable(
+            name = "project_key_photos",
+            joinColumns = @JoinColumn(name = "project_id")
+    )
+    @Column(name = "photo_gallery_item_id")
+    @Size(max = 5, message = "Можно выбрать не более 5 ключевых фотографий / Maximum 5 key photos allowed")
+    private List<Long> keyPhotoIds = new ArrayList<>();
+
+// И добавьте getter и setter (в раздел геттеров/сеттеров):
+
+    /**
+     * Получает список ID ключевых фотографий.
+     *
+     * @return список ID фотографий из галереи
+     */
+    public List<Long> getKeyPhotoIds() {
+        return keyPhotoIds;
+    }
+
+    /**
+     * Устанавливает список ID ключевых фотографий.
+     *
+     * @param keyPhotoIds список ID фотографий из галереи (не более 5)
+     */
+    public void setKeyPhotoIds(List<Long> keyPhotoIds) {
+        this.keyPhotoIds = keyPhotoIds != null ? keyPhotoIds : new ArrayList<>();
+    }
+
+    /**
+     * Проверяет есть ли у проекта ключевые фотографии.
+     *
+     * @return true если есть хотя бы одна ключевая фотография
+     */
+    public boolean hasKeyPhotos() {
+        return keyPhotoIds != null && !keyPhotoIds.isEmpty();
+    }
+
+    /**
+     * Получает количество ключевых фотографий.
+     *
+     * @return количество ключевых фотографий (0-5)
+     */
+    public int getKeyPhotosCount() {
+        return keyPhotoIds != null ? keyPhotoIds.size() : 0;
+    }
+
+    /**
+     * Добавляет ID фотографии к списку ключевых.
+     * Проверяет что не превышен лимит в 5 фото.
+     *
+     * @param photoId ID фотографии из галереи
+     * @return true если фото было добавлено, false если лимит превышен
+     */
+    public boolean addKeyPhotoId(Long photoId) {
+        if (keyPhotoIds == null) {
+            keyPhotoIds = new ArrayList<>();
+        }
+        if (keyPhotoIds.size() >= 5) {
+            return false; // Превышен лимит
+        }
+        if (photoId != null && !keyPhotoIds.contains(photoId)) {
+            return keyPhotoIds.add(photoId);
+        }
+        return false;
+    }
+
+    /**
+     * Удаляет ID фотографии из списка ключевых.
+     *
+     * @param photoId ID фотографии для удаления
+     * @return true если фото было удалено
+     */
+    public boolean removeKeyPhotoId(Long photoId) {
+        return keyPhotoIds != null && keyPhotoIds.remove(photoId);
+    }
+
+    /**
+     * Очищает все ключевые фотографии.
+     */
+    public void clearKeyPhotos() {
+        if (keyPhotoIds != null) {
+            keyPhotoIds.clear();
+        }
+    }
+
 
     // ================== ВСПОМОГАТЕЛЬНЫЕ МЕТОДЫ ==================
 
