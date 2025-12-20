@@ -1,8 +1,11 @@
 package com.community.cms.controller.projectAdmin;
 
+import com.community.cms.model.gallery.MediaFile;
+import com.community.cms.model.gallery.PhotoGalleryItem;
 import com.community.cms.model.project.Project;
 import com.community.cms.model.project.TeamMember;
 import com.community.cms.repository.project.ProjectRepository;
+import com.community.cms.service.gallery.PhotoGalleryService;
 import com.community.cms.service.project.ProjectService;
 import com.community.cms.service.project.TeamMemberService;
 import jakarta.persistence.EntityNotFoundException;
@@ -41,6 +44,8 @@ public class ProjectAdminController {
     private final ProjectService projectService;
     private final TeamMemberService teamMemberService;
     private final ProjectRepository projectRepository;
+    @Autowired
+    private PhotoGalleryService photoGalleryService;
 
     /**
      * Конструктор с инъекцией зависимостей.
@@ -178,12 +183,12 @@ public class ProjectAdminController {
                                 RedirectAttributes redirectAttributes,
                                 Model model,
                                 @RequestParam(value = "newCategoryName", required = false) String newCategoryName,
-                                @RequestParam(value = "selectedTeamMemberIds", required = false) String selectedTeamMemberIds) {
+                                @RequestParam(value = "selectedTeamMemberIds", required = false) String selectedTeamMemberIds,
+                                @RequestParam(value = "selectedPhotoIds", required = false) String selectedPhotoIds) {
 
-        // ===== ВАЛИДАЦИЯ ДАТ (ТАК ЖЕ КАК В UPDATE) =====
+        // ===== ВАЛИДАЦИЯ ДАТ =====
         if (project.getStartDate() != null && project.getEndDate() != null) {
             if (project.getStartDate().isAfter(project.getEndDate())) {
-                System.out.println("ERROR: Start date is after end date");
                 bindingResult.rejectValue("startDate", "error.project",
                         "Дата начала не может быть позже даты окончания");
             }
@@ -192,143 +197,121 @@ public class ProjectAdminController {
         if (project.getEventDate() != null && project.getStartDate() != null && project.getEndDate() != null) {
             if (project.getEventDate().isBefore(project.getStartDate()) ||
                     project.getEventDate().isAfter(project.getEndDate())) {
-                System.out.println("ERROR: Event date is outside project dates");
                 bindingResult.rejectValue("eventDate", "error.project",
                         "Дата события должна быть в рамках проекта");
             }
         }
-        // ===== КОНЕЦ ВАЛИДАЦИИ ДАТ =====
 
-        System.out.println("=== DEBUG CREATE PROJECT ===");
+        // ===== ЛОГИРОВАНИЕ =====
+        System.out.println("=== CREATE PROJECT ===");
         System.out.println("Title: " + project.getTitle());
-        System.out.println("Slug: " + project.getSlug());
-        System.out.println("Category from select: " + project.getCategory());
-        System.out.println("New category name: " + newCategoryName);
-        System.out.println("Selected team member IDs: " + selectedTeamMemberIds);
-        System.out.println("Has errors? " + bindingResult.hasErrors());
+        System.out.println("New category: " + newCategoryName);
+        System.out.println("Team IDs: " + selectedTeamMemberIds);
+        System.out.println("Photo IDs: " + selectedPhotoIds);
 
-        // Восстанавливаем списки для формы (на случай ошибки)
+        // Восстанавливаем списки для формы
         model.addAttribute("categories", projectService.findAllDistinctCategories());
         model.addAttribute("statuses", Project.ProjectStatus.values());
         model.addAttribute("allTeamMembers", teamMemberService.findAllActiveOrderBySortOrder());
 
         // ===== ОБРАБОТКА КАТЕГОРИИ =====
         if ("__NEW__".equals(project.getCategory())) {
-            System.out.println("User selected: CREATE NEW CATEGORY");
-
             if (newCategoryName == null || newCategoryName.trim().isEmpty()) {
-                System.out.println("ERROR: New category name is empty!");
                 bindingResult.rejectValue("category", "error.project",
                         "Введите название новой категории");
                 return "admin/projects/create";
             } else {
                 String cleanedCategory = newCategoryName.trim();
-                System.out.println("Setting new category: " + cleanedCategory);
                 project.setCategory(cleanedCategory);
 
-                // ===== ПРОВЕРКА УНИКАЛЬНОСТИ КАТЕГОРИИ =====
+                // Проверка уникальности
                 List<String> allCategories = projectRepository.findAllDistinctCategories();
-                boolean alreadyExists = false;
-                String existingCategory = null;
-
                 for (String cat : allCategories) {
                     if (cat != null && cleanedCategory != null) {
                         String normalizedExisting = cat.trim().toLowerCase().replaceAll("\\s+", " ");
                         String normalizedNew = cleanedCategory.trim().toLowerCase().replaceAll("\\s+", " ");
-
                         if (normalizedExisting.equals(normalizedNew)) {
-                            alreadyExists = true;
-                            existingCategory = cat;
-                            break;
+                            bindingResult.rejectValue("category", "error.project",
+                                    "Категория \"" + cat + "\" уже существует");
+                            return "admin/projects/create";
                         }
                     }
                 }
-
-                if (alreadyExists) {
-                    System.out.println("ERROR: Category already exists: " + existingCategory);
-                    bindingResult.rejectValue("category", "error.project",
-                            "Категория \"" + existingCategory + "\" уже существует. " +
-                                    "Используйте существующую или введите другое название.");
-                    return "admin/projects/create";
-                }
             }
         } else if (project.getCategory() == null || project.getCategory().trim().isEmpty()) {
-            System.out.println("ERROR: No category selected!");
             bindingResult.rejectValue("category", "error.project",
                     "Выберите категорию проекта");
             return "admin/projects/create";
         }
 
         if (bindingResult.hasErrors()) {
-            System.out.println("Errors: " + bindingResult.getAllErrors());
             return "admin/projects/create";
         }
 
         // Проверка уникальности slug
         if (projectService.existsBySlug(project.getSlug())) {
-            System.out.println("Slug already exists: " + project.getSlug());
             bindingResult.rejectValue("slug", "error.project", "Проект с таким URL уже существует");
             return "admin/projects/create";
         }
 
         try {
-            // 1. Инициализируем команду проекта ПЕРЕД сохранением
+            // Инициализация команды
             if (project.getTeamMembers() == null) {
                 project.setTeamMembers(new HashSet<>());
             }
 
-            System.out.println("Saving project with category: " + project.getCategory());
-
-            // 2. Сохраняем проект (сначала без команды)
+            // Сохранение проекта
             Project savedProject = projectService.save(project);
-            System.out.println("Project saved with ID: " + savedProject.getId());
 
-            // 3. ОБНОВЛЕННАЯ ОБРАБОТКА КОМАНДЫ
+            // ===== ОБРАБОТКА КОМАНДЫ =====
             if (selectedTeamMemberIds != null && !selectedTeamMemberIds.trim().isEmpty()) {
-                System.out.println("Processing team members: " + selectedTeamMemberIds);
                 String[] ids = selectedTeamMemberIds.split(",");
-
                 for (String idStr : ids) {
                     try {
                         Long memberId = Long.parseLong(idStr.trim());
                         teamMemberService.findById(memberId).ifPresent(member -> {
-                            // 3.1. Инициализируем projects у TeamMember если нужно
                             if (member.getProjects() == null) {
                                 member.setProjects(new HashSet<>());
                             }
-
-                            // 3.2. Добавляем проект к члену команды
                             member.getProjects().add(savedProject);
-
-                            // 3.3. Добавляем члена команды к проекту
                             savedProject.getTeamMembers().add(member);
-
-                            // 3.4. Сохраняем обновленного члена команды
                             teamMemberService.save(member);
-                            System.out.println("Added team member: " + member.getFullName() + " (ID: " + memberId + ")");
                         });
                     } catch (NumberFormatException e) {
-                        System.out.println("Invalid member ID format: " + idStr);
+                        // Игнорируем некорректные ID
                     }
                 }
-
-                // 4. Сохраняем проект с обновленной командой
                 projectService.save(savedProject);
-                System.out.println("Project re-saved with team members count: " + savedProject.getTeamMembers().size());
-
-            } else {
-                System.out.println("No team members selected for project");
             }
+
+            // ===== ОБРАБОТКА ФОТО =====
+            if (selectedPhotoIds != null && !selectedPhotoIds.trim().isEmpty()) {
+                try {
+                    List<Long> photoIds = Arrays.stream(selectedPhotoIds.split(","))
+                            .map(String::trim)
+                            .filter(s -> !s.isEmpty())
+                            .map(Long::parseLong)
+                            .limit(5)
+                            .collect(Collectors.toList());
+
+                    savedProject.setKeyPhotoIds(photoIds);
+                    projectService.save(savedProject);
+
+                } catch (Exception ignored) {}
+            }
+
 
             redirectAttributes.addFlashAttribute("successMessage", "Проект успешно создан" +
                     (selectedTeamMemberIds != null && !selectedTeamMemberIds.trim().isEmpty() ?
-                            " с командой из " + selectedTeamMemberIds.split(",").length + " человек" : ""));
+                            " с командой из " + selectedTeamMemberIds.split(",").length + " человек" : "") +
+                    (selectedPhotoIds != null && !selectedPhotoIds.trim().isEmpty() ?
+                            " и " + selectedPhotoIds.split(",").length + " фото" : ""));
+
             return "redirect:/admin/projects";
 
         } catch (Exception e) {
-            System.out.println("ERROR saving project: " + e.getMessage());
+            System.out.println("ERROR: " + e.getMessage());
             e.printStackTrace();
-
             bindingResult.reject("error.project", "Ошибка при создании проекта: " + e.getMessage());
             return "admin/projects/create";
         }
@@ -945,6 +928,35 @@ public class ProjectAdminController {
         }
 
         return "redirect:/admin/projects/" + id + "/team-management";
+    }
+
+    @GetMapping("/available-photos")
+    @ResponseBody
+    public List<Map<String, Object>> getAvailablePhotos() {
+        List<Map<String, Object>> result = new ArrayList<>();
+
+        try {
+            // Используем метод getAllPhotoGalleryItems() вместо findAll()
+            List<PhotoGalleryItem> galleryItems = photoGalleryService.getAllPhotoGalleryItems();
+
+            for (PhotoGalleryItem item : galleryItems) {
+                // Проверяем что images не null
+                if (item.getImages() != null) {
+                    for (MediaFile image : item.getImages()) {
+                        Map<String, Object> photo = new HashMap<>();
+                        photo.put("id", image.getId());
+                        photo.put("title", item.getTitle() + " - " + image.getFileName());
+                        photo.put("webPath", image.getWebPath());
+                        photo.put("thumbnail", image.getWebPath());
+                        result.add(photo);
+                    }
+                }
+            }
+        } catch (Exception e) {
+            System.out.println("Ошибка загрузки фото: " + e.getMessage());
+        }
+
+        return result;
     }
 
 
