@@ -376,7 +376,8 @@ public class ProjectAdminController {
                                 RedirectAttributes redirectAttributes,
                                 Model model,
                                 @RequestParam(value = "newCategoryName", required = false) String newCategoryName,
-                                @RequestParam(value = "selectedTeamMemberIds", required = false) String selectedTeamMemberIds) {
+                                @RequestParam(value = "selectedTeamMemberIds", required = false) String selectedTeamMemberIds,
+                                @RequestParam(value = "selectedPhotoIds", required = false) String selectedPhotoIds) {
 
         // ===== ВАЛИДАЦИЯ ДАТ =====
         if (project.getStartDate() != null && project.getEndDate() != null) {
@@ -636,6 +637,27 @@ public class ProjectAdminController {
                     .orElseThrow(() -> new EntityNotFoundException("Проект не найден после сохранения"));
             System.out.println("DEBUG: Verified team members count: " + finalProject.getTeamMembers().size());
             // ===== КОНЕЦ ОБРАБОТКИ КОМАНДЫ =====
+
+            // ===== ОБРАБОТКА ФОТО =====
+            if (selectedPhotoIds != null) {
+                try {
+                    List<Long> photoIds = Arrays.stream(selectedPhotoIds.split(","))
+                            .map(String::trim)
+                            .filter(s -> !s.isEmpty())
+                            .map(Long::parseLong)
+                            .limit(5)
+                            .collect(Collectors.toList());
+
+                    existingProject.setKeyPhotoIds(photoIds);
+                    projectService.save(existingProject);
+
+                    System.out.println("Обновлены фото проекта: " + photoIds.size() + " шт.");
+                } catch (Exception e) {
+                    System.out.println("Ошибка обновления фото: " + e.getMessage());
+                }
+            }
+            // ===== КОНЕЦ ОБРАБОТКИ ФОТО =====
+
 
             redirectAttributes.addFlashAttribute("successMessage", "Проект успешно обновлен" +
                     (selectedTeamMemberIds != null && !selectedTeamMemberIds.trim().isEmpty() ?

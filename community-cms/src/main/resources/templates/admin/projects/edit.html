@@ -199,6 +199,10 @@
                               th:object="${project}"
                               method="post"
                               class="needs-validation" novalidate>
+                            <input type="hidden" id="selectedPhotoIds" name="selectedPhotoIds"
+                                   th:value="${#strings.arrayJoin(project.keyPhotoIds, ',')}">
+
+
 
                             <!-- Hidden поле для ID -->
                             <input type="hidden" th:field="*{id}" />
@@ -774,6 +778,7 @@
                                                 </div>
 
                                                 <!-- Кнопки управления -->
+
                                                 <div class="mt-3 pt-3 border-top">
                                                     <div class="row g-2">
                                                         <div class="col-md-6">
@@ -898,6 +903,11 @@
                                                 </div>
 
                                                 <!-- Кнопки управления -->
+
+                                                <button type="button" class="btn btn-primary mb-3" onclick="openPhotoGallery()">
+                                                    <i class="bi bi-images me-1"></i>Выбрать фото из галереи
+                                                </button>
+
                                                 <div class="mt-3 pt-3 border-top">
                                                     <div class="row g-2">
                                                         <div class="col-md-6">
@@ -1198,6 +1208,25 @@
     </div>
 </div>
 
+<!-- === МОДАЛЬНОЕ ОКНО ФОТО === -->
+<div class="modal fade" id="photoModal" tabindex="-1">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Выбор фото из галереи</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div id="photoGallery" class="row row-cols-2 row-cols-md-4 g-3"></div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+                <button type="button" class="btn btn-primary" onclick="saveSelectedPhotos()">Выбрать</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 
 
 <!-- Скрипт для валидации формы -->
@@ -1444,6 +1473,243 @@ function updateProjectMembersCount() {
         statElement.textContent = count;
     }
 }
+</script>
+
+<!-- === УПРАВЛЕНИЕ МОДАЛЬНЫМ ОКНОМ ФОТО === -->
+<script>
+    let selectedPhotos = [];
+    let allPhotos = [];
+    let currentModal = null;
+
+    // === ЗАГРУЗКА СТРАНИЦЫ ===
+    document.addEventListener('DOMContentLoaded', function() {
+        // 1. Восстановить выбранные фото из скрытого поля
+        const hiddenField = document.getElementById('selectedPhotoIds');
+        if (hiddenField && hiddenField.value) {
+            selectedPhotos = hiddenField.value.split(',')
+                .map(id => parseInt(id.trim()))
+                .filter(id => !isNaN(id));
+            console.log('Загружены выбранные фото:', selectedPhotos);
+        }
+
+        // 2. Загрузить все фото из галереи
+        loadAllPhotos();
+    });
+
+    // Загрузить все фото
+    function loadAllPhotos() {
+        fetch('/admin/projects/available-photos')
+            .then(response => {
+                if (!response.ok) throw new Error('Ошибка сервера: ' + response.status);
+                return response.json();
+            })
+            .then(photos => {
+                allPhotos = photos;
+                console.log('Загружены все фото:', allPhotos.length);
+                // Показать превью выбранных фото
+                showPreview();
+            })
+            .catch(error => {
+                console.error('Ошибка загрузки фото:', error);
+                // Если ошибка - показываем простой список
+                showSimplePreview();
+            });
+    }
+
+    // === ПРЕВЬЮ ===
+    function showPreview() {
+        const preview = document.getElementById('selectedPhotosPreview');
+        if (!preview) return;
+
+        if (selectedPhotos.length === 0) {
+            preview.innerHTML = `
+                <div class="col-12">
+                    <div class="alert alert-info">
+                        <i class="bi bi-info-circle me-1"></i>
+                        Фото не выбраны. Нажмите кнопку выше.
+                    </div>
+                </div>
+            `;
+            return;
+        }
+
+        let html = '<div class="col-12 mb-2"><strong>Выбранные фото:</strong></div>';
+
+        selectedPhotos.forEach(photoId => {
+            const photo = allPhotos.find(p => p.id === photoId);
+
+            if (photo) {
+                // Фото найдено - показываем картинку
+                html += `
+                    <div class="col-6 col-md-4 col-lg-3 mb-2">
+                        <div class="card">
+                            <img src="${photo.thumbnail || photo.webPath}"
+                                 class="card-img-top"
+                                 style="height: 100px; object-fit: cover;"
+                                 onerror="this.onerror=null; this.src='/static/images/placeholder.jpg'">
+                            <div class="card-body p-2 text-center">
+                                <button type="button" class="btn btn-sm btn-danger"
+                                        onclick="removePhoto(${photoId})">
+                                    <i class="bi bi-x"></i> Удалить
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            } else {
+                // Фото не найдено
+                html += `
+                    <div class="col-6 col-md-4 col-lg-3 mb-2">
+                        <div class="card border-warning">
+                            <div class="card-body text-center" style="height: 100px; display: flex; align-items: center; justify-content: center;">
+                                <div>
+                                    <i class="bi bi-question-circle text-warning fs-3"></i>
+                                    <p class="small mb-0 mt-1">ID: ${photoId}</p>
+                                </div>
+                            </div>
+                            <div class="card-footer p-2 text-center">
+                                <button type="button" class="btn btn-sm btn-danger"
+                                        onclick="removePhoto(${photoId})">
+                                    <i class="bi bi-x"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+        });
+
+        preview.innerHTML = html;
+    }
+
+    // Простой превью (без картинок)
+    function showSimplePreview() {
+        const preview = document.getElementById('selectedPhotosPreview');
+        if (!preview) return;
+
+        if (selectedPhotos.length === 0) {
+            preview.innerHTML = '<div class="alert alert-info">Фото не выбраны</div>';
+            return;
+        }
+
+        preview.innerHTML = `
+            <div class="alert alert-success">
+                <i class="bi bi-check-circle me-1"></i>
+                Выбрано фото: ${selectedPhotos.length} шт.<br>
+                <small>ID: ${selectedPhotos.join(', ')}</small>
+            </div>
+        `;
+    }
+
+    // Удалить фото
+    function removePhoto(photoId) {
+        selectedPhotos = selectedPhotos.filter(id => id !== photoId);
+        document.getElementById('selectedPhotoIds').value = selectedPhotos.join(',');
+        showPreview();
+    }
+
+    // === ГАЛЕРЕЯ ===
+    function openPhotoGallery() {
+        if (allPhotos.length === 0) {
+            alert('Фото еще загружаются... Подождите секунду.');
+            return;
+        }
+
+        renderGallery();
+        currentModal = new bootstrap.Modal(document.getElementById('photoModal'));
+        currentModal.show();
+        updateSelectedCount();
+    }
+
+    function renderGallery() {
+        const container = document.getElementById('photoGallery');
+        if (!container) return;
+
+        container.innerHTML = '';
+
+        allPhotos.forEach(photo => {
+            const isSelected = selectedPhotos.includes(photo.id);
+            const card = `
+                <div class="col">
+                    <div class="card h-100 ${isSelected ? 'border-primary border-2' : ''}"
+                         style="cursor: pointer; height: 180px;">
+                        <img src="${photo.thumbnail || photo.webPath}"
+                             class="card-img-top"
+                             style="height: 100px; object-fit: cover;"
+                             onerror="this.onerror=null; this.src='/static/images/placeholder.jpg'">
+                        <div class="card-body p-2">
+                            <div class="form-check">
+                                <input type="checkbox" class="form-check-input"
+                                       ${isSelected ? 'checked' : ''}
+                                       id="check_${photo.id}">
+                                <label class="form-check-label small" for="check_${photo.id}">
+                                    ${photo.title ? (photo.title.length > 25 ? photo.title.substring(0, 25) + '...' : photo.title) : 'Фото'}
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            container.innerHTML += card;
+        });
+
+        // Добавить обработчики клика
+        container.querySelectorAll('.card').forEach(card => {
+            card.addEventListener('click', function(e) {
+                if (e.target.type !== 'checkbox') {
+                    const checkbox = this.querySelector('input[type="checkbox"]');
+                    if (checkbox) {
+                        checkbox.checked = !checkbox.checked;
+                        const photoId = parseInt(checkbox.id.replace('check_', ''));
+                        togglePhoto(photoId);
+                    }
+                }
+            });
+        });
+    }
+
+    function togglePhoto(photoId) {
+        if (selectedPhotos.includes(photoId)) {
+            selectedPhotos = selectedPhotos.filter(id => id !== photoId);
+        } else {
+            if (selectedPhotos.length >= 5) {
+                alert('Можно выбрать максимум 5 фото');
+                return;
+            }
+            selectedPhotos.push(photoId);
+        }
+
+        updateSelectedCount();
+        // Обновить галерею
+        const card = document.querySelector(`#check_${photoId}`).closest('.card');
+        if (card) {
+            if (selectedPhotos.includes(photoId)) {
+                card.classList.add('border-primary', 'border-2');
+            } else {
+                card.classList.remove('border-primary', 'border-2');
+            }
+        }
+    }
+
+    function updateSelectedCount() {
+        const countElement = document.getElementById('selectedCount');
+        if (countElement) {
+            countElement.textContent = selectedPhotos.length;
+        }
+    }
+
+    function saveSelectedPhotos() {
+        document.getElementById('selectedPhotoIds').value = selectedPhotos.join(',');
+        showPreview();
+
+        if (currentModal) {
+            currentModal.hide();
+        }
+
+        if (selectedPhotos.length > 0) {
+            console.log('Сохранены фото:', selectedPhotos);
+        }
+    }
 </script>
 </body>
 </html>
