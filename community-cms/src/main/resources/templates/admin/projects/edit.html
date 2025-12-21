@@ -1602,23 +1602,24 @@ function updateProjectMembersCount() {
 </script>
 
 
-// === УПРАВЛЕНИЕ МОДАЛЬНЫМ ОКНОМ ВЫБОРА ФОТО ИЗ ГАЛЕРЕЙ ===
+<!-- === УПРАВЛЕНИЕ МОДАЛЬНЫМ ОКНОМ ВЫБОРА ФОТО ИЗ ГАЛЕРЕЙ === -->
 <script>
     // === ГЛОБАЛЬНЫЕ ПЕРЕМЕННЫЕ ===
     let allGalleries = [];          // Все галереи
     let currentGalleryId = null;    // ID текущей галереи
     let currentGalleryPhotos = [];  // Фото текущей галереи
     let selectedPhotos = [];        // Выбранные фото для проекта [{id, title, webPath, galleryTitle}]
+    let allPhotosMap = new Map();   // Карта всех фото {id: photoData}
     let selectedPhotosModal = null; // Bootstrap modal instance
 
     // === ИНИЦИАЛИЗАЦИЯ ПРИ ЗАГРУЗКЕ СТРАНИЦЫ ===
     document.addEventListener('DOMContentLoaded', function() {
-        console.log('Инициализация модуля выбора фото из галерей...');
+        console.log('Инициализация модуля выбора фото из галерей (edit mode)...');
 
-        // Загружаем выбранные фото из скрытого поля
-        loadSelectedPhotosFromForm();
+        // Шаг 1: Сначала загружаем ВСЕ фото из всех галерей
+        loadAllPhotosForEditMode();
 
-        // Настраиваем обработчик поиска галерей
+        // Шаг 2: Настраиваем обработчик поиска галерей
         const searchInput = document.getElementById('gallerySearch');
         if (searchInput) {
             searchInput.addEventListener('input', function() {
@@ -1626,14 +1627,49 @@ function updateProjectMembersCount() {
             });
         }
 
-        // Настраиваем обработчики модального окна
+        // Шаг 3: Настраиваем обработчики модального окна
         setupModalHandlers();
-
-        // Показываем превью выбранных фото
-        showSelectedPhotosPreview();
     });
 
-    // === ЗАГРУЗКА ДАННЫХ ===
+    // === ЗАГРУЗКА ДАННЫХ (РЕДАКТИРОВАНИЕ) ===
+
+    /**
+     * Загружает все фото из всех галерей для режима редактирования.
+     * Loads all photos from all galleries for edit mode.
+     */
+    function loadAllPhotosForEditMode() {
+        console.log('Режим редактирования: загружаем все фото...');
+
+        fetch('/admin/projects/available-photos')
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`Ошибка сервера: ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(photos => {
+                console.log(`Загружено всех фото: ${photos.length}`);
+
+                // Сохраняем все фото в карту для быстрого поиска
+                allPhotosMap.clear();
+                photos.forEach(photo => {
+                    allPhotosMap.set(photo.id, photo);
+                });
+
+                // Загружаем выбранные фото из формы
+                loadSelectedPhotosFromForm();
+
+                // Загружаем галереи
+                loadGalleries();
+
+            })
+            .catch(error => {
+                console.error('❌ Ошибка загрузки всех фото:', error);
+                // Если ошибка, пробуем обычный путь
+                loadSelectedPhotosFromForm();
+                loadGalleries();
+            });
+    }
 
     /**
      * Загружает выбранные фото из скрытого поля формы.
@@ -1646,19 +1682,46 @@ function updateProjectMembersCount() {
                 .map(id => parseInt(id.trim()))
                 .filter(id => !isNaN(id) && id > 0);
 
-            console.log('Загружены ID выбранных фото из формы:', ids);
+            console.log('Режим редактирования: загружены ID фото из формы:', ids);
 
-            // Сохраняем только ID, информацию загрузим позже
-            selectedPhotos = ids.map(id => ({
-                id: id,
-                title: `Фото ${id}`,
-                webPath: '/static/images/placeholder.jpg',
-                galleryTitle: 'Загрузка...'
-            }));
+            if (ids.length === 0) {
+                selectedPhotos = [];
+                showSelectedPhotosPreview();
+                return;
+            }
+
+            // Ищем информацию о каждом фото в карте всех фото
+            selectedPhotos = [];
+            ids.forEach(photoId => {
+                const photoInfo = allPhotosMap.get(photoId);
+                if (photoInfo) {
+                    selectedPhotos.push({
+                        id: photoId,
+                        title: photoInfo.title || photoInfo.fileName || `Фото ${photoId}`,
+                        webPath: photoInfo.webPath || '/static/images/placeholder.jpg',
+                        galleryTitle: photoInfo.galleryTitle || 'Неизвестная галерея'
+                    });
+                    console.log(`✓ Найдено фото ID ${photoId}: ${photoInfo.fileName}`);
+                } else {
+                    console.warn(`⚠ Фото ID ${photoId} не найдено в загруженных фото`);
+                    selectedPhotos.push({
+                        id: photoId,
+                        title: `Фото ${photoId}`,
+                        webPath: '/static/images/placeholder.jpg',
+                        galleryTitle: 'Фото удалено или недоступно'
+                    });
+                }
+            });
+
+            console.log(`Загружено выбранных фото: ${selectedPhotos.length} из ${ids.length}`);
+
+            // Показываем превью
+            showSelectedPhotosPreview();
 
         } else {
             console.log('Выбранные фото не найдены в форме');
             selectedPhotos = [];
+            showSelectedPhotosPreview();
         }
     }
 
@@ -1949,12 +2012,23 @@ function updateProjectMembersCount() {
             return;
         }
 
-        let html = '<div class="col-12 mb-2"><strong>Выбранные фото:</strong></div>';
+        let html = `
+            <div class="col-12 mb-2">
+                <div class="d-flex justify-content-between align-items-center">
+                    <strong>Выбранные фото (${selectedPhotos.length}/5):</strong>
+                    <small class="text-muted">Первое фото будет главным</small>
+                </div>
+            </div>
+        `;
 
         selectedPhotos.forEach((photo, index) => {
+            const isMain = index === 0;
+            const mainBadge = isMain ?
+                '<span class="position-absolute top-0 end-0 badge bg-warning m-1" title="Главное фото">★</span>' : '';
+
             html += `
                 <div class="col-6 col-md-4 col-lg-3 mb-3">
-                    <div class="card h-100">
+                    <div class="card h-100 ${isMain ? 'border-warning' : ''}">
                         <div class="position-relative">
                             <img src="${photo.webPath || '/static/images/placeholder.jpg'}"
                                  class="card-img-top"
@@ -1962,12 +2036,13 @@ function updateProjectMembersCount() {
                                  alt="${escapeHtml(photo.title)}"
                                  onerror="this.onerror=null; this.src='/static/images/placeholder.jpg'">
                             <span class="position-absolute top-0 start-0 badge bg-primary m-1">${index + 1}</span>
+                            ${mainBadge}
                         </div>
                         <div class="card-body p-2">
                             <p class="small mb-1 text-truncate" title="${escapeHtml(photo.title)}">
                                 ${escapeHtml(photo.title.length > 20 ? photo.title.substring(0, 20) + '...' : photo.title)}
                             </p>
-                            <p class="small mb-0 text-muted" title="${escapeHtml(photo.galleryTitle)}">
+                            <p class="small mb-0 text-muted text-truncate" title="${escapeHtml(photo.galleryTitle)}">
                                 <i class="bi bi-collection me-1"></i>
                                 ${escapeHtml(photo.galleryTitle.length > 25 ? photo.galleryTitle.substring(0, 25) + '...' : photo.galleryTitle)}
                             </p>
@@ -1977,6 +2052,12 @@ function updateProjectMembersCount() {
                                     onclick="removePhotoFromSelection(${photo.id})">
                                 <i class="bi bi-x me-1"></i>Удалить
                             </button>
+                            ${isMain ? '' : `
+                            <button type="button" class="btn btn-sm btn-warning ms-1"
+                                    onclick="setAsMainPhoto(${photo.id})">
+                                <i class="bi bi-star me-1"></i>Главное
+                            </button>
+                            `}
                         </div>
                     </div>
                 </div>
@@ -2105,6 +2186,8 @@ function updateProjectMembersCount() {
         updateSelectedCount();
         renderSelectedPhotosInModal();
         updatePhotoCheckboxes();
+        updateHiddenField();
+        showSelectedPhotosPreview();
     }
 
     /**
@@ -2126,8 +2209,28 @@ function updateProjectMembersCount() {
         renderSelectedPhotosInModal();
         showSelectedPhotosPreview();
         updatePhotoCheckboxes();
+        updateHiddenField();
+    }
 
-        // Обновляем скрытое поле в форме
+    /**
+     * Устанавливает фото как главное.
+     * Sets photo as main.
+     *
+     * @param {number} photoId ID фото / photo ID
+     */
+    function setAsMainPhoto(photoId) {
+        // Находим индекс фото
+        const photoIndex = selectedPhotos.findIndex(photo => photo.id === photoId);
+        if (photoIndex === -1) return;
+
+        // Перемещаем фото на первое место
+        const [photo] = selectedPhotos.splice(photoIndex, 1);
+        selectedPhotos.unshift(photo);
+
+        console.log(`Установлено главное фото: ${photoId}`);
+
+        // Обновляем превью
+        showSelectedPhotosPreview();
         updateHiddenField();
     }
 
@@ -2150,8 +2253,6 @@ function updateProjectMembersCount() {
         renderSelectedPhotosInModal();
         showSelectedPhotosPreview();
         updatePhotoCheckboxes();
-
-        // Обновляем скрытое поле в форме
         updateHiddenField();
     }
 
@@ -2302,7 +2403,9 @@ function updateProjectMembersCount() {
         // При открытии модального окна
         modalElement.addEventListener('show.bs.modal', function() {
             console.log('Открытие модального окна галерей');
-            loadGalleries();
+            // Галереи уже загружены при инициализации
+            renderSelectedPhotosInModal();
+            updateSelectedCount();
         });
 
         // При закрытии модального окна
