@@ -146,6 +146,62 @@
             background-color: rgba(13, 110, 253, 0.05) !important;
             border: 2px dashed #0d6efd !important;
         }
+
+
+        /* Стили для раздела фотографий проекта */
+#selectedPhotosPreview .card {
+    transition: all 0.3s ease;
+    border: 2px solid transparent;
+}
+
+#selectedPhotosPreview .card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 6px 12px rgba(0,0,0,0.1);
+}
+
+#selectedPhotosPreview .card.border-warning {
+    border-color: #ffc107 !important;
+    background-color: rgba(255, 193, 7, 0.05);
+}
+
+#selectedPhotosPreview .card .badge.bg-primary {
+    background-color: #0d6efd !important;
+}
+
+#selectedPhotosPreview .card .badge.bg-warning {
+    background-color: #ffc107 !important;
+    color: #000;
+}
+
+/* Анимация для появления фото */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+#selectedPhotosPreview .col {
+    animation: fadeInUp 0.4s ease;
+}
+
+/* Стили для пустого состояния */
+.alert-light {
+    background-color: #f8f9fa;
+    border: 2px dashed #dee2e6;
+}
+
+/* Адаптивность */
+@media (max-width: 768px) {
+    #selectedPhotosPreview .col-6 {
+        flex: 0 0 100%;
+        max-width: 100%;
+    }
+}
     </style>
 </head>
 <body>
@@ -788,125 +844,111 @@
                             </div>
 
 
+
                             <!-- ===== ФОТОГРАФИИ ПРОЕКТА ===== -->
-                            <div class="form-section" th:if="${project.showPhotos}">
-                                <h3 class="section-title">
-                                    <i class="bi bi-images me-2"></i>
-                                    Фотографии проекта
-                                    <span class="badge bg-info ms-2">
+                            <div class="form-section">
+                                <div class="d-flex justify-content-between align-items-center mb-3">
+                                    <h3 class="section-title mb-0">
+                                        <i class="bi bi-images me-2 text-primary"></i>
+                                        Фотографии проекта
+                                    </h3>
+                                    <span class="badge bg-primary">
             <i class="bi bi-camera"></i>
-            <span th:text="${projectImagesCount != null ? projectImagesCount : 0}">0</span>
+            <span id="selectedPhotosCount">0</span>/5 фото
         </span>
-                                </h3>
+                                </div>
 
-                                <div class="row mb-3">
+                                <div class="row mb-4">
                                     <div class="col-12">
-                                        <div class="card">
+                                        <div class="card border-primary">
+                                            <div class="card-header bg-primary text-white">
+                                                <h5 class="mb-0">
+                                                    <i class="bi bi-collection me-2"></i>
+                                                    Выбор ключевых фотографий
+                                                </h5>
+                                            </div>
                                             <div class="card-body">
-                                                <!-- Ключевые фотографии (3-5 шт.) -->
-                                                <div th:if="${keyImages != null && !keyImages.isEmpty()}" class="mb-4">
-                                                    <h6 class="mb-3">
-                                                        <i class="bi bi-star-fill text-warning me-1"></i>
-                                                        Ключевые фотографии
-                                                        <small class="text-muted">(будут показаны на странице проекта)</small>
-                                                    </h6>
-
-                                                    <div class="row g-2">
-                                                        <div class="col-6 col-md-3" th:each="image, stat : ${keyImages}"
-                                                             th:if="${stat.index < 4}">
-                                                            <div class="card border-0 position-relative">
-                                                                <img th:src="${image.webPath}"
-                                                                     class="img-fluid rounded"
-                                                                     style="height: 120px; object-fit: cover;"
-                                                                     th:alt="${image.altText} ?: 'Фото проекта'">
-                                                                <div class="position-absolute top-0 end-0 m-1">
-                                        <span th:if="${image.featured}"
-                                              class="badge bg-warning">
-                                            <i class="bi bi-star-fill"></i>
-                                        </span>
-                                                                </div>
-                                                                <div class="card-body p-2">
-                                                                    <p class="small mb-0 text-truncate"
-                                                                       th:text="${image.caption} ?: 'Без подписи'">
-                                                                    </p>
-                                                                </div>
-                                                            </div>
-                                                        </div>
-
-                                                        <!-- Показать ещё фотографии -->
-                                                        <div th:if="${keyImages.size() > 4}" class="col-6 col-md-3">
-                                                            <div class="card border-0 bg-light h-100">
-                                                                <div class="card-body d-flex align-items-center justify-content-center">
-                                                                    <a th:href="@{/admin/projects/{id}/images(id=${project.id})}"
-                                                                       class="text-decoration-none text-center">
-                                                                        <i class="bi bi-plus-circle d-block fs-4 text-primary mb-1"></i>
-                                                                        <small class="text-muted">
-                                                                            ещё <span th:text="${keyImages.size() - 4}">0</span>
-                                                                        </small>
-                                                                    </a>
-                                                                </div>
-                                                            </div>
+                                                <!-- Информационный блок -->
+                                                <div class="alert alert-info mb-4">
+                                                    <div class="d-flex">
+                                                        <i class="bi bi-info-circle fs-4 me-3"></i>
+                                                        <div>
+                                                            <h6 class="alert-heading">Рекомендации по выбору фото</h6>
+                                                            <ul class="mb-0 small">
+                                                                <li>Выберите до 5 ключевых фотографий для проекта</li>
+                                                                <li>Первое фото будет отображаться как главное (отмечается звездочкой)</li>
+                                                                <li>Можно выбирать фото из разных галерей</li>
+                                                                <li>Используйте кнопку ниже для выбора фото из доступных галерей</li>
+                                                            </ul>
                                                         </div>
                                                     </div>
                                                 </div>
 
-                                                <!-- Если нет фотографий -->
-                                                <div th:if="${keyImages == null || keyImages.isEmpty()}" class="text-center py-4">
-                                                    <div class="mb-3">
-                                                        <i class="bi bi-camera display-4 text-muted"></i>
-                                                    </div>
-                                                    <h6>Фотографии проекта не добавлены</h6>
-                                                    <p class="text-muted small mb-3">
-                                                        Добавьте ключевые фотографии (3-5 шт.) для отображения на странице проекта
+                                                <!-- Кнопка выбора фото -->
+                                                <div class="text-center mb-4">
+                                                    <button type="button" class="btn btn-primary btn-lg" onclick="openPhotoGalleryModal()">
+                                                        <i class="bi bi-images me-2"></i>
+                                                        Выбрать фото из галерей
+                                                    </button>
+                                                    <p class="text-muted mt-2 small">
+                                                        Откроется галерея с фотографиями из всех мероприятий
                                                     </p>
                                                 </div>
 
-                                                <!-- Связь с галереей -->
-                                                <div class="alert alert-info">
-                                                    <div class="d-flex align-items-center">
-                                                        <i class="bi bi-link-45deg fs-4 me-3"></i>
-                                                        <div>
-                                                            <h6 class="mb-1">Интеграция с галереей сайта</h6>
-                                                            <p class="mb-0 small">
-                                                                Фотографии проекта связаны с основной галереей сайта.
-                                                                Все загруженные фото доступны для выбора.
-                                                            </p>
+                                                <!-- Превью выбранных фото -->
+                                                <div class="mb-4">
+                                                    <h6 class="mb-3 border-bottom pb-2">
+                                                        <i class="bi bi-check2-circle text-success me-2"></i>
+                                                        Выбранные фотографии
+                                                        <small class="text-muted">(будут отображаться на странице проекта)</small>
+                                                    </h6>
+
+                                                    <!-- Контейнер для превью -->
+                                                    <div id="selectedPhotosPreview" class="row g-3">
+                                                        <!-- Сюда будут загружаться выбранные фото -->
+                                                        <div class="col-12">
+                                                            <div class="alert alert-light text-center py-4">
+                                                                <i class="bi bi-images display-4 text-muted mb-3"></i>
+                                                                <h6 class="text-muted">Фотографии не выбраны</h6>
+                                                                <p class="text-muted small mb-0">
+                                                                    Нажмите кнопку выше для выбора фото из галерей
+                                                                </p>
+                                                            </div>
                                                         </div>
                                                     </div>
                                                 </div>
 
-                                                <!-- Кнопки управления -->
-                                                <div class="mt-3 pt-3 border-top">
-                                                    <div class="row g-2">
-                                                        <div class="col-md-6">
-                                                            <div class="d-grid">
-                                                                <a th:href="@{/admin/projects/{id}/images(id=${project.id})}"
-                                                                   class="btn btn-outline-primary">
-                                                                    <i class="bi bi-images me-1"></i>
-                                                                    <span th:if="${projectImagesCount != null && projectImagesCount > 0}">
-                                            Управление фото (<span th:text="${projectImagesCount}">0</span>)
-                                        </span>
-                                                                    <span th:unless="${projectImagesCount != null && projectImagesCount > 0}">
-                                            Добавить фотографии
-                                        </span>
-                                                                </a>
-                                                            </div>
-                                                        </div>
+                                                <!-- Скрытое поле для backend -->
+                                                <input type="hidden" id="selectedPhotoIds" name="selectedPhotoIds" value="">
+
+                                                <!-- Ссылка на полную галерею -->
+                                                <div class="mt-4 pt-4 border-top">
+                                                    <div class="row">
                                                         <div class="col-md-6">
                                                             <div class="d-grid">
                                                                 <a th:href="@{/admin/photo-gallery}"
-                                                                   class="btn btn-outline-secondary"
+                                                                   class="btn btn-outline-primary"
                                                                    target="_blank">
-                                                                    <i class="bi bi-box-arrow-up-right me-1"></i>
+                                                                    <i class="bi bi-box-arrow-up-right me-2"></i>
                                                                     Вся галерея сайта
                                                                 </a>
+                                                                <small class="text-muted d-block mt-1 text-center">
+                                                                    Откроется в новой вкладке
+                                                                </small>
                                                             </div>
                                                         </div>
-                                                    </div>
-                                                    <div class="text-center mt-2">
-                                                        <small class="text-muted">
-                                                            Рекомендуется 3-5 ключевых фотографий для проекта
-                                                        </small>
+                                                        <div class="col-md-6">
+                                                            <div class="d-grid">
+                                                                <button type="button" class="btn btn-outline-secondary"
+                                                                        onclick="clearSelectedPhotos()">
+                                                                    <i class="bi bi-trash me-2"></i>
+                                                                    Очистить все фото
+                                                                </button>
+                                                                <small class="text-muted d-block mt-1 text-center">
+                                                                    Удалить все выбранные фото
+                                                                </small>
+                                                            </div>
+                                                        </div>
                                                     </div>
                                                 </div>
                                             </div>
@@ -1164,6 +1206,134 @@
                         </form>
                     </div>
                 </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<!-- === МОДАЛЬНОЕ ОКНО ВЫБОРА ФОТО ИЗ ГАЛЕРЕЙ === -->
+<div class="modal fade" id="photoGalleryModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-fullscreen-md-down">
+        <div class="modal-content">
+            <!-- Заголовок -->
+            <div class="modal-header bg-light">
+                <h5 class="modal-title">
+                    <i class="bi bi-images me-2"></i>
+                    Выбор фото из галерей
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Закрыть"></button>
+            </div>
+
+            <!-- Тело модального окна -->
+            <div class="modal-body p-0" style="min-height: 500px;">
+                <!-- Панель поиска -->
+                <div class="border-bottom p-3">
+                    <div class="input-group">
+                        <span class="input-group-text">
+                            <i class="bi bi-search"></i>
+                        </span>
+                        <input type="text"
+                               class="form-control"
+                               id="gallerySearch"
+                               placeholder="Поиск галереи по названию или году...">
+                        <button class="btn btn-outline-secondary" type="button" onclick="clearGallerySearch()">
+                            <i class="bi bi-x-circle"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Основной контент (две колонки) -->
+                <div class="row g-0" style="min-height: 450px;">
+                    <!-- Левая колонка: Список галерей -->
+                    <div class="col-md-4 border-end" style="max-height: 450px; overflow-y: auto;">
+                        <div class="p-3">
+                            <h6 class="mb-3 text-muted">
+                                <i class="bi bi-collection me-1"></i>
+                                Доступные галереи
+                                <span id="galleriesCount" class="badge bg-secondary ms-1">0</span>
+                            </h6>
+
+                            <!-- Список галерей -->
+                            <div id="galleriesList" class="list-group list-group-flush">
+                                <!-- Галереи будут загружены через JavaScript -->
+                                <div class="text-center py-5">
+                                    <div class="spinner-border spinner-border-sm text-primary" role="status">
+                                        <span class="visually-hidden">Загрузка...</span>
+                                    </div>
+                                    <p class="mt-2 text-muted small">Загрузка галерей...</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Правая колонка: Фото выбранной галереи -->
+                    <div class="col-md-8" style="max-height: 450px; overflow-y: auto;">
+                        <div class="p-3">
+                            <!-- Заголовок галереи -->
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <div>
+                                    <h6 id="currentGalleryTitle" class="mb-0">
+                                        <i class="bi bi-image me-1"></i>
+                                        Выберите галерею слева
+                                    </h6>
+                                    <small id="currentGalleryInfo" class="text-muted">
+                                        Для просмотра фото выберите галерею
+                                    </small>
+                                </div>
+                                <div>
+                                    <span id="photosInGalleryCount" class="badge bg-info">0 фото</span>
+                                </div>
+                            </div>
+
+                            <!-- Фото галереи -->
+                            <div id="galleryPhotos" class="row row-cols-2 row-cols-md-3 row-cols-lg-4 g-2">
+                                <!-- Фото будут загружены через JavaScript -->
+                                <div class="col-12 text-center py-5">
+                                    <i class="bi bi-images display-6 text-muted"></i>
+                                    <p class="mt-2 text-muted">Выберите галерею для просмотра фото</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Секция выбранных фото -->
+                <div class="border-top p-3 bg-light">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <h6 class="mb-0">
+                            <i class="bi bi-check2-circle me-1 text-success"></i>
+                            Выбранные фото
+                            <span id="selectedCount" class="badge bg-success ms-1">0</span>
+                            <small class="text-muted">/5</small>
+                        </h6>
+                        <button type="button" class="btn btn-sm btn-outline-danger" onclick="clearSelectedPhotos()">
+                            <i class="bi bi-trash me-1"></i>Очистить все
+                        </button>
+                    </div>
+
+                    <!-- Контейнер для выбранных фото (будут добавлены через drag-n-drop позже) -->
+                    <div id="selectedPhotosContainer" class="row g-2 mt-2">
+                        <div class="col-12">
+                            <div class="alert alert-warning py-2 mb-0">
+                                <i class="bi bi-info-circle me-1"></i>
+                                Фото не выбраны. Выберите фото из галерей выше (максимум 5).
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Футер модального окна -->
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
+                    <i class="bi bi-x-circle me-1"></i>
+                    Отмена
+                </button>
+                <button type="button" class="btn btn-primary" onclick="saveSelectedPhotos()">
+                    <i class="bi bi-check-circle me-1"></i>
+                    Сохранить выбранные фото
+                </button>
             </div>
         </div>
     </div>
@@ -1620,5 +1790,871 @@ function updateProjectMembersCount() {
     }
 }
 </script>
+
+
+    // === УПРАВЛЕНИЕ МОДАЛЬНЫМ ОКНОМ ВЫБОРА ФОТО ИЗ ГАЛЕРЕЙ ===
+<script>
+    // === ГЛОБАЛЬНЫЕ ПЕРЕМЕННЫЕ ===
+    let allGalleries = [];          // Все галереи
+    let currentGalleryId = null;    // ID текущей галереи
+    let currentGalleryPhotos = [];  // Фото текущей галереи
+    let selectedPhotos = [];        // Выбранные фото для проекта [{id, title, webPath, galleryTitle}]
+    let selectedPhotosModal = null; // Bootstrap modal instance
+
+    // === ИНИЦИАЛИЗАЦИЯ ПРИ ЗАГРУЗКЕ СТРАНИЦЫ ===
+    document.addEventListener('DOMContentLoaded', function() {
+        console.log('Инициализация модуля выбора фото из галерей...');
+
+        // Загружаем выбранные фото из скрытого поля
+        loadSelectedPhotosFromForm();
+
+        // Настраиваем обработчик поиска галерей
+        const searchInput = document.getElementById('gallerySearch');
+        if (searchInput) {
+            searchInput.addEventListener('input', function() {
+                filterGalleries(this.value);
+            });
+        }
+
+        // Настраиваем обработчики модального окна
+        setupModalHandlers();
+
+        // Показываем превью выбранных фото
+        showSelectedPhotosPreview();
+    });
+
+    // === ЗАГРУЗКА ДАННЫХ ===
+
+    /**
+     * Загружает выбранные фото из скрытого поля формы.
+     * Loads selected photos from hidden form field.
+     */
+    function loadSelectedPhotosFromForm() {
+        const hiddenField = document.getElementById('selectedPhotoIds');
+        if (hiddenField && hiddenField.value && hiddenField.value.trim() !== '') {
+            const ids = hiddenField.value.split(',')
+                .map(id => parseInt(id.trim()))
+                .filter(id => !isNaN(id) && id > 0);
+
+            console.log('Загружены ID выбранных фото из формы:', ids);
+
+            // Сохраняем только ID, информацию загрузим позже
+            selectedPhotos = ids.map(id => ({
+                id: id,
+                title: `Фото ${id}`,
+                webPath: '/static/images/placeholder.jpg',
+                galleryTitle: 'Загрузка...'
+            }));
+
+        } else {
+            console.log('Выбранные фото не найдены в форме');
+            selectedPhotos = [];
+        }
+    }
+
+    /**
+     * Загружает список всех галерей с сервера.
+     * Loads list of all galleries from server.
+     */
+    function loadGalleries() {
+        console.log('Загрузка списка галерей...');
+
+        showLoadingGalleries();
+
+        fetch('/admin/projects/available-galleries')
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`Ошибка сервера: ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(galleries => {
+                allGalleries = galleries;
+                console.log(`Загружено галерей: ${allGalleries.length}`);
+
+                // Обновляем счетчик
+                updateGalleriesCount();
+
+                // Отображаем галереи
+                renderGalleriesList();
+
+                // Если есть галереи, загружаем первую
+                if (allGalleries.length > 0) {
+                    selectGallery(allGalleries[0].id);
+                }
+            })
+            .catch(error => {
+                console.error('❌ Ошибка загрузки галерей:', error);
+                showGalleriesError();
+            });
+    }
+
+    /**
+     * Загружает фото указанной галереи.
+     * Loads photos of specified gallery.
+     *
+     * @param {number} galleryId ID галереи / gallery ID
+     */
+    function loadGalleryPhotos(galleryId) {
+        if (!galleryId) return;
+
+        console.log(`Загрузка фото галереи ID: ${galleryId}`);
+
+        currentGalleryId = galleryId;
+        showLoadingPhotos();
+
+        fetch(`/admin/projects/gallery/${galleryId}/photos`)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`Ошибка сервера: ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(photos => {
+                currentGalleryPhotos = photos;
+                console.log(`Загружено фото: ${currentGalleryPhotos.length}`);
+
+                // Обновляем информацию о текущей галерее
+                updateCurrentGalleryInfo(galleryId);
+
+                // Отображаем фото
+                renderGalleryPhotos();
+
+                // Обновляем состояние чекбоксов для уже выбранных фото
+                updatePhotoCheckboxes();
+            })
+            .catch(error => {
+                console.error(`❌ Ошибка загрузки фото галереи ${galleryId}:`, error);
+                showPhotosError();
+            });
+    }
+
+    // === ОТОБРАЖЕНИЕ ДАННЫХ ===
+
+    /**
+     * Отображает индикатор загрузки галерей.
+     * Shows galleries loading indicator.
+     */
+    function showLoadingGalleries() {
+        const galleriesList = document.getElementById('galleriesList');
+        if (!galleriesList) return;
+
+        galleriesList.innerHTML = `
+            <div class="text-center py-5">
+                <div class="spinner-border spinner-border-sm text-primary" role="status">
+                    <span class="visually-hidden">Загрузка...</span>
+                </div>
+                <p class="mt-2 text-muted small">Загрузка галерей...</p>
+            </div>
+        `;
+    }
+
+    /**
+     * Отображает ошибку загрузки галерей.
+     * Shows galleries loading error.
+     */
+    function showGalleriesError() {
+        const galleriesList = document.getElementById('galleriesList');
+        if (!galleriesList) return;
+
+        galleriesList.innerHTML = `
+            <div class="alert alert-danger">
+                <i class="bi bi-exclamation-triangle me-1"></i>
+                Ошибка загрузки галерей. Проверьте подключение.
+            </div>
+        `;
+    }
+
+    /**
+     * Отображает список галерей.
+     * Renders galleries list.
+     */
+    function renderGalleriesList() {
+        const galleriesList = document.getElementById('galleriesList');
+        if (!galleriesList) return;
+
+        if (allGalleries.length === 0) {
+            galleriesList.innerHTML = `
+                <div class="alert alert-info">
+                    <i class="bi bi-info-circle me-1"></i>
+                    Нет доступных галерей
+                </div>
+            `;
+            return;
+        }
+
+        let html = '';
+
+        allGalleries.forEach(gallery => {
+            const isActive = gallery.id === currentGalleryId;
+            const badgeClass = gallery.published ? 'bg-success' : 'bg-secondary';
+            const activeClass = isActive ? 'active bg-light border-primary' : '';
+
+            html += `
+                <a href="#" class="list-group-item list-group-item-action ${activeClass}"
+                   onclick="selectGallery(${gallery.id}); return false;"
+                   data-gallery-id="${gallery.id}">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="mb-1">${escapeHtml(gallery.title)}</h6>
+                            <small class="text-muted">${gallery.year} год</small>
+                        </div>
+                        <div class="text-end">
+                            <span class="badge ${badgeClass}">${gallery.photoCount || 0}</span>
+                        </div>
+                    </div>
+                    ${gallery.description ? `<p class="mb-1 small text-muted">${escapeHtml(gallery.description.substring(0, 50))}${gallery.description.length > 50 ? '...' : ''}</p>` : ''}
+                </a>
+            `;
+        });
+
+        galleriesList.innerHTML = html;
+    }
+
+    /**
+     * Отображает индикатор загрузки фото.
+     * Shows photos loading indicator.
+     */
+    function showLoadingPhotos() {
+        const galleryPhotos = document.getElementById('galleryPhotos');
+        if (!galleryPhotos) return;
+
+        galleryPhotos.innerHTML = `
+            <div class="col-12 text-center py-5">
+                <div class="spinner-border spinner-border-sm text-primary" role="status">
+                    <span class="visually-hidden">Загрузка...</span>
+                </div>
+                <p class="mt-2 text-muted small">Загрузка фото...</p>
+            </div>
+        `;
+    }
+
+    /**
+     * Отображает ошибку загрузки фото.
+     * Shows photos loading error.
+     */
+    function showPhotosError() {
+        const galleryPhotos = document.getElementById('galleryPhotos');
+        if (!galleryPhotos) return;
+
+        galleryPhotos.innerHTML = `
+            <div class="col-12">
+                <div class="alert alert-danger">
+                    <i class="bi bi-exclamation-triangle me-1"></i>
+                    Ошибка загрузки фото галереи
+                </div>
+            </div>
+        `;
+    }
+
+    /**
+     * Отображает фото текущей галереи.
+     * Renders current gallery photos.
+     */
+    function renderGalleryPhotos() {
+        const galleryPhotos = document.getElementById('galleryPhotos');
+        if (!galleryPhotos) return;
+
+        if (currentGalleryPhotos.length === 0) {
+            galleryPhotos.innerHTML = `
+                <div class="col-12 text-center py-5">
+                    <i class="bi bi-images display-6 text-muted"></i>
+                    <p class="mt-2 text-muted">В этой галерее нет фото</p>
+                </div>
+            `;
+            return;
+        }
+
+        let html = '';
+
+        currentGalleryPhotos.forEach(photo => {
+            const isSelected = selectedPhotos.some(sp => sp.id === photo.id);
+            const isPrimary = photo.isPrimary ? 'border-warning' : '';
+            const selectedClass = isSelected ? 'selected-photo' : '';
+
+            html += `
+                <div class="col">
+                    <div class="card h-100 photo-card ${selectedClass} ${isPrimary}"
+                         data-photo-id="${photo.id}"
+                         onclick="togglePhotoSelection(${photo.id}, '${escapeHtml(photo.fileName)}', '${photo.webPath}', '${escapeHtml(photo.galleryTitle)}')"
+                         style="cursor: pointer;">
+                        <div class="position-relative">
+                            <img src="${photo.webPath || '/static/images/placeholder.jpg'}"
+                                 class="card-img-top"
+                                 style="height: 120px; object-fit: cover;"
+                                 alt="${escapeHtml(photo.fileName)}"
+                                 onerror="this.onerror=null; this.src='/static/images/placeholder.jpg'">
+                            ${isSelected ? `
+                            <div class="position-absolute top-0 end-0 m-1">
+                                <span class="badge bg-success">
+                                    <i class="bi bi-check-circle"></i>
+                                </span>
+                            </div>
+                            ` : ''}
+                            ${photo.isPrimary ? `
+                            <div class="position-absolute top-0 start-0 m-1">
+                                <span class="badge bg-warning">
+                                    <i class="bi bi-star-fill"></i>
+                                </span>
+                            </div>
+                            ` : ''}
+                        </div>
+                        <div class="card-body p-2">
+                            <div class="form-check mb-0">
+                                <input type="checkbox"
+                                       class="form-check-input"
+                                       id="photo_${photo.id}"
+                                       ${isSelected ? 'checked' : ''}
+                                       onclick="event.stopPropagation(); togglePhotoSelection(${photo.id}, '${escapeHtml(photo.fileName)}', '${photo.webPath}', '${escapeHtml(photo.galleryTitle)}')">
+                                <label class="form-check-label small" for="photo_${photo.id}">
+                                    ${escapeHtml(photo.fileName.length > 20 ? photo.fileName.substring(0, 20) + '...' : photo.fileName)}
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        });
+
+        galleryPhotos.innerHTML = html;
+    }
+
+    /**
+     * Показывает превью выбранных фото на странице (вне модального окна).
+     * Shows preview of selected photos on page (outside modal).
+     */
+    function showSelectedPhotosPreview() {
+        const previewContainer = document.getElementById('selectedPhotosPreview');
+        if (!previewContainer) return;
+
+        if (selectedPhotos.length === 0) {
+            previewContainer.innerHTML = `
+                <div class="col-12">
+                    <div class="alert alert-info">
+                        <i class="bi bi-info-circle me-1"></i>
+                        Фото не выбраны. Нажмите кнопку "Выбрать фото из галерей".
+                    </div>
+                </div>
+            `;
+            return;
+        }
+
+        let html = '<div class="col-12 mb-2"><strong>Выбранные фото:</strong></div>';
+
+        selectedPhotos.forEach((photo, index) => {
+            html += `
+                <div class="col-6 col-md-4 col-lg-3 mb-3">
+                    <div class="card h-100">
+                        <div class="position-relative">
+                            <img src="${photo.webPath || '/static/images/placeholder.jpg'}"
+                                 class="card-img-top"
+                                 style="height: 120px; object-fit: cover;"
+                                 alt="${escapeHtml(photo.title)}"
+                                 onerror="this.onerror=null; this.src='/static/images/placeholder.jpg'">
+                            <span class="position-absolute top-0 start-0 badge bg-primary m-1">${index + 1}</span>
+                        </div>
+                        <div class="card-body p-2">
+                            <p class="small mb-1 text-truncate" title="${escapeHtml(photo.title)}">
+                                ${escapeHtml(photo.title.length > 20 ? photo.title.substring(0, 20) + '...' : photo.title)}
+                            </p>
+                            <p class="small mb-0 text-muted" title="${escapeHtml(photo.galleryTitle)}">
+                                <i class="bi bi-collection me-1"></i>
+                                ${escapeHtml(photo.galleryTitle.length > 25 ? photo.galleryTitle.substring(0, 25) + '...' : photo.galleryTitle)}
+                            </p>
+                        </div>
+                        <div class="card-footer p-2 text-center">
+                            <button type="button" class="btn btn-sm btn-danger"
+                                    onclick="removePhotoFromSelection(${photo.id})">
+                                <i class="bi bi-x me-1"></i>Удалить
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+        });
+
+        previewContainer.innerHTML = html;
+    }
+
+    /**
+     * Показывает выбранные фото в модальном окне.
+     * Shows selected photos in modal.
+     */
+    function renderSelectedPhotosInModal() {
+        const selectedContainer = document.getElementById('selectedPhotosContainer');
+        if (!selectedContainer) return;
+
+        if (selectedPhotos.length === 0) {
+            selectedContainer.innerHTML = `
+                <div class="col-12">
+                    <div class="alert alert-warning py-2 mb-0">
+                        <i class="bi bi-info-circle me-1"></i>
+                        Фото не выбраны. Выберите фото из галерей выше (максимум 5).
+                    </div>
+                </div>
+            `;
+            return;
+        }
+
+        let html = '';
+
+        selectedPhotos.forEach((photo, index) => {
+            html += `
+                <div class="col-6 col-md-4 col-lg-3">
+                    <div class="card selected-photo-card" data-photo-id="${photo.id}">
+                        <div class="position-relative">
+                            <img src="${photo.webPath || '/static/images/placeholder.jpg'}"
+                                 class="card-img-top"
+                                 style="height: 100px; object-fit: cover;"
+                                 alt="${escapeHtml(photo.title)}"
+                                 onerror="this.onerror=null; this.src='/static/images/placeholder.jpg'">
+                            <span class="position-absolute top-0 start-0 badge bg-primary m-1">${index + 1}</span>
+                            <span class="position-absolute top-0 end-0 m-1">
+                                <button type="button" class="btn btn-sm btn-danger btn-sm"
+                                        onclick="removePhotoFromSelection(${photo.id})">
+                                    <i class="bi bi-x"></i>
+                                </button>
+                            </span>
+                        </div>
+                        <div class="card-body p-2">
+                            <p class="small mb-1 text-truncate" title="${escapeHtml(photo.title)}">
+                                ${escapeHtml(photo.title.length > 15 ? photo.title.substring(0, 15) + '...' : photo.title)}
+                            </p>
+                            <p class="small mb-0 text-muted text-truncate" title="${escapeHtml(photo.galleryTitle)}">
+                                ${escapeHtml(photo.galleryTitle.length > 15 ? photo.galleryTitle.substring(0, 15) + '...' : photo.galleryTitle)}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            `;
+        });
+
+        selectedContainer.innerHTML = html;
+    }
+
+    // === УПРАВЛЕНИЕ ВЫБОРОМ ===
+
+    /**
+     * Выбирает галерею для отображения фото.
+     * Selects gallery to display photos.
+     *
+     * @param {number} galleryId ID галереи / gallery ID
+     */
+    function selectGallery(galleryId) {
+        console.log(`Выбрана галерея: ${galleryId}`);
+
+        // Обновляем активный элемент в списке галерей
+        document.querySelectorAll('#galleriesList .list-group-item').forEach(item => {
+            const itemGalleryId = parseInt(item.getAttribute('data-gallery-id'));
+            if (itemGalleryId === galleryId) {
+                item.classList.add('active', 'bg-light', 'border-primary');
+            } else {
+                item.classList.remove('active', 'bg-light', 'border-primary');
+            }
+        });
+
+        // Загружаем фото выбранной галереи
+        loadGalleryPhotos(galleryId);
+    }
+
+    /**
+     * Переключает выбор фото.
+     * Toggles photo selection.
+     *
+     * @param {number} photoId ID фото / photo ID
+     * @param {string} photoTitle название фото / photo title
+     * @param {string} webPath путь к фото / photo web path
+     * @param {string} galleryTitle название галереи / gallery title
+     */
+    function togglePhotoSelection(photoId, photoTitle, webPath, galleryTitle) {
+        // Проверяем, выбрано ли уже это фото
+        const existingIndex = selectedPhotos.findIndex(photo => photo.id === photoId);
+
+        if (existingIndex >= 0) {
+            // Удаляем фото из выбранных
+            selectedPhotos.splice(existingIndex, 1);
+            console.log(`Удалено фото ID: ${photoId}`);
+        } else {
+            // Проверяем лимит (максимум 5 фото)
+            if (selectedPhotos.length >= 5) {
+                showAlert('Можно выбрать максимум 5 фото. Удалите одно из выбранных.', 'warning');
+                return;
+            }
+
+            // Добавляем новое фото
+            selectedPhotos.push({
+                id: photoId,
+                title: photoTitle,
+                webPath: webPath,
+                galleryTitle: galleryTitle
+            });
+            console.log(`Добавлено фото ID: ${photoId}`);
+        }
+
+        updateSelectedPhotosCounter();
+
+        // Обновляем UI
+        updateSelectedCount();
+        renderSelectedPhotosInModal();
+        updatePhotoCheckboxes();
+    }
+
+    /**
+     * Удаляет фото из выбранных.
+     * Removes photo from selection.
+     *
+     * @param {number} photoId ID фото / photo ID
+     */
+    function removePhotoFromSelection(photoId) {
+        if (!confirm('Удалить это фото из проекта?')) {
+            return;
+        }
+
+        selectedPhotos = selectedPhotos.filter(photo => photo.id !== photoId);
+        console.log(`Удалено фото ID: ${photoId}, осталось: ${selectedPhotos.length}`);
+
+        updateSelectedPhotosCounter();
+
+        // Обновляем UI
+        updateSelectedCount();
+        renderSelectedPhotosInModal();
+        showSelectedPhotosPreview();
+        updatePhotoCheckboxes();
+
+        // Обновляем скрытое поле в форме
+        updateHiddenField();
+    }
+
+    /**
+     * Очищает все выбранные фото.
+     * Clears all selected photos.
+     */
+    function clearSelectedPhotos() {
+        if (selectedPhotos.length === 0) return;
+
+        if (!confirm(`Удалить все ${selectedPhotos.length} выбранных фото?`)) {
+            return;
+        }
+
+        selectedPhotos = [];
+        console.log('Очищены все выбранные фото');
+
+        // Обновляем UI
+        updateSelectedCount();
+        renderSelectedPhotosInModal();
+        showSelectedPhotosPreview();
+        updatePhotoCheckboxes();
+
+        // Обновляем скрытое поле в форме
+        updateHiddenField();
+    }
+
+    /**
+     * Обновляет состояние чекбоксов фото.
+     * Updates photo checkboxes state.
+     */
+    function updatePhotoCheckboxes() {
+        // Обновляем чекбоксы в текущей галерее
+        currentGalleryPhotos.forEach(photo => {
+            const checkbox = document.getElementById(`photo_${photo.id}`);
+            if (checkbox) {
+                const isSelected = selectedPhotos.some(sp => sp.id === photo.id);
+                checkbox.checked = isSelected;
+
+                // Обновляем визуальное состояние карточки
+                const card = checkbox.closest('.photo-card');
+                if (card) {
+                    if (isSelected) {
+                        card.classList.add('selected-photo');
+                    } else {
+                        card.classList.remove('selected-photo');
+                    }
+                }
+            }
+        });
+    }
+
+    // === ФИЛЬТРАЦИЯ И ПОИСК ===
+
+    /**
+     * Фильтрует галереи по поисковому запросу.
+     * Filters galleries by search query.
+     *
+     * @param {string} query поисковый запрос / search query
+     */
+    function filterGalleries(query) {
+        if (!query || query.trim() === '') {
+            // Показываем все галереи
+            document.querySelectorAll('#galleriesList .list-group-item').forEach(item => {
+                item.style.display = 'block';
+            });
+            return;
+        }
+
+        const searchLower = query.toLowerCase().trim();
+
+        document.querySelectorAll('#galleriesList .list-group-item').forEach(item => {
+            const title = item.querySelector('h6')?.textContent?.toLowerCase() || '';
+            const year = item.querySelector('small')?.textContent?.toLowerCase() || '';
+            const description = item.querySelector('p')?.textContent?.toLowerCase() || '';
+
+            const matches = title.includes(searchLower) ||
+                           year.includes(searchLower) ||
+                           description.includes(searchLower);
+
+            item.style.display = matches ? 'block' : 'none';
+        });
+    }
+
+    /**
+     * Очищает поле поиска галерей.
+     * Clears gallery search field.
+     */
+    function clearGallerySearch() {
+        const searchInput = document.getElementById('gallerySearch');
+        if (searchInput) {
+            searchInput.value = '';
+            filterGalleries('');
+            searchInput.focus();
+        }
+    }
+
+    // === ОБНОВЛЕНИЕ UI ===
+
+    /**
+     * Обновляет счетчик галерей.
+     * Updates galleries counter.
+     */
+    function updateGalleriesCount() {
+        const countElement = document.getElementById('galleriesCount');
+        if (countElement) {
+            countElement.textContent = allGalleries.length;
+        }
+    }
+
+    /**
+     * Обновляет информацию о текущей галерее.
+     * Updates current gallery information.
+     *
+     * @param {number} galleryId ID галереи / gallery ID
+     */
+    function updateCurrentGalleryInfo(galleryId) {
+        const gallery = allGalleries.find(g => g.id === galleryId);
+        if (!gallery) return;
+
+        const titleElement = document.getElementById('currentGalleryTitle');
+        const infoElement = document.getElementById('currentGalleryInfo');
+        const countElement = document.getElementById('photosInGalleryCount');
+
+        if (titleElement) {
+            titleElement.innerHTML = `<i class="bi bi-image me-1"></i>${escapeHtml(gallery.title)}`;
+        }
+
+        if (infoElement) {
+            infoElement.textContent = `${gallery.year} год${gallery.description ? ` - ${gallery.description.substring(0, 50)}${gallery.description.length > 50 ? '...' : ''}` : ''}`;
+        }
+
+        if (countElement) {
+            countElement.textContent = `${currentGalleryPhotos.length} фото`;
+        }
+    }
+
+    /**
+     * Обновляет счетчик выбранных фото.
+     * Updates selected photos counter.
+     */
+    function updateSelectedCount() {
+        const countElement = document.getElementById('selectedCount');
+        if (countElement) {
+            countElement.textContent = selectedPhotos.length;
+        }
+    }
+
+    /**
+     * Обновляет скрытое поле формы с ID выбранных фото.
+     * Updates hidden form field with selected photo IDs.
+     */
+    function updateHiddenField() {
+        const hiddenField = document.getElementById('selectedPhotoIds');
+        if (hiddenField) {
+            const ids = selectedPhotos.map(photo => photo.id).join(',');
+            hiddenField.value = ids;
+            console.log('Обновлено скрытое поле:', ids);
+        }
+    }
+
+    // === МОДАЛЬНОЕ ОКНО ===
+
+    /**
+     * Настраивает обработчики модального окна.
+     * Sets up modal handlers.
+     */
+    function setupModalHandlers() {
+        const modalElement = document.getElementById('photoGalleryModal');
+        if (!modalElement) return;
+
+        // При открытии модального окна
+        modalElement.addEventListener('show.bs.modal', function() {
+            console.log('Открытие модального окна галерей');
+            loadGalleries();
+        });
+
+        // При закрытии модального окна
+        modalElement.addEventListener('hidden.bs.modal', function() {
+            console.log('Закрытие модального окна галерей');
+            // Сбрасываем поиск
+            clearGallerySearch();
+        });
+    }
+
+    /**
+     * Открывает модальное окно выбора фото.
+     * Opens photo selection modal.
+     */
+    function openPhotoGalleryModal() {
+        console.log('Открываем модальное окно галерей...');
+        const modal = new bootstrap.Modal(document.getElementById('photoGalleryModal'));
+        modal.show();
+    }
+
+    /**
+     * Сохраняет выбранные фото и закрывает модальное окно.
+     * Saves selected photos and closes modal.
+     */
+    function saveSelectedPhotos() {
+        console.log('Сохранение выбранных фото:', selectedPhotos.length);
+
+        // Обновляем скрытое поле
+        updateHiddenField();
+
+        // Обновляем превью на странице
+        showSelectedPhotosPreview();
+
+        // Закрываем модальное окно
+        const modal = bootstrap.Modal.getInstance(document.getElementById('photoGalleryModal'));
+        if (modal) {
+            modal.hide();
+        }
+
+        // Показываем уведомление
+        showAlert(`Выбрано ${selectedPhotos.length} фото`, 'success');
+    }
+
+    // === ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ ===
+
+    /**
+     * Экранирует HTML-символы для безопасного отображения.
+     * Escapes HTML characters for safe display.
+     *
+     * @param {string} text текст для экранирования / text to escape
+     * @return {string} экранированный текст / escaped text
+     */
+    function escapeHtml(text) {
+        if (!text) return '';
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    }
+
+    /**
+     * Показывает всплывающее уведомление.
+     * Shows popup notification.
+     *
+     * @param {string} message текст сообщения / message text
+     * @param {string} type тип уведомления (success, warning, danger) / notification type
+     */
+    function showAlert(message, type = 'success') {
+        // Удаляем старые уведомления
+        const oldAlerts = document.querySelectorAll('.custom-alert');
+        oldAlerts.forEach(alert => alert.remove());
+
+        // Создаем новое уведомление
+        const alertDiv = document.createElement('div');
+        alertDiv.className = `custom-alert alert alert-${type} alert-dismissible fade show position-fixed`;
+        alertDiv.style.cssText = `
+            top: 20px;
+            right: 20px;
+            z-index: 9999;
+            max-width: 300px;
+        `;
+
+        alertDiv.innerHTML = `
+            <i class="bi ${type === 'success' ? 'bi-check-circle' : 'bi-exclamation-triangle'} me-1"></i>
+            ${escapeHtml(message)}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        `;
+
+        document.body.appendChild(alertDiv);
+
+        // Автоматически скрыть через 3 секунды
+        setTimeout(() => {
+            const bsAlert = bootstrap.Alert.getOrCreateInstance(alertDiv);
+            if (bsAlert) bsAlert.close();
+        }, 3000);
+    }
+
+    // === CSS СТИЛИ ===
+    const photoGalleryStyles = document.createElement('style');
+    photoGalleryStyles.textContent = `
+        .photo-card {
+            transition: all 0.2s ease;
+            border: 2px solid transparent;
+        }
+        .photo-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        .photo-card.selected-photo {
+            border-color: #198754 !important;
+            background-color: rgba(25, 135, 84, 0.05);
+        }
+        .photo-card.border-warning {
+            border-color: #ffc107 !important;
+        }
+        .selected-photo-card {
+            transition: all 0.2s ease;
+            border: 2px solid #0d6efd;
+        }
+        .selected-photo-card:hover {
+            transform: scale(1.02);
+        }
+        #galleriesList .list-group-item.active {
+            background-color: #e7f1ff;
+            color: #0a58ca;
+            border-left: 3px solid #0d6efd;
+        }
+        #galleriesList .list-group-item:hover:not(.active) {
+            background-color: #f8f9fa;
+        }
+        .custom-alert {
+            animation: slideInRight 0.3s ease;
+        }
+        @keyframes slideInRight {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+    `;
+    document.head.appendChild(photoGalleryStyles);
+
+
+    /**
+ * Обновляет счетчик выбранных фото в заголовке раздела.
+ * Updates selected photos counter in section header.
+ */
+function updateSelectedPhotosCounter() {
+    const counterElement = document.getElementById('selectedPhotosCount');
+    if (counterElement) {
+        counterElement.textContent = selectedPhotos.length;
+    }
+}
+</script>
+
+
 </body>
 </html>
