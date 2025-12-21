@@ -122,6 +122,62 @@
     background-color: rgba(13, 110, 253, 0.05) !important;
     border: 2px dashed #0d6efd !important;
 }
+
+
+        /* Стили для раздела фотографий проекта */
+#selectedPhotosPreview .card {
+    transition: all 0.3s ease;
+    border: 2px solid transparent;
+}
+
+#selectedPhotosPreview .card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 6px 12px rgba(0,0,0,0.1);
+}
+
+#selectedPhotosPreview .card.border-warning {
+    border-color: #ffc107 !important;
+    background-color: rgba(255, 193, 7, 0.05);
+}
+
+#selectedPhotosPreview .card .badge.bg-primary {
+    background-color: #0d6efd !important;
+}
+
+#selectedPhotosPreview .card .badge.bg-warning {
+    background-color: #ffc107 !important;
+    color: #000;
+}
+
+/* Анимация для появления фото */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+#selectedPhotosPreview .col {
+    animation: fadeInUp 0.4s ease;
+}
+
+/* Стили для пустого состояния */
+.alert-light {
+    background-color: #f8f9fa;
+    border: 2px dashed #dee2e6;
+}
+
+/* Адаптивность */
+@media (max-width: 768px) {
+    #selectedPhotosPreview .col-6 {
+        flex: 0 0 100%;
+        max-width: 100%;
+    }
+}
     </style>
 </head>
 <body>
@@ -816,146 +872,113 @@
 
 
                             <!-- ===== ФОТОГРАФИИ ПРОЕКТА ===== -->
-                            <div class="form-section" th:if="${project.showPhotos}">
-                                <h3 class="section-title">
-                                    <i class="bi bi-images me-2"></i>
-                                    Фотографии проекта
-                                    <span class="badge bg-info ms-2">
+                            <div class="form-section">
+                                <div class="d-flex justify-content-between align-items-center mb-3">
+                                    <h3 class="section-title mb-0">
+                                        <i class="bi bi-images me-2 text-primary"></i>
+                                        Фотографии проекта
+                                    </h3>
+                                    <span class="badge bg-primary">
             <i class="bi bi-camera"></i>
-            <span th:text="${projectImagesCount != null ? projectImagesCount : 0}">0</span>
+            <span id="selectedPhotosCount">0</span>/5 фото
         </span>
-                                </h3>
+                                </div>
 
-                                <div class="row mb-3">
+                                <div class="row mb-4">
                                     <div class="col-12">
-                                        <div class="card">
+                                        <div class="card border-primary">
+                                            <div class="card-header bg-primary text-white">
+                                                <h5 class="mb-0">
+                                                    <i class="bi bi-collection me-2"></i>
+                                                    Выбор ключевых фотографий
+                                                </h5>
+                                            </div>
                                             <div class="card-body">
-                                                <!-- Ключевые фотографии (3-5 шт) -->
-                                                <div th:if="${keyImages != null && !keyImages.isEmpty()}" class="mb-4">
-                                                    <h6 class="mb-3">
-                                                        <i class="bi bi-star-fill text-warning me-1"></i>
-                                                        Ключевые фотографии
-                                                        <small class="text-muted">(будут показаны на странице проекта)</small>
-                                                    </h6>
-
-                                                    <div class="row g-2">
-                                                        <div class="col-6 col-md-3" th:each="image, stat : ${keyImages}"
-                                                             th:if="${stat.index < 4}">
-                                                            <div class="card border-0 position-relative">
-                                                                <img th:src="${image.webPath}"
-                                                                     class="img-fluid rounded"
-                                                                     style="height: 120px; object-fit: cover;"
-                                                                     th:alt="${image.altText} ?: 'Фото проекта'">
-                                                                <div class="position-absolute top-0 end-0 m-1">
-                                        <span th:if="${image.featured}"
-                                              class="badge bg-warning">
-                                            <i class="bi bi-star-fill"></i>
-                                        </span>
-                                                                </div>
-                                                                <div class="card-body p-2">
-                                                                    <p class="small mb-0 text-truncate"
-                                                                       th:text="${image.caption} ?: 'Без подписи'">
-                                                                    </p>
-                                                                </div>
-                                                            </div>
-                                                        </div>
-
-                                                        <!-- Показать ещё фотографии -->
-                                                        <div th:if="${keyImages.size() > 4}" class="col-6 col-md-3">
-                                                            <div class="card border-0 bg-light h-100">
-                                                                <div class="card-body d-flex align-items-center justify-content-center">
-                                                                    <a th:href="@{/admin/projects/{id}/images(id=${project.id})}"
-                                                                       class="text-decoration-none text-center">
-                                                                        <i class="bi bi-plus-circle d-block fs-4 text-primary mb-1"></i>
-                                                                        <small class="text-muted">
-                                                                            ещё <span th:text="${keyImages.size() - 4}">0</span>
-                                                                        </small>
-                                                                    </a>
-                                                                </div>
-                                                            </div>
+                                                <!-- Информационный блок -->
+                                                <div class="alert alert-info mb-4">
+                                                    <div class="d-flex">
+                                                        <i class="bi bi-info-circle fs-4 me-3"></i>
+                                                        <div>
+                                                            <h6 class="alert-heading">Рекомендации по выбору фото</h6>
+                                                            <ul class="mb-0 small">
+                                                                <li>Выберите до 5 ключевых фотографий для проекта</li>
+                                                                <li>Первое фото будет отображаться как главное (отмечается звездочкой)</li>
+                                                                <li>Можно выбирать фото из разных галерей</li>
+                                                                <li>Используйте кнопку ниже для выбора фото из доступных галерей</li>
+                                                            </ul>
                                                         </div>
                                                     </div>
                                                 </div>
 
-                                                <!-- Если нет фотографий -->
-                                                <div th:if="${keyImages == null || keyImages.isEmpty()}" class="text-center py-4">
-                                                    <div class="mb-3">
-                                                        <i class="bi bi-camera display-4 text-muted"></i>
-                                                    </div>
-                                                    <h6>Фотографии проекта не добавлены</h6>
-                                                    <p class="text-muted small mb-3">
-                                                        Добавьте ключевые фотографии (3-5 шт) для отображения на странице проекта
+                                                <!-- Кнопка выбора фото -->
+                                                <div class="text-center mb-4">
+                                                    <button type="button" class="btn btn-primary btn-lg" onclick="openPhotoGalleryModal()">
+                                                        <i class="bi bi-images me-2"></i>
+                                                        Выбрать фото из галерей
+                                                    </button>
+                                                    <p class="text-muted mt-2 small">
+                                                        Откроется галерея с фотографиями из всех мероприятий
                                                     </p>
                                                 </div>
 
-                                                <!-- Связь с галереей -->
-                                                <div class="alert alert-info">
-                                                    <div class="d-flex align-items-center">
-                                                        <i class="bi bi-link-45deg fs-4 me-3"></i>
-                                                        <div>
-                                                            <h6 class="mb-1">Интеграция с галереей сайта</h6>
-                                                            <p class="mb-0 small">
-                                                                Фотографии проекта связаны с основной галереей сайта.
-                                                                Все загруженные фото доступны для выбора.
-                                                            </p>
-                                                        </div>
-                                                    </div>
-                                                </div>
+                                                <!-- Превью выбранных фото -->
+                                                <div class="mb-4">
+                                                    <h6 class="mb-3 border-bottom pb-2">
+                                                        <i class="bi bi-check2-circle text-success me-2"></i>
+                                                        Выбранные фотографии
+                                                        <small class="text-muted">(будут отображаться на странице проекта)</small>
+                                                    </h6>
 
-                                                <!-- Кнопки управления -->
-
-                                                <button type="button" class="btn btn-primary mb-3" onclick="openPhotoGalleryModal()">
-                                                    <i class="bi bi-images me-1"></i>
-                                                    Выбрать фото из галерей
-                                                </button>
-
-
-                                                <!-- В разделе фотографий проекта, после кнопки "Выбрать фото из галереи" -->
-                                                <div class="mt-3">
-                                                    <!-- Контейнер для превью выбранных фото -->
-                                                    <div id="selectedPhotosPreview" class="row g-2"></div>
-
-                                                    <!-- Индикатор загрузки (опционально) -->
-                                                    <div id="loadingPhotos" class="text-center my-3" style="display: none;">
-                                                        <div class="spinner-border spinner-border-sm text-primary" role="status">
-                                                            <span class="visually-hidden">Загрузка фото...</span>
-                                                        </div>
-                                                        <small class="text-muted ms-2">Загрузка фото...</small>
-                                                    </div>
-                                                </div>
-
-
-                                                <div class="mt-3 pt-3 border-top">
-                                                    <div class="row g-2">
-                                                        <div class="col-md-6">
-                                                            <div class="d-grid">
-                                                                <a th:href="@{/admin/projects/{id}/images(id=${project.id})}"
-                                                                   class="btn btn-outline-primary">
-                                                                    <i class="bi bi-images me-1"></i>
-                                                                    <span th:if="${projectImagesCount != null && projectImagesCount > 0}">
-                                            Управление фото (<span th:text="${projectImagesCount}">0</span>)
-                                        </span>
-                                                                    <span th:unless="${projectImagesCount != null && projectImagesCount > 0}">
-                                            Добавить фотографии
-                                        </span>
-                                                                </a>
+                                                    <!-- Контейнер для превью -->
+                                                    <div id="selectedPhotosPreview" class="row g-3">
+                                                        <!-- Сюда будут загружаться выбранные фото -->
+                                                        <div class="col-12">
+                                                            <div class="alert alert-light text-center py-4">
+                                                                <i class="bi bi-images display-4 text-muted mb-3"></i>
+                                                                <h6 class="text-muted">Фотографии не выбраны</h6>
+                                                                <p class="text-muted small mb-0">
+                                                                    Нажмите кнопку выше для выбора фото из галерей
+                                                                </p>
                                                             </div>
                                                         </div>
+                                                    </div>
+                                                </div>
+
+                                                <!-- Скрытое поле для backend -->
+                                                <input type="hidden" id="selectedPhotoIds" name="selectedPhotoIds"
+                                                       th:if="${project?.keyPhotoIds}"
+                                                       th:value="${#strings.arrayJoin(project.keyPhotoIds, ',')}"
+                                                       th:unless="${project?.keyPhotoIds}"
+                                                       value="">
+
+                                                <!-- Ссылка на полную галерею -->
+                                                <div class="mt-4 pt-4 border-top">
+                                                    <div class="row">
                                                         <div class="col-md-6">
                                                             <div class="d-grid">
                                                                 <a th:href="@{/admin/photo-gallery}"
-                                                                   class="btn btn-outline-secondary"
+                                                                   class="btn btn-outline-primary"
                                                                    target="_blank">
-                                                                    <i class="bi bi-box-arrow-up-right me-1"></i>
+                                                                    <i class="bi bi-box-arrow-up-right me-2"></i>
                                                                     Вся галерея сайта
                                                                 </a>
+                                                                <small class="text-muted d-block mt-1 text-center">
+                                                                    Откроется в новой вкладке
+                                                                </small>
                                                             </div>
                                                         </div>
-                                                    </div>
-                                                    <div class="text-center mt-2">
-                                                        <small class="text-muted">
-                                                            Рекомендуется 3-5 ключевых фотографий для проекта
-                                                        </small>
+                                                        <div class="col-md-6">
+                                                            <div class="d-grid">
+                                                                <button type="button" class="btn btn-outline-secondary"
+                                                                        onclick="clearSelectedPhotos()">
+                                                                    <i class="bi bi-trash me-2"></i>
+                                                                    Очистить все фото
+                                                                </button>
+                                                                <small class="text-muted d-block mt-1 text-center">
+                                                                    Удалить все выбранные фото
+                                                                </small>
+                                                            </div>
+                                                        </div>
                                                     </div>
                                                 </div>
                                             </div>
@@ -1225,7 +1248,7 @@
     </div>
 </div>
 
-<!-- === МОДАЛЬНОЕ ОКНО ФОТО === -->
+
 <!-- === МОДАЛЬНОЕ ОКНО ВЫБОРА ФОТО ИЗ ГАЛЕРЕЙ === -->
 <div class="modal fade" id="photoGalleryModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-xl modal-fullscreen-md-down">
@@ -2180,6 +2203,8 @@ function updateProjectMembersCount() {
                 galleryTitle: galleryTitle
             });
             console.log(`Добавлено фото ID: ${photoId}`);
+
+            updateSelectedPhotosCounter();
         }
 
         // Обновляем UI
@@ -2203,6 +2228,8 @@ function updateProjectMembersCount() {
 
         selectedPhotos = selectedPhotos.filter(photo => photo.id !== photoId);
         console.log(`Удалено фото ID: ${photoId}, осталось: ${selectedPhotos.length}`);
+
+        updateSelectedPhotosCounter();
 
         // Обновляем UI
         updateSelectedCount();
@@ -2229,6 +2256,8 @@ function updateProjectMembersCount() {
 
         console.log(`Установлено главное фото: ${photoId}`);
 
+        updateSelectedPhotosCounter();
+
         // Обновляем превью
         showSelectedPhotosPreview();
         updateHiddenField();
@@ -2247,6 +2276,8 @@ function updateProjectMembersCount() {
 
         selectedPhotos = [];
         console.log('Очищены все выбранные фото');
+
+        updateSelectedPhotosCounter();
 
         // Обновляем UI
         updateSelectedCount();
@@ -2433,6 +2464,8 @@ function updateProjectMembersCount() {
     function saveSelectedPhotos() {
         console.log('Сохранение выбранных фото:', selectedPhotos.length);
 
+        updateSelectedPhotosCounter();
+
         // Обновляем скрытое поле
         updateHiddenField();
 
@@ -2550,6 +2583,17 @@ function updateProjectMembersCount() {
         }
     `;
     document.head.appendChild(photoGalleryStyles);
+
+    /**
+ * Обновляет счетчик выбранных фото в заголовке раздела.
+ * Updates selected photos counter in section header.
+ */
+function updateSelectedPhotosCounter() {
+    const counterElement = document.getElementById('selectedPhotosCount');
+    if (counterElement) {
+        counterElement.textContent = selectedPhotos.length;
+    }
+}
 </script>
 </body>
 </html>
