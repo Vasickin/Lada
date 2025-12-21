@@ -1,5 +1,7 @@
 package com.community.cms.controller.projectAdmin;
 
+import com.community.cms.dto.gallery.GalleryDTO;
+import com.community.cms.dto.gallery.PhotoDTO;
 import com.community.cms.model.gallery.MediaFile;
 import com.community.cms.model.gallery.PhotoGalleryItem;
 import com.community.cms.model.project.Project;
@@ -958,30 +960,189 @@ public class ProjectAdminController {
         return "redirect:/admin/projects/" + id + "/team-management";
     }
 
+    /**
+     * Получает все доступные фото из всех галерей.
+     * Gets all available photos from all galleries.
+     *
+     * @return список всех доступных фото / list of all available photos
+     * @deprecated Используйте {@link #getAvailableGalleries()} и {@link #getGalleryPhotos(Long)} вместо этого
+     * @deprecated Use {@link #getAvailableGalleries()} and {@link #getGalleryPhotos(Long)} instead
+     */
     @GetMapping("/available-photos")
     @ResponseBody
-    public List<Map<String, Object>> getAvailablePhotos() {
-        List<Map<String, Object>> result = new ArrayList<>();
+    public List<PhotoDTO> getAvailablePhotos() {
+        List<PhotoDTO> result = new ArrayList<>();
 
         try {
-            // Используем метод getAllPhotoGalleryItems() вместо findAll()
-            List<PhotoGalleryItem> galleryItems = photoGalleryService.getAllPhotoGalleryItems();
+            // Получаем все галереи
+            List<PhotoGalleryItem> galleries = photoGalleryService.getAllPhotoGalleryItems();
 
-            for (PhotoGalleryItem item : galleryItems) {
-                // Проверяем что images не null
-                if (item.getImages() != null) {
-                    for (MediaFile image : item.getImages()) {
-                        Map<String, Object> photo = new HashMap<>();
-                        photo.put("id", image.getId());
-                        photo.put("title", item.getTitle() + " - " + image.getFileName());
-                        photo.put("webPath", image.getWebPath());
-                        photo.put("thumbnail", image.getWebPath());
-                        result.add(photo);
-                    }
+            for (PhotoGalleryItem gallery : galleries) {
+                // Пропускаем неопубликованные галереи
+                if (gallery.getPublished() != null && !gallery.getPublished()) {
+                    continue;
+                }
+
+                // Добавляем все фото галереи
+                List<MediaFile> photos = gallery.getImages();
+                for (MediaFile photo : photos) {
+                    PhotoDTO dto = new PhotoDTO(
+                            photo.getId(),
+                            photo.getFileName(),
+                            photo.getWebPath(),
+                            photo.getWebPath(), // thumbnail
+                            photo.getFileName(),
+                            gallery.getId(),
+                            gallery.getTitle(),
+                            gallery.getYear(),
+                            photo.getIsPrimary()
+                    );
+
+                    result.add(dto);
                 }
             }
+
+            System.out.println("Отправлено фото (старый endpoint): " + result.size());
+
         } catch (Exception e) {
-            System.out.println("Ошибка загрузки фото: " + e.getMessage());
+            System.err.println("Ошибка загрузки фото (старый endpoint): " + e.getMessage());
+        }
+
+        return result;
+    }
+
+    // ================== УПРАВЛЕНИЕ ФОТО ИЗ ГАЛЕРЕЙ ==================
+
+    /**
+     * Получает список всех доступных галерей с количеством фото.
+     * Gets list of all available galleries with photo count.
+     *
+     * @return список галерей / list of galleries
+     */
+    @GetMapping("/available-galleries")
+    @ResponseBody
+    public List<GalleryDTO> getAvailableGalleries() {
+        List<GalleryDTO> result = new ArrayList<>();
+
+        try {
+            // Получаем все элементы фото-галереи
+            List<PhotoGalleryItem> galleries = photoGalleryService.getAllPhotoGalleryItems();
+
+            for (PhotoGalleryItem gallery : galleries) {
+                // Пропускаем неопубликованные галереи
+                if (gallery.getPublished() != null && !gallery.getPublished()) {
+                    continue;
+                }
+
+                GalleryDTO dto = new GalleryDTO(
+                        gallery.getId(),
+                        gallery.getTitle(),
+                        gallery.getYear(),
+                        gallery.getDescription(),
+                        gallery.getImagesCount(),
+                        gallery.getPublished()
+                );
+
+                result.add(dto);
+            }
+
+            // Сортируем по году (новые сначала)
+            result.sort((a, b) -> b.getYear().compareTo(a.getYear()));
+
+            System.out.println("Отправлено галерей: " + result.size());
+
+        } catch (Exception e) {
+            System.err.println("Ошибка получения списка галерей: " + e.getMessage());
+            e.printStackTrace();
+        }
+
+        return result;
+    }
+
+    /**
+     * Получает все фото из указанной галереи.
+     * Gets all photos from specified gallery.
+     *
+     * @param galleryId ID галереи / gallery ID
+     * @return список фото галереи / list of gallery photos
+     */
+    @GetMapping("/gallery/{galleryId}/photos")
+    @ResponseBody
+    public List<PhotoDTO> getGalleryPhotos(@PathVariable Long galleryId) {
+        List<PhotoDTO> result = new ArrayList<>();
+
+        try {
+            // Получаем галерею по ID
+            PhotoGalleryItem gallery = photoGalleryService.getPhotoGalleryItemById(galleryId);
+
+            // Получаем все фото галереи
+            List<MediaFile> photos = gallery.getImages();
+
+            for (MediaFile photo : photos) {
+                PhotoDTO dto = new PhotoDTO(
+                        photo.getId(),
+                        photo.getFileName(),
+                        photo.getWebPath(),
+                        photo.getWebPath(), // Используем webPath как thumbnail (можно оптимизировать позже)
+                        photo.getFileName(),
+                        gallery.getId(),
+                        gallery.getTitle(),
+                        gallery.getYear(),
+                        photo.getIsPrimary()
+                );
+
+                result.add(dto);
+            }
+
+            System.out.println("Галерея " + galleryId + " (" + gallery.getTitle() + "): " + result.size() + " фото");
+
+        } catch (EntityNotFoundException e) {
+            System.err.println("Галерея не найдена: " + galleryId);
+        } catch (Exception e) {
+            System.err.println("Ошибка получения фото галереи " + galleryId + ": " + e.getMessage());
+            e.printStackTrace();
+        }
+
+        return result;
+    }
+
+    /**
+     * Получает информацию о конкретных фото по их ID.
+     * Gets information about specific photos by their IDs.
+     * Используется для отображения уже выбранных фото при редактировании.
+     * Used to display already selected photos when editing.
+     *
+     * @param photoIds список ID фото через запятую / comma-separated list of photo IDs
+     * @return список информации о фото / list of photo information
+     */
+    @GetMapping("/photos-info")
+    @ResponseBody
+    public List<PhotoDTO> getPhotosInfo(@RequestParam String photoIds) {
+        List<PhotoDTO> result = new ArrayList<>();
+
+        try {
+            if (photoIds == null || photoIds.trim().isEmpty()) {
+                return result;
+            }
+
+            // Парсим ID фото
+            String[] ids = photoIds.split(",");
+
+            for (String idStr : ids) {
+                try {
+                    Long photoId = Long.parseLong(idStr.trim());
+
+                    // Находим фото и его галерею
+                    // (Здесь нужен метод поиска фото по ID, пока используем существующий endpoint)
+                    // TODO: Оптимизировать - добавить метод в PhotoGalleryService для поиска фото по ID
+
+                } catch (NumberFormatException e) {
+                    System.err.println("Некорректный ID фото: " + idStr);
+                }
+            }
+
+        } catch (Exception e) {
+            System.err.println("Ошибка получения информации о фото: " + e.getMessage());
         }
 
         return result;
