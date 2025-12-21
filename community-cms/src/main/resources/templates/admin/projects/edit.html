@@ -255,10 +255,6 @@
                               th:object="${project}"
                               method="post"
                               class="needs-validation" novalidate>
-                            <input type="hidden" id="selectedPhotoIds" name="selectedPhotoIds"
-                                   th:value="${#strings.arrayJoin(project.keyPhotoIds, ',')}">
-
-
 
                             <!-- Hidden поле для ID -->
                             <input type="hidden" th:field="*{id}" />
@@ -946,10 +942,7 @@
 
                                                 <!-- Скрытое поле для backend -->
                                                 <input type="hidden" id="selectedPhotoIds" name="selectedPhotoIds"
-                                                       th:if="${project?.keyPhotoIds}"
-                                                       th:value="${#strings.arrayJoin(project.keyPhotoIds, ',')}"
-                                                       th:unless="${project?.keyPhotoIds}"
-                                                       value="">
+                                                       th:value="${#strings.arrayJoin(project.keyPhotoIds, ',')}">
 
                                                 <!-- Ссылка на полную галерею -->
                                                 <div class="mt-4 pt-4 border-top">
@@ -2070,18 +2063,20 @@ function updateProjectMembersCount() {
                                 ${escapeHtml(photo.galleryTitle.length > 25 ? photo.galleryTitle.substring(0, 25) + '...' : photo.galleryTitle)}
                             </p>
                         </div>
-                        <div class="card-footer p-2 text-center">
-                            <button type="button" class="btn btn-sm btn-danger"
-                                    onclick="removePhotoFromSelection(${photo.id})">
-                                <i class="bi bi-x me-1"></i>Удалить
-                            </button>
-                            ${isMain ? '' : `
-                            <button type="button" class="btn btn-sm btn-warning ms-1"
-                                    onclick="setAsMainPhoto(${photo.id})">
-                                <i class="bi bi-star me-1"></i>Главное
-                            </button>
-                            `}
-                        </div>
+                        <div class="card-footer p-2">
+    <div class="d-flex justify-content-center gap-2">
+        <button type="button" class="btn btn-sm btn-danger flex-fill"
+                onclick="removePhotoFromSelection(${photo.id})">
+            <i class="bi bi-x me-1"></i>Удалить
+        </button>
+        ${isMain ? '' : `
+        <button type="button" class="btn btn-sm btn-warning flex-fill"
+                onclick="setAsMainPhoto(${photo.id})">
+            <i class="bi bi-star me-1"></i>Главное
+        </button>
+        `}
+    </div>
+</div>
                     </div>
                 </div>
             `;

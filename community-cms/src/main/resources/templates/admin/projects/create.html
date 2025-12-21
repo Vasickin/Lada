@@ -254,7 +254,7 @@
                               th:object="${project}"
                               method="post"
                               class="needs-validation" novalidate>
-                            <input type="hidden" id="selectedPhotoIds" name="selectedPhotoIds">
+
                             <!-- Сообщения об ошибках -->
                             <div th:if="${#fields.hasErrors('*')}" class="alert alert-danger">
                                 <h5 class="alert-heading">Исправьте следующие ошибки:</h5>
@@ -919,11 +919,7 @@
                                                 </div>
 
                                                 <!-- Скрытое поле для backend -->
-                                                <input type="hidden" id="selectedPhotoIds" name="selectedPhotoIds"
-                                                       th:if="${project?.keyPhotoIds}"
-                                                       th:value="${#strings.arrayJoin(project.keyPhotoIds, ',')}"
-                                                       th:unless="${project?.keyPhotoIds}"
-                                                       value="">
+                                                <input type="hidden" id="selectedPhotoIds" name="selectedPhotoIds" value="">
 
                                                 <!-- Ссылка на полную галерею -->
                                                 <div class="mt-4 pt-4 border-top">
@@ -1796,7 +1792,7 @@ function updateProjectMembersCount() {
 </script>
 
 
-// === УПРАВЛЕНИЕ МОДАЛЬНЫМ ОКНОМ ВЫБОРА ФОТО ИЗ ГАЛЕРЕЙ ===
+    // === УПРАВЛЕНИЕ МОДАЛЬНЫМ ОКНОМ ВЫБОРА ФОТО ИЗ ГАЛЕРЕЙ ===
 <script>
     // === ГЛОБАЛЬНЫЕ ПЕРЕМЕННЫЕ ===
     let allGalleries = [];          // Все галереи
