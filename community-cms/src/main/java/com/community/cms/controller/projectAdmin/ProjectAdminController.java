@@ -343,6 +343,12 @@ public class ProjectAdminController {
                             .filter(member -> !projectTeamMembers.contains(member))
                             .collect(Collectors.toList());
 
+                    // ДОБАВИТЬ: Получаем ключевые фото
+                    List<Long> keyPhotoIds = project.getKeyPhotoIds();
+                    if (keyPhotoIds != null && !keyPhotoIds.isEmpty()) {
+                        System.out.println("Ключевые фото проекта " + id + ": " + keyPhotoIds);
+                    }
+
                     model.addAttribute("project", project);
                     model.addAttribute("categories", projectService.findAllDistinctCategories());
                     model.addAttribute("statuses", Project.ProjectStatus.values());
