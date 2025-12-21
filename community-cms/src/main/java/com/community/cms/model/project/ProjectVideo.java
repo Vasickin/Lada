@@ -9,16 +9,18 @@ import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDateTime;
+import java.util.regex.Matcher;
+
 
 /**
  * Сущность для хранения видео проектов.
  *
- * <p>Хранит только ссылки на внешние видеохостинги (YouTube, Vimeo).
+ * <p>Хранит только ссылки на внешние видеохостинги (YouTube, Vimeo, Rutube).
  * Видеофайлы НЕ хранятся на сервере - только embed коды и метаданные.</p>
  *
  * <p>Основные характеристики:
  * <ul>
- *   <li>Только ссылки на YouTube/Vimeo</li>
+ *   <li>Только ссылки на YouTube/Vimeo/Rutube</li>
  *   <li>Поддержка основного и дополнительных видео</li>
  *   <li>Автоматическое извлечение ID видео из URL</li>
  *   <li>Генерация embed кода для вставки в HTML</li>
@@ -26,10 +28,10 @@ import java.time.LocalDateTime;
  * </ul>
  *
  * <p>Безопасность: Видео загружаются только через доверенные источники
- * (YouTube, Vimeo) для предотвращения XSS атак.</p>
+ * (YouTube, Vimeo, Rutube) для предотвращения XSS атак.</p>
  *
  * @author Community CMS
- * @version 1.0
+ * @version 1.1
  * @since 2025
  */
 @Entity
@@ -42,7 +44,8 @@ public class ProjectVideo {
      */
     public enum VideoType {
         YOUTUBE("YouTube"),
-        VIMEO("Vimeo");
+        VIMEO("Vimeo"),
+        RUTUBE("Rutube");
 
         private final String displayName;
 
@@ -70,6 +73,8 @@ public class ProjectVideo {
                 return YOUTUBE;
             } else if (url.contains("vimeo.com")) {
                 return VIMEO;
+            } else if (url.contains("rutube.ru")) {
+                return RUTUBE;
             }
             return null;
         }
@@ -93,6 +98,7 @@ public class ProjectVideo {
             return switch (type) {
                 case YOUTUBE -> extractYouTubeId(url);
                 case VIMEO -> extractVimeoId(url);
+                case RUTUBE -> extractRutubeId(url);
             };
         }
 
@@ -153,6 +159,25 @@ public class ProjectVideo {
             }
             return null;
         }
+
+        /**
+         * Извлекает ID Rutube видео из URL.
+         */
+        private static String extractRutubeId(String url) {
+            // Форматы:
+            // https://rutube.ru/video/VIDEO_ID/
+            // https://rutube.ru/play/embed/VIDEO_ID
+            // https://rutube.ru/video/private/VIDEO_ID/?t=123
+
+            java.util.regex.Pattern pattern = java.util.regex.Pattern.compile(
+                    "rutube\\.ru/(?:video/|play/embed/)([a-zA-Z0-9_-]+)"
+            );
+            Matcher matcher = pattern.matcher(url);
+            if (matcher.find()) {
+                return matcher.group(1);
+            }
+            return null;
+        }
     }
 
     @Id
@@ -189,13 +214,13 @@ public class ProjectVideo {
 
     /**
      * URL видео на внешнем видеохостинге.
-     * Только YouTube или Vimeo.
+     * Только YouTube, Vimeo или Rutube.
      */
     @NotBlank(message = "URL видео обязателен / Video URL is required")
-    @Pattern(regexp = "^(https?://)?(www\\.)?(youtube\\.com|youtu\\.be|vimeo\\.com)/.+$",
-            message = "Поддерживаются только ссылки на YouTube и Vimeo / Only YouTube and Vimeo links are supported")
-    @Column(name = "youtube_url", nullable = false, length = 500)
-    private String youtubeUrl;
+    @Pattern(regexp = "^(https?://)?(www\\.)?(youtube\\.com|youtu\\.be|vimeo\\.com|rutube\\.ru)/.+$",
+            message = "Поддерживаются только ссылки на YouTube, Vimeo и Rutube / Only YouTube, Vimeo and Rutube links are supported")
+    @Column(name = "video_url", nullable = false, length = 500)
+    private String videoUrl;
 
     /**
      * Тип видеохостинга.
@@ -261,13 +286,13 @@ public class ProjectVideo {
      *
      * @param project проект
      * @param title название видео
-     * @param youtubeUrl URL видео
+     * @param videoUrl URL видео
      */
-    public ProjectVideo(Project project, String title, String youtubeUrl) {
+    public ProjectVideo(Project project, String title, String videoUrl) {
         this();
         this.project = project;
         this.title = title;
-        setYoutubeUrl(youtubeUrl); // Используем сеттер для автоматического определения типа
+        setVideoUrl(videoUrl); // Используем сеттер для автоматического определения типа
         this.sortOrder = 0;
         this.isMain = false;
     }
@@ -306,17 +331,17 @@ public class ProjectVideo {
         this.description = description;
     }
 
-    public String getYoutubeUrl() {
-        return youtubeUrl;
+    public String getVideoUrl() {
+        return videoUrl;
     }
 
-    public void setYoutubeUrl(String youtubeUrl) {
-        this.youtubeUrl = youtubeUrl;
+    public void setVideoUrl(String videoUrl) {
+        this.videoUrl = videoUrl;
 
         // Автоматически определяем тип и ID видео
-        this.videoType = VideoType.fromUrl(youtubeUrl);
+        this.videoType = VideoType.fromUrl(videoUrl);
         if (this.videoType != null) {
-            this.videoId = VideoType.extractVideoId(youtubeUrl);
+            this.videoId = VideoType.extractVideoId(videoUrl);
         }
     }
 
@@ -391,6 +416,7 @@ public class ProjectVideo {
         return switch (videoType) {
             case YOUTUBE -> generateYouTubeEmbedCode();
             case VIMEO -> generateVimeoEmbedCode();
+            case RUTUBE -> generateRutubeEmbedCode();
         };
     }
 
@@ -425,6 +451,21 @@ public class ProjectVideo {
     }
 
     /**
+     * Генерирует embed код для Rutube.
+     */
+    private String generateRutubeEmbedCode() {
+        return String.format(
+                "<iframe src=\"https://rutube.ru/play/embed/%s\" " +
+                        "width=\"560\" height=\"315\" " +
+                        "frameborder=\"0\" " +
+                        "allow=\"autoplay; fullscreen; picture-in-picture\" " +
+                        "allowfullscreen " +
+                        "title=\"%s\"></iframe>",
+                videoId, title
+        );
+    }
+
+    /**
      * Генерирует URL для превью видео (миниатюры).
      *
      * @return URL превью или null если не поддерживается
@@ -440,6 +481,7 @@ public class ProjectVideo {
                 // Для Vimeo нужно API запрос, возвращаем заглушку
                 yield "https://vimeo.com/" + videoId;
             }
+            case RUTUBE -> String.format("https://rutube.ru/video/thumb/%s.jpg", videoId);
         };
     }
 
@@ -466,7 +508,7 @@ public class ProjectVideo {
     }
 
     /**
-     * Проверяет являться ли видео с YouTube.
+     * Проверяет является ли видео с YouTube.
      *
      * @return true если видео с YouTube, иначе false
      */
@@ -484,6 +526,15 @@ public class ProjectVideo {
     }
 
     /**
+     * Проверяет является ли видео с Rutube.
+     *
+     * @return true если видео с Rutube, иначе false
+     */
+    public boolean isRutubeVideo() {
+        return videoType == VideoType.RUTUBE;
+    }
+
+    /**
      * Проверяет является ли видео основным для проекта.
      *
      * @return true если это основное видео, иначе false
@@ -498,14 +549,14 @@ public class ProjectVideo {
      * @return короткая версия URL
      */
     public String getShortUrl() {
-        if (youtubeUrl == null) {
+        if (videoUrl == null) {
             return "";
         }
 
-        if (youtubeUrl.length() > 50) {
-            return youtubeUrl.substring(0, 47) + "...";
+        if (videoUrl.length() > 50) {
+            return videoUrl.substring(0, 47) + "...";
         }
-        return youtubeUrl;
+        return videoUrl;
     }
 
     /**
@@ -543,8 +594,8 @@ public class ProjectVideo {
         updatedAt = LocalDateTime.now();
 
         // Автоматически определяем тип и ID если не установлены
-        if (youtubeUrl != null && (videoType == null || videoId == null)) {
-            setYoutubeUrl(youtubeUrl);
+        if (videoUrl != null && (videoType == null || videoId == null)) {
+            setVideoUrl(videoUrl);
         }
     }
 }

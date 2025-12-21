@@ -15,10 +15,10 @@ import java.util.Optional;
  * Сервис для управления видео проектов.
  *
  * <p>Предоставляет бизнес-логику для работы с видео проектов.
- * Видео хранятся только как ссылки на внешние видеохостинги (YouTube, Vimeo).</p>
+ * Видео хранятся только как ссылки на внешние видеохостинги (YouTube, Vimeo, Rutube).</p>
  *
  * @author Community CMS
- * @version 1.0
+ * @version 1.1
  * @since 2025
  * @see ProjectVideo
  * @see ProjectVideoRepository
@@ -218,12 +218,12 @@ public class ProjectVideoService {
     /**
      * Находит видео по URL.
      *
-     * @param youtubeUrl URL видео
+     * @param videoUrl URL видео
      * @return Optional с видео, если найдено
      */
     @Transactional(readOnly = true)
-    public Optional<ProjectVideo> findByYoutubeUrl(String youtubeUrl) {
-        return projectVideoRepository.findByYoutubeUrl(youtubeUrl);
+    public Optional<ProjectVideo> findByVideoUrl(String videoUrl) {
+        return projectVideoRepository.findByVideoUrl(videoUrl);
     }
 
     /**
@@ -253,16 +253,16 @@ public class ProjectVideoService {
      * Проверяет существование видео по ID проекта и URL.
      *
      * @param projectId ID проекта
-     * @param youtubeUrl URL видео
+     * @param videoUrl URL видео
      * @return true если видео существует, иначе false
      */
     @Transactional(readOnly = true)
-    public boolean existsByProjectIdAndYoutubeUrl(Long projectId, String youtubeUrl) {
-        return projectVideoRepository.existsByProjectIdAndYoutubeUrl(projectId, youtubeUrl);
+    public boolean existsByProjectIdAndVideoUrl(Long projectId, String videoUrl) {
+        return projectVideoRepository.existsByProjectIdAndVideoUrl(projectId, videoUrl);
     }
 
     /**
-     * Проверяет существование видео по ID проекта и ID видео на внешнем хостинге.
+     * Проверяет существование видео по ID проекта и ID видео на внешнем хостинга.
      *
      * @param projectId ID проекта
      * @param videoId ID видео на внешнем хостинге
@@ -434,6 +434,17 @@ public class ProjectVideoService {
         return projectVideoRepository.countVimeoVideosByProject(project);
     }
 
+    /**
+     * Подсчитывает количество Rutube видео проекта.
+     *
+     * @param project проект
+     * @return количество Rutube видео проекта
+     */
+    @Transactional(readOnly = true)
+    public long countRutubeVideosByProject(Project project) {
+        return projectVideoRepository.countRutubeVideosByProject(project);
+    }
+
     // ================== УПРАВЛЕНИЕ ОСНОВНЫМ ВИДЕО ==================
 
     /**
@@ -545,15 +556,15 @@ public class ProjectVideoService {
             throw new IllegalArgumentException("Название видео обязательно");
         }
 
-        if (projectVideo.getYoutubeUrl() == null || projectVideo.getYoutubeUrl().trim().isEmpty()) {
+        if (projectVideo.getVideoUrl() == null || projectVideo.getVideoUrl().trim().isEmpty()) {
             throw new IllegalArgumentException("URL видео обязателен");
         }
 
         // Автоматическое определение типа и ID видео при сохранении
-        projectVideo.setYoutubeUrl(projectVideo.getYoutubeUrl());
+        projectVideo.setVideoUrl(projectVideo.getVideoUrl());
 
         if (projectVideo.getVideoType() == null) {
-            throw new IllegalArgumentException("Не удалось определить тип видеохостинга. Поддерживаются только YouTube и Vimeo");
+            throw new IllegalArgumentException("Не удалось определить тип видеохостинга. Поддерживаются только YouTube, Vimeo и Rutube");
         }
 
         if (projectVideo.getVideoId() == null || projectVideo.getVideoId().trim().isEmpty()) {
@@ -570,17 +581,17 @@ public class ProjectVideoService {
      *
      * @param project проект
      * @param title название видео
-     * @param youtubeUrl URL видео
+     * @param videoUrl URL видео
      * @param description описание (опционально)
      * @param isMain флаг основного видео
      * @param durationSeconds длительность в секундах (опционально)
      * @param sortOrder порядок сортировки
      * @return созданное видео проекта
      */
-    public ProjectVideo createProjectVideo(Project project, String title, String youtubeUrl,
+    public ProjectVideo createProjectVideo(Project project, String title, String videoUrl,
                                            String description, boolean isMain,
                                            Integer durationSeconds, Integer sortOrder) {
-        ProjectVideo projectVideo = new ProjectVideo(project, title, youtubeUrl);
+        ProjectVideo projectVideo = new ProjectVideo(project, title, videoUrl);
         projectVideo.setDescription(description);
         projectVideo.setMain(isMain);
         projectVideo.setDurationSeconds(durationSeconds);
@@ -592,20 +603,20 @@ public class ProjectVideoService {
     /**
      * Проверяет валидность URL видео.
      *
-     * @param youtubeUrl URL видео для проверки
+     * @param videoUrl URL видео для проверки
      * @return true если URL валиден и поддерживается, иначе false
      */
-    public boolean isValidVideoUrl(String youtubeUrl) {
-        if (youtubeUrl == null || youtubeUrl.trim().isEmpty()) {
+    public boolean isValidVideoUrl(String videoUrl) {
+        if (videoUrl == null || videoUrl.trim().isEmpty()) {
             return false;
         }
 
-        VideoType videoType = VideoType.fromUrl(youtubeUrl);
+        VideoType videoType = VideoType.fromUrl(videoUrl);
         if (videoType == null) {
             return false;
         }
 
-        String videoId = VideoType.extractVideoId(youtubeUrl);
+        String videoId = VideoType.extractVideoId(videoUrl);
         return videoId != null && !videoId.trim().isEmpty();
     }
 

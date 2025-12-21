@@ -49,12 +49,12 @@ public interface ProjectVideoRepository extends JpaRepository<ProjectVideo, Long
 
     // ================== ПОИСК ПО URL И ID ВИДЕО ==================
 
-    Optional<ProjectVideo> findByYoutubeUrl(String youtubeUrl);
+    Optional<ProjectVideo> findByVideoUrl(String videoUrl);
     List<ProjectVideo> findByVideoId(String videoId);
     Optional<ProjectVideo> findByProjectAndVideoId(Project project, String videoId);
 
-    @Query("SELECT CASE WHEN COUNT(pv) > 0 THEN true ELSE false END FROM ProjectVideo pv WHERE pv.project.id = :projectId AND pv.youtubeUrl = :youtubeUrl")
-    boolean existsByProjectIdAndYoutubeUrl(@Param("projectId") Long projectId, @Param("youtubeUrl") String youtubeUrl);
+    @Query("SELECT CASE WHEN COUNT(pv) > 0 THEN true ELSE false END FROM ProjectVideo pv WHERE pv.project.id = :projectId AND pv.videoUrl = :videoUrl")
+    boolean existsByProjectIdAndVideoUrl(@Param("projectId") Long projectId, @Param("videoUrl") String videoUrl);
 
     @Query("SELECT CASE WHEN COUNT(pv) > 0 THEN true ELSE false END FROM ProjectVideo pv WHERE pv.project.id = :projectId AND pv.videoId = :videoId")
     boolean existsByProjectIdAndVideoId(@Param("projectId") Long projectId, @Param("videoId") String videoId);
@@ -77,13 +77,15 @@ public interface ProjectVideoRepository extends JpaRepository<ProjectVideo, Long
         return countByProjectAndVideoType(project, VideoType.VIMEO);
     }
 
+    default long countRutubeVideosByProject(Project project) {
+        return countByProjectAndVideoType(project, VideoType.RUTUBE);
+    }
+
     // ================== СПЕЦИАЛЬНЫЕ ЗАПРОСЫ ==================
 
-    // Метод с Pageable вместо int limit
     @Query("SELECT pv FROM ProjectVideo pv WHERE pv.project = :project ORDER BY pv.sortOrder ASC")
     List<ProjectVideo> findFirstNByProject(@Param("project") Project project, Pageable pageable);
 
-    // Удобный метод с limit
     default List<ProjectVideo> findFirstNByProject(Project project, int limit) {
         return findFirstNByProject(project, PageRequest.of(0, limit));
     }
@@ -105,20 +107,16 @@ public interface ProjectVideoRepository extends JpaRepository<ProjectVideo, Long
     @Query("SELECT DISTINCT pv.project FROM ProjectVideo pv")
     List<Project> findProjectsWithVideos();
 
-    // Метод с Pageable вместо int limit
     @Query("SELECT pv FROM ProjectVideo pv ORDER BY pv.addedAt DESC")
     List<ProjectVideo> findRecentVideos(Pageable pageable);
 
-    // Удобный метод с limit
     default List<ProjectVideo> findRecentVideos(int limit) {
         return findRecentVideos(PageRequest.of(0, limit));
     }
 
-    // Метод с Pageable вместо int limit
     @Query("SELECT pv FROM ProjectVideo pv WHERE pv.videoType = :videoType ORDER BY pv.addedAt DESC")
     List<ProjectVideo> findRecentVideosByType(@Param("videoType") VideoType videoType, Pageable pageable);
 
-    // Удобный метод с limit
     default List<ProjectVideo> findRecentVideosByType(VideoType videoType, int limit) {
         return findRecentVideosByType(videoType, PageRequest.of(0, limit));
     }
