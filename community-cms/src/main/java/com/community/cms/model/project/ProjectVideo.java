@@ -466,7 +466,7 @@ public class ProjectVideo {
     }
 
     /**
-     * Проверяет является ли видео с YouTube.
+     * Проверяет являться ли видео с YouTube.
      *
      * @return true если видео с YouTube, иначе false
      */
