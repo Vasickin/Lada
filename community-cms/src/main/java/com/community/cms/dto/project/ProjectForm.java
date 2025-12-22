@@ -69,6 +69,16 @@ public class ProjectForm {
     @Size(max = 255, message = "Место проведения не должно превышать 255 символов")
     private String location;
 
+    /**
+     * Ссылка на видео проекта.
+     * Поддерживает YouTube, Vimeo, Rutube.
+     * Используется для быстрого добавления видео без перехода в отдельный интерфейс.
+     *
+     * @since 2025
+     */
+    @Size(max = 500, message = "Ссылка на видео не должна превышать 500 символов")
+    private String videoUrl;
+
     // ================== КАТЕГОРИЯ И СТАТУС ==================
 
     /**
@@ -233,6 +243,7 @@ public class ProjectForm {
         this.shortDescription = project.getShortDescription();
         this.fullDescription = project.getFullDescription();
         this.location = project.getLocation();
+        this.videoUrl = project.getVideoUrl();
         this.category = project.getCategory();
         this.status = project.getStatus();
         this.sortOrder = project.getSortOrder();
@@ -302,6 +313,26 @@ public class ProjectForm {
 
     public void setLocation(String location) {
         this.location = location;
+    }
+
+    /**
+     * Получает ссылку на видео проекта.
+     *
+     * @return ссылка на видео или null
+     * @since 2025
+     */
+    public String getVideoUrl() {
+        return videoUrl;
+    }
+
+    /**
+     * Устанавливает ссылку на видео проекта.
+     *
+     * @param videoUrl ссылка на видео (YouTube, Vimeo, Rutube)
+     * @since 2025
+     */
+    public void setVideoUrl(String videoUrl) {
+        this.videoUrl = videoUrl;
     }
 
     public String getCategory() {
@@ -522,6 +553,39 @@ public class ProjectForm {
     }
 
     /**
+     * Проверяет, есть ли у проекта добавленное видео.
+     *
+     * @return true если videoUrl не пустой, иначе false
+     * @since 2025
+     */
+    public boolean hasVideo() {
+        return videoUrl != null && !videoUrl.trim().isEmpty();
+    }
+
+    /**
+     * Получает тип видео-хостинга по URL.
+     *
+     * @return "youtube", "vimeo", "rutube" или "unknown"
+     * @since 2025
+     */
+    public String getVideoPlatform() {
+        if (!hasVideo()) {
+            return "none";
+        }
+
+        String url = videoUrl.toLowerCase();
+        if (url.contains("youtube.com") || url.contains("youtu.be")) {
+            return "youtube";
+        } else if (url.contains("vimeo.com")) {
+            return "vimeo";
+        } else if (url.contains("rutube.ru")) {
+            return "rutube";
+        } else {
+            return "unknown";
+        }
+    }
+
+    /**
      * Получает основную дату для отображения.
      * Приоритет: eventDate > endDate > startDate
      *
@@ -560,6 +624,7 @@ public class ProjectForm {
         project.setShowDescription(this.showDescription);
         project.setShowPhotos(this.showPhotos);
         project.setShowVideos(this.showVideos);
+        project.setVideoUrl(this.videoUrl);
         project.setShowTeam(this.showTeam);
         project.setShowParticipation(this.showParticipation);
         project.setShowPartners(this.showPartners);
@@ -595,6 +660,7 @@ public class ProjectForm {
         project.setShowDescription(this.showDescription);
         project.setShowPhotos(this.showPhotos);
         project.setShowVideos(this.showVideos);
+        project.setVideoUrl(this.videoUrl);
         project.setShowTeam(this.showTeam);
         project.setShowParticipation(this.showParticipation);
         project.setShowPartners(this.showPartners);

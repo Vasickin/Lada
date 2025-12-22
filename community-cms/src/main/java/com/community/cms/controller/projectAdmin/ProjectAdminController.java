@@ -186,7 +186,9 @@ public class ProjectAdminController {
                                 Model model,
                                 @RequestParam(value = "newCategoryName", required = false) String newCategoryName,
                                 @RequestParam(value = "selectedTeamMemberIds", required = false) String selectedTeamMemberIds,
-                                @RequestParam(value = "selectedPhotoIds", required = false) String selectedPhotoIds) {
+                                @RequestParam(value = "selectedPhotoIds", required = false) String selectedPhotoIds,
+                                // ↓ ДОБАВЛЯЕМ ЭТОТ ПАРАМЕТР ↓
+                                @RequestParam(value = "videoUrl", required = false) String videoUrl) {
 
         // ===== ВАЛИДАЦИЯ ДАТ =====
         if (project.getStartDate() != null && project.getEndDate() != null) {
@@ -210,6 +212,7 @@ public class ProjectAdminController {
         System.out.println("New category: " + newCategoryName);
         System.out.println("Team IDs: " + selectedTeamMemberIds);
         System.out.println("Photo IDs: " + selectedPhotoIds);
+        System.out.println("Video URL: " + videoUrl); // ← ДОБАВЛЯЕМ ЛОГ
 
         // Восстанавливаем списки для формы
         model.addAttribute("categories", projectService.findAllDistinctCategories());
@@ -255,6 +258,12 @@ public class ProjectAdminController {
             bindingResult.rejectValue("slug", "error.project", "Проект с таким URL уже существует");
             return "admin/projects/create";
         }
+
+        // ===== ДОБАВЛЯЕМ ОБРАБОТКУ ВИДЕО URL =====
+        if (videoUrl != null && !videoUrl.trim().isEmpty()) {
+            project.setVideoUrl(videoUrl.trim());
+        }
+        // ===== КОНЕЦ ОБРАБОТКИ ВИДЕО =====
 
         try {
             // Инициализация команды
@@ -357,6 +366,7 @@ public class ProjectAdminController {
                     model.addAttribute("allTeamMembers", allTeamMembers);
                     model.addAttribute("projectTeamMembers", projectTeamMembers); // ← ДОБАВИТЬ
                     model.addAttribute("availableMembers", availableMembers); // ← ДОБАВИТЬ
+                    model.addAttribute("videoUrl", project.getVideoUrl());
 
                     return "admin/projects/edit";
                 })
@@ -385,7 +395,9 @@ public class ProjectAdminController {
                                 Model model,
                                 @RequestParam(value = "newCategoryName", required = false) String newCategoryName,
                                 @RequestParam(value = "selectedTeamMemberIds", required = false) String selectedTeamMemberIds,
-                                @RequestParam(value = "selectedPhotoIds", required = false) String selectedPhotoIds) {
+                                @RequestParam(value = "selectedPhotoIds", required = false) String selectedPhotoIds,
+                                // ↓ ДОБАВЛЯЕМ ЭТОТ ПАРАМЕТР ↓
+                                @RequestParam(value = "videoUrl", required = false) String videoUrl) {
 
         // ===== ВАЛИДАЦИЯ ДАТ =====
         if (project.getStartDate() != null && project.getEndDate() != null) {
@@ -410,6 +422,7 @@ public class ProjectAdminController {
         System.out.println("Project ID: " + id);
         System.out.println("Title: " + project.getTitle());
         System.out.println("Selected team member IDs: " + selectedTeamMemberIds);
+        System.out.println("Video URL: " + videoUrl); // ← ДОБАВЛЯЕМ ЛОГ
         System.out.println("Has errors? " + bindingResult.hasErrors());
 
         // Восстанавливаем списки для формы (на случай ошибки)
@@ -556,6 +569,12 @@ public class ProjectAdminController {
                     .orElseThrow(() -> new EntityNotFoundException("Проект не найден"));
 
             System.out.println("DEBUG: Found existing project with " + existingProject.getTeamMembers().size() + " team members");
+
+            // ===== ДОБАВЛЯЕМ ОБРАБОТКУ ВИДЕО URL =====
+            if (videoUrl != null) {
+                existingProject.setVideoUrl(videoUrl.trim().isEmpty() ? null : videoUrl.trim());
+            }
+            // ===== КОНЕЦ ОБРАБОТКИ ВИДЕО =====
 
             // Обновляем основные поля проекта
             existingProject.setTitle(project.getTitle());
