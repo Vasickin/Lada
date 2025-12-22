@@ -1,5 +1,6 @@
 package com.community.cms.model.project;
 
+import com.community.cms.validation.VideoUrl;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
@@ -132,6 +133,18 @@ public class Project {
      */
     @Size(max = 255, message = "Место проведения не должно превышать 255 символов / Location must not exceed 255 characters")
     private String location;
+
+    /**
+     * Ссылка на основное видео проекта.
+     * Поддерживает YouTube, Vimeo, Rutube и другие видео-хостинги.
+     * Используется для быстрого добавления видео прямо из формы проекта.
+     *
+     * @since 2025
+     */
+    @VideoUrl
+    @Size(max = 2000, message = "Ссылка на видео не должна превышать 2000 символов")
+    @Column(name = "video_url", columnDefinition = "TEXT")
+    private String videoUrl;
 
     /**
      * Категория проекта (расширяемый список).
@@ -373,6 +386,26 @@ public class Project {
         this.location = location;
     }
 
+    /**
+     * Получает ссылку на видео проекта.
+     *
+     * @return ссылка на видео или null если видео не добавлено
+     * @since 2025
+     */
+    public String getVideoUrl() {
+        return videoUrl;
+    }
+
+    /**
+     * Устанавливает ссылку на видео проекта.
+     *
+     * @param videoUrl ссылка на видео (YouTube, Vimeo, Rutube)
+     * @since 2025
+     */
+    public void setVideoUrl(String videoUrl) {
+        this.videoUrl = videoUrl;
+    }
+
     public String getCategory() {
         return category;
     }
@@ -525,7 +558,6 @@ public class Project {
     /**
      * Список ID ключевых фотографий из галереи для проекта.
      * Хранит до 5 ID фотографий из PhotoGalleryItem.
-     *
      * Key photo IDs from gallery for the project.
      * Stores up to 5 photo IDs from PhotoGalleryItem.
      */
@@ -724,6 +756,41 @@ public class Project {
             return new String[]{"description", "photos", "videos", "team", "participation", "partners", "related"};
         }
         return sectionsOrder.split(",");
+    }
+
+    // Добавляем вспомогательный метод (можно в раздел вспомогательных методов):
+
+    /**
+     * Проверяет, есть ли у проекта добавленное видео.
+     *
+     * @return true если videoUrl не пустой, иначе false
+     * @since 2025
+     */
+    public boolean hasVideo() {
+        return videoUrl != null && !videoUrl.trim().isEmpty();
+    }
+
+    /**
+     * Получает тип видео-хостинга по URL.
+     *
+     * @return "youtube", "vimeo", "rutube" или "unknown"
+     * @since 2025
+     */
+    public String getVideoPlatform() {
+        if (!hasVideo()) {
+            return "none";
+        }
+
+        String url = videoUrl.toLowerCase();
+        if (url.contains("youtube.com") || url.contains("youtu.be")) {
+            return "youtube";
+        } else if (url.contains("vimeo.com")) {
+            return "vimeo";
+        } else if (url.contains("rutube.ru")) {
+            return "rutube";
+        } else {
+            return "unknown";
+        }
     }
 
     // ================== СВЯЗИ С КОМАНДОЙ ==================

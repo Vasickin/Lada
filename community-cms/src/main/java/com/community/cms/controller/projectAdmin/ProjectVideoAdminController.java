@@ -19,11 +19,11 @@ import java.util.Optional;
  * Контроллер административной панели для управления видео проектов.
  *
  * <p>Предоставляет интерфейс для управления видео, связанными с проектами.
- * Видео хранятся только как ссылки на внешние видеохостинги (YouTube, Vimeo).
+ * Видео хранятся только как ссылки на внешние видеохостинги (YouTube, Vimeo, Rutube).
  * Поддерживает установку основного видео для проекта.</p>
  *
  * @author Community CMS
- * @version 1.0
+ * @version 1.1
  * @since 2025
  * @see ProjectVideo
  * @see ProjectVideoService
@@ -145,10 +145,10 @@ public class ProjectVideoAdminController {
                               BindingResult bindingResult,
                               RedirectAttributes redirectAttributes) {
         // Валидация URL видео
-        if (video.getYoutubeUrl() != null &&
-                !projectVideoService.isValidVideoUrl(video.getYoutubeUrl())) {
-            bindingResult.rejectValue("youtubeUrl", "error.video",
-                    "Некорректный URL видео. Поддерживаются только YouTube и Vimeo.");
+        if (video.getVideoUrl() != null &&
+                !projectVideoService.isValidVideoUrl(video.getVideoUrl())) {
+            bindingResult.rejectValue("videoUrl", "error.video",
+                    "Некорректный URL видео. Поддерживаются только YouTube, Vimeo и Rutube.");
         }
 
         if (bindingResult.hasErrors()) {
@@ -229,10 +229,10 @@ public class ProjectVideoAdminController {
                               BindingResult bindingResult,
                               RedirectAttributes redirectAttributes) {
         // Валидация URL видео
-        if (video.getYoutubeUrl() != null &&
-                !projectVideoService.isValidVideoUrl(video.getYoutubeUrl())) {
-            bindingResult.rejectValue("youtubeUrl", "error.video",
-                    "Некорректный URL видео. Поддерживаются только YouTube и Vimeо.");
+        if (video.getVideoUrl() != null &&
+                !projectVideoService.isValidVideoUrl(video.getVideoUrl())) {
+            bindingResult.rejectValue("videoUrl", "error.video",
+                    "Некорректный URL видео. Поддерживаются только YouTube, Vimeo и Rutube.");
         }
 
         if (bindingResult.hasErrors()) {

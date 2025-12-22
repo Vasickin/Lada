@@ -69,25 +69,7 @@
                 <div class="card">
                     <div class="card-body">
                         <form th:action="@{/admin/projects}" method="get" class="row g-3">
-                            <div class="col-md-4">
-                                <label class="form-label">Статус</label>
-                                <select name="status" class="form-select">
-                                    <option value="">Все статусы</option>
-                                    <option value="ACTIVE">Активные</option>
-                                    <option value="ANNUAL">Ежегодные</option>
-                                    <option value="ARCHIVED">Архивные</option>
-                                </select>
-                            </div>
-                            <div class="col-md-4">
-                                <label class="form-label">Категория</label>
-                                <select name="category" class="form-select">
-                                    <option value="">Все категории</option>
-                                    <option th:each="cat : ${categories}"
-                                            th:value="${cat}"
-                                            th:text="${cat}">
-                                    </option>
-                                </select>
-                            </div>
+
                             <div class="col-md-4">
                                 <label class="form-label">Поиск</label>
                                 <div class="input-group">
@@ -98,6 +80,40 @@
                                     </button>
                                 </div>
                             </div>
+
+                            <div class="col-md-4">
+                                <label class="form-label">Категория</label>
+                                <select name="category" class="form-select">
+                                    <option value="">Все категории</option>
+                                    <option th:each="cat : ${categories}"
+                                            th:value="${cat}"
+                                            th:text="${cat}">
+                                    </option>
+                                </select>
+                            </div>
+
+                            <div class="col-md-4">
+                                <label class="form-label">Статус</label>
+                                <select name="status" class="form-select">
+                                    <option value="">Все статусы</option>
+                                    <option value="ACTIVE">Активные</option>
+                                    <option value="ANNUAL">Ежегодные</option>
+                                    <option value="ARCHIVED">Архивные</option>
+                                </select>
+                            </div>
+
+                            <div class="col-md-3">
+                                <label class="form-label">Год события</label>
+                                <select name="year" class="form-select">
+                                    <option value="">Все годы</option>
+                                    <option th:each="y : ${years}"
+                                            th:value="${y}"
+                                            th:text="${y}"
+                                            th:selected="${param.year != null and param.year == y}">
+                                    </option>
+                                </select>
+                            </div>
+
                         </form>
                     </div>
                 </div>
@@ -118,6 +134,7 @@
                                     <th>Категория</th>
                                     <th>Участники</th> <!-- НОВЫЙ СТОЛБЕЦ -->
                                     <th>Статус</th>
+                                    <th>Видео</th>
                                     <th>Дата события</th>
                                     <th>Создан</th>
                                     <th>Действия</th>
@@ -133,17 +150,17 @@
                                         </a>
                                     </td>
                                     <td>
-            <span class="badge bg-info" th:text="${project.category}">
-                Категория
-            </span>
+                                        <span class="badge bg-info" th:text="${project.category}">
+                                        Категория
+                                        </span>
                                     </td>
-                                    <!-- НОВЫЙ СТОЛБЕЦ: КОЛИЧЕСТВО УЧАСТНИКОВ -->
+                                    <!-- СТОЛБЕЦ: КОЛИЧЕСТВО УЧАСТНИКОВ -->
                                     <td>
-            <span th:if="${project.teamMembers != null && project.teamMembers.size() > 0}"
-                  class="badge bg-primary">
-                <i class="bi bi-people"></i>
-                <span th:text="${project.teamMembers.size()}">0</span>
-            </span>
+                                        <span th:if="${project.teamMembers != null && project.teamMembers.size() > 0}"
+                                            class="badge bg-primary">
+                                            <i class="bi bi-people"></i>
+                                            <span th:text="${project.teamMembers.size()}">0</span>
+                                        </span>
                                         <span th:if="${project.teamMembers == null || project.teamMembers.size() == 0}"
                                               class="text-muted small">
                                                 Нет
@@ -154,7 +171,41 @@
                                         <span th:classappend="'badge badge-status-' + ${project.status.name().toLowerCase()}"
                                             th:text="${project.status.name()}">
                                             Статус
-            </span>
+                                        </span>
+                                    </td>
+                                    <!-- КОЛОНКА: ВИДЕО -->
+                                    <td>
+                                        <!-- Есть видео - СИНИЙ -->
+                                        <div th:if="${project.videoUrl != null}">
+                                            <span class="badge bg-primary me-1"
+                                            title="Есть видео"
+                                            data-bs-toggle="tooltip">
+                                            <i class="bi bi-play-btn"></i>
+                                        </span>
+                                            <a th:href="${project.videoUrl}"
+                                               class="btn btn-sm btn-link p-0 me-1"
+                                               target="_blank"
+                                               title="Открыть видео"
+                                               data-bs-toggle="tooltip">
+                                                <i class="bi bi-box-arrow-up-right"></i>
+                                            </a>
+                                            <button type="button"
+                                                    class="btn btn-sm btn-outline-secondary p-0"
+                                                    onclick="copyVideoUrl('[[${project.videoUrl}]]')"
+                                                    title="Копировать ссылку"
+                                                    data-bs-toggle="tooltip">
+                                                <i class="bi bi-clipboard"></i>
+                                            </button>
+                                        </div>
+
+                                        <!-- Нет видео - КРАСНЫЙ -->
+                                        <div th:if="${project.videoUrl == null}">
+                                            <span class="badge bg-danger"
+                                                title="Нет видео"
+                                                data-bs-toggle="tooltip">
+                                                <i class="bi bi-play-btn"></i>
+                                            </span>
+                                        </div>
                                     </td>
                                     <td th:text="${project.eventDate != null} ? ${#temporals.format(project.eventDate, 'dd.MM.yyyy')} : '—'">
                                         15.12.2024
@@ -320,6 +371,71 @@
 
     /*]]>*/
 
+</script>
+
+<!-- СКРИПТ ДЛЯ ВИДЕО (ОТДЕЛЬНЫЙ, НЕЗАВИСИМЫЙ) -->
+<script>
+    // Функция для копирования ссылки на видео
+    function copyVideoUrl(url) {
+        if (!url) return;
+
+        // Пытаемся использовать современный API
+        if (navigator.clipboard && window.isSecureContext) {
+            navigator.clipboard.writeText(url).then(function() {
+                showVideoNotification('Ссылка скопирована');
+            });
+        } else {
+            // Старый метод
+            const textarea = document.createElement('textarea');
+            textarea.value = url;
+            textarea.style.position = 'fixed';
+            document.body.appendChild(textarea);
+            textarea.select();
+            document.execCommand('copy');
+            document.body.removeChild(textarea);
+            showVideoNotification('Ссылка скопирована');
+        }
+    }
+
+    // Функция показа уведомления
+    function showVideoNotification(message) {
+        // Создаём уведомление
+        const notification = document.createElement('div');
+        notification.className = 'position-fixed top-0 end-0 p-3';
+        notification.style.zIndex = '9999';
+
+        notification.innerHTML = `
+            <div class="toast show" role="alert">
+                <div class="toast-header bg-success text-white">
+                    <i class="bi bi-check-circle me-2"></i>
+                    <strong class="me-auto">Видео</strong>
+                    <button type="button" class="btn-close btn-close-white"
+                            onclick="this.closest('.position-fixed').remove()"></button>
+                </div>
+                <div class="toast-body">
+                    ${message}
+                </div>
+            </div>
+        `;
+
+        document.body.appendChild(notification);
+
+        // Автоудаление через 3 секунды
+        setTimeout(() => {
+            if (notification.parentNode) {
+                notification.remove();
+            }
+        }, 3000);
+    }
+
+    // Инициализация при загрузке
+    document.addEventListener('DOMContentLoaded', function() {
+        // Инициализация тултипов для видео
+        const videoTooltips = document.querySelectorAll('[title*="видео" i]');
+        videoTooltips.forEach(el => {
+            new bootstrap.Tooltip(el);
+        });
+    });
 </script>
 </body>
 </html>

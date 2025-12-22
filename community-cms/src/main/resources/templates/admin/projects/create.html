@@ -704,9 +704,9 @@
                                     <i class="bi bi-handshake me-2"></i>
                                     Партнёры проекта
                                     <span class="badge bg-info ms-2">
-            <i class="bi bi-building"></i>
-            <span th:text="${projectPartnersCount != null ? projectPartnersCount : 0}">0</span>
-        </span>
+                                    <i class="bi bi-building"></i>
+                                    <span th:text="${projectPartnersCount != null ? projectPartnersCount : 0}">0</span>
+                                    </span>
                                 </h3>
 
                                 <div class="row mb-3">
@@ -816,11 +816,11 @@
                                                                    class="btn btn-outline-primary">
                                                                     <i class="bi bi-handshake me-1"></i>
                                                                     <span th:if="${projectPartnersCount != null && projectPartnersCount > 0}">
-                                            Управление партнёрами (<span th:text="${projectPartnersCount}">0</span>)
-                                        </span>
+                                                                        Управление партнёрами (<span th:text="${projectPartnersCount}">0</span>)
+                                                                    </span>
                                                                     <span th:unless="${projectPartnersCount != null && projectPartnersCount > 0}">
-                                            Добавить партнёров
-                                        </span>
+                                                                        Добавить партнёров
+                                                                    </span>
                                                                 </a>
                                                             </div>
                                                         </div>
@@ -853,9 +853,9 @@
                                         Фотографии проекта
                                     </h3>
                                     <span class="badge bg-primary">
-            <i class="bi bi-camera"></i>
-            <span id="selectedPhotosCount">0</span>/5 фото
-        </span>
+                                    <i class="bi bi-camera"></i>
+                                    <span id="selectedPhotosCount">0</span>/5 фото
+                                    </span>
                                 </div>
 
                                 <div class="row mb-4">
@@ -958,148 +958,162 @@
                             </div>
 
 
-                            <!-- ===== ВИДЕО ПРОЕКТА ===== -->
-                            <div class="form-section" th:if="${project.showVideos}">
-                                <h3 class="section-title">
-                                    <i class="bi bi-play-btn me-2"></i>
-                                    Видео проекта
-                                    <span class="badge bg-info ms-2">
+                            <!-- ===== ВИДЕО ПРОЕКТА (БЫСТРОЕ ДОБАВЛЕНИЕ) ===== -->
+                            <div class="form-section">
+                                <div class="d-flex justify-content-between align-items-center mb-3">
+                                    <h3 class="section-title mb-0">
+                                        <i class="bi bi-play-btn me-2 text-primary"></i>
+                                        Видео проекта (быстрое добавление)
+                                    </h3>
+                                    <span class="badge bg-info">
             <i class="bi bi-film"></i>
-            <span th:text="${projectVideosCount != null ? projectVideosCount : 0}">0</span>
+            Простое поле
         </span>
-                                </h3>
+                                </div>
 
                                 <div class="row mb-3">
                                     <div class="col-12">
-                                        <div class="card">
+                                        <div class="card border-primary">
+                                            <div class="card-header bg-primary text-white">
+                                                <h5 class="mb-0">
+                                                    <i class="bi bi-link-45deg me-2"></i>
+                                                    Быстрая ссылка на видео
+                                                </h5>
+                                            </div>
                                             <div class="card-body">
-                                                <!-- Информация о видео -->
-                                                <div th:if="${mainVideo != null}" class="mb-4">
-                                                    <div class="d-flex align-items-center mb-3">
-                                                        <h6 class="mb-0 me-3">
-                                                            <i class="bi bi-star-fill text-warning me-1"></i>
-                                                            Главное видео:
-                                                        </h6>
-                                                        <span class="badge bg-success">
-                                <i class="bi bi-check-circle me-1"></i>
-                                Установлено
-                            </span>
+                                                <!-- Информационный блок -->
+                                                <div class="alert alert-info mb-4">
+                                                    <div class="d-flex">
+                                                        <i class="bi bi-info-circle fs-4 me-3"></i>
+                                                        <div>
+                                                            <h6 class="alert-heading">Простое добавление видео</h6>
+                                                            <ul class="mb-0 small">
+                                                                <li>Вставьте ссылку на видео с YouTube, Vimeo или Rutube</li>
+                                                                <li>Нажмите "Превью" для проверки</li>
+                                                                <li>Видео будет отображаться на странице проекта</li>
+                                                                <li>Для управления несколькими видео используйте <a href="#" onclick="alert('Используйте раздел \\'Управление видео\\' ниже'); return false;" class="alert-link">полную систему видео</a></li>
+                                                            </ul>
+                                                        </div>
                                                     </div>
+                                                </div>
 
-                                                    <div class="video-preview-card">
-                                                        <div class="row align-items-center">
-                                                            <div class="col-auto">
-                                                                <img th:src="${mainVideo.thumbnailUrl}"
-                                                                     class="video-thumbnail-small"
-                                                                     alt="Главное видео"
-                                                                     style="width: 120px; height: 68px; object-fit: cover; border-radius: 4px;">
+                                                <!-- Поле для ввода ссылки -->
+                                                <div class="mb-4">
+                                                    <label for="videoUrlInput" class="form-label">
+                                                        <i class="bi bi-link-45deg me-1"></i>
+                                                        Ссылка на видео:
+                                                    </label>
+                                                    <div class="input-group">
+                                                        <input type="text"
+                                                               class="form-control"
+                                                               id="videoUrlInput"
+                                                               name="videoUrl"
+                                                               placeholder="https://youtube.com/watch?v=... или https://vimeo.com/..."
+                                                               aria-label="Ссылка на видео">
+                                                        <button class="btn btn-outline-primary"
+                                                                type="button"
+                                                                id="previewVideoBtn"
+                                                                onclick="showVideoPreview()">
+                                                            <i class="bi bi-play-circle me-1"></i>
+                                                            Превью
+                                                        </button>
+                                                        <button class="btn btn-outline-secondary"
+                                                                type="button"
+                                                                onclick="clearVideoField()">
+                                                            <i class="bi bi-x-circle me-1"></i>
+                                                            Очистить
+                                                        </button>
+                                                    </div>
+                                                    <div class="form-text">
+                                                        <i class="bi bi-info-circle me-1"></i>
+                                                        Поддерживаются: YouTube, Vimeo, Rutube
+                                                    </div>
+                                                </div>
+
+                                                <!-- Блок для превью -->
+                                                <div id="videoPreviewContainer" class="mb-4" style="display: none;">
+                                                    <h6 class="border-bottom pb-2 mb-3">
+                                                        <i class="bi bi-eye me-2 text-success"></i>
+                                                        Предпросмотр видео
+                                                    </h6>
+                                                    <div class="card">
+                                                        <div class="card-body text-center p-3">
+                                                            <div id="videoPreviewContent">
+                                                                <!-- Embed код появится здесь -->
                                                             </div>
-                                                            <div class="col">
-                                                                <h6 class="mb-1" th:text="${mainVideo.title}">Название видео</h6>
-                                                                <p class="mb-1 text-muted small">
-                                                                    <i class="bi bi-clock me-1"></i>
-                                                                    <span th:text="${mainVideo.durationFormatted}">0:00</span>
-                                                                    <span class="ms-2">
-                                            <i class="bi bi-eye me-1"></i>
-                                            <span th:text="${mainVideo.videoType == 'YOUTUBE' ? 'YouTube' : 'Vimeo'}">
-                                                YouTube
-                                            </span>
-                                        </span>
-                                                                </p>
-                                                                <div class="small">
-                                                                    <a th:href="@{/admin/project-videos/project/{projectId}(projectId=${project.id})}"
-                                                                       class="text-decoration-none">
-                                                                        <i class="bi bi-arrow-right me-1"></i>
-                                                                        Перейти к управлению видео
-                                                                    </a>
-                                                                </div>
+                                                            <div class="mt-3">
+                                                                <button type="button" class="btn btn-sm btn-outline-secondary"
+                                                                        onclick="hideVideoPreview()">
+                                                                    <i class="bi bi-eye-slash me-1"></i>
+                                                                    Скрыть превью
+                                                                </button>
                                                             </div>
                                                         </div>
                                                     </div>
                                                 </div>
 
-                                                <!-- Если нет видео -->
-                                                <div th:if="${mainVideo == null}" class="text-center py-3">
-                                                    <div class="mb-3">
-                                                        <i class="bi bi-play-circle display-4 text-muted"></i>
-                                                    </div>
-                                                    <h6>Видео проекта не добавлены</h6>
-                                                    <p class="text-muted small mb-3">
-                                                        Добавьте YouTube или Vimeo видео для отображения на странице проекта
+                                                <!-- Состояния -->
+                                                <div id="videoEmptyState" class="text-center py-4">
+                                                    <i class="bi bi-play-circle display-4 text-muted mb-3"></i>
+                                                    <h6 class="text-muted">Видео не добавлено</h6>
+                                                    <p class="text-muted small mb-0">
+                                                        Вставьте ссылку выше и нажмите "Превью"
                                                     </p>
                                                 </div>
 
-                                                <!-- Все видео проекта -->
-                                                <div th:if="${projectVideos != null && !projectVideos.isEmpty() && projectVideos.size() > 1}"
-                                                     class="mt-3 pt-3 border-top">
-                                                    <div class="d-flex justify-content-between align-items-center mb-2">
-                                                        <h6 class="mb-0">
-                                                            <i class="bi bi-collection-play me-1"></i>
-                                                            Все видео проекта
-                                                        </h6>
-                                                        <span class="badge bg-secondary">
-                                <span th:text="${projectVideos.size()}">0</span> видео
-                            </span>
-                                                    </div>
-
-                                                    <div class="row g-2">
-                                                        <div class="col-6 col-md-4" th:each="video, stat : ${projectVideos}"
-                                                             th:if="${!video.main && stat.index < 3}">
-                                                            <div class="card border-0 bg-light">
-                                                                <div class="card-body p-2">
-                                                                    <div class="d-flex align-items-center">
-                                                                        <div class="me-2">
-                                                                            <img th:src="${video.thumbnailUrl}"
-                                                                                 style="width: 60px; height: 34px; object-fit: cover; border-radius: 3px;"
-                                                                                 alt="Видео">
-                                                                        </div>
-                                                                        <div class="flex-grow-1">
-                                                                            <p class="mb-0 small text-truncate"
-                                                                               th:text="${video.title}"
-                                                                               style="max-width: 120px;">
-                                                                                Название
-                                                                            </p>
-                                                                        </div>
-                                                                    </div>
-                                                                </div>
-                                                            </div>
-                                                        </div>
-
-                                                        <!-- Показать ещё -->
-                                                        <div th:if="${projectVideos.size() > 4}" class="col-6 col-md-4">
-                                                            <div class="card border-0 bg-light h-100">
-                                                                <div class="card-body d-flex align-items-center justify-content-center p-2">
-                                                                    <a th:href="@{/admin/project-videos/project/{projectId}(projectId=${project.id})}"
-                                                                       class="text-decoration-none text-center">
-                                                                        <i class="bi bi-plus-circle d-block fs-4 text-primary"></i>
-                                                                        <small class="text-muted">
-                                                                            ещё <span th:text="${projectVideos.size() - 3}">0</span>
-                                                                        </small>
-                                                                    </a>
-                                                                </div>
-                                                            </div>
-                                                        </div>
+                                                <div id="videoPreviewState" style="display: none;">
+                                                    <div class="alert alert-success">
+                                                        <i class="bi bi-check-circle me-2"></i>
+                                                        Видео готово к сохранению. Нажмите "Создать проект" ниже.
                                                     </div>
                                                 </div>
 
-                                                <!-- Кнопка управления -->
-                                                <div class="mt-3 pt-3 border-top">
-                                                    <div class="d-grid">
-                                                        <a th:href="@{/admin/project-videos/project/{projectId}(projectId=${project.id})}"
-                                                           class="btn btn-outline-primary">
-                                                            <i class="bi bi-play-btn me-1"></i>
-                                                            <span th:if="${projectVideosCount != null && projectVideosCount > 0}">
-                                    Управление видео (<span th:text="${projectVideosCount}">0</span>)
-                                </span>
-                                                            <span th:unless="${projectVideosCount != null && projectVideosCount > 0}">
-                                    Добавить видео
-                                </span>
-                                                        </a>
-                                                    </div>
-                                                    <div class="text-center mt-2">
-                                                        <small class="text-muted">
-                                                            Поддерживаются YouTube и Vimeo
-                                                        </small>
+                                                <!-- Поддержка сервисов -->
+                                                <div class="mt-4 pt-4 border-top">
+                                                    <h6 class="mb-3">
+                                                        <i class="bi bi-question-circle me-2"></i>
+                                                        Как получить ссылку?
+                                                    </h6>
+                                                    <div class="row g-3">
+                                                        <div class="col-md-4">
+                                                            <div class="card border-0 bg-light h-100">
+                                                                <div class="card-body text-center">
+                                                                    <div class="mb-2">
+                                                                        <i class="bi bi-youtube text-danger fs-1"></i>
+                                                                    </div>
+                                                                    <h6>YouTube</h6>
+                                                                    <p class="small mb-0">
+                                                                        Скопируйте URL из адресной строки или кнопки "Поделиться"
+                                                                    </p>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                        <div class="col-md-4">
+                                                            <div class="card border-0 bg-light h-100">
+                                                                <div class="card-body text-center">
+                                                                    <div class="mb-2">
+                                                                        <i class="bi bi-vimeo text-primary fs-1"></i>
+                                                                    </div>
+                                                                    <h6>Vimeo</h6>
+                                                                    <p class="small mb-0">
+                                                                        Используйте ссылку из адресной строки браузера
+                                                                    </p>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                        <div class="col-md-4">
+                                                            <div class="card border-0 bg-light h-100">
+                                                                <div class="card-body text-center">
+                                                                    <div class="mb-2">
+                                                                        <i class="bi bi-play-btn text-success fs-1"></i>
+                                                                    </div>
+                                                                    <h6>Rutube</h6>
+                                                                    <p class="small mb-0">
+                                                                        Скопируйте URL видео с rutube.ru
+                                                                    </p>
+                                                                </div>
+                                                            </div>
+                                                        </div>
                                                     </div>
                                                 </div>
                                             </div>
@@ -1107,6 +1121,8 @@
                                     </div>
                                 </div>
                             </div>
+
+
 
                             <!-- ===== СЕКЦИИ ПРОЕКТА ===== -->
                             <div class="form-section">
@@ -2655,6 +2671,169 @@ function updateSelectedPhotosCounter() {
 }
 </script>
 
+
+<!-- Скрипт для работы с видео (добавить перед закрывающим </body>) -->
+<script>
+    // Глобальные переменные
+    let currentVideoUrl = '';
+
+    // Основная функция для показа превью
+    function showVideoPreview() {
+        const urlInput = document.getElementById('videoUrlInput');
+        const url = urlInput.value.trim();
+        const previewContainer = document.getElementById('videoPreviewContainer');
+        const previewContent = document.getElementById('videoPreviewContent');
+        const emptyState = document.getElementById('videoEmptyState');
+        const previewState = document.getElementById('videoPreviewState');
+
+        if (!url) {
+            alert('Введите ссылку на видео');
+            urlInput.focus();
+            return;
+        }
+
+        // Простая проверка URL
+        if (!url.startsWith('https://') && !url.startsWith('https://')) {
+            alert('Ссылка должна начинаться с https:// или https://');
+            return;
+        }
+
+        // Извлекаем ID видео в зависимости от сервиса
+        let videoId = null;
+        let embedUrl = null;
+
+        if (url.includes('youtube.com') || url.includes('youtu.be')) {
+            videoId = extractYouTubeId(url);
+            if (videoId) {
+                embedUrl = `https://www.youtube.com/embed/${videoId}`;
+            }
+        } else if (url.includes('vimeo.com')) {
+            videoId = extractVimeoId(url);
+            if (videoId) {
+                embedUrl = `https://player.vimeo.com/video/${videoId}`;
+            }
+        } else if (url.includes('rutube.ru')) {
+            videoId = extractRutubeId(url);
+            if (videoId) {
+                embedUrl = `https://rutube.ru/play/embed/${videoId}`;
+            }
+        }
+
+        if (embedUrl && videoId) {
+            // Создаем embed код
+            const embedCode = `
+                <div class="ratio ratio-16x9">
+                    <iframe src="${embedUrl}"
+                            frameborder="0"
+                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                            allowfullscreen
+                            style="border-radius: 8px;">
+                    </iframe>
+                </div>
+            `;
+
+            // Показываем превью
+            previewContent.innerHTML = embedCode;
+            previewContainer.style.display = 'block';
+            emptyState.style.display = 'none';
+            previewState.style.display = 'block';
+
+            // Сохраняем текущий URL
+            currentVideoUrl = url;
+
+            console.log('Превью создано для:', url);
+        } else {
+            alert('Некорректная ссылка на видео. Поддерживаются: YouTube, Vimeo, Rutube');
+        }
+    }
+
+    // Функции для извлечения ID видео
+    function extractYouTubeId(url) {
+        const patterns = [
+            /(?:youtube\.com\/watch\?v=)([a-zA-Z0-9_-]+)/,
+            /(?:youtu\.be\/)([a-zA-Z0-9_-]+)/,
+            /(?:youtube\.com\/embed\/)([a-zA-Z0-9_-]+)/,
+            /(?:youtube\.com\/v\/)([a-zA-Z0-9_-]+)/
+        ];
+
+        for (const pattern of patterns) {
+            const match = url.match(pattern);
+            if (match && match[1]) {
+                return match[1];
+            }
+        }
+        return null;
+    }
+
+    function extractVimeoId(url) {
+        const pattern = /(?:vimeo\.com\/)(\d+)/;
+        const match = url.match(pattern);
+        return match ? match[1] : null;
+    }
+
+    function extractRutubeId(url) {
+    const patterns = [
+        /rutube\.ru\/video\/([a-zA-Z0-9\._-]+)/,
+        /rutube\.ru\/play\/embed\/([a-zA-Z0-9\._-]+)/,
+        /rutube\.ru\/shorts\/([a-zA-Z0-9\._-]+)/  // ← вот эта строка добавит shorts
+    ];
+
+    for (const pattern of patterns) {
+        const match = url.match(pattern);
+        if (match && match[1]) {
+            console.log('Найден Rutube ID:', match[1]);
+            return match[1];
+        }
+    }
+    console.log('Rutube ID не найден в URL:', url);
+    return null;
+}
+
+    // Вспомогательные функции
+    function clearVideoField() {
+        const urlInput = document.getElementById('videoUrlInput');
+        urlInput.value = '';
+        urlInput.focus();
+        hideVideoPreview();
+        console.log('Поле видео очищено');
+    }
+
+    function hideVideoPreview() {
+        const previewContainer = document.getElementById('videoPreviewContainer');
+        const previewState = document.getElementById('videoPreviewState');
+        const emptyState = document.getElementById('videoEmptyState');
+
+        previewContainer.style.display = 'none';
+        previewState.style.display = 'none';
+        emptyState.style.display = 'block';
+        currentVideoUrl = '';
+    }
+
+    // Обработка Enter в поле ввода
+    document.addEventListener('DOMContentLoaded', function() {
+        const urlInput = document.getElementById('videoUrlInput');
+        if (urlInput) {
+            urlInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    showVideoPreview();
+                }
+            });
+        }
+    });
+
+    // Автоматическое превью при загрузке (для edit.html)
+    function autoPreviewIfUrlExists() {
+        const urlInput = document.getElementById('videoUrlInput');
+        if (urlInput && urlInput.value && urlInput.value.trim() !== '') {
+            // Небольшая задержка для загрузки страницы
+            setTimeout(showVideoPreview, 500);
+        }
+    }
+
+    // Вызов при загрузке страницы
+    document.addEventListener('DOMContentLoaded', autoPreviewIfUrlExists);
+</script>
 
 </body>
 </html>

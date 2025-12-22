@@ -11,11 +11,11 @@ import jakarta.validation.constraints.Size;
  * Data Transfer Object (DTO) для формы создания и редактирования видео проекта.
  *
  * <p>Используется в административной панели для управления видео проектов.
- * Видео хранятся только как ссылки на внешние видеохостинги (YouTube, Vimeo).
+ * Видео хранятся только как ссылки на внешние видеохостинги (YouTube, Vimeo, Rutube).
  * Поддерживает установку основного видео для проекта.</p>
  *
  * @author Community CMS
- * @version 1.0
+ * @version 1.1
  * @since 2025
  * @see ProjectVideo
  */
@@ -40,14 +40,14 @@ public class ProjectVideoForm {
 
     /**
      * URL видео на внешнем видеохостинге.
-     * Только YouTube или Vimeo.
+     * Только YouTube, Vimeo или Rutube.
      */
     @NotBlank(message = "URL видео обязателен")
     @Pattern(
-            regexp = "^(https?://)?(www\\.)?(youtube\\.com|youtu\\.be|vimeo\\.com)/.+$",
-            message = "Поддерживаются только ссылки на YouTube и Vimeo"
+            regexp = "^(https?://)?(www\\.)?(youtube\\.com|youtu\\.be|vimeo\\.com|rutube\\.ru)/.+$",
+            message = "Поддерживаются только ссылки на YouTube, Vimeo и Rutube"
     )
-    private String youtubeUrl;
+    private String videoUrl;
 
     /**
      * ID проекта, к которому относится видео.
@@ -97,7 +97,7 @@ public class ProjectVideoForm {
         this.id = video.getId();
         this.title = video.getTitle();
         this.description = video.getDescription();
-        this.youtubeUrl = video.getYoutubeUrl();
+        this.videoUrl = video.getVideoUrl();
         this.projectId = video.getProject() != null ? video.getProject().getId() : null;
         this.isMain = video.isMain();
         this.durationSeconds = video.getDurationSeconds();
@@ -130,12 +130,12 @@ public class ProjectVideoForm {
         this.description = description;
     }
 
-    public String getYoutubeUrl() {
-        return youtubeUrl;
+    public String getVideoUrl() {
+        return videoUrl;
     }
 
-    public void setYoutubeUrl(String youtubeUrl) {
-        this.youtubeUrl = youtubeUrl;
+    public void setVideoUrl(String videoUrl) {
+        this.videoUrl = videoUrl;
     }
 
     public Long getProjectId() {
@@ -178,10 +178,10 @@ public class ProjectVideoForm {
      * @return тип видеохостинга или null если не поддерживается
      */
     public ProjectVideo.VideoType getVideoType() {
-        if (youtubeUrl == null) {
+        if (videoUrl == null) {
             return null;
         }
-        return ProjectVideo.VideoType.fromUrl(youtubeUrl);
+        return ProjectVideo.VideoType.fromUrl(videoUrl);
     }
 
     /**
@@ -190,10 +190,10 @@ public class ProjectVideoForm {
      * @return ID видео или null если не удалось извлечь
      */
     public String getVideoId() {
-        if (youtubeUrl == null) {
+        if (videoUrl == null) {
             return null;
         }
-        return ProjectVideo.VideoType.extractVideoId(youtubeUrl);
+        return ProjectVideo.VideoType.extractVideoId(videoUrl);
     }
 
     /**
@@ -226,6 +226,16 @@ public class ProjectVideoForm {
     }
 
     /**
+     * Проверяет является ли видео с Rutube.
+     *
+     * @return true если видео с Rutube, иначе false
+     */
+    public boolean isRutubeVideo() {
+        ProjectVideo.VideoType type = getVideoType();
+        return type != null && type == ProjectVideo.VideoType.RUTUBE;
+    }
+
+    /**
      * Получает отформатированную длительность видео.
      * Пример: 125 → "2:05"
      *
@@ -253,14 +263,14 @@ public class ProjectVideoForm {
      * @return короткая версия URL
      */
     public String getShortUrl() {
-        if (youtubeUrl == null) {
+        if (videoUrl == null) {
             return "";
         }
 
-        if (youtubeUrl.length() > 50) {
-            return youtubeUrl.substring(0, 47) + "...";
+        if (videoUrl.length() > 50) {
+            return videoUrl.substring(0, 47) + "...";
         }
-        return youtubeUrl;
+        return videoUrl;
     }
 
     /**
@@ -274,7 +284,7 @@ public class ProjectVideoForm {
         video.setId(this.id);
         video.setTitle(this.title);
         video.setDescription(this.description);
-        video.setYoutubeUrl(this.youtubeUrl);
+        video.setVideoUrl(this.videoUrl);
         video.setMain(this.isMain);
         video.setDurationSeconds(this.durationSeconds);
         video.setSortOrder(this.sortOrder);
@@ -292,7 +302,7 @@ public class ProjectVideoForm {
     public void updateEntity(ProjectVideo video) {
         video.setTitle(this.title);
         video.setDescription(this.description);
-        video.setYoutubeUrl(this.youtubeUrl);
+        video.setVideoUrl(this.videoUrl);
         video.setMain(this.isMain);
         video.setDurationSeconds(this.durationSeconds);
         video.setSortOrder(this.sortOrder);
@@ -333,6 +343,16 @@ public class ProjectVideoForm {
                             "title=\"%s\"></iframe>",
                     videoId, title
             );
+        } else if (videoType == ProjectVideo.VideoType.RUTUBE) {
+            return String.format(
+                    "<iframe src=\"https://rutube.ru/play/embed/%s\" " +
+                            "width=\"560\" height=\"315\" " +
+                            "frameborder=\"0\" " +
+                            "allow=\"autoplay; fullscreen; picture-in-picture\" " +
+                            "allowfullscreen " +
+                            "title=\"%s\"></iframe>",
+                    videoId, title
+            );
         }
 
         return "";
@@ -353,6 +373,8 @@ public class ProjectVideoForm {
 
         if (videoType == ProjectVideo.VideoType.YOUTUBE) {
             return String.format("https://img.youtube.com/vi/%s/hqdefault.jpg", videoId);
+        } else if (videoType == ProjectVideo.VideoType.RUTUBE) {
+            return String.format("https://rutube.ru/video/thumb/%s.jpg", videoId);
         }
 
         // Для Vimeo нужно API запрос, возвращаем заглушку
