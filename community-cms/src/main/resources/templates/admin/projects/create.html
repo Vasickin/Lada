@@ -2772,19 +2772,22 @@ function updateSelectedPhotosCounter() {
     }
 
     function extractRutubeId(url) {
-        const patterns = [
-            /(?:rutube\.ru\/video\/)([a-zA-Z0-9_-]+)/,
-            /(?:rutube\.ru\/play\/embed\/)([a-zA-Z0-9_-]+)/
-        ];
+    const patterns = [
+        /rutube\.ru\/video\/([a-zA-Z0-9\._-]+)/,
+        /rutube\.ru\/play\/embed\/([a-zA-Z0-9\._-]+)/,
+        /rutube\.ru\/shorts\/([a-zA-Z0-9\._-]+)/  // ← вот эта строка добавит shorts
+    ];
 
-        for (const pattern of patterns) {
-            const match = url.match(pattern);
-            if (match && match[1]) {
-                return match[1];
-            }
+    for (const pattern of patterns) {
+        const match = url.match(pattern);
+        if (match && match[1]) {
+            console.log('Найден Rutube ID:', match[1]);
+            return match[1];
         }
-        return null;
     }
+    console.log('Rutube ID не найден в URL:', url);
+    return null;
+}
 
     // Вспомогательные функции
     function clearVideoField() {
