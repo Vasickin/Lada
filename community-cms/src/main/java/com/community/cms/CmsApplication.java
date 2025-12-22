@@ -21,7 +21,6 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
  *
  * @author Vasickin
  * @version 1.0
- * @since 2025
  * @see <a href="https://spring.io/projects/spring-boot">Spring Boot Documentation</a>
  */
 @SpringBootApplication

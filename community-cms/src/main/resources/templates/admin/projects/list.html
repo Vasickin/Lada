@@ -68,37 +68,42 @@
             <div class="col-12">
                 <div class="card">
                     <div class="card-body">
-                        <form th:action="@{/admin/projects}" method="get" class="row g-3">
+                        <form th:action="@{/admin/projects}" method="get" class="row g-3" id="filterForm">
 
-                            <div class="col-md-4">
+                            <div class="col-md-3">
                                 <label class="form-label">Поиск</label>
                                 <div class="input-group">
                                     <input type="text" name="search" class="form-control"
-                                           placeholder="Название проекта...">
+                                           placeholder="Название проекта..."
+                                           th:value="${selectedSearch}">
                                     <button class="btn btn-outline-secondary" type="submit">
                                         <i class="bi bi-search"></i>
                                     </button>
                                 </div>
                             </div>
 
-                            <div class="col-md-4">
+                            <div class="col-md-3">
                                 <label class="form-label">Категория</label>
                                 <select name="category" class="form-select">
                                     <option value="">Все категории</option>
                                     <option th:each="cat : ${categories}"
                                             th:value="${cat}"
-                                            th:text="${cat}">
+                                            th:text="${cat}"
+                                            th:selected="${selectedCategory != null and selectedCategory == cat}">
                                     </option>
                                 </select>
                             </div>
 
-                            <div class="col-md-4">
+                            <div class="col-md-3">
                                 <label class="form-label">Статус</label>
                                 <select name="status" class="form-select">
                                     <option value="">Все статусы</option>
-                                    <option value="ACTIVE">Активные</option>
-                                    <option value="ANNUAL">Ежегодные</option>
-                                    <option value="ARCHIVED">Архивные</option>
+                                    <option value="ACTIVE"
+                                            th:selected="${selectedStatus == 'ACTIVE'}">Активные</option>
+                                    <option value="ANNUAL"
+                                            th:selected="${selectedStatus == 'ANNUAL'}">Ежегодные</option>
+                                    <option value="ARCHIVED"
+                                            th:selected="${selectedStatus == 'ARCHIVED'}">Архивные</option>
                                 </select>
                             </div>
 
@@ -109,11 +114,26 @@
                                     <option th:each="y : ${years}"
                                             th:value="${y}"
                                             th:text="${y}"
-                                            th:selected="${param.year != null and param.year == y}">
+                                            th:selected="${selectedYear != null and selectedYear == y}">
                                     </option>
                                 </select>
                             </div>
 
+                            <div class="col-12 mt-3">
+                                <div class="d-flex justify-content-between">
+                                    <div>
+                                        <button type="submit" class="btn btn-primary">
+                                            <i class="bi bi-funnel me-1"></i> Применить фильтры
+                                        </button>
+                                        <a th:href="@{/admin/projects}" class="btn btn-outline-secondary ms-2">
+                                            <i class="bi bi-x-circle me-1"></i> Сбросить
+                                        </a>
+                                    </div>
+                                    <div class="text-muted small">
+                                        Найдено: <span th:text="${projectsPage.totalElements}">0</span> проектов
+                                    </div>
+                                </div>
+                            </div>
                         </form>
                     </div>
                 </div>
@@ -283,11 +303,10 @@
     </div>
 </div>
 
-<!-- ========== JAVASCRIPT ДЛЯ ФИЛЬТРОВ ========== -->
+<!-- ========== КАСТОМНОЕ ПОДТВЕРЖДЕНИЕ ========== -->
 <script th:inline="javascript">
     /*<![CDATA[*/
 
-    // ========== КАСТОМНОЕ ПОДТВЕРЖДЕНИЕ ==========
     let currentForm = null;
 
     function showCustomConfirm(message, form) {
@@ -299,9 +318,8 @@
         modal.show();
     }
 
-    // ========== ИНИЦИАЛИЗАЦИЯ ==========
     document.addEventListener('DOMContentLoaded', function() {
-        console.log('DOM загружен');
+        console.log('DOM загружен - кастомное подтверждение');
 
         // Кнопка подтверждения в модалке
         const confirmBtn = document.getElementById('customConfirmButton');
@@ -318,16 +336,87 @@
                 }
             });
         }
+    });
 
-        // Инициализация tooltips
+    /*]]>*/
+</script>
+
+<!-- ========== JAVASCRIPT ДЛЯ ФИЛЬТРОВ ========== -->
+<script th:inline="javascript">
+    /*<![CDATA[*/
+
+    document.addEventListener('DOMContentLoaded', function() {
+        console.log('DOM загружен - фильтры проектов');
+
+        // ========== ОБРАБОТКА ФИЛЬТРОВ ПРОЕКТОВ ==========
+
+        // 1. Автоотправка формы фильтров при изменении значений
+        const filterForm = document.getElementById('filterForm');
+        if (filterForm) {
+            console.log('Найдена форма фильтров проектов');
+
+            // Автоотправка при изменении выпадающих списков
+            const filterSelects = filterForm.querySelectorAll('select');
+            filterSelects.forEach(select => {
+                select.addEventListener('change', function() {
+                    console.log('Фильтр изменен: ' + this.name + ' = ' + this.value);
+                    // Небольшая задержка для лучшего UX
+                    setTimeout(() => {
+                        filterForm.submit();
+                    }, 100);
+                });
+            });
+
+            // Для поля поиска - debounce с задержкой
+            const searchInput = filterForm.querySelector('input[name="search"]');
+            if (searchInput) {
+                let searchTimeout;
+                searchInput.addEventListener('input', function() {
+                    clearTimeout(searchTimeout);
+                    searchTimeout = setTimeout(function() {
+                        console.log('Отправка поиска после задержки');
+                        filterForm.submit();
+                    }, 800); // 800ms debounce
+                });
+
+                // Обработка Enter в поле поиска
+                searchInput.addEventListener('keypress', function(e) {
+                    if (e.key === 'Enter') {
+                        e.preventDefault();
+                        console.log('Enter нажат в поле поиска');
+                        filterForm.submit();
+                    }
+                });
+            }
+        } else {
+            console.warn('Форма фильтров проектов не найдена (id="filterForm")');
+        }
+
+        // 2. Кнопка сброса фильтров
+        const resetBtn = document.querySelector('a[href="/admin/projects"]');
+        if (resetBtn && (resetBtn.textContent.includes('Сбросить') || resetBtn.textContent.includes('Очистить все'))) {
+            resetBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                console.log('Сброс фильтров проектов');
+                window.location.href = '/admin/projects';
+            });
+        }
+
+        // ========== ИНИЦИАЛИЗАЦИЯ BOOTSTRAP КОМПОНЕНТОВ ==========
+
+        // Инициализация tooltips для всей страницы
         var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
         var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
             return new bootstrap.Tooltip(tooltipTriggerEl);
         });
 
-        // Фильтр по году
+        console.log('Инициализировано tooltips: ' + tooltipList.length);
+
+        // ========== СТАРЫЕ ФИЛЬТРЫ ДЛЯ ДРУГИХ СТРАНИЦ (ОСТАВЛЯЕМ) ==========
+
+        // Фильтр по году для фото-галереи
         const yearFilter = document.getElementById('yearFilter');
-        if (yearFilter) {
+        if (yearFilter && window.location.pathname.includes('/admin/photo-gallery')) {
             yearFilter.addEventListener('change', function() {
                 const year = this.value;
                 if (year) {
@@ -338,9 +427,9 @@
             });
         }
 
-        // Фильтр по категории
+        // Фильтр по категории для фото-галереи
         const categoryFilter = document.getElementById('categoryFilter');
-        if (categoryFilter) {
+        if (categoryFilter && window.location.pathname.includes('/admin/photo-gallery')) {
             categoryFilter.addEventListener('change', function() {
                 const categoryId = this.value;
                 if (categoryId) {
@@ -351,29 +440,32 @@
             });
         }
 
-        // Поиск по названию - debounce
+        // Старый поиск для других страниц
         const searchForm = document.querySelector('.search-form');
-        if (searchForm) {
-            const searchInput = searchForm.querySelector('input[name="search"]');
+        if (searchForm && !window.location.pathname.includes('/admin/projects')) {
+            const oldSearchInput = searchForm.querySelector('input[name="search"]');
             let searchTimeout;
 
-            searchInput.addEventListener('input', function() {
-                clearTimeout(searchTimeout);
-                searchTimeout = setTimeout(function() {
-                    if (searchInput.value.trim().length >= 2 || searchInput.value.trim().length === 0) {
-                        searchForm.submit();
-                    }
-                }, 500);
-            });
+            if (oldSearchInput) {
+                oldSearchInput.addEventListener('input', function() {
+                    clearTimeout(searchTimeout);
+                    searchTimeout = setTimeout(function() {
+                        if (oldSearchInput.value.trim().length >= 2 || oldSearchInput.value.trim().length === 0) {
+                            searchForm.submit();
+                        }
+                    }, 500);
+                });
+            }
         }
+
+        console.log('Инициализация фильтров завершена');
 
     }); // КОНЕЦ DOMContentLoaded
 
     /*]]>*/
-
 </script>
 
-<!-- СКРИПТ ДЛЯ ВИДЕО (ОТДЕЛЬНЫЙ, НЕЗАВИСИМЫЙ) -->
+<!-- СКРИПТ ДЛЯ ВИДЕО  -->
 <script>
     // Функция для копирования ссылки на видео
     function copyVideoUrl(url) {
