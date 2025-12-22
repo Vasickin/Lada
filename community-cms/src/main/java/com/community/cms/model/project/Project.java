@@ -1,5 +1,6 @@
 package com.community.cms.model.project;
 
+import com.community.cms.validation.VideoUrl;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
@@ -140,8 +141,9 @@ public class Project {
      *
      * @since 2025
      */
-    @Size(max = 500, message = "Ссылка на видео не должна превышать 500 символов / Video URL must not exceed 500 characters")
-    @Column(name = "video_url", length = 500)
+    @VideoUrl
+    @Size(max = 2000, message = "Ссылка на видео не должна превышать 2000 символов")
+    @Column(name = "video_url", columnDefinition = "TEXT")
     private String videoUrl;
 
     /**

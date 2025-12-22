@@ -1,6 +1,7 @@
 package com.community.cms.dto.project;
 
 import com.community.cms.model.project.Project;
+import com.community.cms.validation.VideoUrl;
 import jakarta.validation.constraints.*;
 import org.springframework.format.annotation.DateTimeFormat;
 
@@ -76,7 +77,8 @@ public class ProjectForm {
      *
      * @since 2025
      */
-    @Size(max = 500, message = "Ссылка на видео не должна превышать 500 символов")
+    @VideoUrl(message = "Некорректная ссылка на видео. Поддерживаются: YouTube, Vimeo, Rutube")
+    @Size(max = 2000, message = "Ссылка на видео не должна превышать 2000 символов")
     private String videoUrl;
 
     // ================== КАТЕГОРИЯ И СТАТУС ==================
