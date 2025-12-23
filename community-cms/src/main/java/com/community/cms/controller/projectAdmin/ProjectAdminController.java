@@ -62,91 +62,218 @@ public class ProjectAdminController {
     }
 
     // ================== СПИСОК ПРОЕКТОВ ==================
-
     /**
-     * Отображает список всех проектов с пагинацией.
+     * Отображает список проектов с поддержкой фильтрации, поиска и пагинации.
+     *
+     * <p>Метод поддерживает следующие фильтры:
+     * <ul>
+     *   <li><strong>Поиск (search)</strong>: поиск по названию проекта (без учета регистра)</li>
+     *   <li><strong>Категория (category)</strong>: фильтрация по категории проекта</li>
+     *   <li><strong>Статус (status)</strong>: фильтрация по статусу проекта (ACTIVE, ANNUAL, ARCHIVED)</li>
+     *   <li><strong>Год события (year)</strong>: фильтрация по году даты события проекта</li>
+     * </ul>
+     *
+     * <p>Фильтры могут применяться как отдельно, так и в комбинации.
+     * Все фильтры сохраняются при пагинации.</p>
      *
      * @param model модель для передачи данных в шаблон
-     * @param pageable параметры пагинации
-     * @param status фильтр по статусу (опционально)
-     * @param category фильтр по категории (опционально)
-     * @param search поисковый запрос (опционально)
-     * @return имя шаблона для отображения
+     * @param pageable параметры пагинации (размер, номер страницы, сортировка)
+     * @param status фильтр по статусу проекта (опционально)
+     * @param category фильтр по категории проекта (опционально)
+     * @param search поисковый запрос по названию проекта (опционально)
+     * @param year фильтр по году события (опционально)
+     * @return имя шаблона для отображения списка проектов
      */
     @GetMapping
     public String listProjects(Model model,
                                @PageableDefault(size = 20, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable,
                                @RequestParam(required = false) String status,
                                @RequestParam(required = false) String category,
-                               @RequestParam(required = false) String search) {
+                               @RequestParam(required = false) String search,
+                               @RequestParam(required = false) Integer year) {
 
         Page<Project> projectsPage;
 
-        if (search != null && !search.trim().isEmpty()) {
-            // Поиск проектов
-            List<Project> projects = projectService.search(search);
-            // Создаем Page из List для совместимости с пагинацией
-            int start = (int) pageable.getOffset();
-            int end = Math.min((start + pageable.getPageSize()), projects.size());
-            projectsPage = new PageImpl<>(
-                    projects.subList(start, end),
-                    pageable,
-                    projects.size()
-            );
-            model.addAttribute("search", search);
-        } else if (status != null && !status.trim().isEmpty() && category != null && !category.trim().isEmpty()) {
-            // Фильтрация по статусу и категории - фильтруем вручную
-            try {
-                Project.ProjectStatus projectStatus = Project.ProjectStatus.valueOf(status.toUpperCase());
-                // Сначала получаем по статусу, потом фильтруем по категории
-                Page<Project> statusPage = projectService.findByStatus(projectStatus, pageable);
-                List<Project> filtered = statusPage.getContent().stream()
-                        .filter(p -> category.equals(p.getCategory()))
-                        .toList();
+        // Логирование для отладки фильтров
+        System.out.println("=== ПАРАМЕТРЫ ФИЛЬТРАЦИИ ===");
+        System.out.println("Статус: " + status);
+        System.out.println("Категория: " + category);
+        System.out.println("Поиск: '" + search + "'");
+        System.out.println("Год: " + year);
 
-                projectsPage = new PageImpl<>(
-                        filtered,
-                        pageable,
-                        filtered.size()
-                );
-                model.addAttribute("status", status);
-                model.addAttribute("category", category);
-            } catch (IllegalArgumentException e) {
-                projectsPage = projectService.findAll(pageable);
-            }
-        } else if (status != null && !status.trim().isEmpty()) {
-            // Фильтрация только по статусу
-            try {
-                Project.ProjectStatus projectStatus = Project.ProjectStatus.valueOf(status.toUpperCase());
-                projectsPage = projectService.findByStatus(projectStatus, pageable);
-                model.addAttribute("status", status);
-            } catch (IllegalArgumentException e) {
-                projectsPage = projectService.findAll(pageable);
-            }
-        } else if (category != null && !category.trim().isEmpty()) {
-            // Фильтрация только по категории
-            // В сервисе нет метода findByCategory с Pageable, фильтруем вручную
-            List<Project> allProjects = projectService.findAll();
-            List<Project> filtered = allProjects.stream()
-                    .filter(p -> category.equals(p.getCategory()))
-                    .toList();
+        try {
+            // ================== СПЕЦИАЛЬНАЯ ОБРАБОТКА ПОИСКА ==================
 
-            int start = (int) pageable.getOffset();
-            int end = Math.min((start + pageable.getPageSize()), filtered.size());
-            projectsPage = new PageImpl<>(
-                    filtered.subList(start, end),
-                    pageable,
-                    filtered.size()
-            );
-            model.addAttribute("category", category);
-        } else {
-            // Все проекты без фильтрации
-            projectsPage = projectService.findAll(pageable);
+            if (search != null && !search.trim().isEmpty()) {
+                System.out.println("=== ВЫПОЛНЯЕМ ПОИСК ПО НАЗВАНИЮ ===");
+
+                // ВРЕМЕННО: Используем простой поиск по названию вместо сломанного комплексного
+                // Это решит проблему Hibernate 6 без изменения репозитория
+                List<Project> searchResults = projectRepository.findByTitleContainingIgnoreCase(search.trim());
+                System.out.println("Найдено проектов по названию '" + search + "': " + searchResults.size());
+
+                // Для отладки: показываем найденные проекты
+                if (searchResults.isEmpty()) {
+                    System.out.println("НИЧЕГО не найдено по запросу: '" + search + "'");
+
+                    // Проверим все проекты для отладки
+                    List<Project> allProjects = projectRepository.findAll();
+                    System.out.println("Всего проектов в базе: " + allProjects.size());
+                    for (Project p : allProjects) {
+                        System.out.println("Проект: '" + p.getTitle() + "' содержит '" + search + "': " +
+                                p.getTitle().toLowerCase().contains(search.toLowerCase()));
+                    }
+                } else {
+                    for (Project p : searchResults) {
+                        System.out.println("Найден: " + p.getTitle() + " (ID: " + p.getId() + ")");
+                    }
+                }
+
+                // Дополнительная фильтрация поисковых результатов
+                List<Project> filteredProjects = new ArrayList<>(searchResults);
+
+                // ФИЛЬТРАЦИЯ ПО СТАТУСУ (если указан)
+                if (status != null && !status.trim().isEmpty() && !filteredProjects.isEmpty()) {
+                    try {
+                        Project.ProjectStatus projectStatus = Project.ProjectStatus.valueOf(status.toUpperCase());
+                        filteredProjects = filteredProjects.stream()
+                                .filter(p -> p.getStatus() == projectStatus)
+                                .collect(Collectors.toList());
+                        System.out.println("После фильтра статуса: " + filteredProjects.size() + " проектов");
+                    } catch (IllegalArgumentException e) {
+                        System.err.println("Некорректный статус: " + status);
+                    }
+                }
+
+                // ФИЛЬТРАЦИЯ ПО КАТЕГОРИИ (если указана)
+                if (category != null && !category.trim().isEmpty() && !category.equals("Все категории") && !filteredProjects.isEmpty()) {
+                    filteredProjects = filteredProjects.stream()
+                            .filter(p -> category.equals(p.getCategory()))
+                            .collect(Collectors.toList());
+                    System.out.println("После фильтра категории: " + filteredProjects.size() + " проектов");
+                }
+
+                // ФИЛЬТРАЦИЯ ПО ГОДУ СОБЫТИЯ (если указан)
+                if (year != null && !filteredProjects.isEmpty()) {
+                    filteredProjects = filteredProjects.stream()
+                            .filter(p -> p.getEventDate() != null && p.getEventDate().getYear() == year)
+                            .collect(Collectors.toList());
+                    System.out.println("После фильтра года: " + filteredProjects.size() + " проектов");
+                }
+
+                // ПАГИНАЦИЯ для поисковых результатов
+                filteredProjects.sort(Comparator.comparing(Project::getCreatedAt).reversed());
+
+                int start = (int) pageable.getOffset();
+                int totalItems = filteredProjects.size();
+
+                if (start > totalItems) {
+                    start = 0;
+                }
+
+                int end = Math.min((start + pageable.getPageSize()), totalItems);
+
+                List<Project> pageContent;
+                if (start >= totalItems || filteredProjects.isEmpty()) {
+                    pageContent = Collections.emptyList();
+                } else {
+                    pageContent = filteredProjects.subList(start, end);
+                }
+
+                projectsPage = new PageImpl<>(pageContent, pageable, totalItems);
+
+            } else {
+                // ================== БЕЗ ПОИСКА ==================
+
+                System.out.println("=== БЕЗ ПОИСКА - ФИЛЬТРАЦИЯ ВСЕХ ПРОЕКТОВ ===");
+
+                List<Project> allProjects = projectRepository.findAll();
+                System.out.println("Всего проектов: " + allProjects.size());
+
+                List<Project> filteredProjects = new ArrayList<>(allProjects);
+
+                // ФИЛЬТРАЦИЯ ПО СТАТУСУ
+                if (status != null && !status.trim().isEmpty()) {
+                    try {
+                        Project.ProjectStatus projectStatus = Project.ProjectStatus.valueOf(status.toUpperCase());
+                        filteredProjects = filteredProjects.stream()
+                                .filter(p -> p.getStatus() == projectStatus)
+                                .collect(Collectors.toList());
+                        System.out.println("После статуса: " + filteredProjects.size() + " проектов");
+                    } catch (IllegalArgumentException e) {
+                        System.err.println("Некорректный статус: " + status);
+                    }
+                }
+
+                // ФИЛЬТРАЦИЯ ПО КАТЕГОРИИ
+                if (category != null && !category.trim().isEmpty() && !category.equals("Все категории")) {
+                    filteredProjects = filteredProjects.stream()
+                            .filter(p -> category.equals(p.getCategory()))
+                            .collect(Collectors.toList());
+                    System.out.println("После категории: " + filteredProjects.size() + " проектов");
+                }
+
+                // ФИЛЬТРАЦИЯ ПО ГОДУ СОБЫТИЯ
+                if (year != null) {
+                    filteredProjects = filteredProjects.stream()
+                            .filter(p -> p.getEventDate() != null && p.getEventDate().getYear() == year)
+                            .collect(Collectors.toList());
+                    System.out.println("После года: " + filteredProjects.size() + " проектов");
+                }
+
+                // ПАГИНАЦИЯ
+                filteredProjects.sort(Comparator.comparing(Project::getCreatedAt).reversed());
+
+                int start = (int) pageable.getOffset();
+                int totalItems = filteredProjects.size();
+
+                if (start > totalItems) {
+                    start = 0;
+                }
+
+                int end = Math.min((start + pageable.getPageSize()), totalItems);
+
+                List<Project> pageContent;
+                if (start >= totalItems || filteredProjects.isEmpty()) {
+                    pageContent = Collections.emptyList();
+                } else {
+                    pageContent = filteredProjects.subList(start, end);
+                }
+
+                projectsPage = new PageImpl<>(pageContent, pageable, totalItems);
+            }
+
+            System.out.println("Итог: " + projectsPage.getTotalElements() + " проектов, " +
+                    projectsPage.getTotalPages() + " страниц");
+
+        } catch (Exception e) {
+            System.err.println("ОШИБКА при фильтрации проектов: " + e.getMessage());
+            e.printStackTrace();
+
+            projectsPage = new PageImpl<>(Collections.emptyList(), pageable, 0);
+            model.addAttribute("errorMessage", "Ошибка при поиске: " + e.getMessage());
         }
+
+        // ================== ПОДГОТОВКА ДАННЫХ ДЛЯ ШАБЛОНА ==================
 
         model.addAttribute("projectsPage", projectsPage);
         model.addAttribute("categories", projectService.findAllDistinctCategories());
         model.addAttribute("statuses", Project.ProjectStatus.values());
+
+        // Годы для фильтра
+        List<Integer> years = projectRepository.findAll().stream()
+                .filter(p -> p.getEventDate() != null)
+                .map(p -> p.getEventDate().getYear())
+                .distinct()
+                .sorted(Comparator.reverseOrder())
+                .collect(Collectors.toList());
+        model.addAttribute("years", years);
+
+        // Сохраняем выбранные фильтры
+        model.addAttribute("selectedStatus", status);
+        model.addAttribute("selectedCategory", category);
+        model.addAttribute("selectedYear", year);
+        model.addAttribute("selectedSearch", search);
 
         return "admin/projects/list";
     }
@@ -1162,6 +1289,57 @@ public class ProjectAdminController {
 
         } catch (Exception e) {
             System.err.println("Ошибка получения информации о фото: " + e.getMessage());
+        }
+
+        return result;
+    }
+
+    /**
+     * Метод для отладки поиска проектов.
+     * Показывает, как работает поисковый механизм.
+     */
+    @GetMapping("/debug-search")
+    @ResponseBody
+    public Map<String, Object> debugSearch(@RequestParam String search) {
+        Map<String, Object> result = new HashMap<>();
+
+        try {
+            System.out.println("=== ДЕБАГ ПОИСКА ===");
+            System.out.println("Запрос: '" + search + "'");
+
+            // 1. Через сервис
+            List<Project> serviceResults = projectService.search(search);
+            System.out.println("Через сервис: " + serviceResults.size() + " результатов");
+
+            List<Map<String, Object>> serviceData = new ArrayList<>();
+            for (Project p : serviceResults) {
+                Map<String, Object> projectData = new HashMap<>();
+                projectData.put("id", p.getId());
+                projectData.put("title", p.getTitle());
+                projectData.put("slug", p.getSlug());
+                projectData.put("shortDescription", p.getShortDescription());
+                serviceData.add(projectData);
+            }
+
+            // 2. Через репозиторий напрямую
+            List<Project> repoResults = projectRepository.searchByTitleOrDescription(search);
+            System.out.println("Через репозиторий: " + repoResults.size() + " результатов");
+
+            // 3. Простой поиск по названию
+            List<Project> titleResults = projectRepository.findByTitleContainingIgnoreCase(search);
+            System.out.println("Поиск по названию: " + titleResults.size() + " результатов");
+
+            result.put("searchQuery", search);
+            result.put("serviceResults", serviceData);
+            result.put("serviceCount", serviceResults.size());
+            result.put("repoCount", repoResults.size());
+            result.put("titleSearchCount", titleResults.size());
+            result.put("success", true);
+
+        } catch (Exception e) {
+            result.put("success", false);
+            result.put("error", e.getMessage());
+            e.printStackTrace();
         }
 
         return result;

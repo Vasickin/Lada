@@ -38,7 +38,7 @@ import java.util.stream.Collectors;
  */
 @Controller
 @RequestMapping("/projekts") // ИЗМЕНЕНО: projects → projekts
-public class ProjektController { // ИЗМЕНЕНО: ProjectController → ProjektController
+public class ProjectController { // ИЗМЕНЕНО: ProjectController → ProjectController
 
     private final ProjectService projectService;
     private final ProjectArticleService projectArticleService;
@@ -48,7 +48,7 @@ public class ProjektController { // ИЗМЕНЕНО: ProjectController → Proj
     private final TeamMemberService teamMemberService;
 
     @Autowired
-    public ProjektController(ProjectService projectService,
+    public ProjectController(ProjectService projectService,
                              ProjectArticleService projectArticleService,
                              ProjectImageService projectImageService,
                              ProjectVideoService projectVideoService,
@@ -65,7 +65,7 @@ public class ProjektController { // ИЗМЕНЕНО: ProjectController → Proj
     // ================== ГЛАВНАЯ СТРАНИЦА ПРОЕКТОВ ==================
 
     @GetMapping
-    public String listProjekts(Model model,
+    public String listProjects(Model model,
                                @RequestParam(defaultValue = "0") int page,
                                @RequestParam(defaultValue = "12") int size,
                                @RequestParam(required = false) String category,
@@ -91,17 +91,17 @@ public class ProjektController { // ИЗМЕНЕНО: ProjectController → Proj
     // ================== ДЕТАЛЬНАЯ СТРАНИЦА ПРОЕКТА ==================
 
     @GetMapping("/{slug}")
-    public String viewProjekt(@PathVariable String slug, Model model) {
-        Optional<Project> projektOpt = projectService.findBySlugForPublic(slug);
+    public String viewProject(@PathVariable String slug, Model model) {
+        Optional<Project> projectOpt = projectService.findBySlugForPublic(slug);
 
-        if (projektOpt.isEmpty()) {
+        if (projectOpt.isEmpty()) {
             return "redirect:/projekts";
         }
 
-        Project projekt = projektOpt.get();
-        loadProjektDetails(projekt, model);
+        Project project = projectOpt.get();
+        loadProjectDetails(project, model);
 
-        model.addAttribute("projekt", projekt);
+        model.addAttribute("project", project);
         model.addAttribute("currentDate", LocalDate.now());
 
         return "projekts/view";
@@ -122,7 +122,7 @@ public class ProjektController { // ИЗМЕНЕНО: ProjectController → Proj
             return "redirect:/projekts";
         }
 
-        model.addAttribute("projektsPage", projektsPage);
+        model.addAttribute("projectsPage", projektsPage);
         model.addAttribute("category", category);
         model.addAttribute("categories", projectService.findAllDistinctCategories());
         model.addAttribute("currentPage", page);
@@ -131,14 +131,14 @@ public class ProjektController { // ИЗМЕНЕНО: ProjectController → Proj
     }
 
     @GetMapping("/arhiv")
-    public String archivedProjekts(Model model,
+    public String archivedProjects(Model model,
                                    @RequestParam(defaultValue = "0") int page,
                                    @RequestParam(defaultValue = "12") int size) {
 
         Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
         Page<Project> projektsPage = projectService.findByStatus(ProjectStatus.ARCHIVED, pageable);
 
-        model.addAttribute("projektsPage", projektsPage);
+        model.addAttribute("projectsPage", projektsPage);
         model.addAttribute("categories", projectService.findAllDistinctCategories());
         model.addAttribute("currentPage", page);
         model.addAttribute("isArchive", true);
@@ -147,7 +147,7 @@ public class ProjektController { // ИЗМЕНЕНО: ProjectController → Proj
     }
 
     @GetMapping("/ezhegodnye")
-    public String annualProjekts(Model model,
+    public String annualProjects(Model model,
                                  @RequestParam(defaultValue = "0") int page,
                                  @RequestParam(defaultValue = "12") int size) {
 
@@ -193,7 +193,7 @@ public class ProjektController { // ИЗМЕНЕНО: ProjectController → Proj
     }
 
     @GetMapping("/poisk")
-    public String searchProjekts(@RequestParam String query,
+    public String searchProjects(@RequestParam String query,
                                  Model model,
                                  @RequestParam(defaultValue = "0") int page,
                                  @RequestParam(defaultValue = "12") int size) {
@@ -261,9 +261,9 @@ public class ProjektController { // ИЗМЕНЕНО: ProjectController → Proj
         );
     }
 
-    private List<TeamMember> getTeamMembers(Long projektId) {
-        if (projektId != null) {
-            return teamMemberService.findByProjectId(projektId);
+    private List<TeamMember> getTeamMembers(Long projectId) {
+        if (projectId != null) {
+            return teamMemberService.findByProjectId(projectId);
         }
         return teamMemberService.findAllActiveOrderBySortOrder();
     }
@@ -273,13 +273,13 @@ public class ProjektController { // ИЗМЕНЕНО: ProjectController → Proj
                 .collect(Collectors.groupingBy(TeamMember::getPosition));
     }
 
-    private void loadProjektDetails(Project projekt, Model model) {
+    private void loadProjectDetails(Project projekt, Model model) {
         if (projekt.isShowPhotos()) {
-            model.addAttribute("projektImages", projectImageService.findByProjectOrderBySortOrder(projekt));
+            model.addAttribute("projectImages", projectImageService.findByProjectOrderBySortOrder(projekt));
         }
 
         if (projekt.isShowVideos()) {
-            model.addAttribute("projektVideos", projectVideoService.findByProjectOrderBySortOrder(projekt));
+            model.addAttribute("projectVideos", projectVideoService.findByProjectOrderBySortOrder(projekt));
             projectVideoService.findMainVideoByProject(projekt)
                     .ifPresent(video -> model.addAttribute("mainVideo", video));
         }
@@ -289,18 +289,18 @@ public class ProjektController { // ИЗМЕНЕНО: ProjectController → Proj
         }
 
         if (projekt.isShowPartners()) {
-            model.addAttribute("projektPartners", projectPartnerService.findActiveByProjectOrderBySortOrder(projekt));
+            model.addAttribute("projectPartners", projectPartnerService.findActiveByProjectOrderBySortOrder(projekt));
         }
 
         if (projekt.isShowRelated()) {
-            List<Project> similarProjekts = projectService.findSimilarProjects(
+            List<Project> similarProjects = projectService.findSimilarProjects(
                     projekt.getCategory(), projekt.getId(), 3
             );
-            model.addAttribute("similarProjekts", similarProjekts);
+            model.addAttribute("similarProjects", similarProjects);
         }
 
-        List<ProjectArticle> projektArticles = projectArticleService.findPublishedByProject(projekt);
-        if (!projektArticles.isEmpty()) {
+        List<ProjectArticle> projectArticles = projectArticleService.findPublishedByProject(projekt);
+        if (!projectArticles.isEmpty()) {
             model.addAttribute("hasArticles", true);
             model.addAttribute("recentArticles", projectArticleService.findRecentArticlesByProject(projekt, 3));
         }
