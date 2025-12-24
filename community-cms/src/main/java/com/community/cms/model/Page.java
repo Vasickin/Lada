@@ -1,5 +1,6 @@
 package com.community.cms.model;
 
+import com.community.cms.domain.enums.PageType;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;

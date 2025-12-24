@@ -1,5 +1,5 @@
 // src/main/java/com/community/cms/model/PageType.java
-package com.community.cms.model;
+package com.community.cms.domain.enums;
 
 /**
  * Типы страниц в системе управления контентом.

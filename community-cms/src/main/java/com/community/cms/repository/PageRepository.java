@@ -1,7 +1,7 @@
 package com.community.cms.repository;
 
 import com.community.cms.model.Page;
-import com.community.cms.model.PageType;
+import com.community.cms.domain.enums.PageType;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -104,7 +104,7 @@ public interface PageRepository extends JpaRepository<Page, Long> {
      *
      * @return список основных страниц сайта
      */
-    @Query("SELECT p FROM Page p WHERE p.pageType <> com.community.cms.model.PageType.CUSTOM")
+    @Query("SELECT p FROM Page p WHERE p.pageType <> com.community.cms.domain.enums.PageType.CUSTOM")
     List<Page> findAllSitePages();
 
     /**
@@ -113,7 +113,7 @@ public interface PageRepository extends JpaRepository<Page, Long> {
      *
      * @return список опубликованных основных страниц
      */
-    @Query("SELECT p FROM Page p WHERE p.pageType <> com.community.cms.model.PageType.CUSTOM AND p.published = true")
+    @Query("SELECT p FROM Page p WHERE p.pageType <> com.community.cms.domain.enums.PageType.CUSTOM AND p.published = true")
     List<Page> findPublishedSitePages();
 
     /**

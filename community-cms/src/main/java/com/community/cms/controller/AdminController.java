@@ -2,7 +2,7 @@ package com.community.cms.controller;
 
 import com.community.cms.dto.PageStatistics;
 import com.community.cms.model.Page;
-import com.community.cms.model.PageType;
+import com.community.cms.domain.enums.PageType;
 import com.community.cms.service.PageService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
