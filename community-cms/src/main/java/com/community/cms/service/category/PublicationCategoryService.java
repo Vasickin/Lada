@@ -1,7 +1,7 @@
 
 package com.community.cms.service.category;
 
-import com.community.cms.model.gallery.PublicationCategory;
+import com.community.cms.domain.model.media.PublicationCategory;
 import com.community.cms.repository.gallery.PublicationCategoryRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

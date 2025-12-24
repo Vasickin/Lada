@@ -1,7 +1,7 @@
 package com.community.cms.service.project;
 
 import com.community.cms.domain.model.content.Project;
-import com.community.cms.model.project.TeamMember;
+import com.community.cms.domain.model.people.TeamMember;
 import com.community.cms.repository.project.TeamMemberRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;

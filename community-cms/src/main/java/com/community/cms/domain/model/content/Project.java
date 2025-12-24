@@ -1,6 +1,6 @@
 package com.community.cms.domain.model.content;
 
-import com.community.cms.model.project.TeamMember;
+import com.community.cms.domain.model.people.TeamMember;
 import com.community.cms.validation.VideoUrl;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;

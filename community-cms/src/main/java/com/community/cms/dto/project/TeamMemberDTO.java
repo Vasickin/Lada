@@ -1,5 +1,7 @@
 package com.community.cms.dto.project;
 
+import com.community.cms.domain.model.people.TeamMember;
+
 import java.time.LocalDateTime;
 import java.util.Map;
 import java.util.Set;
@@ -22,7 +24,7 @@ import java.util.Set;
  * @author Community CMS
  * @version 1.0
  * @since 2025
- * @see com.community.cms.model.project.TeamMember
+ * @see TeamMember
  * @see TeamMemberForm
  */
 public class TeamMemberDTO {
@@ -135,7 +137,7 @@ public class TeamMemberDTO {
      *
      * @param teamMember сущность члена команды
      */
-    public TeamMemberDTO(com.community.cms.model.project.TeamMember teamMember) {
+    public TeamMemberDTO(TeamMember teamMember) {
         this.id = teamMember.getId();
         this.fullName = teamMember.getFullName();
         this.position = teamMember.getPosition();

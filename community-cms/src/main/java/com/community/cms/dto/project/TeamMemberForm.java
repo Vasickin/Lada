@@ -1,5 +1,6 @@
 package com.community.cms.dto.project;
 
+import com.community.cms.domain.model.people.TeamMember;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import java.util.HashSet;
@@ -24,7 +25,7 @@ import java.util.Set;
  * @author Community CMS
  * @version 1.0
  * @since 2025
- * @see com.community.cms.model.project.TeamMember
+ * @see TeamMember
  */
 public class TeamMemberForm {
 
@@ -144,7 +145,7 @@ public class TeamMemberForm {
      *
      * @param teamMember существующий член команды
      */
-    public TeamMemberForm(com.community.cms.model.project.TeamMember teamMember) {
+    public TeamMemberForm(TeamMember teamMember) {
         this();
         this.id = teamMember.getId();
         this.fullName = teamMember.getFullName();
@@ -437,8 +438,8 @@ public class TeamMemberForm {
      *
      * @return сущность TeamMember с заполненными базовыми полями
      */
-    public com.community.cms.model.project.TeamMember toEntity() {
-        com.community.cms.model.project.TeamMember teamMember = new com.community.cms.model.project.TeamMember();
+    public TeamMember toEntity() {
+        TeamMember teamMember = new TeamMember();
         teamMember.setId(this.id);
         teamMember.setFullName(this.fullName);
         teamMember.setPosition(this.position);
@@ -467,7 +468,7 @@ public class TeamMemberForm {
      *
      * @param teamMember сущность для обновления
      */
-    public void updateEntity(com.community.cms.model.project.TeamMember teamMember) {
+    public void updateEntity(TeamMember teamMember) {
         teamMember.setFullName(this.fullName);
         teamMember.setPosition(this.position);
         teamMember.setBio(this.bio);

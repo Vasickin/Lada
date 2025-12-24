@@ -1,7 +1,7 @@
 package com.community.cms.domain.model.content;
 
 import com.community.cms.domain.model.media.MediaFile;
-import com.community.cms.model.gallery.PublicationCategory;
+import com.community.cms.domain.model.media.PublicationCategory;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
 import org.hibernate.annotations.CreationTimestamp;

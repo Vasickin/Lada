@@ -1,4 +1,4 @@
-package com.community.cms.model.gallery;
+package com.community.cms.domain.model.media;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
