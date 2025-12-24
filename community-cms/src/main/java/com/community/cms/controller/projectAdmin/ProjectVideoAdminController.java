@@ -1,7 +1,7 @@
 package com.community.cms.controller.projectAdmin;
 
 import com.community.cms.domain.model.content.Project;
-import com.community.cms.model.project.ProjectVideo;
+import com.community.cms.model.project.VideoGallery;
 import com.community.cms.service.project.ProjectService;
 import com.community.cms.service.project.ProjectVideoService;
 import jakarta.validation.Valid;
@@ -25,7 +25,7 @@ import java.util.Optional;
  * @author Community CMS
  * @version 1.1
  * @since 2025
- * @see ProjectVideo
+ * @see VideoGallery
  * @see ProjectVideoService
  */
 @Controller
@@ -71,8 +71,8 @@ public class ProjectVideoAdminController {
         }
 
         Project project = projectOpt.get();
-        List<ProjectVideo> videos = projectVideoService.findByProjectOrderBySortOrder(project);
-        Optional<ProjectVideo> mainVideoOpt = projectVideoService.findMainVideoByProject(project);
+        List<VideoGallery> videos = projectVideoService.findByProjectOrderBySortOrder(project);
+        Optional<VideoGallery> mainVideoOpt = projectVideoService.findMainVideoByProject(project);
 
         model.addAttribute("project", project);
         model.addAttribute("videos", videos);
@@ -90,7 +90,7 @@ public class ProjectVideoAdminController {
      */
     @GetMapping
     public String listAllVideos(Model model) {
-        List<ProjectVideo> videos = projectVideoService.findRecentVideos(50);
+        List<VideoGallery> videos = projectVideoService.findRecentVideos(50);
         model.addAttribute("videos", videos);
         model.addAttribute("title", "Все видео проектов");
         model.addAttribute("showAll", true);
@@ -111,7 +111,7 @@ public class ProjectVideoAdminController {
     public String showCreateForm(@RequestParam(required = false) Long projectId,
                                  Model model,
                                  RedirectAttributes redirectAttributes) {
-        ProjectVideo video = new ProjectVideo();
+        VideoGallery video = new VideoGallery();
 
         // Если указан projectId, привязываем видео к проекту
         if (projectId != null) {
@@ -141,7 +141,7 @@ public class ProjectVideoAdminController {
      * @return редирект на список видео проекта или форму с ошибками
      */
     @PostMapping("/create")
-    public String createVideo(@Valid @ModelAttribute("video") ProjectVideo video,
+    public String createVideo(@Valid @ModelAttribute("video") VideoGallery video,
                               BindingResult bindingResult,
                               RedirectAttributes redirectAttributes) {
         // Валидация URL видео
@@ -161,7 +161,7 @@ public class ProjectVideoAdminController {
         }
 
         try {
-            ProjectVideo savedVideo = projectVideoService.save(video);
+            VideoGallery savedVideo = projectVideoService.save(video);
 
             // Если видео помечено как основное, устанавливаем его
             if (video.isMain()) {
@@ -196,7 +196,7 @@ public class ProjectVideoAdminController {
     public String showEditForm(@PathVariable Long id,
                                Model model,
                                RedirectAttributes redirectAttributes) {
-        Optional<ProjectVideo> videoOpt = projectVideoService.findById(id);
+        Optional<VideoGallery> videoOpt = projectVideoService.findById(id);
 
         if (videoOpt.isEmpty()) {
             redirectAttributes.addFlashAttribute("errorMessage",
@@ -204,7 +204,7 @@ public class ProjectVideoAdminController {
             return "redirect:/admin/project-videos";
         }
 
-        ProjectVideo video = videoOpt.get();
+        VideoGallery video = videoOpt.get();
         List<Project> projects = projectService.findAllActive();
 
         model.addAttribute("video", video);
@@ -225,7 +225,7 @@ public class ProjectVideoAdminController {
      */
     @PostMapping("/edit/{id}")
     public String updateVideo(@PathVariable Long id,
-                              @Valid @ModelAttribute("video") ProjectVideo video,
+                              @Valid @ModelAttribute("video") VideoGallery video,
                               BindingResult bindingResult,
                               RedirectAttributes redirectAttributes) {
         // Валидация URL видео
@@ -244,14 +244,14 @@ public class ProjectVideoAdminController {
 
         try {
             // Проверяем существование видео
-            Optional<ProjectVideo> existingVideoOpt = projectVideoService.findById(id);
+            Optional<VideoGallery> existingVideoOpt = projectVideoService.findById(id);
             if (existingVideoOpt.isEmpty()) {
                 redirectAttributes.addFlashAttribute("errorMessage",
                         "Видео с ID " + id + " не найден");
                 return "redirect:/admin/project-videos";
             }
 
-            ProjectVideo existingVideo = existingVideoOpt.get();
+            VideoGallery existingVideo = existingVideoOpt.get();
             video.setId(id);
 
             // Сохраняем проект, если он не установлен в форме
@@ -259,7 +259,7 @@ public class ProjectVideoAdminController {
                 video.setProject(existingVideo.getProject());
             }
 
-            ProjectVideo updatedVideo = projectVideoService.update(video);
+            VideoGallery updatedVideo = projectVideoService.update(video);
 
             // Управление основным видео
             if (video.isMain() && !existingVideo.isMain()) {
@@ -295,15 +295,15 @@ public class ProjectVideoAdminController {
     public String setAsMainVideo(@PathVariable Long id,
                                  RedirectAttributes redirectAttributes) {
         try {
-            Optional<ProjectVideo> videoOpt = projectVideoService.findById(id);
+            Optional<VideoGallery> videoOpt = projectVideoService.findById(id);
             if (videoOpt.isEmpty()) {
                 redirectAttributes.addFlashAttribute("errorMessage",
                         "Видео с ID " + id + " не найден");
                 return "redirect:/admin/project-videos";
             }
 
-            ProjectVideo video = videoOpt.get();
-            ProjectVideo updatedVideo = projectVideoService.setAsMainVideo(video);
+            VideoGallery video = videoOpt.get();
+            VideoGallery updatedVideo = projectVideoService.setAsMainVideo(video);
 
             redirectAttributes.addFlashAttribute("successMessage",
                     "Видео '" + updatedVideo.getTitle() + "' установлено как основное для проекта!");
@@ -329,7 +329,7 @@ public class ProjectVideoAdminController {
     public String showDeleteConfirmation(@PathVariable Long id,
                                          Model model,
                                          RedirectAttributes redirectAttributes) {
-        Optional<ProjectVideo> videoOpt = projectVideoService.findById(id);
+        Optional<VideoGallery> videoOpt = projectVideoService.findById(id);
 
         if (videoOpt.isEmpty()) {
             redirectAttributes.addFlashAttribute("errorMessage",
@@ -337,7 +337,7 @@ public class ProjectVideoAdminController {
             return "redirect:/admin/project-videos";
         }
 
-        ProjectVideo video = videoOpt.get();
+        VideoGallery video = videoOpt.get();
         model.addAttribute("video", video);
         model.addAttribute("title", "Удаление видео: " + video.getTitle());
 
@@ -355,14 +355,14 @@ public class ProjectVideoAdminController {
     public String deleteVideo(@PathVariable Long id,
                               RedirectAttributes redirectAttributes) {
         try {
-            Optional<ProjectVideo> videoOpt = projectVideoService.findById(id);
+            Optional<VideoGallery> videoOpt = projectVideoService.findById(id);
             if (videoOpt.isEmpty()) {
                 redirectAttributes.addFlashAttribute("errorMessage",
                         "Видео с ID " + id + " не найден");
                 return "redirect:/admin/project-videos";
             }
 
-            ProjectVideo video = videoOpt.get();
+            VideoGallery video = videoOpt.get();
             Long projectId = video.getProject().getId();
             String videoTitle = video.getTitle();
 
@@ -409,9 +409,9 @@ public class ProjectVideoAdminController {
 
             // Обновляем sortOrder для каждого видео
             for (int i = 0; i < videoIds.length; i++) {
-                Optional<ProjectVideo> videoOpt = projectVideoService.findById(videoIds[i]);
+                Optional<VideoGallery> videoOpt = projectVideoService.findById(videoIds[i]);
                 if (videoOpt.isPresent()) {
-                    ProjectVideo video = videoOpt.get();
+                    VideoGallery video = videoOpt.get();
                     video.setSortOrder(i);
                     projectVideoService.update(video);
                 }

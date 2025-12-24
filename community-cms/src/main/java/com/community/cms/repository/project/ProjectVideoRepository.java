@@ -1,8 +1,8 @@
 package com.community.cms.repository.project;
 
 import com.community.cms.domain.model.content.Project;
-import com.community.cms.model.project.ProjectVideo;
-import com.community.cms.model.project.ProjectVideo.VideoType;
+import com.community.cms.model.project.VideoGallery;
+import com.community.cms.model.project.VideoGallery.VideoType;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -15,55 +15,55 @@ import java.util.List;
 import java.util.Optional;
 
 @Repository
-public interface ProjectVideoRepository extends JpaRepository<ProjectVideo, Long> {
+public interface ProjectVideoRepository extends JpaRepository<VideoGallery, Long> {
 
     // ================== ПОИСК ПО ПРОЕКТУ ==================
 
-    List<ProjectVideo> findByProject(Project project);
-    List<ProjectVideo> findByProjectOrderBySortOrderAsc(Project project);
-    List<ProjectVideo> findByProjectOrderByAddedAtDesc(Project project);
+    List<VideoGallery> findByProject(Project project);
+    List<VideoGallery> findByProjectOrderBySortOrderAsc(Project project);
+    List<VideoGallery> findByProjectOrderByAddedAtDesc(Project project);
 
-    @Query("SELECT pv FROM ProjectVideo pv WHERE pv.project.id = :projectId")
-    List<ProjectVideo> findByProjectId(@Param("projectId") Long projectId);
+    @Query("SELECT pv FROM VideoGallery pv WHERE pv.project.id = :projectId")
+    List<VideoGallery> findByProjectId(@Param("projectId") Long projectId);
 
-    @Query("SELECT pv FROM ProjectVideo pv WHERE pv.project.id = :projectId ORDER BY pv.sortOrder ASC")
-    List<ProjectVideo> findByProjectIdOrderBySortOrderAsc(@Param("projectId") Long projectId);
+    @Query("SELECT pv FROM VideoGallery pv WHERE pv.project.id = :projectId ORDER BY pv.sortOrder ASC")
+    List<VideoGallery> findByProjectIdOrderBySortOrderAsc(@Param("projectId") Long projectId);
 
     // ================== ПОИСК ПО ТИПУ ВИДЕО ==================
 
-    List<ProjectVideo> findByProjectAndVideoType(Project project, VideoType videoType);
-    List<ProjectVideo> findByProjectAndVideoTypeOrderBySortOrderAsc(Project project, VideoType videoType);
+    List<VideoGallery> findByProjectAndVideoType(Project project, VideoType videoType);
+    List<VideoGallery> findByProjectAndVideoTypeOrderBySortOrderAsc(Project project, VideoType videoType);
 
-    @Query("SELECT pv FROM ProjectVideo pv WHERE pv.project.id = :projectId AND pv.videoType = :videoType")
-    List<ProjectVideo> findByProjectIdAndVideoType(@Param("projectId") Long projectId, @Param("videoType") VideoType videoType);
+    @Query("SELECT pv FROM VideoGallery pv WHERE pv.project.id = :projectId AND pv.videoType = :videoType")
+    List<VideoGallery> findByProjectIdAndVideoType(@Param("projectId") Long projectId, @Param("videoType") VideoType videoType);
 
     // ================== ПОИСК ПО ФЛАГАМ ==================
 
-    Optional<ProjectVideo> findByProjectAndIsMainTrue(Project project);
+    Optional<VideoGallery> findByProjectAndIsMainTrue(Project project);
 
-    @Query("SELECT pv FROM ProjectVideo pv WHERE pv.project.id = :projectId AND pv.isMain = true")
-    Optional<ProjectVideo> findByProjectIdAndIsMainTrue(@Param("projectId") Long projectId);
+    @Query("SELECT pv FROM VideoGallery pv WHERE pv.project.id = :projectId AND pv.isMain = true")
+    Optional<VideoGallery> findByProjectIdAndIsMainTrue(@Param("projectId") Long projectId);
 
-    List<ProjectVideo> findByProjectAndIsMainFalse(Project project);
-    List<ProjectVideo> findByProjectAndIsMainFalseOrderBySortOrderAsc(Project project);
+    List<VideoGallery> findByProjectAndIsMainFalse(Project project);
+    List<VideoGallery> findByProjectAndIsMainFalseOrderBySortOrderAsc(Project project);
 
     // ================== ПОИСК ПО URL И ID ВИДЕО ==================
 
-    Optional<ProjectVideo> findByVideoUrl(String videoUrl);
-    List<ProjectVideo> findByVideoId(String videoId);
-    Optional<ProjectVideo> findByProjectAndVideoId(Project project, String videoId);
+    Optional<VideoGallery> findByVideoUrl(String videoUrl);
+    List<VideoGallery> findByVideoId(String videoId);
+    Optional<VideoGallery> findByProjectAndVideoId(Project project, String videoId);
 
-    @Query("SELECT CASE WHEN COUNT(pv) > 0 THEN true ELSE false END FROM ProjectVideo pv WHERE pv.project.id = :projectId AND pv.videoUrl = :videoUrl")
+    @Query("SELECT CASE WHEN COUNT(pv) > 0 THEN true ELSE false END FROM VideoGallery pv WHERE pv.project.id = :projectId AND pv.videoUrl = :videoUrl")
     boolean existsByProjectIdAndVideoUrl(@Param("projectId") Long projectId, @Param("videoUrl") String videoUrl);
 
-    @Query("SELECT CASE WHEN COUNT(pv) > 0 THEN true ELSE false END FROM ProjectVideo pv WHERE pv.project.id = :projectId AND pv.videoId = :videoId")
+    @Query("SELECT CASE WHEN COUNT(pv) > 0 THEN true ELSE false END FROM VideoGallery pv WHERE pv.project.id = :projectId AND pv.videoId = :videoId")
     boolean existsByProjectIdAndVideoId(@Param("projectId") Long projectId, @Param("videoId") String videoId);
 
     // ================== СТАТИСТИКА И СВОДНЫЕ ДАННЫЕ ==================
 
     long countByProject(Project project);
 
-    @Query("SELECT COUNT(pv) FROM ProjectVideo pv WHERE pv.project.id = :projectId")
+    @Query("SELECT COUNT(pv) FROM VideoGallery pv WHERE pv.project.id = :projectId")
     long countByProjectId(@Param("projectId") Long projectId);
 
     long countByProjectAndVideoType(Project project, VideoType videoType);
@@ -83,52 +83,52 @@ public interface ProjectVideoRepository extends JpaRepository<ProjectVideo, Long
 
     // ================== СПЕЦИАЛЬНЫЕ ЗАПРОСЫ ==================
 
-    @Query("SELECT pv FROM ProjectVideo pv WHERE pv.project = :project ORDER BY pv.sortOrder ASC")
-    List<ProjectVideo> findFirstNByProject(@Param("project") Project project, Pageable pageable);
+    @Query("SELECT pv FROM VideoGallery pv WHERE pv.project = :project ORDER BY pv.sortOrder ASC")
+    List<VideoGallery> findFirstNByProject(@Param("project") Project project, Pageable pageable);
 
-    default List<ProjectVideo> findFirstNByProject(Project project, int limit) {
+    default List<VideoGallery> findFirstNByProject(Project project, int limit) {
         return findFirstNByProject(project, PageRequest.of(0, limit));
     }
 
-    @Query("SELECT pv FROM ProjectVideo pv WHERE pv.project.id = :projectId ORDER BY pv.sortOrder ASC")
-    List<ProjectVideo> findFirstNByProjectId(@Param("projectId") Long projectId, Pageable pageable);
+    @Query("SELECT pv FROM VideoGallery pv WHERE pv.project.id = :projectId ORDER BY pv.sortOrder ASC")
+    List<VideoGallery> findFirstNByProjectId(@Param("projectId") Long projectId, Pageable pageable);
 
-    default List<ProjectVideo> findFirstNByProjectId(Long projectId, int limit) {
+    default List<VideoGallery> findFirstNByProjectId(Long projectId, int limit) {
         return findFirstNByProjectId(projectId, PageRequest.of(0, limit));
     }
 
-    @Query("SELECT pv FROM ProjectVideo pv WHERE pv.project = :project AND " +
+    @Query("SELECT pv FROM VideoGallery pv WHERE pv.project = :project AND " +
             "(pv.description IS NULL OR TRIM(pv.description) = '')")
-    List<ProjectVideo> findWithoutDescriptionByProject(@Param("project") Project project);
+    List<VideoGallery> findWithoutDescriptionByProject(@Param("project") Project project);
 
-    List<ProjectVideo> findByProjectAndDurationSecondsIsNotNull(Project project);
-    List<ProjectVideo> findByProjectAndDurationSecondsIsNull(Project project);
+    List<VideoGallery> findByProjectAndDurationSecondsIsNotNull(Project project);
+    List<VideoGallery> findByProjectAndDurationSecondsIsNull(Project project);
 
-    @Query("SELECT DISTINCT pv.project FROM ProjectVideo pv")
+    @Query("SELECT DISTINCT pv.project FROM VideoGallery pv")
     List<Project> findProjectsWithVideos();
 
-    @Query("SELECT pv FROM ProjectVideo pv ORDER BY pv.addedAt DESC")
-    List<ProjectVideo> findRecentVideos(Pageable pageable);
+    @Query("SELECT pv FROM VideoGallery pv ORDER BY pv.addedAt DESC")
+    List<VideoGallery> findRecentVideos(Pageable pageable);
 
-    default List<ProjectVideo> findRecentVideos(int limit) {
+    default List<VideoGallery> findRecentVideos(int limit) {
         return findRecentVideos(PageRequest.of(0, limit));
     }
 
-    @Query("SELECT pv FROM ProjectVideo pv WHERE pv.videoType = :videoType ORDER BY pv.addedAt DESC")
-    List<ProjectVideo> findRecentVideosByType(@Param("videoType") VideoType videoType, Pageable pageable);
+    @Query("SELECT pv FROM VideoGallery pv WHERE pv.videoType = :videoType ORDER BY pv.addedAt DESC")
+    List<VideoGallery> findRecentVideosByType(@Param("videoType") VideoType videoType, Pageable pageable);
 
-    default List<ProjectVideo> findRecentVideosByType(VideoType videoType, int limit) {
+    default List<VideoGallery> findRecentVideosByType(VideoType videoType, int limit) {
         return findRecentVideosByType(videoType, PageRequest.of(0, limit));
     }
 
     // ================== УПРАВЛЕНИЕ ОСНОВНЫМ ВИДЕО ==================
 
     @Modifying
-    @Query("UPDATE ProjectVideo pv SET pv.isMain = false WHERE pv.project = :project")
+    @Query("UPDATE VideoGallery pv SET pv.isMain = false WHERE pv.project = :project")
     void resetMainVideoForProject(@Param("project") Project project);
 
     @Modifying
-    @Query("UPDATE ProjectVideo pv SET pv.isMain = false WHERE pv.project.id = :projectId")
+    @Query("UPDATE VideoGallery pv SET pv.isMain = false WHERE pv.project.id = :projectId")
     void resetMainVideoForProjectId(@Param("projectId") Long projectId);
 
     // ================== УДАЛЕНИЕ ==================
@@ -136,7 +136,7 @@ public interface ProjectVideoRepository extends JpaRepository<ProjectVideo, Long
     void deleteByProject(Project project);
 
     @Modifying
-    @Query("DELETE FROM ProjectVideo pv WHERE pv.project.id = :projectId")
+    @Query("DELETE FROM VideoGallery pv WHERE pv.project.id = :projectId")
     void deleteByProjectId(@Param("projectId") Long projectId);
 
     void deleteByProjectAndVideoType(Project project, VideoType videoType);

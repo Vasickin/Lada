@@ -1,8 +1,8 @@
 package com.community.cms.service.project;
 
 import com.community.cms.domain.model.content.Project;
-import com.community.cms.model.project.ProjectVideo;
-import com.community.cms.model.project.ProjectVideo.VideoType;
+import com.community.cms.model.project.VideoGallery;
+import com.community.cms.model.project.VideoGallery.VideoType;
 import com.community.cms.repository.project.ProjectVideoRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -20,7 +20,7 @@ import java.util.Optional;
  * @author Community CMS
  * @version 1.1
  * @since 2025
- * @see ProjectVideo
+ * @see VideoGallery
  * @see ProjectVideoRepository
  */
 @Service
@@ -44,23 +44,23 @@ public class ProjectVideoService {
     /**
      * Сохраняет видео проекта.
      *
-     * @param projectVideo видео проекта для сохранения
+     * @param videoGallery видео проекта для сохранения
      * @return сохраненное видео проекта
      */
-    public ProjectVideo save(ProjectVideo projectVideo) {
-        validateProjectVideo(projectVideo);
-        return projectVideoRepository.save(projectVideo);
+    public VideoGallery save(VideoGallery videoGallery) {
+        validateProjectVideo(videoGallery);
+        return projectVideoRepository.save(videoGallery);
     }
 
     /**
      * Обновляет существующее видео проекта.
      *
-     * @param projectVideo видео проекта для обновления
+     * @param videoGallery видео проекта для обновления
      * @return обновленное видео проекта
      */
-    public ProjectVideo update(ProjectVideo projectVideo) {
-        validateProjectVideo(projectVideo);
-        return projectVideoRepository.save(projectVideo);
+    public VideoGallery update(VideoGallery videoGallery) {
+        validateProjectVideo(videoGallery);
+        return projectVideoRepository.save(videoGallery);
     }
 
     /**
@@ -70,7 +70,7 @@ public class ProjectVideoService {
      * @return Optional с видео проекта, если найдено
      */
     @Transactional(readOnly = true)
-    public Optional<ProjectVideo> findById(Long id) {
+    public Optional<VideoGallery> findById(Long id) {
         return projectVideoRepository.findById(id);
     }
 
@@ -92,7 +92,7 @@ public class ProjectVideoService {
      * @return список видео проекта
      */
     @Transactional(readOnly = true)
-    public List<ProjectVideo> findByProject(Project project) {
+    public List<VideoGallery> findByProject(Project project) {
         return projectVideoRepository.findByProject(project);
     }
 
@@ -103,7 +103,7 @@ public class ProjectVideoService {
      * @return список видео проекта
      */
     @Transactional(readOnly = true)
-    public List<ProjectVideo> findByProjectId(Long projectId) {
+    public List<VideoGallery> findByProjectId(Long projectId) {
         return projectVideoRepository.findByProjectId(projectId);
     }
 
@@ -114,7 +114,7 @@ public class ProjectVideoService {
      * @return список видео проекта (по sortOrder)
      */
     @Transactional(readOnly = true)
-    public List<ProjectVideo> findByProjectOrderBySortOrder(Project project) {
+    public List<VideoGallery> findByProjectOrderBySortOrder(Project project) {
         return projectVideoRepository.findByProjectOrderBySortOrderAsc(project);
     }
 
@@ -125,7 +125,7 @@ public class ProjectVideoService {
      * @return список видео проекта (по sortOrder)
      */
     @Transactional(readOnly = true)
-    public List<ProjectVideo> findByProjectIdOrderBySortOrder(Long projectId) {
+    public List<VideoGallery> findByProjectIdOrderBySortOrder(Long projectId) {
         return projectVideoRepository.findByProjectIdOrderBySortOrderAsc(projectId);
     }
 
@@ -139,7 +139,7 @@ public class ProjectVideoService {
      * @return список видео проекта указанного типа
      */
     @Transactional(readOnly = true)
-    public List<ProjectVideo> findByProjectAndVideoType(Project project, VideoType videoType) {
+    public List<VideoGallery> findByProjectAndVideoType(Project project, VideoType videoType) {
         return projectVideoRepository.findByProjectAndVideoType(project, videoType);
     }
 
@@ -151,7 +151,7 @@ public class ProjectVideoService {
      * @return список видео проекта указанного типа
      */
     @Transactional(readOnly = true)
-    public List<ProjectVideo> findByProjectIdAndVideoType(Long projectId, VideoType videoType) {
+    public List<VideoGallery> findByProjectIdAndVideoType(Long projectId, VideoType videoType) {
         return projectVideoRepository.findByProjectIdAndVideoType(projectId, videoType);
     }
 
@@ -163,7 +163,7 @@ public class ProjectVideoService {
      * @return список видео проекта указанного типа (по sortOrder)
      */
     @Transactional(readOnly = true)
-    public List<ProjectVideo> findByProjectAndVideoTypeOrderBySortOrder(Project project, VideoType videoType) {
+    public List<VideoGallery> findByProjectAndVideoTypeOrderBySortOrder(Project project, VideoType videoType) {
         return projectVideoRepository.findByProjectAndVideoTypeOrderBySortOrderAsc(project, videoType);
     }
 
@@ -176,7 +176,7 @@ public class ProjectVideoService {
      * @return Optional с основным видео проекта, если найдено
      */
     @Transactional(readOnly = true)
-    public Optional<ProjectVideo> findMainVideoByProject(Project project) {
+    public Optional<VideoGallery> findMainVideoByProject(Project project) {
         return projectVideoRepository.findByProjectAndIsMainTrue(project);
     }
 
@@ -187,7 +187,7 @@ public class ProjectVideoService {
      * @return Optional с основным видео проекта, если найдено
      */
     @Transactional(readOnly = true)
-    public Optional<ProjectVideo> findMainVideoByProjectId(Long projectId) {
+    public Optional<VideoGallery> findMainVideoByProjectId(Long projectId) {
         return projectVideoRepository.findByProjectIdAndIsMainTrue(projectId);
     }
 
@@ -198,7 +198,7 @@ public class ProjectVideoService {
      * @return список не основных видео проекта
      */
     @Transactional(readOnly = true)
-    public List<ProjectVideo> findNonMainVideosByProject(Project project) {
+    public List<VideoGallery> findNonMainVideosByProject(Project project) {
         return projectVideoRepository.findByProjectAndIsMainFalse(project);
     }
 
@@ -209,7 +209,7 @@ public class ProjectVideoService {
      * @return список не основных видео проекта (по sortOrder)
      */
     @Transactional(readOnly = true)
-    public List<ProjectVideo> findNonMainVideosByProjectOrderBySortOrder(Project project) {
+    public List<VideoGallery> findNonMainVideosByProjectOrderBySortOrder(Project project) {
         return projectVideoRepository.findByProjectAndIsMainFalseOrderBySortOrderAsc(project);
     }
 
@@ -222,7 +222,7 @@ public class ProjectVideoService {
      * @return Optional с видео, если найдено
      */
     @Transactional(readOnly = true)
-    public Optional<ProjectVideo> findByVideoUrl(String videoUrl) {
+    public Optional<VideoGallery> findByVideoUrl(String videoUrl) {
         return projectVideoRepository.findByVideoUrl(videoUrl);
     }
 
@@ -233,7 +233,7 @@ public class ProjectVideoService {
      * @return список видео с указанным ID
      */
     @Transactional(readOnly = true)
-    public List<ProjectVideo> findByVideoId(String videoId) {
+    public List<VideoGallery> findByVideoId(String videoId) {
         return projectVideoRepository.findByVideoId(videoId);
     }
 
@@ -245,7 +245,7 @@ public class ProjectVideoService {
      * @return Optional с видео проекта, если найдено
      */
     @Transactional(readOnly = true)
-    public Optional<ProjectVideo> findByProjectAndVideoId(Project project, String videoId) {
+    public Optional<VideoGallery> findByProjectAndVideoId(Project project, String videoId) {
         return projectVideoRepository.findByProjectAndVideoId(project, videoId);
     }
 
@@ -283,7 +283,7 @@ public class ProjectVideoService {
      * @return список первых N видео проекта
      */
     @Transactional(readOnly = true)
-    public List<ProjectVideo> findFirstNByProject(Project project, int limit) {
+    public List<VideoGallery> findFirstNByProject(Project project, int limit) {
         return projectVideoRepository.findFirstNByProject(project, limit);
     }
 
@@ -295,7 +295,7 @@ public class ProjectVideoService {
      * @return список первых N видео проекта
      */
     @Transactional(readOnly = true)
-    public List<ProjectVideo> findFirstNByProjectId(Long projectId, int limit) {
+    public List<VideoGallery> findFirstNByProjectId(Long projectId, int limit) {
         return projectVideoRepository.findFirstNByProjectId(projectId, limit);
     }
 
@@ -306,7 +306,7 @@ public class ProjectVideoService {
      * @return список видео проекта без описания
      */
     @Transactional(readOnly = true)
-    public List<ProjectVideo> findWithoutDescriptionByProject(Project project) {
+    public List<VideoGallery> findWithoutDescriptionByProject(Project project) {
         return projectVideoRepository.findWithoutDescriptionByProject(project);
     }
 
@@ -317,7 +317,7 @@ public class ProjectVideoService {
      * @return список видео проекта с указанной длительностью
      */
     @Transactional(readOnly = true)
-    public List<ProjectVideo> findWithDurationByProject(Project project) {
+    public List<VideoGallery> findWithDurationByProject(Project project) {
         return projectVideoRepository.findByProjectAndDurationSecondsIsNotNull(project);
     }
 
@@ -328,7 +328,7 @@ public class ProjectVideoService {
      * @return список видео проекта без указанной длительности
      */
     @Transactional(readOnly = true)
-    public List<ProjectVideo> findWithoutDurationByProject(Project project) {
+    public List<VideoGallery> findWithoutDurationByProject(Project project) {
         return projectVideoRepository.findByProjectAndDurationSecondsIsNull(project);
     }
 
@@ -339,7 +339,7 @@ public class ProjectVideoService {
      * @return список последних добавленных видео
      */
     @Transactional(readOnly = true)
-    public List<ProjectVideo> findRecentVideos(int limit) {
+    public List<VideoGallery> findRecentVideos(int limit) {
         return projectVideoRepository.findRecentVideos(limit);
     }
 
@@ -351,7 +351,7 @@ public class ProjectVideoService {
      * @return список последних добавленных видео указанного типа
      */
     @Transactional(readOnly = true)
-    public List<ProjectVideo> findRecentVideosByType(VideoType videoType, int limit) {
+    public List<VideoGallery> findRecentVideosByType(VideoType videoType, int limit) {
         return projectVideoRepository.findRecentVideosByType(videoType, limit);
     }
 
@@ -451,16 +451,16 @@ public class ProjectVideoService {
      * Устанавливает видео как основное для проекта.
      * Сбрасывает флаг основного видео с других видео проекта.
      *
-     * @param projectVideo видео для установки как основного
+     * @param videoGallery видео для установки как основного
      * @return обновленное видео проекта
      */
-    public ProjectVideo setAsMainVideo(ProjectVideo projectVideo) {
+    public VideoGallery setAsMainVideo(VideoGallery videoGallery) {
         // Сбрасываем флаг основного видео со всех видео проекта
-        projectVideoRepository.resetMainVideoForProject(projectVideo.getProject());
+        projectVideoRepository.resetMainVideoForProject(videoGallery.getProject());
 
         // Устанавливаем флаг основного видео для указанного видео
-        projectVideo.setMain(true);
-        return projectVideoRepository.save(projectVideo);
+        videoGallery.setMain(true);
+        return projectVideoRepository.save(videoGallery);
     }
 
     /**
@@ -470,21 +470,21 @@ public class ProjectVideoService {
      * @return обновленное видео проекта
      * @throws IllegalArgumentException если видео не найдено
      */
-    public ProjectVideo setAsMainVideoById(Long videoId) {
-        ProjectVideo projectVideo = projectVideoRepository.findById(videoId)
+    public VideoGallery setAsMainVideoById(Long videoId) {
+        VideoGallery videoGallery = projectVideoRepository.findById(videoId)
                 .orElseThrow(() -> new IllegalArgumentException("Видео с ID " + videoId + " не найдено"));
-        return setAsMainVideo(projectVideo);
+        return setAsMainVideo(videoGallery);
     }
 
     /**
      * Сбрасывает флаг основного видео с указанного видео.
      *
-     * @param projectVideo видео для сброса флага
+     * @param videoGallery видео для сброса флага
      * @return обновленное видео проекта
      */
-    public ProjectVideo removeMainVideo(ProjectVideo projectVideo) {
-        projectVideo.setMain(false);
-        return projectVideoRepository.save(projectVideo);
+    public VideoGallery removeMainVideo(VideoGallery videoGallery) {
+        videoGallery.setMain(false);
+        return projectVideoRepository.save(videoGallery);
     }
 
     /**
@@ -540,39 +540,39 @@ public class ProjectVideoService {
     /**
      * Проверяет бизнес-правила для видео проекта.
      *
-     * @param projectVideo видео проекта для валидации
+     * @param videoGallery видео проекта для валидации
      * @throws IllegalArgumentException если видео проекта невалидно
      */
-    private void validateProjectVideo(ProjectVideo projectVideo) {
-        if (projectVideo == null) {
+    private void validateProjectVideo(VideoGallery videoGallery) {
+        if (videoGallery == null) {
             throw new IllegalArgumentException("Видео проекта не может быть null");
         }
 
-        if (projectVideo.getProject() == null) {
+        if (videoGallery.getProject() == null) {
             throw new IllegalArgumentException("Видео должно быть привязано к проекту");
         }
 
-        if (projectVideo.getTitle() == null || projectVideo.getTitle().trim().isEmpty()) {
+        if (videoGallery.getTitle() == null || videoGallery.getTitle().trim().isEmpty()) {
             throw new IllegalArgumentException("Название видео обязательно");
         }
 
-        if (projectVideo.getVideoUrl() == null || projectVideo.getVideoUrl().trim().isEmpty()) {
+        if (videoGallery.getVideoUrl() == null || videoGallery.getVideoUrl().trim().isEmpty()) {
             throw new IllegalArgumentException("URL видео обязателен");
         }
 
         // Автоматическое определение типа и ID видео при сохранении
-        projectVideo.setVideoUrl(projectVideo.getVideoUrl());
+        videoGallery.setVideoUrl(videoGallery.getVideoUrl());
 
-        if (projectVideo.getVideoType() == null) {
+        if (videoGallery.getVideoType() == null) {
             throw new IllegalArgumentException("Не удалось определить тип видеохостинга. Поддерживаются только YouTube, Vimeo и Rutube");
         }
 
-        if (projectVideo.getVideoId() == null || projectVideo.getVideoId().trim().isEmpty()) {
+        if (videoGallery.getVideoId() == null || videoGallery.getVideoId().trim().isEmpty()) {
             throw new IllegalArgumentException("Не удалось извлечь ID видео из URL");
         }
 
-        if (projectVideo.getSortOrder() == null) {
-            projectVideo.setSortOrder(0);
+        if (videoGallery.getSortOrder() == null) {
+            videoGallery.setSortOrder(0);
         }
     }
 
@@ -588,16 +588,16 @@ public class ProjectVideoService {
      * @param sortOrder порядок сортировки
      * @return созданное видео проекта
      */
-    public ProjectVideo createProjectVideo(Project project, String title, String videoUrl,
+    public VideoGallery createProjectVideo(Project project, String title, String videoUrl,
                                            String description, boolean isMain,
                                            Integer durationSeconds, Integer sortOrder) {
-        ProjectVideo projectVideo = new ProjectVideo(project, title, videoUrl);
-        projectVideo.setDescription(description);
-        projectVideo.setMain(isMain);
-        projectVideo.setDurationSeconds(durationSeconds);
-        projectVideo.setSortOrder(sortOrder != null ? sortOrder : 0);
+        VideoGallery videoGallery = new VideoGallery(project, title, videoUrl);
+        videoGallery.setDescription(description);
+        videoGallery.setMain(isMain);
+        videoGallery.setDurationSeconds(durationSeconds);
+        videoGallery.setSortOrder(sortOrder != null ? sortOrder : 0);
 
-        return save(projectVideo);
+        return save(videoGallery);
     }
 
     /**
@@ -623,30 +623,30 @@ public class ProjectVideoService {
     /**
      * Получает embed код для вставки видео в HTML.
      *
-     * @param projectVideo видео проекта
+     * @param videoGallery видео проекта
      * @return HTML embed код
      */
-    public String getEmbedCode(ProjectVideo projectVideo) {
-        return projectVideo.getEmbedCode();
+    public String getEmbedCode(VideoGallery videoGallery) {
+        return videoGallery.getEmbedCode();
     }
 
     /**
      * Получает URL превью видео (миниатюры).
      *
-     * @param projectVideo видео проекта
+     * @param videoGallery видео проекта
      * @return URL превью видео
      */
-    public String getThumbnailUrl(ProjectVideo projectVideo) {
-        return projectVideo.getThumbnailUrl();
+    public String getThumbnailUrl(VideoGallery videoGallery) {
+        return videoGallery.getThumbnailUrl();
     }
 
     /**
      * Обновляет порядок сортировки видео проекта.
      *
-     * @param projectVideos список видео с обновленными sortOrder
+     * @param videoGalleries список видео с обновленными sortOrder
      * @return список обновленных видео
      */
-    public List<ProjectVideo> updateSortOrder(List<ProjectVideo> projectVideos) {
-        return projectVideoRepository.saveAll(projectVideos);
+    public List<VideoGallery> updateSortOrder(List<VideoGallery> videoGalleries) {
+        return projectVideoRepository.saveAll(videoGalleries);
     }
 }

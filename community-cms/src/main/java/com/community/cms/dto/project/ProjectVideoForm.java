@@ -1,6 +1,6 @@
 package com.community.cms.dto.project;
 
-import com.community.cms.model.project.ProjectVideo;
+import com.community.cms.model.project.VideoGallery;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
@@ -16,7 +16,7 @@ import jakarta.validation.constraints.Size;
  * @author Community CMS
  * @version 1.1
  * @since 2025
- * @see ProjectVideo
+ * @see VideoGallery
  */
 public class ProjectVideoForm {
 
@@ -91,7 +91,7 @@ public class ProjectVideoForm {
      *
      * @param video существующее видео проекта
      */
-    public ProjectVideoForm(ProjectVideo video) {
+    public ProjectVideoForm(VideoGallery video) {
         this();
         this.id = video.getId();
         this.title = video.getTitle();
@@ -176,11 +176,11 @@ public class ProjectVideoForm {
      *
      * @return тип видеохостинга или null если не поддерживается
      */
-    public ProjectVideo.VideoType getVideoType() {
+    public VideoGallery.VideoType getVideoType() {
         if (videoUrl == null) {
             return null;
         }
-        return ProjectVideo.VideoType.fromUrl(videoUrl);
+        return VideoGallery.VideoType.fromUrl(videoUrl);
     }
 
     /**
@@ -192,7 +192,7 @@ public class ProjectVideoForm {
         if (videoUrl == null) {
             return null;
         }
-        return ProjectVideo.VideoType.extractVideoId(videoUrl);
+        return VideoGallery.VideoType.extractVideoId(videoUrl);
     }
 
     /**
@@ -210,8 +210,8 @@ public class ProjectVideoForm {
      * @return true если видео с YouTube, иначе false
      */
     public boolean isYouTubeVideo() {
-        ProjectVideo.VideoType type = getVideoType();
-        return type != null && type == ProjectVideo.VideoType.YOUTUBE;
+        VideoGallery.VideoType type = getVideoType();
+        return type != null && type == VideoGallery.VideoType.YOUTUBE;
     }
 
     /**
@@ -220,8 +220,8 @@ public class ProjectVideoForm {
      * @return true если видео с Vimeo, иначе false
      */
     public boolean isVimeoVideo() {
-        ProjectVideo.VideoType type = getVideoType();
-        return type != null && type == ProjectVideo.VideoType.VIMEO;
+        VideoGallery.VideoType type = getVideoType();
+        return type != null && type == VideoGallery.VideoType.VIMEO;
     }
 
     /**
@@ -230,8 +230,8 @@ public class ProjectVideoForm {
      * @return true если видео с Rutube, иначе false
      */
     public boolean isRutubeVideo() {
-        ProjectVideo.VideoType type = getVideoType();
-        return type != null && type == ProjectVideo.VideoType.RUTUBE;
+        VideoGallery.VideoType type = getVideoType();
+        return type != null && type == VideoGallery.VideoType.RUTUBE;
     }
 
     /**
@@ -273,13 +273,13 @@ public class ProjectVideoForm {
     }
 
     /**
-     * Преобразует ProjectVideoForm в сущность ProjectVideo.
+     * Преобразует ProjectVideoForm в сущность VideoGallery.
      * Проект не устанавливается (только projectId).
      *
-     * @return сущность ProjectVideo с заполненными базовыми полями
+     * @return сущность VideoGallery с заполненными базовыми полями
      */
-    public ProjectVideo toEntity() {
-        ProjectVideo video = new ProjectVideo();
+    public VideoGallery toEntity() {
+        VideoGallery video = new VideoGallery();
         video.setId(this.id);
         video.setTitle(this.title);
         video.setDescription(this.description);
@@ -294,11 +294,11 @@ public class ProjectVideoForm {
     }
 
     /**
-     * Обновляет существующую сущность ProjectVideo данными из формы.
+     * Обновляет существующую сущность VideoGallery данными из формы.
      *
      * @param video сущность для обновления
      */
-    public void updateEntity(ProjectVideo video) {
+    public void updateEntity(VideoGallery video) {
         video.setTitle(this.title);
         video.setDescription(this.description);
         video.setVideoUrl(this.videoUrl);
@@ -316,13 +316,13 @@ public class ProjectVideoForm {
      */
     public String getEmbedCode() {
         String videoId = getVideoId();
-        ProjectVideo.VideoType videoType = getVideoType();
+        VideoGallery.VideoType videoType = getVideoType();
 
         if (videoId == null || videoType == null) {
             return "";
         }
 
-        if (videoType == ProjectVideo.VideoType.YOUTUBE) {
+        if (videoType == VideoGallery.VideoType.YOUTUBE) {
             return String.format(
                     "<iframe width=\"560\" height=\"315\" " +
                             "src=\"https://www.youtube.com/embed/%s\" " +
@@ -332,7 +332,7 @@ public class ProjectVideoForm {
                             "allowfullscreen></iframe>",
                     videoId, title
             );
-        } else if (videoType == ProjectVideo.VideoType.VIMEO) {
+        } else if (videoType == VideoGallery.VideoType.VIMEO) {
             return String.format(
                     "<iframe src=\"https://player.vimeo.com/video/%s\" " +
                             "width=\"560\" height=\"315\" " +
@@ -342,7 +342,7 @@ public class ProjectVideoForm {
                             "title=\"%s\"></iframe>",
                     videoId, title
             );
-        } else if (videoType == ProjectVideo.VideoType.RUTUBE) {
+        } else if (videoType == VideoGallery.VideoType.RUTUBE) {
             return String.format(
                     "<iframe src=\"https://rutube.ru/play/embed/%s\" " +
                             "width=\"560\" height=\"315\" " +
@@ -364,15 +364,15 @@ public class ProjectVideoForm {
      */
     public String getThumbnailUrl() {
         String videoId = getVideoId();
-        ProjectVideo.VideoType videoType = getVideoType();
+        VideoGallery.VideoType videoType = getVideoType();
 
         if (videoId == null || videoType == null) {
             return null;
         }
 
-        if (videoType == ProjectVideo.VideoType.YOUTUBE) {
+        if (videoType == VideoGallery.VideoType.YOUTUBE) {
             return String.format("https://img.youtube.com/vi/%s/hqdefault.jpg", videoId);
-        } else if (videoType == ProjectVideo.VideoType.RUTUBE) {
+        } else if (videoType == VideoGallery.VideoType.RUTUBE) {
             return String.format("https://rutube.ru/video/thumb/%s.jpg", videoId);
         }
 

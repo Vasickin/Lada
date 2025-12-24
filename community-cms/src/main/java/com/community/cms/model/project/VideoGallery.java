@@ -37,7 +37,7 @@ import java.util.regex.Matcher;
  */
 @Entity
 @Table(name = "project_videos")
-public class ProjectVideo {
+public class VideoGallery {
 
     /**
      * Типы видеохостингов, поддерживаемых системой.
@@ -277,7 +277,7 @@ public class ProjectVideo {
     /**
      * Конструктор по умолчанию.
      */
-    public ProjectVideo() {
+    public VideoGallery() {
         this.addedAt = LocalDateTime.now();
         this.updatedAt = LocalDateTime.now();
     }
@@ -289,7 +289,7 @@ public class ProjectVideo {
      * @param title название видео
      * @param videoUrl URL видео
      */
-    public ProjectVideo(Project project, String title, String videoUrl) {
+    public VideoGallery(Project project, String title, String videoUrl) {
         this();
         this.project = project;
         this.title = title;
@@ -571,7 +571,7 @@ public class ProjectVideo {
 
     @Override
     public String toString() {
-        return "ProjectVideo{" +
+        return "VideoGallery{" +
                 "id=" + id +
                 ", title='" + title + '\'' +
                 ", videoType=" + videoType +
