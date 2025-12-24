@@ -2,7 +2,7 @@ package com.community.cms.controller;
 
 import com.community.cms.domain.model.content.PhotoGallery;
 import com.community.cms.domain.model.media.PublicationCategory;
-import com.community.cms.service.FileStorageService;
+import com.community.cms.domain.service.media.FileStorageService;
 import com.community.cms.domain.service.media.PublicationCategoryService;
 import com.community.cms.domain.service.content.PhotoGalleryService;
 import jakarta.persistence.EntityNotFoundException;

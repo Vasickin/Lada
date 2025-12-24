@@ -1,4 +1,4 @@
-package com.community.cms.service;
+package com.community.cms.domain.service.media;
 
 import com.community.cms.domain.enums.MediaType;
 import org.springframework.beans.factory.annotation.Value;

@@ -2,7 +2,7 @@ package com.community.cms.controller;
 
 import com.community.cms.domain.model.page.Page;
 import com.community.cms.domain.enums.PageType;
-import com.community.cms.service.PageService;
+import com.community.cms.domain.service.page.PageService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;

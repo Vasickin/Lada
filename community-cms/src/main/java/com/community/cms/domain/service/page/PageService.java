@@ -1,4 +1,4 @@
-package com.community.cms.service;
+package com.community.cms.domain.service.page;
 
 import com.community.cms.dto.PageStatistics;
 import com.community.cms.domain.model.page.Page;
