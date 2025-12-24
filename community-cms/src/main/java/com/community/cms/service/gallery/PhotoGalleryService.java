@@ -3,7 +3,7 @@ package com.community.cms.service.gallery;
 import com.community.cms.domain.model.content.PhotoGallery;
 import com.community.cms.domain.model.media.MediaFile;
 import com.community.cms.domain.model.media.PublicationCategory;
-import com.community.cms.repository.gallery.MediaFileRepository;
+import com.community.cms.domain.repository.media.MediaFileRepository;
 import com.community.cms.domain.repository.content.PhotoGalleryRepository;
 import com.community.cms.repository.gallery.PublicationCategoryRepository;
 import com.community.cms.service.FileStorageService;
