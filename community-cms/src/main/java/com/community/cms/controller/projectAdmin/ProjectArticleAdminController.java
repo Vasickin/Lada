@@ -3,8 +3,8 @@ package com.community.cms.controller.projectAdmin;
 import com.community.cms.domain.model.page.About;
 import com.community.cms.domain.model.content.Project;
 import com.community.cms.domain.model.page.About.ArticleStatus;
-import com.community.cms.service.project.ProjectArticleService;
-import com.community.cms.service.project.ProjectService;
+import com.community.cms.service.project.AboutService;
+import com.community.cms.domain.service.content.ProjectService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -30,11 +30,11 @@ import java.util.List;
 @RequestMapping("/admin/projects/{projectId}/articles")
 public class ProjectArticleAdminController {
 
-    private final ProjectArticleService articleService;
+    private final AboutService articleService;
     private final ProjectService projectService;
 
     @Autowired
-    public ProjectArticleAdminController(ProjectArticleService articleService,
+    public ProjectArticleAdminController(AboutService articleService,
                                          ProjectService projectService) {
         this.articleService = articleService;
         this.projectService = projectService;

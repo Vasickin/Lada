@@ -2,7 +2,7 @@ package com.community.cms.controller.projectAdmin;
 
 import com.community.cms.domain.model.content.Project;
 import com.community.cms.domain.model.content.VideoGallery;
-import com.community.cms.service.project.ProjectService;
+import com.community.cms.domain.service.content.ProjectService;
 import com.community.cms.service.project.ProjectVideoService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;

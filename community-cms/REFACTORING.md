@@ -139,7 +139,7 @@ src/main/java/com/community/cms/
 │   │   │   ├── 🗃️  About.java
 │   │   │   ├── 🗃️  ProjectImage.java
 │   │   │   ├── 🗃️  Partner.java
-│   │   │   ├── 🗃️  ProjectVideo.java
+│   │   │   ├── 🗃️  VideoGallery.java
 │   │   │   └── 🗃️  TeamMember.java
 │   │   ├── 📁 gallery/                    #   • Галерея
 │   │   │   ├── 🗃️  MediaFile.java
@@ -152,13 +152,13 @@ src/main/java/com/community/cms/
 │   │
 │   ├── 📁 repository/                     # 🔗 Интерфейсы репозиториев
 │   │   ├── 🗃️  ProjectRepository.java
-│   │   ├── 🗃️  ProjectArticleRepository.java
+│   │   ├── 🗃️  AboutRepository.java
 │   │   ├── 🗃️  ProjectImageRepository.java
-│   │   ├── 🗃️  ProjectPartnerRepository.java
+│   │   ├── 🗃️  PartnerRepository.java
 │   │   ├── 🗃️  ProjectVideoRepository.java
 │   │   ├── 🗃️  TeamMemberRepository.java
 │   │   ├── 🗃️  MediaFileRepository.java
-│   │   ├── 🗃️  PhotoGalleryItemRepository.java
+│   │   ├── 🗃️  PhotoGalleryRepository.java
 │   │   ├── 🗃️  PublicationCategoryRepository.java
 │   │   ├── 🗃️  PageRepository.java
 │   │   └── 🗃️  UserRepository.java
@@ -166,7 +166,7 @@ src/main/java/com/community/cms/
 │   └── 📁 service/                        # ⚙️ Бизнес-сервисы
 │       ├── 📁 project/
 │       │   ├── 🗃️  ProjectService.java
-│       │   ├── 🗃️  ProjectArticleService.java
+│       │   ├── 🗃️  AboutService.java
 │       │   ├── 🗃️  ProjectImageService.java
 │       │   ├── 🗃️  ProjectPartnerService.java
 │       │   ├── 🗃️  ProjectVideoService.java

@@ -43,7 +43,7 @@ import java.util.Optional;
  */
 @Service
 @Transactional
-public class ProjectArticleService {
+public class AboutService {
 
     private final AboutRepository articleRepository;
     private final ProjectRepository projectRepository;
@@ -55,8 +55,8 @@ public class ProjectArticleService {
      * @param projectRepository репозиторий для работы с проектами
      */
     @Autowired
-    public ProjectArticleService(AboutRepository articleRepository,
-                                 ProjectRepository projectRepository) {
+    public AboutService(AboutRepository articleRepository,
+                        ProjectRepository projectRepository) {
         this.articleRepository = articleRepository;
         this.projectRepository = projectRepository;
     }
