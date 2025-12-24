@@ -168,7 +168,7 @@ src/main/java/com/community/cms/
 │       │   ├── 🗃️  ProjectService.java
 │       │   ├── 🗃️  AboutService.java
 │       │   ├── 🗃️  ProjectImageService.java
-│       │   ├── 🗃️  ProjectPartnerService.java
+│       │   ├── 🗃️  PartnerService.java
 │       │   ├── 🗃️  VideoGalleryService.java
 │       │   └── 🗃️  TeamMemberService.java
 │       ├── 📁 gallery/

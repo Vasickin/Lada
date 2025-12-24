@@ -3,7 +3,7 @@ package com.community.cms.controller.projectAdmin;
 import com.community.cms.domain.model.people.Partner;
 import com.community.cms.domain.model.content.Project;
 import com.community.cms.domain.model.people.Partner.PartnerType;
-import com.community.cms.service.project.ProjectPartnerService;
+import com.community.cms.domain.service.people.PartnerService;
 import com.community.cms.domain.service.content.ProjectService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,25 +26,25 @@ import java.util.Optional;
  * @version 1.0
  * @since 2025
  * @see Partner
- * @see ProjectPartnerService
+ * @see PartnerService
  */
 @Controller
 @RequestMapping("/admin/project-partners")
 public class ProjectPartnerAdminController {
 
-    private final ProjectPartnerService projectPartnerService;
+    private final PartnerService partnerService;
     private final ProjectService projectService;
 
     /**
      * Конструктор с инъекцией зависимостей.
      *
-     * @param projectPartnerService сервис для работы с партнерами проектов
+     * @param partnerService сервис для работы с партнерами проектов
      * @param projectService сервис для работы с проектами
      */
     @Autowired
-    public ProjectPartnerAdminController(ProjectPartnerService projectPartnerService,
+    public ProjectPartnerAdminController(PartnerService partnerService,
                                          ProjectService projectService) {
-        this.projectPartnerService = projectPartnerService;
+        this.partnerService = partnerService;
         this.projectService = projectService;
     }
 
@@ -71,9 +71,9 @@ public class ProjectPartnerAdminController {
         }
 
         Project project = projectOpt.get();
-        List<Partner> partners = projectPartnerService.findActiveByProjectOrderBySortOrder(project);
-        List<Partner> sponsors = projectPartnerService.findSponsorsByProject(project);
-        List<Partner> infoPartners = projectPartnerService.findInformationPartnersByProject(project);
+        List<Partner> partners = partnerService.findActiveByProjectOrderBySortOrder(project);
+        List<Partner> sponsors = partnerService.findSponsorsByProject(project);
+        List<Partner> infoPartners = partnerService.findInformationPartnersByProject(project);
 
         model.addAttribute("project", project);
         model.addAttribute("partners", partners);
@@ -93,7 +93,7 @@ public class ProjectPartnerAdminController {
      */
     @GetMapping
     public String listAllPartners(Model model) {
-        List<Partner> partners = projectPartnerService.findActiveByNameContaining(""); // Все активные
+        List<Partner> partners = partnerService.findActiveByNameContaining(""); // Все активные
         model.addAttribute("partners", partners);
         model.addAttribute("title", "Все партнеры проектов");
         model.addAttribute("partnerTypes", PartnerType.values());
@@ -113,7 +113,7 @@ public class ProjectPartnerAdminController {
                                      Model model) {
         try {
             PartnerType type = PartnerType.valueOf(partnerType.toUpperCase());
-            List<Partner> partners = projectPartnerService.findActiveByNameContaining("")
+            List<Partner> partners = partnerService.findActiveByNameContaining("")
                     .stream()
                     .filter(partner -> partner.getPartnerType() == type)
                     .toList();
@@ -200,7 +200,7 @@ public class ProjectPartnerAdminController {
         }
 
         try {
-            Partner savedPartner = projectPartnerService.save(partner);
+            Partner savedPartner = partnerService.save(partner);
 
             redirectAttributes.addFlashAttribute("successMessage",
                     "Партнер '" + savedPartner.getName() + "' успешно создан!");
@@ -226,7 +226,7 @@ public class ProjectPartnerAdminController {
     public String showEditForm(@PathVariable Long id,
                                Model model,
                                RedirectAttributes redirectAttributes) {
-        Optional<Partner> partnerOpt = projectPartnerService.findById(id);
+        Optional<Partner> partnerOpt = partnerService.findById(id);
 
         if (partnerOpt.isEmpty()) {
             redirectAttributes.addFlashAttribute("errorMessage",
@@ -279,7 +279,7 @@ public class ProjectPartnerAdminController {
 
         try {
             // Проверяем существование партнера
-            Optional<Partner> existingPartnerOpt = projectPartnerService.findById(id);
+            Optional<Partner> existingPartnerOpt = partnerService.findById(id);
             if (existingPartnerOpt.isEmpty()) {
                 redirectAttributes.addFlashAttribute("errorMessage",
                         "Партнер с ID " + id + " не найден");
@@ -294,7 +294,7 @@ public class ProjectPartnerAdminController {
                 partner.setProject(existingPartner.getProject());
             }
 
-            Partner updatedPartner = projectPartnerService.update(partner);
+            Partner updatedPartner = partnerService.update(partner);
 
             redirectAttributes.addFlashAttribute("successMessage",
                     "Партнер '" + updatedPartner.getName() + "' успешно обновлен!");
@@ -319,7 +319,7 @@ public class ProjectPartnerAdminController {
     public String activatePartner(@PathVariable Long id,
                                   RedirectAttributes redirectAttributes) {
         try {
-            Partner activatedPartner = projectPartnerService.activateById(id);
+            Partner activatedPartner = partnerService.activateById(id);
             redirectAttributes.addFlashAttribute("successMessage",
                     "Партнер '" + activatedPartner.getName() + "' активирован!");
             return "redirect:/admin/project-partners/project/" + activatedPartner.getProject().getId();
@@ -341,7 +341,7 @@ public class ProjectPartnerAdminController {
     public String deactivatePartner(@PathVariable Long id,
                                     RedirectAttributes redirectAttributes) {
         try {
-            Partner deactivatedPartner = projectPartnerService.deactivateById(id);
+            Partner deactivatedPartner = partnerService.deactivateById(id);
             redirectAttributes.addFlashAttribute("successMessage",
                     "Партнер '" + deactivatedPartner.getName() + "' деактивирован!");
             return "redirect:/admin/project-partners/project/" + deactivatedPartner.getProject().getId();
@@ -366,7 +366,7 @@ public class ProjectPartnerAdminController {
     public String showDeleteConfirmation(@PathVariable Long id,
                                          Model model,
                                          RedirectAttributes redirectAttributes) {
-        Optional<Partner> partnerOpt = projectPartnerService.findById(id);
+        Optional<Partner> partnerOpt = partnerService.findById(id);
 
         if (partnerOpt.isEmpty()) {
             redirectAttributes.addFlashAttribute("errorMessage",
@@ -392,7 +392,7 @@ public class ProjectPartnerAdminController {
     public String deletePartner(@PathVariable Long id,
                                 RedirectAttributes redirectAttributes) {
         try {
-            Optional<Partner> partnerOpt = projectPartnerService.findById(id);
+            Optional<Partner> partnerOpt = partnerService.findById(id);
             if (partnerOpt.isEmpty()) {
                 redirectAttributes.addFlashAttribute("errorMessage",
                         "Партнер с ID " + id + " не найден");
@@ -403,7 +403,7 @@ public class ProjectPartnerAdminController {
             Long projectId = partner.getProject().getId();
             String partnerName = partner.getName();
 
-            projectPartnerService.deleteById(id);
+            partnerService.deleteById(id);
 
             redirectAttributes.addFlashAttribute("successMessage",
                     "Партнер '" + partnerName + "' успешно удален!");
@@ -439,11 +439,11 @@ public class ProjectPartnerAdminController {
 
             // Обновляем sortOrder для каждого партнера
             for (int i = 0; i < partnerIds.length; i++) {
-                Optional<Partner> partnerOpt = projectPartnerService.findById(partnerIds[i]);
+                Optional<Partner> partnerOpt = partnerService.findById(partnerIds[i]);
                 if (partnerOpt.isPresent()) {
                     Partner partner = partnerOpt.get();
                     partner.setSortOrder(i);
-                    projectPartnerService.update(partner);
+                    partnerService.update(partner);
                 }
             }
 
@@ -468,7 +468,7 @@ public class ProjectPartnerAdminController {
      */
     @GetMapping("/search")
     public String searchPartners(@RequestParam String searchTerm, Model model) {
-        List<Partner> searchResults = projectPartnerService.findByNameContaining(searchTerm);
+        List<Partner> searchResults = partnerService.findByNameContaining(searchTerm);
         model.addAttribute("partners", searchResults);
         model.addAttribute("title", "Результаты поиска: " + searchTerm);
         model.addAttribute("searchTerm", searchTerm);
@@ -510,10 +510,10 @@ public class ProjectPartnerAdminController {
             partner.setActive(true);
 
             // Определяем следующий порядок сортировки
-            long partnerCount = projectPartnerService.countByProject(project);
+            long partnerCount = partnerService.countByProject(project);
             partner.setSortOrder((int) partnerCount);
 
-            projectPartnerService.save(partner);
+            partnerService.save(partner);
 
             redirectAttributes.addFlashAttribute("successMessage",
                     "Партнер '" + name + "' быстро добавлен к проекту!");

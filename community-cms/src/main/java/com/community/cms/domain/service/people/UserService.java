@@ -1,4 +1,4 @@
-package com.community.cms.service;
+package com.community.cms.domain.service.people;
 
 import com.community.cms.domain.model.people.User;
 import com.community.cms.domain.repository.people.UserRepository;

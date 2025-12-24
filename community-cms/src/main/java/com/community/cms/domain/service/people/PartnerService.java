@@ -1,4 +1,4 @@
-package com.community.cms.service.project;
+package com.community.cms.domain.service.people;
 
 import com.community.cms.domain.model.people.Partner;
 import com.community.cms.domain.model.content.Project;
@@ -25,7 +25,7 @@ import java.util.Optional;
  */
 @Service
 @Transactional
-public class ProjectPartnerService {
+public class PartnerService {
 
     private final PartnerRepository projectPartnerRepository;
 
@@ -35,7 +35,7 @@ public class ProjectPartnerService {
      * @param projectPartnerRepository репозиторий для работы с партнерами проектов
      */
     @Autowired
-    public ProjectPartnerService(PartnerRepository projectPartnerRepository) {
+    public PartnerService(PartnerRepository projectPartnerRepository) {
         this.projectPartnerRepository = projectPartnerRepository;
     }
 

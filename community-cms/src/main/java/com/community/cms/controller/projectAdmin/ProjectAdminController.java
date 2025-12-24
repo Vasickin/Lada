@@ -9,7 +9,7 @@ import com.community.cms.domain.model.people.TeamMember;
 import com.community.cms.domain.repository.content.ProjectRepository;
 import com.community.cms.domain.service.content.PhotoGalleryService;
 import com.community.cms.domain.service.content.ProjectService;
-import com.community.cms.service.project.TeamMemberService;
+import com.community.cms.domain.service.people.TeamMemberService;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;

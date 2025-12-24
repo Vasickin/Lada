@@ -1,7 +1,7 @@
 package com.community.cms.config;
 
 import com.community.cms.domain.model.people.User;
-import com.community.cms.service.UserService;
+import com.community.cms.domain.service.people.UserService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;

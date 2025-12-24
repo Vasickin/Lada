@@ -2,9 +2,9 @@ package com.community.cms.config;
 
 import com.community.cms.domain.model.page.Page;
 import com.community.cms.domain.model.people.User;
-import com.community.cms.service.UserService;
+import com.community.cms.domain.service.people.UserService;
 import com.community.cms.service.PageService;
-import com.community.cms.service.category.PublicationCategoryService;
+import com.community.cms.domain.service.media.PublicationCategoryService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.security.crypto.password.PasswordEncoder;

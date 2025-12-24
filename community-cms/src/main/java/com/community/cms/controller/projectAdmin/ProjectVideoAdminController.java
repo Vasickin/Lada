@@ -3,7 +3,7 @@ package com.community.cms.controller.projectAdmin;
 import com.community.cms.domain.model.content.Project;
 import com.community.cms.domain.model.content.VideoGallery;
 import com.community.cms.domain.service.content.ProjectService;
-import com.community.cms.service.project.VideoGalleryService;
+import com.community.cms.domain.service.content.VideoGalleryService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;

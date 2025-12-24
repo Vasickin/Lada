@@ -1,5 +1,5 @@
 
-package com.community.cms.service.category;
+package com.community.cms.domain.service.media;
 
 import com.community.cms.domain.model.media.PublicationCategory;
 import com.community.cms.domain.repository.media.PublicationCategoryRepository;
