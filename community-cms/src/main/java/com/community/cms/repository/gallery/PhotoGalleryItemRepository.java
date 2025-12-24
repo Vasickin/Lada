@@ -1,6 +1,6 @@
 package com.community.cms.repository.gallery;
 
-import com.community.cms.domain.model.content.PhotoGalleryItem;
+import com.community.cms.domain.model.content.PhotoGallery;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -18,7 +18,7 @@ import java.util.Optional;
  * @since 2025
  */
 @Repository
-public interface PhotoGalleryItemRepository extends JpaRepository<PhotoGalleryItem, Long> {
+public interface PhotoGalleryItemRepository extends JpaRepository<PhotoGallery, Long> {
 
     /**
      * Находит опубликованные элементы, отсортированные по дате создания (новые первыми).
@@ -26,7 +26,7 @@ public interface PhotoGalleryItemRepository extends JpaRepository<PhotoGalleryIt
      *
      * @return список элементов / list of items
      */
-    List<PhotoGalleryItem> findByPublishedTrueOrderByCreatedAtDesc();
+    List<PhotoGallery> findByPublishedTrueOrderByCreatedAtDesc();
 
     /**
      * Находит опубликованные элементы по году, отсортированные по дате создания.
@@ -35,7 +35,7 @@ public interface PhotoGalleryItemRepository extends JpaRepository<PhotoGalleryIt
      * @param year год для фильтрации / year for filtering
      * @return список элементов / list of items
      */
-    List<PhotoGalleryItem> findByYearAndPublishedTrueOrderByCreatedAtDesc(Integer year);
+    List<PhotoGallery> findByYearAndPublishedTrueOrderByCreatedAtDesc(Integer year);
 
     /**
      * Находит все элементы (включая неопубликованные) для админки, отсортированные по дате создания.
@@ -43,7 +43,7 @@ public interface PhotoGalleryItemRepository extends JpaRepository<PhotoGalleryIt
      *
      * @return список элементов / list of items
      */
-    List<PhotoGalleryItem> findAllByOrderByCreatedAtDesc();
+    List<PhotoGallery> findAllByOrderByCreatedAtDesc();
 
     /**
      * Находит элемент по ID только если он опубликован.
@@ -52,7 +52,7 @@ public interface PhotoGalleryItemRepository extends JpaRepository<PhotoGalleryIt
      * @param id идентификатор элемента / item identifier
      * @return Optional с элементом / Optional with item
      */
-    Optional<PhotoGalleryItem> findByIdAndPublishedTrue(Long id);
+    Optional<PhotoGallery> findByIdAndPublishedTrue(Long id);
 
     /**
      * Проверяет существование элемента по названию.
@@ -70,7 +70,7 @@ public interface PhotoGalleryItemRepository extends JpaRepository<PhotoGalleryIt
      * @param title часть названия для поиска / title part for search
      * @return список найденных элементов / list of found items
      */
-    List<PhotoGalleryItem> findByTitleContainingIgnoreCase(String title);
+    List<PhotoGallery> findByTitleContainingIgnoreCase(String title);
 
     /**
      * Находит опубликованные элементы с определенной категорией.
@@ -79,8 +79,8 @@ public interface PhotoGalleryItemRepository extends JpaRepository<PhotoGalleryIt
      * @param categoryName название категории / category name
      * @return список элементов / list of items
      */
-    @Query("SELECT pgi FROM PhotoGalleryItem pgi JOIN pgi.categories pc WHERE pc.name = :categoryName AND pgi.published = true ORDER BY pgi.createdAt DESC")
-    List<PhotoGalleryItem> findByCategoryNameAndPublishedTrue(@Param("categoryName") String categoryName);
+    @Query("SELECT pgi FROM PhotoGallery pgi JOIN pgi.categories pc WHERE pc.name = :categoryName AND pgi.published = true ORDER BY pgi.createdAt DESC")
+    List<PhotoGallery> findByCategoryNameAndPublishedTrue(@Param("categoryName") String categoryName);
 
     /**
      * Находит уникальные года из опубликованных элементов (для фильтров).
@@ -88,7 +88,7 @@ public interface PhotoGalleryItemRepository extends JpaRepository<PhotoGalleryIt
      *
      * @return список уникальных годов по убыванию / list of distinct years in descending order
      */
-    @Query("SELECT DISTINCT pgi.year FROM PhotoGalleryItem pgi WHERE pgi.published = true ORDER BY pgi.year DESC")
+    @Query("SELECT DISTINCT pgi.year FROM PhotoGallery pgi WHERE pgi.published = true ORDER BY pgi.year DESC")
     List<Integer> findDistinctYears();
 
     /**
@@ -108,8 +108,8 @@ public interface PhotoGalleryItemRepository extends JpaRepository<PhotoGalleryIt
      * @param endYear конечный год / end year
      * @return список элементов в диапазоне / list of items in range
      */
-    @Query("SELECT pgi FROM PhotoGalleryItem pgi WHERE pgi.year BETWEEN :startYear AND :endYear AND pgi.published = true ORDER BY pgi.year DESC, pgi.createdAt DESC")
-    List<PhotoGalleryItem> findByYearRangeAndPublishedTrue(@Param("startYear") Integer startYear, @Param("endYear") Integer endYear);
+    @Query("SELECT pgi FROM PhotoGallery pgi WHERE pgi.year BETWEEN :startYear AND :endYear AND pgi.published = true ORDER BY pgi.year DESC, pgi.createdAt DESC")
+    List<PhotoGallery> findByYearRangeAndPublishedTrue(@Param("startYear") Integer startYear, @Param("endYear") Integer endYear);
 
     /**
      * Находит последние добавленные элементы (ограниченное количество).
@@ -119,7 +119,7 @@ public interface PhotoGalleryItemRepository extends JpaRepository<PhotoGalleryIt
      * @return список последних элементов / list of recent items
      */
     @Query(value = "SELECT * FROM photo_gallery_items WHERE published = true ORDER BY created_at DESC LIMIT :limit", nativeQuery = true)
-    List<PhotoGalleryItem> findRecentItems(@Param("limit") int limit);
+    List<PhotoGallery> findRecentItems(@Param("limit") int limit);
 
     /**
      * Подсчитывает общее количество изображений во всех элементах.
@@ -127,7 +127,7 @@ public interface PhotoGalleryItemRepository extends JpaRepository<PhotoGalleryIt
      *
      * @return общее количество изображений / total number of images
      */
-    @Query("SELECT COUNT(img) FROM PhotoGalleryItem pgi JOIN pgi.images img")
+    @Query("SELECT COUNT(img) FROM PhotoGallery pgi JOIN pgi.images img")
     long countTotalImages();
 
     /**
@@ -136,8 +136,8 @@ public interface PhotoGalleryItemRepository extends JpaRepository<PhotoGalleryIt
      *
      * @return список элементов без категорий / list of items without categories
      */
-    @Query("SELECT pgi FROM PhotoGalleryItem pgi WHERE pgi.categories IS EMPTY")
-    List<PhotoGalleryItem> findItemsWithoutCategories();
+    @Query("SELECT pgi FROM PhotoGallery pgi WHERE pgi.categories IS EMPTY")
+    List<PhotoGallery> findItemsWithoutCategories();
 
     /**
      * Находит элементы без изображений.
@@ -145,8 +145,8 @@ public interface PhotoGalleryItemRepository extends JpaRepository<PhotoGalleryIt
      *
      * @return список элементов без изображений / list of items without images
      */
-    @Query("SELECT pgi FROM PhotoGalleryItem pgi WHERE pgi.images IS EMPTY")
-    List<PhotoGalleryItem> findItemsWithoutImages();
+    @Query("SELECT pgi FROM PhotoGallery pgi WHERE pgi.images IS EMPTY")
+    List<PhotoGallery> findItemsWithoutImages();
 
     /**
      * Получает все неопубликованные элементы фото-галереи (черновики).
@@ -156,5 +156,5 @@ public interface PhotoGalleryItemRepository extends JpaRepository<PhotoGalleryIt
      *
      * @return список элементов фото-галереи со статусом "черновик"
      */
-    List<PhotoGalleryItem> findByPublishedFalseOrderByCreatedAtDesc();
+    List<PhotoGallery> findByPublishedFalseOrderByCreatedAtDesc();
 }

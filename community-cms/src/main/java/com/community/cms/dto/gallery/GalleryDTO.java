@@ -3,10 +3,10 @@ package com.community.cms.dto.gallery;
 import com.fasterxml.jackson.annotation.JsonInclude;
 
 /**
- * Data Transfer Object для галереи (PhotoGalleryItem).
+ * Data Transfer Object для галереи (PhotoGallery).
  * Используется для передачи данных о галерее на frontend.
  *
- * Data Transfer Object for gallery (PhotoGalleryItem).
+ * Data Transfer Object for gallery (PhotoGallery).
  * Used for transferring gallery data to frontend.
  *
  * @author Community CMS

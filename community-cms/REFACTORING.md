@@ -143,7 +143,7 @@ src/main/java/com/community/cms/
 │   │   │   └── 🗃️  TeamMember.java
 │   │   ├── 📁 gallery/                    #   • Галерея
 │   │   │   ├── 🗃️  MediaFile.java
-│   │   │   ├── 🗃️  PhotoGalleryItem.java
+│   │   │   ├── 🗃️  PhotoGallery.java
 │   │   │   └── 🗃️  PublicationCategory.java
 │   │   ├── 🗃️  Page.java
 │   │   ├── 🗃️  User.java

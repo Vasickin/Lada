@@ -27,7 +27,7 @@ import java.util.Objects;
  */
 @Entity
 @Table(name = "photo_gallery_items")
-public class PhotoGalleryItem {
+public class PhotoGallery {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -78,7 +78,7 @@ public class PhotoGalleryItem {
      * Конструктор по умолчанию.
      * Default constructor.
      */
-    public PhotoGalleryItem() {
+    public PhotoGallery() {
         this.categories = new HashSet<>();
         this.images = new ArrayList<>();
         this.published = true;
@@ -92,7 +92,7 @@ public class PhotoGalleryItem {
      * @param year год / year
      * @param description описание / description
      */
-    public PhotoGalleryItem(String title, Integer year, String description) {
+    public PhotoGallery(String title, Integer year, String description) {
         this();
         this.title = title;
         this.year = year;
@@ -110,9 +110,9 @@ public class PhotoGalleryItem {
      * @param images изображения / images
      * @param published статус публикации / publication status
      */
-    public PhotoGalleryItem(String title, Integer year, String description,
-                            Set<PublicationCategory> categories, List<MediaFile> images,
-                            Boolean published) {
+    public PhotoGallery(String title, Integer year, String description,
+                        Set<PublicationCategory> categories, List<MediaFile> images,
+                        Boolean published) {
         this();
         this.title = title;
         this.year = year;
@@ -593,7 +593,7 @@ public class PhotoGalleryItem {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        PhotoGalleryItem that = (PhotoGalleryItem) o;
+        PhotoGallery that = (PhotoGallery) o;
         return Objects.equals(id, that.id);
     }
 
@@ -604,7 +604,7 @@ public class PhotoGalleryItem {
 
     @Override
     public String toString() {
-        return "PhotoGalleryItem{" +
+        return "PhotoGallery{" +
                 "id=" + id +
                 ", title='" + title + '\'' +
                 ", year=" + year +

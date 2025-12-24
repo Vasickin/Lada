@@ -1,6 +1,6 @@
 package com.community.cms.controller;
 
-import com.community.cms.domain.model.content.PhotoGalleryItem;
+import com.community.cms.domain.model.content.PhotoGallery;
 import com.community.cms.model.gallery.PublicationCategory;
 import com.community.cms.service.FileStorageService;
 import com.community.cms.service.category.PublicationCategoryService;
@@ -45,7 +45,7 @@ public class PhotoGalleryController {
 
     @GetMapping("")
     public String listPhotoGalleryItems(@RequestParam(required = false) String search, Model model) {
-        List<PhotoGalleryItem> items = photoGalleryService.searchPhotoGalleryItems(search);
+        List<PhotoGallery> items = photoGalleryService.searchPhotoGalleryItems(search);
         List<PublicationCategory> categories = publicationCategoryService.getAllCategories();
         List<Integer> availableYears = photoGalleryService.getAvailableYears();
 
@@ -64,7 +64,7 @@ public class PhotoGalleryController {
 
     @GetMapping("/published")
     public String showPublishedItems(Model model) {
-        List<PhotoGalleryItem> items = photoGalleryService.getPublishedPhotoGalleryItems();
+        List<PhotoGallery> items = photoGalleryService.getPublishedPhotoGalleryItems();
         List<PublicationCategory> categories = publicationCategoryService.getAllCategories();
         List<Integer> availableYears = photoGalleryService.getAvailableYears();
 
@@ -83,7 +83,7 @@ public class PhotoGalleryController {
 
     @GetMapping("/draft")
     public String showDraftItems(Model model) {
-        List<PhotoGalleryItem> items = photoGalleryService.getDraftPhotoGalleryItems();
+        List<PhotoGallery> items = photoGalleryService.getDraftPhotoGalleryItems();
         List<PublicationCategory> categories = publicationCategoryService.getAllCategories();
         List<Integer> availableYears = photoGalleryService.getAvailableYears();
 
@@ -106,7 +106,7 @@ public class PhotoGalleryController {
     public String showCreateForm(Model model) {
         logger.info("Открытие формы создания элемента");
 
-        PhotoGalleryItem item = new PhotoGalleryItem();
+        PhotoGallery item = new PhotoGallery();
         // Устанавливаем текущий год по умолчанию
         item.setYear(java.time.Year.now().getValue());
 
@@ -123,7 +123,7 @@ public class PhotoGalleryController {
 
     @PostMapping("/create")
     public String createPhotoGalleryItem(
-            @Valid @ModelAttribute("photoGalleryItem") PhotoGalleryItem item,
+            @Valid @ModelAttribute("photoGalleryItem") PhotoGallery item,
             BindingResult bindingResult,
             @RequestParam(value = "files", required = false) MultipartFile[] files,
             @RequestParam(value = "categoryIds", required = false) List<Long> categoryIds,
@@ -154,7 +154,7 @@ public class PhotoGalleryController {
 
         try {
             addSelectedCategories(item, categoryIds);
-            PhotoGalleryItem savedItem = photoGalleryService.createPhotoGalleryItemWithImages(item, files);
+            PhotoGallery savedItem = photoGalleryService.createPhotoGalleryItemWithImages(item, files);
 
             redirectAttributes.addFlashAttribute("successMessage",
                     String.format("Элемент '%s' успешно создан", savedItem.getTitle()));
@@ -174,7 +174,7 @@ public class PhotoGalleryController {
     @GetMapping("/edit/{id}")
     public String showEditForm(@PathVariable Long id, Model model) {
         try {
-            PhotoGalleryItem item = photoGalleryService.getPhotoGalleryItemById(id);
+            PhotoGallery item = photoGalleryService.getPhotoGalleryItemById(id);
             List<PublicationCategory> categories = publicationCategoryService.getAllCategories();
 
             List<Long> selectedCategoryIds = item.getCategories().stream()
@@ -198,7 +198,7 @@ public class PhotoGalleryController {
     @PostMapping("/edit/{id}")
     public String updatePhotoGalleryItem(
             @PathVariable Long id,
-            @Valid @ModelAttribute("photoGalleryItem") PhotoGalleryItem item,
+            @Valid @ModelAttribute("photoGalleryItem") PhotoGallery item,
             BindingResult bindingResult,
             @RequestParam(value = "files", required = false) MultipartFile[] files,
             @RequestParam(value = "categoryIds", required = false) List<Long> categoryIds,
@@ -224,7 +224,7 @@ public class PhotoGalleryController {
             addSelectedCategories(item, categoryIds);
 
             // ПРОВЕРЯЕМ: есть ли новые файлы?
-            PhotoGalleryItem updatedItem;
+            PhotoGallery updatedItem;
 
             if (files != null && files.length > 0) {
                 // Есть новые изображения - используем метод с сохранением старых
@@ -257,7 +257,7 @@ public class PhotoGalleryController {
     @GetMapping("/preview/{id}")
     public String previewPhotoGalleryItem(@PathVariable Long id, Model model) {
         try {
-            PhotoGalleryItem item = photoGalleryService.getPhotoGalleryItemById(id);
+            PhotoGallery item = photoGalleryService.getPhotoGalleryItemById(id);
             model.addAttribute("item", item);
             return "admin/photo-gallery/preview";
         } catch (EntityNotFoundException e) {
@@ -309,7 +309,7 @@ public class PhotoGalleryController {
 
     @GetMapping("/year/{year}")
     public String filterByYear(@PathVariable Integer year, Model model) {
-        List<PhotoGalleryItem> items = photoGalleryService.getPublishedPhotoGalleryItemsByYear(year);
+        List<PhotoGallery> items = photoGalleryService.getPublishedPhotoGalleryItemsByYear(year);
         List<PublicationCategory> categories = publicationCategoryService.getAllCategories();
         List<Integer> availableYears = photoGalleryService.getAvailableYears();
 
@@ -331,7 +331,7 @@ public class PhotoGalleryController {
             return "redirect:/admin/photo-gallery";
         }
 
-        List<PhotoGalleryItem> items = photoGalleryService.getPublishedPhotoGalleryItemsByCategory(category.getName());
+        List<PhotoGallery> items = photoGalleryService.getPublishedPhotoGalleryItemsByCategory(category.getName());
         List<PublicationCategory> categories = publicationCategoryService.getAllCategories();
         List<Integer> availableYears = photoGalleryService.getAvailableYears();
 
@@ -348,7 +348,7 @@ public class PhotoGalleryController {
 
     // ========== ВСПОМОГАТЕЛЬНЫЕ МЕТОДЫ ==========
 
-    private String prepareCreateOrEditModel(Model model, PhotoGalleryItem item, boolean isEdit, List<Long> categoryIds) {
+    private String prepareCreateOrEditModel(Model model, PhotoGallery item, boolean isEdit, List<Long> categoryIds) {
         List<PublicationCategory> categories = publicationCategoryService.getAllCategories();
 
         model.addAttribute("photoGalleryItem", item);
@@ -360,7 +360,7 @@ public class PhotoGalleryController {
         return "admin/photo-gallery/create";
     }
 
-    private void addSelectedCategories(PhotoGalleryItem item, List<Long> categoryIds) {
+    private void addSelectedCategories(PhotoGallery item, List<Long> categoryIds) {
         if (categoryIds != null) {
             item.getCategories().clear();
             for (Long categoryId : categoryIds) {

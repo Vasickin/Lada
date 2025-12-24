@@ -1,7 +1,7 @@
 package com.community.cms.service.gallery;
 
+import com.community.cms.domain.model.content.PhotoGallery;
 import com.community.cms.domain.model.media.MediaFile;
-import com.community.cms.domain.model.content.PhotoGalleryItem;
 import com.community.cms.model.gallery.PublicationCategory;
 import com.community.cms.repository.gallery.MediaFileRepository;
 import com.community.cms.repository.gallery.PhotoGalleryItemRepository;
@@ -68,14 +68,14 @@ public class PhotoGalleryService {
      * @param item элемент для создания / item to create
      * @return созданный элемент / created item
      */
-    public PhotoGalleryItem createPhotoGalleryItem(PhotoGalleryItem item) {
+    public PhotoGallery createPhotoGalleryItem(PhotoGallery item) {
         logger.info("Создание элемента фото-галереи: {}", item.getTitle());
 
         // Валидация бизнес-правил
         validatePhotoGalleryItem(item);
 
         // Сохраняем элемент
-        PhotoGalleryItem savedItem = photoGalleryItemRepository.save(item);
+        PhotoGallery savedItem = photoGalleryItemRepository.save(item);
 
         logger.info("Элемент создан успешно. ID: {}", savedItem.getId());
         return savedItem;
@@ -91,7 +91,7 @@ public class PhotoGalleryService {
      * @throws IOException если произошла ошибка при загрузке файлов / if file upload error occurs
      * @throws FileStorageService.FileStorageException если произошла ошибка при сохранении файлов / if file storage error occurs
      */
-    public PhotoGalleryItem createPhotoGalleryItemWithImages(PhotoGalleryItem item, MultipartFile[] images)
+    public PhotoGallery createPhotoGalleryItemWithImages(PhotoGallery item, MultipartFile[] images)
             throws IOException, FileStorageService.FileStorageException {
         logger.info("Создание элемента с {} изображениями", images != null ? images.length : 0);
 
@@ -103,7 +103,7 @@ public class PhotoGalleryService {
         }
 
         // Сначала сохраняем элемент
-        PhotoGalleryItem savedItem = createPhotoGalleryItem(item);
+        PhotoGallery savedItem = createPhotoGalleryItem(item);
 
         // Затем добавляем изображения если есть
         if (images != null && images.length > 0) {
@@ -123,11 +123,11 @@ public class PhotoGalleryService {
      * @param item данные для обновления / data to update
      * @return обновленный элемент / updated item
      */
-    public PhotoGalleryItem updatePhotoGalleryItem(Long id, PhotoGalleryItem item) {
+    public PhotoGallery updatePhotoGalleryItem(Long id, PhotoGallery item) {
         logger.info("Обновление элемента фото-галереи. ID: {}", id);
 
         // Получаем существующий элемент из базы данных
-        PhotoGalleryItem existingItem = getPhotoGalleryItemById(id);
+        PhotoGallery existingItem = getPhotoGalleryItemById(id);
 
         // Обновляем только изменяемые поля, НЕ ТРОГАЯ изображения
 
@@ -153,7 +153,7 @@ public class PhotoGalleryService {
         validatePhotoGalleryItem(existingItem);
 
         // Сохраняем обновленный элемент (со старыми изображениями)
-        PhotoGalleryItem updatedItem = photoGalleryItemRepository.save(existingItem);
+        PhotoGallery updatedItem = photoGalleryItemRepository.save(existingItem);
 
         logger.info("Элемент обновлен успешно. ID: {}", updatedItem.getId());
         return updatedItem;
@@ -172,11 +172,11 @@ public class PhotoGalleryService {
      * @param keepImageIds список ID изображений для сохранения / list of image IDs to keep
      * @return обновленный элемент / updated item
      */
-    public PhotoGalleryItem updatePhotoGalleryItem(Long id, PhotoGalleryItem item, List<Long> keepImageIds) {
+    public PhotoGallery updatePhotoGalleryItem(Long id, PhotoGallery item, List<Long> keepImageIds) {
         logger.info("Обновление элемента с сохранением изображений. ID: {}, сохраняемые: {}",
                 id, keepImageIds);
 
-        PhotoGalleryItem existingItem = getPhotoGalleryItemById(id);
+        PhotoGallery existingItem = getPhotoGalleryItemById(id);
 
         // Обновляем поля
         existingItem.setTitle(item.getTitle());
@@ -221,8 +221,8 @@ public class PhotoGalleryService {
      * @throws IOException если произошла ошибка при загрузке файлов / if file upload error occurs
      * @throws FileStorageService.FileStorageException если произошла ошибка при сохранении файлов / if file storage error occurs
      */
-    public PhotoGalleryItem updatePhotoGalleryItemWithImages(Long id, PhotoGalleryItem item,
-                                                             MultipartFile[] newImages, List<Long> keepImageIds)
+    public PhotoGallery updatePhotoGalleryItemWithImages(Long id, PhotoGallery item,
+                                                         MultipartFile[] newImages, List<Long> keepImageIds)
             throws IOException, FileStorageService.FileStorageException {
         logger.info("Обновление элемента с новыми изображениями. ID: {}, новые файлы: {}, сохраняемые: {}",
                 id, newImages != null ? newImages.length : 0, keepImageIds);
@@ -238,7 +238,7 @@ public class PhotoGalleryService {
         }
 
         // Получаем текущий элемент
-        PhotoGalleryItem existingItem = getPhotoGalleryItemById(id);
+        PhotoGallery existingItem = getPhotoGalleryItemById(id);
 
         // Проверяем общее количество изображений
         int currentImageCount = keepImageIds != null ? keepImageIds.size() : existingItem.getImagesCount();
@@ -282,7 +282,7 @@ public class PhotoGalleryService {
         }
 
         // Сохраняем и возвращаем обновленный элемент
-        PhotoGalleryItem updatedItem = photoGalleryItemRepository.save(existingItem);
+        PhotoGallery updatedItem = photoGalleryItemRepository.save(existingItem);
         logger.info("Элемент успешно обновлен. ID: {}, всего изображений: {}",
                 id, updatedItem.getImagesCount());
 
@@ -303,7 +303,7 @@ public class PhotoGalleryService {
      * @throws IOException если произошла ошибка при загрузке файлов / if file upload error occurs
      * @throws FileStorageService.FileStorageException если произошла ошибка при сохранении файлов / if file storage error occurs
      */
-    public PhotoGalleryItem updatePhotoGalleryItemWithImages(Long id, PhotoGalleryItem item, MultipartFile[] newImages)
+    public PhotoGallery updatePhotoGalleryItemWithImages(Long id, PhotoGallery item, MultipartFile[] newImages)
             throws IOException, FileStorageService.FileStorageException {
         logger.info("Обновление элемента с новыми изображениями. ID: {}, новые файлы: {}",
                 id, newImages != null ? newImages.length : 0);
@@ -329,7 +329,7 @@ public class PhotoGalleryService {
         }
 
         // Получаем текущий элемент для проверки лимита
-        PhotoGalleryItem existingItem = getPhotoGalleryItemById(id);
+        PhotoGallery existingItem = getPhotoGalleryItemById(id);
 
         // Проверяем общее количество изображений с учётом валидных новых
         int currentImageCount = existingItem.getImagesCount();
@@ -341,7 +341,7 @@ public class PhotoGalleryService {
         }
 
         // Обновляем элемент
-        PhotoGalleryItem updatedItem = updatePhotoGalleryItem(id, item);
+        PhotoGallery updatedItem = updatePhotoGalleryItem(id, item);
 
         // Добавляем валидные новые изображения
         addImagesToPhotoGalleryItem(id, validNewImages.toArray(new MultipartFile[0]));
@@ -358,7 +358,7 @@ public class PhotoGalleryService {
      * @return элемент или null если не найден / item or null if not found
      */
     @Transactional(readOnly = true)
-    public PhotoGalleryItem getPhotoGalleryItemById(Long id) {
+    public PhotoGallery getPhotoGalleryItemById(Long id) {
         return photoGalleryItemRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Элемент фото-галереи не найден. ID: " + id));
     }
@@ -370,7 +370,7 @@ public class PhotoGalleryService {
      * @return список всех элементов / list of all items
      */
     @Transactional(readOnly = true)
-    public List<PhotoGalleryItem> getAllPhotoGalleryItems() {
+    public List<PhotoGallery> getAllPhotoGalleryItems() {
         return photoGalleryItemRepository.findAllByOrderByCreatedAtDesc();
     }
 
@@ -385,7 +385,7 @@ public class PhotoGalleryService {
     public void deletePhotoGalleryItem(Long id) throws IOException, FileStorageService.FileStorageException {
         logger.info("Удаление элемента фото-галереи. ID: {}", id);
 
-        PhotoGalleryItem item = getPhotoGalleryItemById(id);
+        PhotoGallery item = getPhotoGalleryItemById(id);
 
         // Удаляем файлы изображений
         deleteAllItemImages(item);
@@ -418,7 +418,7 @@ public class PhotoGalleryService {
 
         logger.info("Добавление изображений к элементу. ID: {}, количество: {}", itemId, images.length);
 
-        PhotoGalleryItem item = getPhotoGalleryItemById(itemId);
+        PhotoGallery item = getPhotoGalleryItemById(itemId);
 
         // ДОБАВИТЬ: Фильтрация null файлов
         List<MultipartFile> validImages = new ArrayList<>();
@@ -507,7 +507,7 @@ public class PhotoGalleryService {
             throws IOException, FileStorageService.FileStorageException {
         logger.info("Удаление изображения. Элемент ID: {}, изображение ID: {}", itemId, imageId);
 
-        PhotoGalleryItem item = getPhotoGalleryItemById(itemId);
+        PhotoGallery item = getPhotoGalleryItemById(itemId);
         MediaFile image = item.getImageById(imageId);
 
         if (image == null) {
@@ -541,7 +541,7 @@ public class PhotoGalleryService {
     public boolean setPrimaryImage(Long itemId, Long imageId) {
         logger.info("Установка основного изображения. Элемент ID: {}, изображение ID: {}", itemId, imageId);
 
-        PhotoGalleryItem item = getPhotoGalleryItemById(itemId);
+        PhotoGallery item = getPhotoGalleryItemById(itemId);
         boolean success = item.setPrimaryImageById(imageId);
 
         if (success) {
@@ -563,7 +563,7 @@ public class PhotoGalleryService {
      * @throws IOException если произошла ошибка при удалении файлов / if file deletion error occurs
      * @throws FileStorageService.FileStorageException если произошла ошибка при удалении файлов / if file storage error occurs
      */
-    private void deleteAllItemImages(PhotoGalleryItem item)
+    private void deleteAllItemImages(PhotoGallery item)
             throws IOException, FileStorageService.FileStorageException {
         if (item.getImagesCount() == 0) {
             return;
@@ -591,8 +591,8 @@ public class PhotoGalleryService {
      * @param categoryId ID категории / category ID
      * @return обновленный элемент / updated item
      */
-    public PhotoGalleryItem addCategoryToPhotoGalleryItem(Long itemId, Long categoryId) {
-        PhotoGalleryItem item = getPhotoGalleryItemById(itemId);
+    public PhotoGallery addCategoryToPhotoGalleryItem(Long itemId, Long categoryId) {
+        PhotoGallery item = getPhotoGalleryItemById(itemId);
         PublicationCategory category = publicationCategoryRepository.findById(categoryId)
                 .orElseThrow(() -> new EntityNotFoundException("Категория не найдена. ID: " + categoryId));
 
@@ -608,8 +608,8 @@ public class PhotoGalleryService {
      * @param categoryId ID категории / category ID
      * @return обновленный элемент / updated item
      */
-    public PhotoGalleryItem removeCategoryFromPhotoGalleryItem(Long itemId, Long categoryId) {
-        PhotoGalleryItem item = getPhotoGalleryItemById(itemId);
+    public PhotoGallery removeCategoryFromPhotoGalleryItem(Long itemId, Long categoryId) {
+        PhotoGallery item = getPhotoGalleryItemById(itemId);
         item.removeCategoryById(categoryId);
         return photoGalleryItemRepository.save(item);
     }
@@ -623,7 +623,7 @@ public class PhotoGalleryService {
      * @return список опубликованных элементов / list of published items
      */
     @Transactional(readOnly = true)
-    public List<PhotoGalleryItem> getPublishedPhotoGalleryItems() {
+    public List<PhotoGallery> getPublishedPhotoGalleryItems() {
         return photoGalleryItemRepository.findByPublishedTrueOrderByCreatedAtDesc();
     }
 
@@ -634,7 +634,7 @@ public class PhotoGalleryService {
      * @return список черновиков / list of draft items
      */
     @Transactional(readOnly = true)
-    public List<PhotoGalleryItem> getDraftPhotoGalleryItems() {
+    public List<PhotoGallery> getDraftPhotoGalleryItems() {
         return photoGalleryItemRepository.findByPublishedFalseOrderByCreatedAtDesc();
     }
 
@@ -646,7 +646,7 @@ public class PhotoGalleryService {
      * @return список элементов за указанный год / list of items for specified year
      */
     @Transactional(readOnly = true)
-    public List<PhotoGalleryItem> getPublishedPhotoGalleryItemsByYear(Integer year) {
+    public List<PhotoGallery> getPublishedPhotoGalleryItemsByYear(Integer year) {
         return photoGalleryItemRepository.findByYearAndPublishedTrueOrderByCreatedAtDesc(year);
     }
 
@@ -658,7 +658,7 @@ public class PhotoGalleryService {
      * @return список элементов указанной категории / list of items for specified category
      */
     @Transactional(readOnly = true)
-    public List<PhotoGalleryItem> getPublishedPhotoGalleryItemsByCategory(String categoryName) {
+    public List<PhotoGallery> getPublishedPhotoGalleryItemsByCategory(String categoryName) {
         return photoGalleryItemRepository.findByCategoryNameAndPublishedTrue(categoryName);
     }
 
@@ -669,7 +669,7 @@ public class PhotoGalleryService {
      * @return список элементов главной страницы / list of homepage items
      */
     @Transactional(readOnly = true)
-    public List<PhotoGalleryItem> getHomepagePhotoGalleryItems() {
+    public List<PhotoGallery> getHomepagePhotoGalleryItems() {
         return getPublishedPhotoGalleryItemsByCategory("Главная");
     }
 
@@ -680,7 +680,7 @@ public class PhotoGalleryService {
      * @return список элементов галереи / list of gallery items
      */
     @Transactional(readOnly = true)
-    public List<PhotoGalleryItem> getGalleryPhotoGalleryItems() {
+    public List<PhotoGallery> getGalleryPhotoGalleryItems() {
         return getPublishedPhotoGalleryItemsByCategory("Галерея");
     }
 
@@ -692,7 +692,7 @@ public class PhotoGalleryService {
      * @return список найденных элементов / list of found items
      */
     @Transactional(readOnly = true)
-    public List<PhotoGalleryItem> searchPhotoGalleryItems(String query) {
+    public List<PhotoGallery> searchPhotoGalleryItems(String query) {
         if (query == null || query.trim().isEmpty()) {
             return getAllPhotoGalleryItems();
         }
@@ -707,7 +707,7 @@ public class PhotoGalleryService {
      * @return список последних элементов / list of recent items
      */
     @Transactional(readOnly = true)
-    public List<PhotoGalleryItem> getRecentPhotoGalleryItems(int limit) {
+    public List<PhotoGallery> getRecentPhotoGalleryItems(int limit) {
         return photoGalleryItemRepository.findRecentItems(limit);
     }
 
@@ -721,7 +721,7 @@ public class PhotoGalleryService {
      * @return true если операция успешна / true if operation successful
      */
     public boolean publishPhotoGalleryItem(Long id) {
-        PhotoGalleryItem item = getPhotoGalleryItemById(id);
+        PhotoGallery item = getPhotoGalleryItemById(id);
         item.setPublished(true);
         photoGalleryItemRepository.save(item);
 
@@ -737,7 +737,7 @@ public class PhotoGalleryService {
      * @return true если операция успешна / true if operation successful
      */
     public boolean unpublishPhotoGalleryItem(Long id) {
-        PhotoGalleryItem item = getPhotoGalleryItemById(id);
+        PhotoGallery item = getPhotoGalleryItemById(id);
         item.setPublished(false);
         photoGalleryItemRepository.save(item);
 
@@ -789,7 +789,7 @@ public class PhotoGalleryService {
      * @return список элементов в диапазоне / list of items in range
      */
     @Transactional(readOnly = true)
-    public List<PhotoGalleryItem> getPhotoGalleryItemsByYearRange(Integer startYear, Integer endYear) {
+    public List<PhotoGallery> getPhotoGalleryItemsByYearRange(Integer startYear, Integer endYear) {
         return photoGalleryItemRepository.findByYearRangeAndPublishedTrue(startYear, endYear);
     }
 
@@ -802,7 +802,7 @@ public class PhotoGalleryService {
      * @param item элемент для валидации / item to validate
      * @throws IllegalArgumentException если элемент не валиден / if item is not valid
      */
-    private void validatePhotoGalleryItem(PhotoGalleryItem item) {
+    private void validatePhotoGalleryItem(PhotoGallery item) {
         if (item == null) {
             throw new IllegalArgumentException("Элемент не может быть null");
         }

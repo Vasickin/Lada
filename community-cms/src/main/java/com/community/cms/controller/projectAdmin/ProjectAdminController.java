@@ -1,9 +1,9 @@
 package com.community.cms.controller.projectAdmin;
 
+import com.community.cms.domain.model.content.PhotoGallery;
 import com.community.cms.dto.gallery.GalleryDTO;
 import com.community.cms.dto.gallery.PhotoDTO;
 import com.community.cms.domain.model.media.MediaFile;
-import com.community.cms.domain.model.content.PhotoGalleryItem;
 import com.community.cms.model.project.Project;
 import com.community.cms.model.project.TeamMember;
 import com.community.cms.repository.project.ProjectRepository;
@@ -1121,9 +1121,9 @@ public class ProjectAdminController {
 
         try {
             // Получаем все галереи
-            List<PhotoGalleryItem> galleries = photoGalleryService.getAllPhotoGalleryItems();
+            List<PhotoGallery> galleries = photoGalleryService.getAllPhotoGalleryItems();
 
-            for (PhotoGalleryItem gallery : galleries) {
+            for (PhotoGallery gallery : galleries) {
                 // Пропускаем неопубликованные галереи
                 if (gallery.getPublished() != null && !gallery.getPublished()) {
                     continue;
@@ -1172,9 +1172,9 @@ public class ProjectAdminController {
 
         try {
             // Получаем все элементы фото-галереи
-            List<PhotoGalleryItem> galleries = photoGalleryService.getAllPhotoGalleryItems();
+            List<PhotoGallery> galleries = photoGalleryService.getAllPhotoGalleryItems();
 
-            for (PhotoGalleryItem gallery : galleries) {
+            for (PhotoGallery gallery : galleries) {
                 // Пропускаем неопубликованные галереи
                 if (gallery.getPublished() != null && !gallery.getPublished()) {
                     continue;
@@ -1219,7 +1219,7 @@ public class ProjectAdminController {
 
         try {
             // Получаем галерею по ID
-            PhotoGalleryItem gallery = photoGalleryService.getPhotoGalleryItemById(galleryId);
+            PhotoGallery gallery = photoGalleryService.getPhotoGalleryItemById(galleryId);
 
             // Получаем все фото галереи
             List<MediaFile> photos = gallery.getImages();

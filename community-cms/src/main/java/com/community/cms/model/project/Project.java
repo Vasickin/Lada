@@ -557,9 +557,9 @@ public class Project {
 
     /**
      * Список ID ключевых фотографий из галереи для проекта.
-     * Хранит до 5 ID фотографий из PhotoGalleryItem.
+     * Хранит до 5 ID фотографий из PhotoGallery.
      * Key photo IDs from gallery for the project.
-     * Stores up to 5 photo IDs from PhotoGalleryItem.
+     * Stores up to 5 photo IDs from PhotoGallery.
      */
     @ElementCollection
     @CollectionTable(
