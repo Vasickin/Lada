@@ -1,8 +1,8 @@
-package com.community.cms.repository.project;
+package com.community.cms.domain.repository.content;
 
 import com.community.cms.domain.model.content.Project;
-import com.community.cms.model.project.VideoGallery;
-import com.community.cms.model.project.VideoGallery.VideoType;
+import com.community.cms.domain.model.content.VideoGallery;
+import com.community.cms.domain.model.content.VideoGallery.VideoType;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.jpa.repository.JpaRepository;

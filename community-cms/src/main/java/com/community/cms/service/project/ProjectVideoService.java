@@ -1,9 +1,9 @@
 package com.community.cms.service.project;
 
 import com.community.cms.domain.model.content.Project;
-import com.community.cms.model.project.VideoGallery;
-import com.community.cms.model.project.VideoGallery.VideoType;
-import com.community.cms.repository.project.ProjectVideoRepository;
+import com.community.cms.domain.model.content.VideoGallery;
+import com.community.cms.domain.model.content.VideoGallery.VideoType;
+import com.community.cms.domain.repository.content.ProjectVideoRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
