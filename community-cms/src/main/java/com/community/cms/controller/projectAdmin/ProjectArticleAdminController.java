@@ -3,7 +3,7 @@ package com.community.cms.controller.projectAdmin;
 import com.community.cms.domain.model.page.About;
 import com.community.cms.domain.model.content.Project;
 import com.community.cms.domain.model.page.About.ArticleStatus;
-import com.community.cms.service.project.AboutService;
+import com.community.cms.domain.service.content.AboutService;
 import com.community.cms.domain.service.content.ProjectService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;

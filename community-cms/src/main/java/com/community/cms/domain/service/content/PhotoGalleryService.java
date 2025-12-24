@@ -1,4 +1,4 @@
-package com.community.cms.service.gallery;
+package com.community.cms.domain.service.content;
 
 import com.community.cms.domain.model.content.PhotoGallery;
 import com.community.cms.domain.model.media.MediaFile;

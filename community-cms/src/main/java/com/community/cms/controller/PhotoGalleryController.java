@@ -4,7 +4,7 @@ import com.community.cms.domain.model.content.PhotoGallery;
 import com.community.cms.domain.model.media.PublicationCategory;
 import com.community.cms.service.FileStorageService;
 import com.community.cms.service.category.PublicationCategoryService;
-import com.community.cms.service.gallery.PhotoGalleryService;
+import com.community.cms.domain.service.content.PhotoGalleryService;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.Valid;
 import org.slf4j.Logger;
