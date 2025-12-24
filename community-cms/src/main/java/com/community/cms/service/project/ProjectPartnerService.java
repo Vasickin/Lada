@@ -3,7 +3,7 @@ package com.community.cms.service.project;
 import com.community.cms.domain.model.people.Partner;
 import com.community.cms.domain.model.content.Project;
 import com.community.cms.domain.model.people.Partner.PartnerType;
-import com.community.cms.repository.project.ProjectPartnerRepository;
+import com.community.cms.domain.repository.people.PartnerRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -21,13 +21,13 @@ import java.util.Optional;
  * @version 1.0
  * @since 2025
  * @see Partner
- * @see ProjectPartnerRepository
+ * @see PartnerRepository
  */
 @Service
 @Transactional
 public class ProjectPartnerService {
 
-    private final ProjectPartnerRepository projectPartnerRepository;
+    private final PartnerRepository projectPartnerRepository;
 
     /**
      * Конструктор с инъекцией зависимостей.
@@ -35,7 +35,7 @@ public class ProjectPartnerService {
      * @param projectPartnerRepository репозиторий для работы с партнерами проектов
      */
     @Autowired
-    public ProjectPartnerService(ProjectPartnerRepository projectPartnerRepository) {
+    public ProjectPartnerService(PartnerRepository projectPartnerRepository) {
         this.projectPartnerRepository = projectPartnerRepository;
     }
 
@@ -106,12 +106,12 @@ public class ProjectPartnerService {
      */
     @Transactional(readOnly = true)
     public List<Partner> findByProjectId(Long projectId) {
-        // Для работы этого метода нужно добавить в ProjectPartnerRepository:
+        // Для работы этого метода нужно добавить в PartnerRepository:
         // @Query("SELECT pp FROM Partner pp WHERE pp.project.id = :projectId")
         // List<Partner> findByProjectId(@Param("projectId") Long projectId);
 
         throw new UnsupportedOperationException(
-                "Метод findByProjectId требует реализации в ProjectPartnerRepository. " +
+                "Метод findByProjectId требует реализации в PartnerRepository. " +
                         "Добавьте: @Query(\"SELECT pp FROM Partner pp WHERE pp.project.id = :projectId\") " +
                         "List<Partner> findByProjectId(@Param(\"projectId\") Long projectId);"
         );

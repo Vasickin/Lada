@@ -1,4 +1,4 @@
-package com.community.cms.repository.project;
+package com.community.cms.domain.repository.people;
 
 import com.community.cms.domain.model.people.Partner;
 import com.community.cms.domain.model.content.Project;
@@ -13,7 +13,7 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 
 @Repository
-public interface ProjectPartnerRepository extends JpaRepository<Partner, Long> {
+public interface PartnerRepository extends JpaRepository<Partner, Long> {
 
     // ================== ПОИСК ПО ПРОЕКТУ ==================
 

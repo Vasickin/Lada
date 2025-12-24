@@ -1,4 +1,4 @@
-package com.community.cms.repository.project;
+package com.community.cms.domain.repository.page;
 
 import com.community.cms.domain.model.page.About;
 import com.community.cms.domain.model.content.Project;
@@ -18,7 +18,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Repository
-public interface ProjectArticleRepository extends JpaRepository<About, Long> {
+public interface AboutRepository extends JpaRepository<About, Long> {
 
     // ================== ПОИСК ПО ПРОЕКТУ ==================
 

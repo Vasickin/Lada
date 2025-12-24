@@ -3,7 +3,7 @@ package com.community.cms.service.project;
 import com.community.cms.domain.model.page.About;
 import com.community.cms.domain.model.content.Project;
 import com.community.cms.domain.model.page.About.ArticleStatus;
-import com.community.cms.repository.project.ProjectArticleRepository;
+import com.community.cms.domain.repository.page.AboutRepository;
 import com.community.cms.domain.repository.content.ProjectRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.CacheEvict;
@@ -39,13 +39,13 @@ import java.util.Optional;
  * @version 1.0
  * @since 2025
  * @see About
- * @see ProjectArticleRepository
+ * @see AboutRepository
  */
 @Service
 @Transactional
 public class ProjectArticleService {
 
-    private final ProjectArticleRepository articleRepository;
+    private final AboutRepository articleRepository;
     private final ProjectRepository projectRepository;
 
     /**
@@ -55,7 +55,7 @@ public class ProjectArticleService {
      * @param projectRepository репозиторий для работы с проектами
      */
     @Autowired
-    public ProjectArticleService(ProjectArticleRepository articleRepository,
+    public ProjectArticleService(AboutRepository articleRepository,
                                  ProjectRepository projectRepository) {
         this.articleRepository = articleRepository;
         this.projectRepository = projectRepository;

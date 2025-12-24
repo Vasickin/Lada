@@ -1,4 +1,4 @@
-package com.community.cms.repository.project;
+package com.community.cms.domain.repository.people;
 
 import com.community.cms.domain.model.content.Project;
 import com.community.cms.domain.model.people.TeamMember;
