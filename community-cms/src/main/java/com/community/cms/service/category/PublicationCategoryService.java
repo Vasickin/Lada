@@ -2,7 +2,7 @@
 package com.community.cms.service.category;
 
 import com.community.cms.domain.model.media.PublicationCategory;
-import com.community.cms.repository.gallery.PublicationCategoryRepository;
+import com.community.cms.domain.repository.media.PublicationCategoryRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;

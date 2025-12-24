@@ -1,4 +1,4 @@
-package com.community.cms.repository.gallery;
+package com.community.cms.domain.repository.media;
 
 import com.community.cms.domain.model.media.PublicationCategory;
 import org.springframework.data.jpa.repository.JpaRepository;
