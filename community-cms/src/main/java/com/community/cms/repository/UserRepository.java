@@ -1,6 +1,6 @@
 package com.community.cms.repository;
 
-import com.community.cms.model.User;
+import com.community.cms.domain.model.people.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;

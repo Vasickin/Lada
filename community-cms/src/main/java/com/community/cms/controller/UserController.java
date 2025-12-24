@@ -1,6 +1,6 @@
 package com.community.cms.controller;
 
-import com.community.cms.model.User;
+import com.community.cms.domain.model.people.User;
 import com.community.cms.service.UserService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;

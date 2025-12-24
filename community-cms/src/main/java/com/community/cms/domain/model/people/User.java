@@ -1,4 +1,4 @@
-package com.community.cms.model;
+package com.community.cms.domain.model.people;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;

@@ -1,6 +1,6 @@
 package com.community.cms.service;
 
-import com.community.cms.model.User;
+import com.community.cms.domain.model.people.User;
 import com.community.cms.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -9,7 +9,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 
 /**
  * Сервисный слой для работы с пользователями.

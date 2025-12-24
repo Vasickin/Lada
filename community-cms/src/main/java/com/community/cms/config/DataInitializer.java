@@ -1,7 +1,7 @@
 package com.community.cms.config;
 
 import com.community.cms.domain.model.page.Page;
-import com.community.cms.model.User;
+import com.community.cms.domain.model.people.User;
 import com.community.cms.service.UserService;
 import com.community.cms.service.PageService;
 import com.community.cms.service.category.PublicationCategoryService;

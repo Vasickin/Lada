@@ -1,5 +1,6 @@
 package com.community.cms.config;
 
+import com.community.cms.domain.model.people.User;
 import com.community.cms.service.UserService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -157,7 +158,7 @@ public class SecurityConfig {
             System.out.println("=== DEBUG: Поиск пользователя: " + username + " ===");
 
             // Ищем пользователя в базе данных по имени пользователя
-            com.community.cms.model.User user = userService.findUserByUsername(username)
+            User user = userService.findUserByUsername(username)
                     .orElseThrow(() -> {
                         System.out.println("=== DEBUG: Пользователь НЕ НАЙДЕН: " + username + " ===");
                         return new UsernameNotFoundException("Пользователь не найден: " + username);
