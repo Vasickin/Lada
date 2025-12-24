@@ -1,6 +1,6 @@
 package com.community.cms.repository.gallery;
 
-import com.community.cms.model.gallery.PhotoGalleryItem;
+import com.community.cms.domain.model.content.PhotoGalleryItem;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;

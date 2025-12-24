@@ -3,7 +3,7 @@ package com.community.cms.controller.projectAdmin;
 import com.community.cms.dto.gallery.GalleryDTO;
 import com.community.cms.dto.gallery.PhotoDTO;
 import com.community.cms.domain.model.media.MediaFile;
-import com.community.cms.model.gallery.PhotoGalleryItem;
+import com.community.cms.domain.model.content.PhotoGalleryItem;
 import com.community.cms.model.project.Project;
 import com.community.cms.model.project.TeamMember;
 import com.community.cms.repository.project.ProjectRepository;

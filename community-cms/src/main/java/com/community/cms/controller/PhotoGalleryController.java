@@ -1,6 +1,6 @@
 package com.community.cms.controller;
 
-import com.community.cms.model.gallery.PhotoGalleryItem;
+import com.community.cms.domain.model.content.PhotoGalleryItem;
 import com.community.cms.model.gallery.PublicationCategory;
 import com.community.cms.service.FileStorageService;
 import com.community.cms.service.category.PublicationCategoryService;
@@ -17,11 +17,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import org.springframework.core.io.Resource;
-import org.springframework.core.io.ByteArrayResource;
 import org.springframework.http.ResponseEntity;
-import org.springframework.http.MediaType;
-import org.springframework.http.HttpStatus;
 
 import java.util.List;
 

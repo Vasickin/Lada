@@ -1,7 +1,6 @@
 package com.community.cms.dto.project;
 
-import com.community.cms.model.project.Project;
-import com.community.cms.model.project.ProjectPartner;
+import com.community.cms.domain.model.people.Partner;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
@@ -16,7 +15,7 @@ import jakarta.validation.constraints.Size;
  * @author Community CMS
  * @version 1.0
  * @since 2025
- * @see ProjectPartner
+ * @see Partner
  */
 public class ProjectPartnerForm {
 
@@ -42,7 +41,7 @@ public class ProjectPartnerForm {
      * Определяет категорию участия партнера в проекте.
      */
     @NotNull(message = "Тип партнерства обязателен")
-    private ProjectPartner.PartnerType partnerType = ProjectPartner.PartnerType.OTHER;
+    private Partner.PartnerType partnerType = Partner.PartnerType.OTHER;
 
     /**
      * Путь к логотипу партнера.
@@ -106,7 +105,7 @@ public class ProjectPartnerForm {
      * Инициализирует значения по умолчанию.
      */
     public ProjectPartnerForm() {
-        this.partnerType = ProjectPartner.PartnerType.OTHER;
+        this.partnerType = Partner.PartnerType.OTHER;
         this.sortOrder = 0;
         this.active = true;
     }
@@ -117,7 +116,7 @@ public class ProjectPartnerForm {
      *
      * @param partner существующий партнер проекта
      */
-    public ProjectPartnerForm(ProjectPartner partner) {
+    public ProjectPartnerForm(Partner partner) {
         this();
         this.id = partner.getId();
         this.name = partner.getName();
@@ -159,11 +158,11 @@ public class ProjectPartnerForm {
         this.description = description;
     }
 
-    public ProjectPartner.PartnerType getPartnerType() {
+    public Partner.PartnerType getPartnerType() {
         return partnerType;
     }
 
-    public void setPartnerType(ProjectPartner.PartnerType partnerType) {
+    public void setPartnerType(Partner.PartnerType partnerType) {
         this.partnerType = partnerType;
     }
 
@@ -338,7 +337,7 @@ public class ProjectPartnerForm {
      * @return true если partnerType == SPONSOR
      */
     public boolean isSponsor() {
-        return partnerType == ProjectPartner.PartnerType.SPONSOR;
+        return partnerType == Partner.PartnerType.SPONSOR;
     }
 
     /**
@@ -347,7 +346,7 @@ public class ProjectPartnerForm {
      * @return true если partnerType == INFORMATION_PARTNER
      */
     public boolean isInformationPartner() {
-        return partnerType == ProjectPartner.PartnerType.INFORMATION_PARTNER;
+        return partnerType == Partner.PartnerType.INFORMATION_PARTNER;
     }
 
     /**
@@ -374,13 +373,13 @@ public class ProjectPartnerForm {
     }
 
     /**
-     * Преобразует ProjectPartnerForm в сущность ProjectPartner.
+     * Преобразует ProjectPartnerForm в сущность Partner.
      * Проект не устанавливается (только projectId).
      *
-     * @return сущность ProjectPartner с заполненными базовыми полями
+     * @return сущность Partner с заполненными базовыми полями
      */
-    public ProjectPartner toEntity() {
-        ProjectPartner partner = new ProjectPartner();
+    public Partner toEntity() {
+        Partner partner = new Partner();
         partner.setId(this.id);
         partner.setName(this.name);
         partner.setDescription(this.description);
@@ -399,11 +398,11 @@ public class ProjectPartnerForm {
     }
 
     /**
-     * Обновляет существующую сущность ProjectPartner данными из формы.
+     * Обновляет существующую сущность Partner данными из формы.
      *
      * @param partner сущность для обновления
      */
-    public void updateEntity(ProjectPartner partner) {
+    public void updateEntity(Partner partner) {
         partner.setName(this.name);
         partner.setDescription(this.description);
         partner.setPartnerType(this.partnerType);

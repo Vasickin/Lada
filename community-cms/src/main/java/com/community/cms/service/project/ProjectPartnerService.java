@@ -1,8 +1,8 @@
 package com.community.cms.service.project;
 
+import com.community.cms.domain.model.people.Partner;
 import com.community.cms.model.project.Project;
-import com.community.cms.model.project.ProjectPartner;
-import com.community.cms.model.project.ProjectPartner.PartnerType;
+import com.community.cms.domain.model.people.Partner.PartnerType;
 import com.community.cms.repository.project.ProjectPartnerRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -20,7 +20,7 @@ import java.util.Optional;
  * @author Community CMS
  * @version 1.0
  * @since 2025
- * @see ProjectPartner
+ * @see Partner
  * @see ProjectPartnerRepository
  */
 @Service
@@ -47,7 +47,7 @@ public class ProjectPartnerService {
      * @param projectPartner партнер проекта для сохранения
      * @return сохраненный партнер проекта
      */
-    public ProjectPartner save(ProjectPartner projectPartner) {
+    public Partner save(Partner projectPartner) {
         validateProjectPartner(projectPartner);
         return projectPartnerRepository.save(projectPartner);
     }
@@ -58,7 +58,7 @@ public class ProjectPartnerService {
      * @param projectPartner партнер проекта для обновления
      * @return обновленный партнер проекта
      */
-    public ProjectPartner update(ProjectPartner projectPartner) {
+    public Partner update(Partner projectPartner) {
         validateProjectPartner(projectPartner);
         return projectPartnerRepository.save(projectPartner);
     }
@@ -70,7 +70,7 @@ public class ProjectPartnerService {
      * @return Optional с партнером проекта, если найден
      */
     @Transactional(readOnly = true)
-    public Optional<ProjectPartner> findById(Long id) {
+    public Optional<Partner> findById(Long id) {
         return projectPartnerRepository.findById(id);
     }
 
@@ -92,7 +92,7 @@ public class ProjectPartnerService {
      * @return список партнеров проекта
      */
     @Transactional(readOnly = true)
-    public List<ProjectPartner> findByProject(Project project) {
+    public List<Partner> findByProject(Project project) {
         return projectPartnerRepository.findByProject(project);
     }
 
@@ -105,15 +105,15 @@ public class ProjectPartnerService {
      * @throws UnsupportedOperationException пока не реализовано
      */
     @Transactional(readOnly = true)
-    public List<ProjectPartner> findByProjectId(Long projectId) {
+    public List<Partner> findByProjectId(Long projectId) {
         // Для работы этого метода нужно добавить в ProjectPartnerRepository:
-        // @Query("SELECT pp FROM ProjectPartner pp WHERE pp.project.id = :projectId")
-        // List<ProjectPartner> findByProjectId(@Param("projectId") Long projectId);
+        // @Query("SELECT pp FROM Partner pp WHERE pp.project.id = :projectId")
+        // List<Partner> findByProjectId(@Param("projectId") Long projectId);
 
         throw new UnsupportedOperationException(
                 "Метод findByProjectId требует реализации в ProjectPartnerRepository. " +
-                        "Добавьте: @Query(\"SELECT pp FROM ProjectPartner pp WHERE pp.project.id = :projectId\") " +
-                        "List<ProjectPartner> findByProjectId(@Param(\"projectId\") Long projectId);"
+                        "Добавьте: @Query(\"SELECT pp FROM Partner pp WHERE pp.project.id = :projectId\") " +
+                        "List<Partner> findByProjectId(@Param(\"projectId\") Long projectId);"
         );
     }
 
@@ -124,7 +124,7 @@ public class ProjectPartnerService {
      * @return список партнеров проекта (по sortOrder)
      */
     @Transactional(readOnly = true)
-    public List<ProjectPartner> findByProjectOrderBySortOrder(Project project) {
+    public List<Partner> findByProjectOrderBySortOrder(Project project) {
         return projectPartnerRepository.findByProjectOrderBySortOrderAsc(project);
     }
 
@@ -135,7 +135,7 @@ public class ProjectPartnerService {
      * @return список партнеров проекта (по названию)
      */
     @Transactional(readOnly = true)
-    public List<ProjectPartner> findByProjectOrderByName(Project project) {
+    public List<Partner> findByProjectOrderByName(Project project) {
         return projectPartnerRepository.findByProjectOrderByNameAsc(project);
     }
 
@@ -149,7 +149,7 @@ public class ProjectPartnerService {
      * @return список партнеров проекта указанного типа
      */
     @Transactional(readOnly = true)
-    public List<ProjectPartner> findByProjectAndPartnerType(Project project, PartnerType partnerType) {
+    public List<Partner> findByProjectAndPartnerType(Project project, PartnerType partnerType) {
         return projectPartnerRepository.findByProjectAndPartnerType(project, partnerType);
     }
 
@@ -161,7 +161,7 @@ public class ProjectPartnerService {
      * @return список партнеров проекта указанного типа (по sortOrder)
      */
     @Transactional(readOnly = true)
-    public List<ProjectPartner> findByProjectAndPartnerTypeOrderBySortOrder(Project project, PartnerType partnerType) {
+    public List<Partner> findByProjectAndPartnerTypeOrderBySortOrder(Project project, PartnerType partnerType) {
         return projectPartnerRepository.findByProjectAndPartnerTypeOrderBySortOrderAsc(project, partnerType);
     }
 
@@ -174,7 +174,7 @@ public class ProjectPartnerService {
      * @return список активных партнеров проекта
      */
     @Transactional(readOnly = true)
-    public List<ProjectPartner> findActiveByProject(Project project) {
+    public List<Partner> findActiveByProject(Project project) {
         return projectPartnerRepository.findByProjectAndActiveTrue(project);
     }
 
@@ -185,7 +185,7 @@ public class ProjectPartnerService {
      * @return список активных партнеров проекта (по sortOrder)
      */
     @Transactional(readOnly = true)
-    public List<ProjectPartner> findActiveByProjectOrderBySortOrder(Project project) {
+    public List<Partner> findActiveByProjectOrderBySortOrder(Project project) {
         return projectPartnerRepository.findByProjectAndActiveTrueOrderBySortOrderAsc(project);
     }
 
@@ -196,7 +196,7 @@ public class ProjectPartnerService {
      * @return список неактивных партнеров проекта
      */
     @Transactional(readOnly = true)
-    public List<ProjectPartner> findInactiveByProject(Project project) {
+    public List<Partner> findInactiveByProject(Project project) {
         return projectPartnerRepository.findByProjectAndActiveFalse(project);
     }
 
@@ -209,7 +209,7 @@ public class ProjectPartnerService {
      * @return список найденных партнеров
      */
     @Transactional(readOnly = true)
-    public List<ProjectPartner> findByNameContaining(String name) {
+    public List<Partner> findByNameContaining(String name) {
         return projectPartnerRepository.findByNameContainingIgnoreCase(name);
     }
 
@@ -220,7 +220,7 @@ public class ProjectPartnerService {
      * @return список найденных активных партнеров
      */
     @Transactional(readOnly = true)
-    public List<ProjectPartner> findActiveByNameContaining(String name) {
+    public List<Partner> findActiveByNameContaining(String name) {
         return projectPartnerRepository.findByNameContainingIgnoreCaseAndActiveTrue(name);
     }
 
@@ -231,7 +231,7 @@ public class ProjectPartnerService {
      * @return список партнеров с указанным email
      */
     @Transactional(readOnly = true)
-    public List<ProjectPartner> findByContactEmail(String email) {
+    public List<Partner> findByContactEmail(String email) {
         return projectPartnerRepository.findByContactEmail(email);
     }
 
@@ -242,7 +242,7 @@ public class ProjectPartnerService {
      * @return список найденных партнеров
      */
     @Transactional(readOnly = true)
-    public List<ProjectPartner> findByContactPersonContaining(String contactPerson) {
+    public List<Partner> findByContactPersonContaining(String contactPerson) {
         return projectPartnerRepository.findByContactPersonContainingIgnoreCase(contactPerson);
     }
 
@@ -254,7 +254,7 @@ public class ProjectPartnerService {
      * @return список партнеров с логотипом
      */
     @Transactional(readOnly = true)
-    public List<ProjectPartner> findWithLogo() {
+    public List<Partner> findWithLogo() {
         return projectPartnerRepository.findByLogoPathIsNotNull();
     }
 
@@ -264,7 +264,7 @@ public class ProjectPartnerService {
      * @return список партнеров без логотипа
      */
     @Transactional(readOnly = true)
-    public List<ProjectPartner> findWithoutLogo() {
+    public List<Partner> findWithoutLogo() {
         return projectPartnerRepository.findByLogoPathIsNull();
     }
 
@@ -274,7 +274,7 @@ public class ProjectPartnerService {
      * @return список партнеров с сайтом
      */
     @Transactional(readOnly = true)
-    public List<ProjectPartner> findWithWebsite() {
+    public List<Partner> findWithWebsite() {
         return projectPartnerRepository.findByWebsiteUrlIsNotNull();
     }
 
@@ -284,7 +284,7 @@ public class ProjectPartnerService {
      * @return список партнеров без сайта
      */
     @Transactional(readOnly = true)
-    public List<ProjectPartner> findWithoutWebsite() {
+    public List<Partner> findWithoutWebsite() {
         return projectPartnerRepository.findByWebsiteUrlIsNull();
     }
 
@@ -319,7 +319,7 @@ public class ProjectPartnerService {
      * @return список спонсоров проекта
      */
     @Transactional(readOnly = true)
-    public List<ProjectPartner> findSponsorsByProject(Project project) {
+    public List<Partner> findSponsorsByProject(Project project) {
         return projectPartnerRepository.findSponsorsByProject(project);
     }
 
@@ -330,7 +330,7 @@ public class ProjectPartnerService {
      * @return список информационных партнеров проекта
      */
     @Transactional(readOnly = true)
-    public List<ProjectPartner> findInformationPartnersByProject(Project project) {
+    public List<Partner> findInformationPartnersByProject(Project project) {
         return projectPartnerRepository.findInformationPartnersByProject(project);
     }
 
@@ -342,7 +342,7 @@ public class ProjectPartnerService {
      * @return список первых N активных партнеров проекта
      */
     @Transactional(readOnly = true)
-    public List<ProjectPartner> findFirstNActiveByProject(Project project, int limit) {
+    public List<Partner> findFirstNActiveByProject(Project project, int limit) {
         return projectPartnerRepository.findFirstNByProject(project, limit);
     }
 
@@ -353,7 +353,7 @@ public class ProjectPartnerService {
      * @return список партнеров проекта без описания
      */
     @Transactional(readOnly = true)
-    public List<ProjectPartner> findWithoutDescriptionByProject(Project project) {
+    public List<Partner> findWithoutDescriptionByProject(Project project) {
         return projectPartnerRepository.findWithoutDescriptionByProject(project);
     }
 
@@ -364,7 +364,7 @@ public class ProjectPartnerService {
      * @return список партнеров проекта без контактной информации
      */
     @Transactional(readOnly = true)
-    public List<ProjectPartner> findWithoutContactInfoByProject(Project project) {
+    public List<Partner> findWithoutContactInfoByProject(Project project) {
         return projectPartnerRepository.findWithoutContactInfoByProject(project);
     }
 
@@ -375,7 +375,7 @@ public class ProjectPartnerService {
      * @return список партнеров, участвующих в minProjects и более проектах
      */
     @Transactional(readOnly = true)
-    public List<ProjectPartner> findPartnersInMultipleProjects(int minProjects) {
+    public List<Partner> findPartnersInMultipleProjects(int minProjects) {
         return projectPartnerRepository.findPartnersInMultipleProjects(minProjects);
     }
 
@@ -455,7 +455,7 @@ public class ProjectPartnerService {
      * @param projectPartner партнер проекта для валидации
      * @throws IllegalArgumentException если партнер проекта невалиден
      */
-    private void validateProjectPartner(ProjectPartner projectPartner) {
+    private void validateProjectPartner(Partner projectPartner) {
         if (projectPartner == null) {
             throw new IllegalArgumentException("Партнер проекта не может быть null");
         }
@@ -492,11 +492,11 @@ public class ProjectPartnerService {
      * @param sortOrder порядок сортировки
      * @return созданный партнер проекта
      */
-    public ProjectPartner createProjectPartner(Project project, String name, PartnerType partnerType,
-                                               String description, String logoPath, String websiteUrl,
-                                               String contactEmail, String contactPhone, String contactPerson,
-                                               Integer sortOrder) {
-        ProjectPartner projectPartner = new ProjectPartner(project, name, partnerType);
+    public Partner createProjectPartner(Project project, String name, PartnerType partnerType,
+                                        String description, String logoPath, String websiteUrl,
+                                        String contactEmail, String contactPhone, String contactPerson,
+                                        Integer sortOrder) {
+        Partner projectPartner = new Partner(project, name, partnerType);
         projectPartner.setDescription(description);
         projectPartner.setLogoPath(logoPath);
         projectPartner.setWebsiteUrl(websiteUrl);
@@ -515,7 +515,7 @@ public class ProjectPartnerService {
      * @param projectPartner партнер для активации
      * @return активированный партнер проекта
      */
-    public ProjectPartner activate(ProjectPartner projectPartner) {
+    public Partner activate(Partner projectPartner) {
         projectPartner.setActive(true);
         return projectPartnerRepository.save(projectPartner);
     }
@@ -526,7 +526,7 @@ public class ProjectPartnerService {
      * @param projectPartner партнер для деактивации
      * @return деактивированный партнер проекта
      */
-    public ProjectPartner deactivate(ProjectPartner projectPartner) {
+    public Partner deactivate(Partner projectPartner) {
         projectPartner.setActive(false);
         return projectPartnerRepository.save(projectPartner);
     }
@@ -538,8 +538,8 @@ public class ProjectPartnerService {
      * @return активированный партнер проекта
      * @throws IllegalArgumentException если партнер не найден
      */
-    public ProjectPartner activateById(Long id) {
-        ProjectPartner projectPartner = projectPartnerRepository.findById(id)
+    public Partner activateById(Long id) {
+        Partner projectPartner = projectPartnerRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Партнер с ID " + id + " не найден"));
         return activate(projectPartner);
     }
@@ -551,8 +551,8 @@ public class ProjectPartnerService {
      * @return деактивированный партнер проекта
      * @throws IllegalArgumentException если партнер не найден
      */
-    public ProjectPartner deactivateById(Long id) {
-        ProjectPartner projectPartner = projectPartnerRepository.findById(id)
+    public Partner deactivateById(Long id) {
+        Partner projectPartner = projectPartnerRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Партнер с ID " + id + " не найден"));
         return deactivate(projectPartner);
     }
@@ -563,7 +563,7 @@ public class ProjectPartnerService {
      * @param projectPartner партнер для проверки
      * @return true если у партнера есть логотип, иначе false
      */
-    public boolean hasLogo(ProjectPartner projectPartner) {
+    public boolean hasLogo(Partner projectPartner) {
         return projectPartner.hasLogo();
     }
 
@@ -573,7 +573,7 @@ public class ProjectPartnerService {
      * @param projectPartner партнер для проверки
      * @return true если у партнера есть сайт, иначе false
      */
-    public boolean hasWebsite(ProjectPartner projectPartner) {
+    public boolean hasWebsite(Partner projectPartner) {
         return projectPartner.hasWebsite();
     }
 
@@ -583,7 +583,7 @@ public class ProjectPartnerService {
      * @param projectPartner партнер для проверки
      * @return true если у партнера есть описание, иначе false
      */
-    public boolean hasDescription(ProjectPartner projectPartner) {
+    public boolean hasDescription(Partner projectPartner) {
         return projectPartner.hasDescription();
     }
 
@@ -593,7 +593,7 @@ public class ProjectPartnerService {
      * @param projectPartner партнер для проверки
      * @return true если у партнера есть контактная информация, иначе false
      */
-    public boolean hasContactInfo(ProjectPartner projectPartner) {
+    public boolean hasContactInfo(Partner projectPartner) {
         return projectPartner.hasContactInfo();
     }
 
@@ -603,7 +603,7 @@ public class ProjectPartnerService {
      * @param projectPartner партнер
      * @return форматированная контактная информация
      */
-    public String getFormattedContactInfo(ProjectPartner projectPartner) {
+    public String getFormattedContactInfo(Partner projectPartner) {
         return projectPartner.getFormattedContactInfo();
     }
 
@@ -613,7 +613,7 @@ public class ProjectPartnerService {
      * @param projectPartner партнер
      * @return полный URL с протоколом
      */
-    public String getFullWebsiteUrl(ProjectPartner projectPartner) {
+    public String getFullWebsiteUrl(Partner projectPartner) {
         return projectPartner.getFullWebsiteUrl();
     }
 
@@ -623,7 +623,7 @@ public class ProjectPartnerService {
      * @param projectPartner партнер
      * @return русское название типа партнерства
      */
-    public String getPartnerTypeDisplayNameRu(ProjectPartner projectPartner) {
+    public String getPartnerTypeDisplayNameRu(Partner projectPartner) {
         return projectPartner.getPartnerTypeDisplayNameRu();
     }
 
@@ -633,7 +633,7 @@ public class ProjectPartnerService {
      * @param projectPartner партнер
      * @return английское название типа партнерства
      */
-    public String getPartnerTypeDisplayNameEn(ProjectPartner projectPartner) {
+    public String getPartnerTypeDisplayNameEn(Partner projectPartner) {
         return projectPartner.getPartnerTypeDisplayNameEn();
     }
 
@@ -643,7 +643,7 @@ public class ProjectPartnerService {
      * @param projectPartner партнер для проверки
      * @return true если партнер является спонсором, иначе false
      */
-    public boolean isSponsor(ProjectPartner projectPartner) {
+    public boolean isSponsor(Partner projectPartner) {
         return projectPartner.isSponsor();
     }
 
@@ -653,7 +653,7 @@ public class ProjectPartnerService {
      * @param projectPartner партнер для проверки
      * @return true если партнер является информационным партнером, иначе false
      */
-    public boolean isInformationPartner(ProjectPartner projectPartner) {
+    public boolean isInformationPartner(Partner projectPartner) {
         return projectPartner.isInformationPartner();
     }
 
@@ -663,7 +663,7 @@ public class ProjectPartnerService {
      * @param projectPartner партнер
      * @return инициалы партнера (2 буквы)
      */
-    public String getInitials(ProjectPartner projectPartner) {
+    public String getInitials(Partner projectPartner) {
         return projectPartner.getInitials();
     }
 
@@ -673,7 +673,7 @@ public class ProjectPartnerService {
      * @param projectPartners список партнеров с обновленными sortOrder
      * @return список обновленных партнеров
      */
-    public List<ProjectPartner> updateSortOrder(List<ProjectPartner> projectPartners) {
+    public List<Partner> updateSortOrder(List<Partner> projectPartners) {
         return projectPartnerRepository.saveAll(projectPartners);
     }
 }

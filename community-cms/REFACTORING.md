@@ -138,7 +138,7 @@ src/main/java/com/community/cms/
 │   │   │   ├── 🗃️  Project.java
 │   │   │   ├── 🗃️  About.java
 │   │   │   ├── 🗃️  ProjectImage.java
-│   │   │   ├── 🗃️  ProjectPartner.java
+│   │   │   ├── 🗃️  Partner.java
 │   │   │   ├── 🗃️  ProjectVideo.java
 │   │   │   └── 🗃️  TeamMember.java
 │   │   ├── 📁 gallery/                    #   • Галерея

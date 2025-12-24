@@ -1,5 +1,6 @@
-package com.community.cms.model.project;
+package com.community.cms.domain.model.people;
 
+import com.community.cms.model.project.Project;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -30,7 +31,7 @@ import java.time.LocalDateTime;
  */
 @Entity
 @Table(name = "project_partners")
-public class ProjectPartner {
+public class Partner {
 
     /**
      * Типы партнерства для классификации партнеров.
@@ -164,7 +165,7 @@ public class ProjectPartner {
     /**
      * Конструктор по умолчанию.
      */
-    public ProjectPartner() {
+    public Partner() {
         this.addedAt = LocalDateTime.now();
     }
 
@@ -175,7 +176,7 @@ public class ProjectPartner {
      * @param name название партнера
      * @param partnerType тип партнерства
      */
-    public ProjectPartner(Project project, String name, PartnerType partnerType) {
+    public Partner(Project project, String name, PartnerType partnerType) {
         this();
         this.project = project;
         this.name = name;
@@ -442,7 +443,7 @@ public class ProjectPartner {
 
     @Override
     public String toString() {
-        return "ProjectPartner{" +
+        return "Partner{" +
                 "id=" + id +
                 ", name='" + name + '\'' +
                 ", partnerType=" + partnerType +
