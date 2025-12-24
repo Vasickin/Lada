@@ -1,7 +1,7 @@
 package com.community.cms.service;
 
 import com.community.cms.dto.PageStatistics;
-import com.community.cms.model.Page;
+import com.community.cms.domain.model.page.Page;
 import com.community.cms.domain.enums.PageType;
 import com.community.cms.repository.PageRepository;
 import org.springframework.beans.factory.annotation.Autowired;

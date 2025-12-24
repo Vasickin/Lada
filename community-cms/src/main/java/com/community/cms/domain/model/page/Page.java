@@ -1,4 +1,4 @@
-package com.community.cms.model;
+package com.community.cms.domain.model.page;
 
 import com.community.cms.domain.enums.PageType;
 import jakarta.persistence.*;

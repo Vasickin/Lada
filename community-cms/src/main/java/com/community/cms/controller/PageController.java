@@ -1,6 +1,6 @@
 package com.community.cms.controller;
 
-import com.community.cms.model.Page;
+import com.community.cms.domain.model.page.Page;
 import com.community.cms.service.PageService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;

@@ -1,5 +1,6 @@
 package com.community.cms.config;
 
+import com.community.cms.domain.model.page.Page;
 import com.community.cms.model.User;
 import com.community.cms.service.UserService;
 import com.community.cms.service.PageService;
@@ -252,7 +253,7 @@ public class DataInitializer implements CommandLineRunner {
     private void createSampleCustomPage() {
         String sampleSlug = "primer-stranicy";
         if (!pageService.pageExistsBySlug(sampleSlug)) {
-            var samplePage = new com.community.cms.model.Page(
+            var samplePage = new Page(
                     "Пример страницы",
                     """
                     <h2>Добро пожаловать на пример страницы!</h2>

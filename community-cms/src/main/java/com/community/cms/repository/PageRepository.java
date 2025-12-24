@@ -1,6 +1,6 @@
 package com.community.cms.repository;
 
-import com.community.cms.model.Page;
+import com.community.cms.domain.model.page.Page;
 import com.community.cms.domain.enums.PageType;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
