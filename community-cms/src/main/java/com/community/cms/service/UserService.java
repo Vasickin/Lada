@@ -1,7 +1,7 @@
 package com.community.cms.service;
 
 import com.community.cms.domain.model.people.User;
-import com.community.cms.repository.UserRepository;
+import com.community.cms.domain.repository.people.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;

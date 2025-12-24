@@ -1,4 +1,4 @@
-package com.community.cms.repository.gallery;
+package com.community.cms.domain.repository.content;
 
 import com.community.cms.domain.model.content.PhotoGallery;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -18,7 +18,7 @@ import java.util.Optional;
  * @since 2025
  */
 @Repository
-public interface PhotoGalleryItemRepository extends JpaRepository<PhotoGallery, Long> {
+public interface PhotoGalleryRepository extends JpaRepository<PhotoGallery, Long> {
 
     /**
      * Находит опубликованные элементы, отсортированные по дате создания (новые первыми).

@@ -4,7 +4,7 @@ import com.community.cms.domain.model.content.PhotoGallery;
 import com.community.cms.domain.model.media.MediaFile;
 import com.community.cms.domain.model.media.PublicationCategory;
 import com.community.cms.repository.gallery.MediaFileRepository;
-import com.community.cms.repository.gallery.PhotoGalleryItemRepository;
+import com.community.cms.domain.repository.content.PhotoGalleryRepository;
 import com.community.cms.repository.gallery.PublicationCategoryRepository;
 import com.community.cms.service.FileStorageService;
 import jakarta.persistence.EntityNotFoundException;
@@ -43,13 +43,13 @@ public class PhotoGalleryService {
     // Максимальный размер изображения (5MB)
     private static final long MAX_IMAGE_SIZE = 5 * 1024 * 1024;
 
-    private final PhotoGalleryItemRepository photoGalleryItemRepository;
+    private final PhotoGalleryRepository photoGalleryItemRepository;
     private final MediaFileRepository mediaFileRepository;
     private final PublicationCategoryRepository publicationCategoryRepository;
     private final FileStorageService fileStorageService;
 
     @Autowired
-    public PhotoGalleryService(PhotoGalleryItemRepository photoGalleryItemRepository,
+    public PhotoGalleryService(PhotoGalleryRepository photoGalleryItemRepository,
                                MediaFileRepository mediaFileRepository,
                                PublicationCategoryRepository publicationCategoryRepository,
                                FileStorageService fileStorageService) {

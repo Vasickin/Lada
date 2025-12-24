@@ -1,4 +1,4 @@
-package com.community.cms.repository;
+package com.community.cms.domain.repository.people;
 
 import com.community.cms.domain.model.people.User;
 import org.springframework.data.jpa.repository.JpaRepository;

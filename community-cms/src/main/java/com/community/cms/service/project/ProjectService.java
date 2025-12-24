@@ -2,7 +2,7 @@ package com.community.cms.service.project;
 
 import com.community.cms.domain.model.content.Project;
 import com.community.cms.domain.model.content.Project.ProjectStatus;
-import com.community.cms.repository.project.ProjectRepository;
+import com.community.cms.domain.repository.content.ProjectRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;

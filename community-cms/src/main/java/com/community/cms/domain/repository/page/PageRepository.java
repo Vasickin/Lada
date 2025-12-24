@@ -1,4 +1,4 @@
-package com.community.cms.repository;
+package com.community.cms.domain.repository.page;
 
 import com.community.cms.domain.model.page.Page;
 import com.community.cms.domain.enums.PageType;

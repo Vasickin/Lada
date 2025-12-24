@@ -4,7 +4,7 @@ import com.community.cms.domain.model.page.About;
 import com.community.cms.domain.model.content.Project;
 import com.community.cms.domain.model.page.About.ArticleStatus;
 import com.community.cms.repository.project.ProjectArticleRepository;
-import com.community.cms.repository.project.ProjectRepository;
+import com.community.cms.domain.repository.content.ProjectRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
