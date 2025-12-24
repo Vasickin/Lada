@@ -3,7 +3,7 @@ package com.community.cms.controller.projectAdmin;
 import com.community.cms.domain.model.content.Project;
 import com.community.cms.domain.model.content.VideoGallery;
 import com.community.cms.domain.service.content.ProjectService;
-import com.community.cms.service.project.ProjectVideoService;
+import com.community.cms.service.project.VideoGalleryService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -26,25 +26,25 @@ import java.util.Optional;
  * @version 1.1
  * @since 2025
  * @see VideoGallery
- * @see ProjectVideoService
+ * @see VideoGalleryService
  */
 @Controller
 @RequestMapping("/admin/project-videos")
 public class ProjectVideoAdminController {
 
-    private final ProjectVideoService projectVideoService;
+    private final VideoGalleryService videoGalleryService;
     private final ProjectService projectService;
 
     /**
      * Конструктор с инъекцией зависимостей.
      *
-     * @param projectVideoService сервис для работы с видео проектов
+     * @param videoGalleryService сервис для работы с видео проектов
      * @param projectService сервис для работы с проектами
      */
     @Autowired
-    public ProjectVideoAdminController(ProjectVideoService projectVideoService,
+    public ProjectVideoAdminController(VideoGalleryService videoGalleryService,
                                        ProjectService projectService) {
-        this.projectVideoService = projectVideoService;
+        this.videoGalleryService = videoGalleryService;
         this.projectService = projectService;
     }
 
@@ -71,8 +71,8 @@ public class ProjectVideoAdminController {
         }
 
         Project project = projectOpt.get();
-        List<VideoGallery> videos = projectVideoService.findByProjectOrderBySortOrder(project);
-        Optional<VideoGallery> mainVideoOpt = projectVideoService.findMainVideoByProject(project);
+        List<VideoGallery> videos = videoGalleryService.findByProjectOrderBySortOrder(project);
+        Optional<VideoGallery> mainVideoOpt = videoGalleryService.findMainVideoByProject(project);
 
         model.addAttribute("project", project);
         model.addAttribute("videos", videos);
@@ -90,7 +90,7 @@ public class ProjectVideoAdminController {
      */
     @GetMapping
     public String listAllVideos(Model model) {
-        List<VideoGallery> videos = projectVideoService.findRecentVideos(50);
+        List<VideoGallery> videos = videoGalleryService.findRecentVideos(50);
         model.addAttribute("videos", videos);
         model.addAttribute("title", "Все видео проектов");
         model.addAttribute("showAll", true);
@@ -146,7 +146,7 @@ public class ProjectVideoAdminController {
                               RedirectAttributes redirectAttributes) {
         // Валидация URL видео
         if (video.getVideoUrl() != null &&
-                !projectVideoService.isValidVideoUrl(video.getVideoUrl())) {
+                !videoGalleryService.isValidVideoUrl(video.getVideoUrl())) {
             bindingResult.rejectValue("videoUrl", "error.video",
                     "Некорректный URL видео. Поддерживаются только YouTube, Vimeo и Rutube.");
         }
@@ -161,11 +161,11 @@ public class ProjectVideoAdminController {
         }
 
         try {
-            VideoGallery savedVideo = projectVideoService.save(video);
+            VideoGallery savedVideo = videoGalleryService.save(video);
 
             // Если видео помечено как основное, устанавливаем его
             if (video.isMain()) {
-                projectVideoService.setAsMainVideo(savedVideo);
+                videoGalleryService.setAsMainVideo(savedVideo);
             }
 
             String successMessage = "Видео '" + savedVideo.getTitle() + "' успешно создано!";
@@ -196,7 +196,7 @@ public class ProjectVideoAdminController {
     public String showEditForm(@PathVariable Long id,
                                Model model,
                                RedirectAttributes redirectAttributes) {
-        Optional<VideoGallery> videoOpt = projectVideoService.findById(id);
+        Optional<VideoGallery> videoOpt = videoGalleryService.findById(id);
 
         if (videoOpt.isEmpty()) {
             redirectAttributes.addFlashAttribute("errorMessage",
@@ -230,7 +230,7 @@ public class ProjectVideoAdminController {
                               RedirectAttributes redirectAttributes) {
         // Валидация URL видео
         if (video.getVideoUrl() != null &&
-                !projectVideoService.isValidVideoUrl(video.getVideoUrl())) {
+                !videoGalleryService.isValidVideoUrl(video.getVideoUrl())) {
             bindingResult.rejectValue("videoUrl", "error.video",
                     "Некорректный URL видео. Поддерживаются только YouTube, Vimeo и Rutube.");
         }
@@ -244,7 +244,7 @@ public class ProjectVideoAdminController {
 
         try {
             // Проверяем существование видео
-            Optional<VideoGallery> existingVideoOpt = projectVideoService.findById(id);
+            Optional<VideoGallery> existingVideoOpt = videoGalleryService.findById(id);
             if (existingVideoOpt.isEmpty()) {
                 redirectAttributes.addFlashAttribute("errorMessage",
                         "Видео с ID " + id + " не найден");
@@ -259,13 +259,13 @@ public class ProjectVideoAdminController {
                 video.setProject(existingVideo.getProject());
             }
 
-            VideoGallery updatedVideo = projectVideoService.update(video);
+            VideoGallery updatedVideo = videoGalleryService.update(video);
 
             // Управление основным видео
             if (video.isMain() && !existingVideo.isMain()) {
-                projectVideoService.setAsMainVideo(updatedVideo);
+                videoGalleryService.setAsMainVideo(updatedVideo);
             } else if (!video.isMain() && existingVideo.isMain()) {
-                projectVideoService.removeMainVideo(updatedVideo);
+                videoGalleryService.removeMainVideo(updatedVideo);
             }
 
             String successMessage = "Видео '" + updatedVideo.getTitle() + "' успешно обновлено!";
@@ -295,7 +295,7 @@ public class ProjectVideoAdminController {
     public String setAsMainVideo(@PathVariable Long id,
                                  RedirectAttributes redirectAttributes) {
         try {
-            Optional<VideoGallery> videoOpt = projectVideoService.findById(id);
+            Optional<VideoGallery> videoOpt = videoGalleryService.findById(id);
             if (videoOpt.isEmpty()) {
                 redirectAttributes.addFlashAttribute("errorMessage",
                         "Видео с ID " + id + " не найден");
@@ -303,7 +303,7 @@ public class ProjectVideoAdminController {
             }
 
             VideoGallery video = videoOpt.get();
-            VideoGallery updatedVideo = projectVideoService.setAsMainVideo(video);
+            VideoGallery updatedVideo = videoGalleryService.setAsMainVideo(video);
 
             redirectAttributes.addFlashAttribute("successMessage",
                     "Видео '" + updatedVideo.getTitle() + "' установлено как основное для проекта!");
@@ -329,7 +329,7 @@ public class ProjectVideoAdminController {
     public String showDeleteConfirmation(@PathVariable Long id,
                                          Model model,
                                          RedirectAttributes redirectAttributes) {
-        Optional<VideoGallery> videoOpt = projectVideoService.findById(id);
+        Optional<VideoGallery> videoOpt = videoGalleryService.findById(id);
 
         if (videoOpt.isEmpty()) {
             redirectAttributes.addFlashAttribute("errorMessage",
@@ -355,7 +355,7 @@ public class ProjectVideoAdminController {
     public String deleteVideo(@PathVariable Long id,
                               RedirectAttributes redirectAttributes) {
         try {
-            Optional<VideoGallery> videoOpt = projectVideoService.findById(id);
+            Optional<VideoGallery> videoOpt = videoGalleryService.findById(id);
             if (videoOpt.isEmpty()) {
                 redirectAttributes.addFlashAttribute("errorMessage",
                         "Видео с ID " + id + " не найден");
@@ -369,7 +369,7 @@ public class ProjectVideoAdminController {
             // Проверяем, является ли видео основным
             boolean wasMain = video.isMain();
 
-            projectVideoService.deleteById(id);
+            videoGalleryService.deleteById(id);
 
             String successMessage = "Видео '" + videoTitle + "' успешно удалено!";
             if (wasMain) {
@@ -409,11 +409,11 @@ public class ProjectVideoAdminController {
 
             // Обновляем sortOrder для каждого видео
             for (int i = 0; i < videoIds.length; i++) {
-                Optional<VideoGallery> videoOpt = projectVideoService.findById(videoIds[i]);
+                Optional<VideoGallery> videoOpt = videoGalleryService.findById(videoIds[i]);
                 if (videoOpt.isPresent()) {
                     VideoGallery video = videoOpt.get();
                     video.setSortOrder(i);
-                    projectVideoService.update(video);
+                    videoGalleryService.update(video);
                 }
             }
 
@@ -438,7 +438,7 @@ public class ProjectVideoAdminController {
     @GetMapping("/validate-url")
     @ResponseBody
     public String validateVideoUrl(@RequestParam String url) {
-        boolean isValid = projectVideoService.isValidVideoUrl(url);
+        boolean isValid = videoGalleryService.isValidVideoUrl(url);
         return "{\"valid\": " + isValid + "}";
     }
 }

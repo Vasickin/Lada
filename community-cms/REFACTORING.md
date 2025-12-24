@@ -169,7 +169,7 @@ src/main/java/com/community/cms/
 │       │   ├── 🗃️  AboutService.java
 │       │   ├── 🗃️  ProjectImageService.java
 │       │   ├── 🗃️  ProjectPartnerService.java
-│       │   ├── 🗃️  ProjectVideoService.java
+│       │   ├── 🗃️  VideoGalleryService.java
 │       │   └── 🗃️  TeamMemberService.java
 │       ├── 📁 gallery/
 │       │   ├── 🗃️  PhotoGalleryService.java

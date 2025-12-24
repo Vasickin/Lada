@@ -25,7 +25,7 @@ import java.util.Optional;
  */
 @Service
 @Transactional
-public class ProjectVideoService {
+public class VideoGalleryService {
 
     private final ProjectVideoRepository projectVideoRepository;
 
@@ -35,7 +35,7 @@ public class ProjectVideoService {
      * @param projectVideoRepository репозиторий для работы с видео проектов
      */
     @Autowired
-    public ProjectVideoService(ProjectVideoRepository projectVideoRepository) {
+    public VideoGalleryService(ProjectVideoRepository projectVideoRepository) {
         this.projectVideoRepository = projectVideoRepository;
     }
 
