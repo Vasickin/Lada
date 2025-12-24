@@ -30,7 +30,7 @@ import java.time.LocalDateTime;
  */
 @Entity
 @Table(name = "project_articles")
-public class ProjectArticle {
+public class About {
 
     /**
      * Статусы статьи для управления публикацией.
@@ -206,7 +206,7 @@ public class ProjectArticle {
     /**
      * Конструктор по умолчанию.
      */
-    public ProjectArticle() {
+    public About() {
         this.createdAt = LocalDateTime.now();
         this.updatedAt = LocalDateTime.now();
         this.viewCount = 0;
@@ -219,7 +219,7 @@ public class ProjectArticle {
      * @param title заголовок статьи
      * @param content содержимое статьи
      */
-    public ProjectArticle(Project project, String title, String content) {
+    public About(Project project, String title, String content) {
         this();
         this.project = project;
         this.title = title;
@@ -577,7 +577,7 @@ public class ProjectArticle {
 
     @Override
     public String toString() {
-        return "ProjectArticle{" +
+        return "About{" +
                 "id=" + id +
                 ", title='" + title + '\'' +
                 ", status=" + status +

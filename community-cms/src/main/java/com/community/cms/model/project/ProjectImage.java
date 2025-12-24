@@ -1,6 +1,6 @@
 package com.community.cms.model.project;
 
-import com.community.cms.model.gallery.MediaFile;
+import com.community.cms.domain.model.media.MediaFile;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import org.hibernate.annotations.CreationTimestamp;

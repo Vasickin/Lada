@@ -1,8 +1,8 @@
 package com.community.cms.controller.projectAdmin;
 
+import com.community.cms.model.project.About;
 import com.community.cms.model.project.Project;
-import com.community.cms.model.project.ProjectArticle;
-import com.community.cms.model.project.ProjectArticle.ArticleStatus;
+import com.community.cms.model.project.About.ArticleStatus;
 import com.community.cms.service.project.ProjectArticleService;
 import com.community.cms.service.project.ProjectService;
 import jakarta.validation.Valid;
@@ -54,7 +54,7 @@ public class ProjectArticleAdminController {
 
         Project project = getProjectOrThrow(projectId);
 
-        Page<ProjectArticle> articlesPage = getArticlesPage(project, pageable, status, search);
+        Page<About> articlesPage = getArticlesPage(project, pageable, status, search);
 
         model.addAttribute("project", project);
         model.addAttribute("articlesPage", articlesPage);
@@ -74,7 +74,7 @@ public class ProjectArticleAdminController {
     public String showCreateForm(@PathVariable Long projectId, Model model) {
         Project project = getProjectOrThrow(projectId);
 
-        ProjectArticle article = new ProjectArticle();
+        About article = new About();
         article.setProject(project);
         article.setStatus(ArticleStatus.DRAFT);
 
@@ -90,7 +90,7 @@ public class ProjectArticleAdminController {
      */
     @PostMapping("/create")
     public String createArticle(@PathVariable Long projectId,
-                                @Valid @ModelAttribute("article") ProjectArticle article,
+                                @Valid @ModelAttribute("article") About article,
                                 BindingResult bindingResult,
                                 RedirectAttributes redirectAttributes,
                                 Model model) {
@@ -157,7 +157,7 @@ public class ProjectArticleAdminController {
     @PostMapping("/edit/{articleId}")
     public String updateArticle(@PathVariable Long projectId,
                                 @PathVariable Long articleId,
-                                @Valid @ModelAttribute("article") ProjectArticle article,
+                                @Valid @ModelAttribute("article") About article,
                                 BindingResult bindingResult,
                                 RedirectAttributes redirectAttributes,
                                 Model model) {
@@ -165,7 +165,7 @@ public class ProjectArticleAdminController {
         Project project = getProjectOrThrow(projectId);
 
         // Проверка что статья существует и принадлежит проекту
-        ProjectArticle existingArticle = articleService.findById(articleId)
+        About existingArticle = articleService.findById(articleId)
                 .filter(a -> a.getProject().getId().equals(projectId))
                 .orElseThrow(() -> new IllegalArgumentException("Статья не найдена"));
 
@@ -366,9 +366,9 @@ public class ProjectArticleAdminController {
                 .orElseThrow(() -> new IllegalArgumentException("Проект с ID " + projectId + " не найден"));
     }
 
-    private Page<ProjectArticle> getArticlesPage(Project project, Pageable pageable, String status, String search) {
+    private Page<About> getArticlesPage(Project project, Pageable pageable, String status, String search) {
         if (search != null && !search.trim().isEmpty()) {
-            List<ProjectArticle> articles = articleService.search(search).stream()
+            List<About> articles = articleService.search(search).stream()
                     .filter(article -> article.getProject().getId().equals(project.getId()))
                     .toList();
 

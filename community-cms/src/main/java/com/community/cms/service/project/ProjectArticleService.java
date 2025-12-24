@@ -1,8 +1,8 @@
 package com.community.cms.service.project;
 
+import com.community.cms.model.project.About;
 import com.community.cms.model.project.Project;
-import com.community.cms.model.project.ProjectArticle;
-import com.community.cms.model.project.ProjectArticle.ArticleStatus;
+import com.community.cms.model.project.About.ArticleStatus;
 import com.community.cms.repository.project.ProjectArticleRepository;
 import com.community.cms.repository.project.ProjectRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -38,7 +38,7 @@ import java.util.Optional;
  * @author Community CMS
  * @version 1.0
  * @since 2025
- * @see ProjectArticle
+ * @see About
  * @see ProjectArticleRepository
  */
 @Service
@@ -69,7 +69,7 @@ public class ProjectArticleService {
      * @param article статья для сохранения
      * @return сохраненная статья
      */
-    public ProjectArticle save(ProjectArticle article) {
+    public About save(About article) {
         validateArticle(article);
         return articleRepository.save(article);
     }
@@ -85,7 +85,7 @@ public class ProjectArticleService {
             @CacheEvict(value = "article-by-id", key = "#article.id"),
             @CacheEvict(value = "article-by-slug", key = "#article.slug")
     })
-    public ProjectArticle update(ProjectArticle article) {
+    public About update(About article) {
         validateArticle(article);
         return articleRepository.save(article);
     }
@@ -98,7 +98,7 @@ public class ProjectArticleService {
      */
     @Transactional(readOnly = true)
     @Cacheable(value = "article-by-id", key = "#id", unless = "#result == null")
-    public Optional<ProjectArticle> findById(Long id) {
+    public Optional<About> findById(Long id) {
         return articleRepository.findById(id);
     }
 
@@ -111,7 +111,7 @@ public class ProjectArticleService {
      */
     @Transactional(readOnly = true)
     @Cacheable(value = "article-by-slug", key = "#slug", unless = "#result == null")
-    public Optional<ProjectArticle> findPublishedBySlug(String slug) {
+    public Optional<About> findPublishedBySlug(String slug) {
         return articleRepository.findBySlugAndStatus(slug, ArticleStatus.PUBLISHED);
     }
 
@@ -121,7 +121,7 @@ public class ProjectArticleService {
      * @param article статья для обновления
      */
     @CacheEvict(value = "article-by-id", key = "#article.id")
-    public void incrementViewCount(ProjectArticle article) {
+    public void incrementViewCount(About article) {
         article.incrementViewCount();
         articleRepository.save(article);
     }
@@ -158,7 +158,7 @@ public class ProjectArticleService {
      * @return опубликованная статья
      */
     @CacheEvict(value = "article-by-id", key = "#article.id")
-    public ProjectArticle publish(ProjectArticle article) {
+    public About publish(About article) {
         article.publish();
         return articleRepository.save(article);
     }
@@ -171,7 +171,7 @@ public class ProjectArticleService {
      * @return статья со статусом черновика
      */
     @CacheEvict(value = "article-by-id", key = "#article.id")
-    public ProjectArticle unpublish(ProjectArticle article) {
+    public About unpublish(About article) {
         article.unpublish();
         return articleRepository.save(article);
     }
@@ -183,7 +183,7 @@ public class ProjectArticleService {
      * @return архивированная статья
      */
     @CacheEvict(value = "article-by-id", key = "#article.id")
-    public ProjectArticle archive(ProjectArticle article) {
+    public About archive(About article) {
         article.archive();
         return articleRepository.save(article);
     }
@@ -195,8 +195,8 @@ public class ProjectArticleService {
      * @return опубликованная статья
      * @throws IllegalArgumentException если статья не найдена
      */
-    public ProjectArticle publishById(Long id) {
-        ProjectArticle article = articleRepository.findById(id)
+    public About publishById(Long id) {
+        About article = articleRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Статья с ID " + id + " не найдена"));
         return publish(article);
     }
@@ -210,7 +210,7 @@ public class ProjectArticleService {
      * @return список статей проекта
      */
     @Transactional(readOnly = true)
-    public List<ProjectArticle> findByProject(Project project) {
+    public List<About> findByProject(Project project) {
         return articleRepository.findByProject(project);
     }
 
@@ -221,7 +221,7 @@ public class ProjectArticleService {
      * @return список статей проекта
      */
     @Transactional(readOnly = true)
-    public List<ProjectArticle> findByProjectId(Long projectId) {
+    public List<About> findByProjectId(Long projectId) {
         return articleRepository.findByProjectId(projectId);
     }
 
@@ -233,7 +233,7 @@ public class ProjectArticleService {
      */
     @Transactional(readOnly = true)
     @Cacheable(value = "project-articles", key = "#project.id + '-published'")
-    public List<ProjectArticle> findPublishedByProject(Project project) {
+    public List<About> findPublishedByProject(Project project) {
         return articleRepository.findPublishedArticlesByProject(project);
     }
 
@@ -245,7 +245,7 @@ public class ProjectArticleService {
      */
     @Transactional(readOnly = true)
     @Cacheable(value = "project-articles", key = "#projectId + '-published'")
-    public List<ProjectArticle> findPublishedByProjectId(Long projectId) {
+    public List<About> findPublishedByProjectId(Long projectId) {
         return articleRepository.findPublishedArticlesByProjectId(projectId);
     }
 
@@ -257,7 +257,7 @@ public class ProjectArticleService {
      * @return страница опубликованных статей проекта
      */
     @Transactional(readOnly = true)
-    public Page<ProjectArticle> findPublishedByProject(Project project, Pageable pageable) {
+    public Page<About> findPublishedByProject(Project project, Pageable pageable) {
         return articleRepository.findPublishedArticlesByProject(project, pageable);
     }
 
@@ -270,7 +270,7 @@ public class ProjectArticleService {
      */
     @Transactional(readOnly = true)
     @Cacheable(value = "articles", key = "'published'")
-    public List<ProjectArticle> findAllPublished() {
+    public List<About> findAllPublished() {
         return articleRepository.findPublishedArticles();
     }
 
@@ -282,7 +282,7 @@ public class ProjectArticleService {
      */
     // Для простых случаев без пагинации
     @Transactional(readOnly = true)
-    public List<ProjectArticle> findByStatus(ArticleStatus status) {
+    public List<About> findByStatus(ArticleStatus status) {
         return articleRepository.findByStatus(status, Pageable.unpaged()).getContent();
     }
 
@@ -293,7 +293,7 @@ public class ProjectArticleService {
      * @return список статей указанного автора
      */
     @Transactional(readOnly = true)
-    public List<ProjectArticle> findByAuthor(String author) {
+    public List<About> findByAuthor(String author) {
         return articleRepository.findByAuthorContainingIgnoreCase(author);
     }
 
@@ -304,7 +304,7 @@ public class ProjectArticleService {
      * @return список найденных статей
      */
     @Transactional(readOnly = true)
-    public List<ProjectArticle> searchByTitle(String title) {
+    public List<About> searchByTitle(String title) {
         return articleRepository.findByTitleContainingIgnoreCase(title);
     }
 
@@ -315,7 +315,7 @@ public class ProjectArticleService {
      * @return список найденных статей
      */
     @Transactional(readOnly = true)
-    public List<ProjectArticle> search(String searchTerm) {
+    public List<About> search(String searchTerm) {
         return articleRepository.searchByTitleOrContent(searchTerm);
     }
 
@@ -326,7 +326,7 @@ public class ProjectArticleService {
      * @return список найденных опубликованных статей
      */
     @Transactional(readOnly = true)
-    public List<ProjectArticle> searchPublished(String searchTerm) {
+    public List<About> searchPublished(String searchTerm) {
         return articleRepository.searchPublishedByTitleOrContent(searchTerm);
     }
 
@@ -340,7 +340,7 @@ public class ProjectArticleService {
      * @return страница опубликованных статей
      */
     @Transactional(readOnly = true)
-    public Page<ProjectArticle> findPublished(Pageable pageable) {
+    public Page<About> findPublished(Pageable pageable) {
         return articleRepository.findPublishedArticles(pageable);
     }
 
@@ -352,7 +352,7 @@ public class ProjectArticleService {
      * @return страница всех статей
      */
     @Transactional(readOnly = true)
-    public Page<ProjectArticle> findAll(Pageable pageable) {
+    public Page<About> findAll(Pageable pageable) {
         return articleRepository.findAll(pageable);
     }
 
@@ -364,7 +364,7 @@ public class ProjectArticleService {
      * @return страница статей с указанным статусом
      */
     @Transactional(readOnly = true)
-    public Page<ProjectArticle> findByStatus(ArticleStatus status, Pageable pageable) {
+    public Page<About> findByStatus(ArticleStatus status, Pageable pageable) {
         return articleRepository.findByStatus(status, pageable);
     }
 
@@ -379,7 +379,7 @@ public class ProjectArticleService {
      */
     @Transactional(readOnly = true)
     @Cacheable(value = "articles", key = "'recent-' + #limit")
-    public List<ProjectArticle> findRecentArticles(int limit) {
+    public List<About> findRecentArticles(int limit) {
         return articleRepository.findRecentArticles(limit);
     }
 
@@ -392,7 +392,7 @@ public class ProjectArticleService {
      */
     @Transactional(readOnly = true)
     @Cacheable(value = "project-articles", key = "#project.id + '-recent-' + #limit")
-    public List<ProjectArticle> findRecentArticlesByProject(Project project, int limit) {
+    public List<About> findRecentArticlesByProject(Project project, int limit) {
         return articleRepository.findRecentArticlesByProject(project, limit);
     }
 
@@ -402,7 +402,7 @@ public class ProjectArticleService {
      * @return Optional с самой популярной статьей, если есть
      */
     @Transactional(readOnly = true)
-    public Optional<ProjectArticle> findMostPopularArticle() {
+    public Optional<About> findMostPopularArticle() {
         return articleRepository.findMostPopularArticle();
     }
 
@@ -417,7 +417,7 @@ public class ProjectArticleService {
      * @return список похожих статей
      */
     @Transactional(readOnly = true)
-    public List<ProjectArticle> findSimilarArticles(Project project, Long excludeId, String searchTerms, int limit) {
+    public List<About> findSimilarArticles(Project project, Long excludeId, String searchTerms, int limit) {
         return articleRepository.findSimilarArticles(project, excludeId, searchTerms, limit);
     }
 
@@ -484,7 +484,7 @@ public class ProjectArticleService {
      * @return список запланированных статей
      */
     @Transactional(readOnly = true)
-    public List<ProjectArticle> findScheduledArticles() {
+    public List<About> findScheduledArticles() {
         return articleRepository.findScheduledArticles(LocalDateTime.now());
     }
 
@@ -495,7 +495,7 @@ public class ProjectArticleService {
      * @return список статей без featuredImagePath
      */
     @Transactional(readOnly = true)
-    public List<ProjectArticle> findArticlesWithoutFeaturedImage() {
+    public List<About> findArticlesWithoutFeaturedImage() {
         return articleRepository.findByFeaturedImagePathIsNull();
     }
 
@@ -506,7 +506,7 @@ public class ProjectArticleService {
      * @return список статей без shortDescription
      */
     @Transactional(readOnly = true)
-    public List<ProjectArticle> findArticlesWithoutShortDescription() {
+    public List<About> findArticlesWithoutShortDescription() {
         return articleRepository.findWithoutShortDescription();
     }
 
@@ -517,7 +517,7 @@ public class ProjectArticleService {
      * @return список статей без metaDescription
      */
     @Transactional(readOnly = true)
-    public List<ProjectArticle> findArticlesWithoutMetaDescription() {
+    public List<About> findArticlesWithoutMetaDescription() {
         return articleRepository.findWithoutMetaDescription();
     }
 
@@ -549,7 +549,7 @@ public class ProjectArticleService {
      * @param article статья для валидации
      * @throws IllegalArgumentException если статья невалидна
      */
-    private void validateArticle(ProjectArticle article) {
+    private void validateArticle(About article) {
         if (article == null) {
             throw new IllegalArgumentException("Статья не может быть null");
         }
@@ -616,8 +616,8 @@ public class ProjectArticleService {
      * @param content содержимое статьи
      * @return созданная статья
      */
-    public ProjectArticle createArticleForProject(Project project, String title, String content) {
-        ProjectArticle article = new ProjectArticle(project, title, content);
+    public About createArticleForProject(Project project, String title, String content) {
+        About article = new About(project, title, content);
         return save(article);
     }
 

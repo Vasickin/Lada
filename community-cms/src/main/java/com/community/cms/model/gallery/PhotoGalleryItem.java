@@ -1,5 +1,6 @@
 package com.community.cms.model.gallery;
 
+import com.community.cms.domain.model.media.MediaFile;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
 import org.hibernate.annotations.CreationTimestamp;

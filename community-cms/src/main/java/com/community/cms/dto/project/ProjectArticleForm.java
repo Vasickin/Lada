@@ -1,6 +1,6 @@
 package com.community.cms.dto.project;
 
-import com.community.cms.model.project.ProjectArticle;
+import com.community.cms.model.project.About;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
@@ -26,7 +26,7 @@ import java.time.LocalDateTime;
  * @author Community CMS
  * @version 1.0
  * @since 2025
- * @see ProjectArticle
+ * @see About
  */
 public class ProjectArticleForm {
 
@@ -102,7 +102,7 @@ public class ProjectArticleForm {
      * PUBLISHED - опубликовано (видно на сайте),
      * ARCHIVED - архив (скрыто с сайта).
      */
-    private ProjectArticle.ArticleStatus status = ProjectArticle.ArticleStatus.DRAFT;
+    private About.ArticleStatus status = About.ArticleStatus.DRAFT;
 
     /**
      * Дата и время публикации статьи.
@@ -173,7 +173,7 @@ public class ProjectArticleForm {
      * Инициализирует значения по умолчанию.
      */
     public ProjectArticleForm() {
-        this.status = ProjectArticle.ArticleStatus.DRAFT;
+        this.status = About.ArticleStatus.DRAFT;
         this.sortOrder = 0;
     }
 
@@ -183,7 +183,7 @@ public class ProjectArticleForm {
      *
      * @param article существующая статья проекта
      */
-    public ProjectArticleForm(ProjectArticle article) {
+    public ProjectArticleForm(About article) {
         this();
         this.id = article.getId();
         this.projectId = article.getProject() != null ? article.getProject().getId() : null;
@@ -260,11 +260,11 @@ public class ProjectArticleForm {
         this.author = author;
     }
 
-    public ProjectArticle.ArticleStatus getStatus() {
+    public About.ArticleStatus getStatus() {
         return status;
     }
 
-    public void setStatus(ProjectArticle.ArticleStatus status) {
+    public void setStatus(About.ArticleStatus status) {
         this.status = status;
     }
 
@@ -332,7 +332,7 @@ public class ProjectArticleForm {
      * @return true если статус DRAFT, иначе false
      */
     public boolean isDraft() {
-        return status == ProjectArticle.ArticleStatus.DRAFT;
+        return status == About.ArticleStatus.DRAFT;
     }
 
     /**
@@ -341,7 +341,7 @@ public class ProjectArticleForm {
      * @return true если статус PUBLISHED, иначе false
      */
     public boolean isPublished() {
-        return status == ProjectArticle.ArticleStatus.PUBLISHED;
+        return status == About.ArticleStatus.PUBLISHED;
     }
 
     /**
@@ -350,7 +350,7 @@ public class ProjectArticleForm {
      * @return true если статус ARCHIVED, иначе false
      */
     public boolean isArchived() {
-        return status == ProjectArticle.ArticleStatus.ARCHIVED;
+        return status == About.ArticleStatus.ARCHIVED;
     }
 
     /**
@@ -377,7 +377,7 @@ public class ProjectArticleForm {
      * @return true если статус PUBLISHED и publishedDate в будущем, иначе false
      */
     public boolean isScheduled() {
-        if (status != ProjectArticle.ArticleStatus.PUBLISHED || publishedDate == null) {
+        if (status != About.ArticleStatus.PUBLISHED || publishedDate == null) {
             return false;
         }
         return publishedDate.isAfter(LocalDateTime.now());
@@ -451,13 +451,13 @@ public class ProjectArticleForm {
     }
 
     /**
-     * Преобразует ProjectArticleForm в сущность ProjectArticle.
+     * Преобразует ProjectArticleForm в сущность About.
      * Не заполняет связь с проектом (нужно установить отдельно).
      *
-     * @return сущность ProjectArticle с заполненными базовыми полями
+     * @return сущность About с заполненными базовыми полями
      */
-    public ProjectArticle toEntity() {
-        ProjectArticle article = new ProjectArticle();
+    public About toEntity() {
+        About article = new About();
         article.setId(this.id);
         article.setTitle(this.title);
         article.setContent(this.content);
@@ -480,12 +480,12 @@ public class ProjectArticleForm {
     }
 
     /**
-     * Обновляет существующую сущность ProjectArticle данными из формы.
+     * Обновляет существующую сущность About данными из формы.
      * Не обновляет связь с проектом.
      *
      * @param article сущность для обновления
      */
-    public void updateEntity(ProjectArticle article) {
+    public void updateEntity(About article) {
         article.setTitle(this.title);
         article.setContent(this.content);
         article.setShortDescription(this.shortDescription);

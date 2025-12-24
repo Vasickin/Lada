@@ -1,6 +1,6 @@
 package com.community.cms.service.gallery;
 
-import com.community.cms.model.gallery.MediaFile;
+import com.community.cms.domain.model.media.MediaFile;
 import com.community.cms.model.gallery.PhotoGalleryItem;
 import com.community.cms.model.gallery.PublicationCategory;
 import com.community.cms.repository.gallery.MediaFileRepository;

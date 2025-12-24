@@ -1,6 +1,6 @@
 package com.community.cms.repository.gallery;
 
-import com.community.cms.model.gallery.MediaFile;
+import com.community.cms.domain.model.media.MediaFile;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

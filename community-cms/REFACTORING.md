@@ -136,7 +136,7 @@ src/main/java/com/community/cms/
 │   ├── 📁 model/                          # 📦 Сущности (чистые)
 │   │   ├── 📁 project/                    #   • Проекты
 │   │   │   ├── 🗃️  Project.java
-│   │   │   ├── 🗃️  ProjectArticle.java
+│   │   │   ├── 🗃️  About.java
 │   │   │   ├── 🗃️  ProjectImage.java
 │   │   │   ├── 🗃️  ProjectPartner.java
 │   │   │   ├── 🗃️  ProjectVideo.java
