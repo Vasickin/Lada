@@ -1,4 +1,4 @@
-package com.community.cms.model;
+package com.community.cms.domain.enums;
 
 /**
  * Тип медиа-контента для элементов галереи

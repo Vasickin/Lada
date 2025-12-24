@@ -1,6 +1,6 @@
 package com.community.cms.service;
 
-import com.community.cms.model.MediaType;
+import com.community.cms.domain.enums.MediaType;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
