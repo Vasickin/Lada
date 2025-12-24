@@ -1,7 +1,7 @@
 package com.community.cms.service.project;
 
 import com.community.cms.domain.model.people.Partner;
-import com.community.cms.model.project.Project;
+import com.community.cms.domain.model.content.Project;
 import com.community.cms.domain.model.people.Partner.PartnerType;
 import com.community.cms.repository.project.ProjectPartnerRepository;
 import org.springframework.beans.factory.annotation.Autowired;

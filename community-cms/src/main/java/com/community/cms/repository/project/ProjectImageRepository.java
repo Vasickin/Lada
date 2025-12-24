@@ -1,6 +1,6 @@
 package com.community.cms.repository.project;
 
-import com.community.cms.model.project.Project;
+import com.community.cms.domain.model.content.Project;
 import com.community.cms.model.project.ProjectImage;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;

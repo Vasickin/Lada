@@ -1,7 +1,7 @@
 package com.community.cms.repository.project;
 
-import com.community.cms.model.project.Project;
-import com.community.cms.model.project.Project.ProjectStatus;
+import com.community.cms.domain.model.content.Project;
+import com.community.cms.domain.model.content.Project.ProjectStatus;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;

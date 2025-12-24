@@ -1,6 +1,6 @@
 package com.community.cms.domain.model.people;
 
-import com.community.cms.model.project.Project;
+import com.community.cms.domain.model.content.Project;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;

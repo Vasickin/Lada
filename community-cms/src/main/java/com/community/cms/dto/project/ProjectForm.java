@@ -1,6 +1,6 @@
 package com.community.cms.dto.project;
 
-import com.community.cms.model.project.Project;
+import com.community.cms.domain.model.content.Project;
 import com.community.cms.validation.VideoUrl;
 import jakarta.validation.constraints.*;
 import org.springframework.format.annotation.DateTimeFormat;

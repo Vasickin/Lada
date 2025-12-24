@@ -1,6 +1,6 @@
 package com.community.cms.service.project;
 
-import com.community.cms.model.project.Project;
+import com.community.cms.domain.model.content.Project;
 import com.community.cms.model.project.ProjectVideo;
 import com.community.cms.model.project.ProjectVideo.VideoType;
 import com.community.cms.repository.project.ProjectVideoRepository;

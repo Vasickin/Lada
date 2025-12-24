@@ -1,7 +1,7 @@
 package com.community.cms.service.project;
 
 import com.community.cms.model.project.About;
-import com.community.cms.model.project.Project;
+import com.community.cms.domain.model.content.Project;
 import com.community.cms.model.project.About.ArticleStatus;
 import com.community.cms.repository.project.ProjectArticleRepository;
 import com.community.cms.repository.project.ProjectRepository;

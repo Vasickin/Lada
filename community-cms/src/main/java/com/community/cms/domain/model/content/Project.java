@@ -1,5 +1,6 @@
-package com.community.cms.model.project;
+package com.community.cms.domain.model.content;
 
+import com.community.cms.model.project.TeamMember;
 import com.community.cms.validation.VideoUrl;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
@@ -14,8 +15,6 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
-import java.util.stream.Collectors;
 
 /**
  * Основная сущность проекта организации "ЛАДА".

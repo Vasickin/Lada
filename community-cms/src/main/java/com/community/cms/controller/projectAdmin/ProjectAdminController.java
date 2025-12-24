@@ -4,7 +4,7 @@ import com.community.cms.domain.model.content.PhotoGallery;
 import com.community.cms.dto.gallery.GalleryDTO;
 import com.community.cms.dto.gallery.PhotoDTO;
 import com.community.cms.domain.model.media.MediaFile;
-import com.community.cms.model.project.Project;
+import com.community.cms.domain.model.content.Project;
 import com.community.cms.model.project.TeamMember;
 import com.community.cms.repository.project.ProjectRepository;
 import com.community.cms.service.gallery.PhotoGalleryService;

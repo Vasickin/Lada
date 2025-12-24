@@ -1,7 +1,7 @@
 package com.community.cms.controller.projectAdmin;
 
 import com.community.cms.domain.model.media.MediaFile;
-import com.community.cms.model.project.Project;
+import com.community.cms.domain.model.content.Project;
 import com.community.cms.model.project.ProjectImage;
 import com.community.cms.service.FileStorageService;
 import com.community.cms.service.project.ProjectImageService;

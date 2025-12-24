@@ -1,6 +1,6 @@
 package com.community.cms.repository.project;
 
-import com.community.cms.model.project.Project;
+import com.community.cms.domain.model.content.Project;
 import com.community.cms.model.project.TeamMember;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;

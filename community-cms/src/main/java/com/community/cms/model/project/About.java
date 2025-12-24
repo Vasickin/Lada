@@ -1,5 +1,6 @@
 package com.community.cms.model.project;
 
+import com.community.cms.domain.model.content.Project;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;

@@ -1,7 +1,7 @@
 package com.community.cms.controller.projectAdmin;
 
 import com.community.cms.domain.model.people.Partner;
-import com.community.cms.model.project.Project;
+import com.community.cms.domain.model.content.Project;
 import com.community.cms.domain.model.people.Partner.PartnerType;
 import com.community.cms.service.project.ProjectPartnerService;
 import com.community.cms.service.project.ProjectService;

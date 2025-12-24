@@ -1,6 +1,6 @@
 package com.community.cms.controller.projectAdmin;
 
-import com.community.cms.model.project.Project;
+import com.community.cms.domain.model.content.Project;
 import com.community.cms.model.project.TeamMember;
 import com.community.cms.service.project.ProjectService;
 import com.community.cms.service.project.TeamMemberService;

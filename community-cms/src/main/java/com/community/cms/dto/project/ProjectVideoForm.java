@@ -1,6 +1,5 @@
 package com.community.cms.dto.project;
 
-import com.community.cms.model.project.Project;
 import com.community.cms.model.project.ProjectVideo;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
