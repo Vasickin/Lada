@@ -183,9 +183,9 @@ src/main/java/com/community/cms/
 │   │   │   ├── 📁 admin/                 #     – Админка
 │   │   │   │   ├── 📁 project/
 │   │   │   │   │   ├── 🗃️  ProjectAdminController.java
-│   │   │   │   │   ├── 🗃️  ProjectArticleAdminController.java
+│   │   │   │   │   ├── 🗃️  AboutAdminController.java
 │   │   │   │   │   ├── 🗃️  ProjectImageAdminController.java
-│   │   │   │   │   ├── 🗃️  ProjectPartnerAdminController.java
+│   │   │   │   │   ├── 🗃️  PartnerAdminController.java
 │   │   │   │   │   ├── 🗃️  ProjectVideoAdminController.java
 │   │   │   │   │   └── 🗃️  TeamMemberAdminController.java
 │   │   │   │   ├── 📁 gallery/

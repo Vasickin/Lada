@@ -1,4 +1,4 @@
-package com.community.cms.controller.projectAdmin;
+package com.community.cms.web.mvc.controller.admin.content;
 
 import com.community.cms.domain.model.page.About;
 import com.community.cms.domain.model.content.Project;
@@ -28,14 +28,14 @@ import java.util.List;
  */
 @Controller
 @RequestMapping("/admin/projects/{projectId}/articles")
-public class ProjectArticleAdminController {
+public class AboutAdminController {
 
     private final AboutService articleService;
     private final ProjectService projectService;
 
     @Autowired
-    public ProjectArticleAdminController(AboutService articleService,
-                                         ProjectService projectService) {
+    public AboutAdminController(AboutService articleService,
+                                ProjectService projectService) {
         this.articleService = articleService;
         this.projectService = projectService;
     }

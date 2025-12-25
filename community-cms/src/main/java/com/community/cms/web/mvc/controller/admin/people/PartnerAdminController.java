@@ -1,4 +1,4 @@
-package com.community.cms.controller.projectAdmin;
+package com.community.cms.web.mvc.controller.admin.people;
 
 import com.community.cms.domain.model.people.Partner;
 import com.community.cms.domain.model.content.Project;
@@ -30,7 +30,7 @@ import java.util.Optional;
  */
 @Controller
 @RequestMapping("/admin/project-partners")
-public class ProjectPartnerAdminController {
+public class PartnerAdminController {
 
     private final PartnerService partnerService;
     private final ProjectService projectService;
@@ -42,8 +42,8 @@ public class ProjectPartnerAdminController {
      * @param projectService сервис для работы с проектами
      */
     @Autowired
-    public ProjectPartnerAdminController(PartnerService partnerService,
-                                         ProjectService projectService) {
+    public PartnerAdminController(PartnerService partnerService,
+                                  ProjectService projectService) {
         this.partnerService = partnerService;
         this.projectService = projectService;
     }
