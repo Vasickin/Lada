@@ -186,7 +186,7 @@ src/main/java/com/community/cms/
 │   │   │   │   │   ├── 🗃️  AboutAdminController.java
 │   │   │   │   │   ├── 🗃️  ProjectImageAdminController.java
 │   │   │   │   │   ├── 🗃️  PartnerAdminController.java
-│   │   │   │   │   ├── 🗃️  ProjectVideoAdminController.java
+│   │   │   │   │   ├── 🗃️  VideoGalleryAdminController.java
 │   │   │   │   │   └── 🗃️  TeamMemberAdminController.java
 │   │   │   │   ├── 📁 gallery/
 │   │   │   │   │   └── 🗃️  PhotoGalleryAdminController.java

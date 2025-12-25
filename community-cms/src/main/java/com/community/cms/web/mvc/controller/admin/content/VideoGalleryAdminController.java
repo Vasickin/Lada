@@ -1,4 +1,4 @@
-package com.community.cms.controller.projectAdmin;
+package com.community.cms.web.mvc.controller.admin.content;
 
 import com.community.cms.domain.model.content.Project;
 import com.community.cms.domain.model.content.VideoGallery;
@@ -30,7 +30,7 @@ import java.util.Optional;
  */
 @Controller
 @RequestMapping("/admin/project-videos")
-public class ProjectVideoAdminController {
+public class VideoGalleryAdminController {
 
     private final VideoGalleryService videoGalleryService;
     private final ProjectService projectService;
@@ -42,7 +42,7 @@ public class ProjectVideoAdminController {
      * @param projectService сервис для работы с проектами
      */
     @Autowired
-    public ProjectVideoAdminController(VideoGalleryService videoGalleryService,
+    public VideoGalleryAdminController(VideoGalleryService videoGalleryService,
                                        ProjectService projectService) {
         this.videoGalleryService = videoGalleryService;
         this.projectService = projectService;
