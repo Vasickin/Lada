@@ -1,4 +1,4 @@
-package com.community.cms.config;
+package com.community.cms.infrastructure.config;
 
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
