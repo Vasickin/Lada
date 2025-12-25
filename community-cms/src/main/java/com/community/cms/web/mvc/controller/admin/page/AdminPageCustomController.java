@@ -1,4 +1,4 @@
-package com.community.cms.web.mvc.controller.public_page;
+package com.community.cms.web.mvc.controller.admin.page;
 
 import com.community.cms.domain.model.page.Page;
 import com.community.cms.domain.service.page.PageService;
@@ -38,7 +38,7 @@ import java.util.Optional;
  */
 @Controller
 @RequestMapping("/pages")
-public class PageController {
+public class AdminPageCustomController {
 
     private final PageService pageService;
 
@@ -48,7 +48,7 @@ public class PageController {
      * @param pageService сервис для работы со страницами
      */
     @Autowired
-    public PageController(PageService pageService) {
+    public AdminPageCustomController(PageService pageService) {
         this.pageService = pageService;
     }
 

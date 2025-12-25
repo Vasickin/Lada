@@ -20,8 +20,8 @@ import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
 /**
- * Unit tests for PageController class.
- * Тесты для класса PageController.
+ * Unit tests for AdminPageCustomController class.
+ * Тесты для класса AdminPageCustomController.
  *
  * @author Vasickin
  * @version 1.0
