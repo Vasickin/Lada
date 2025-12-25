@@ -1,4 +1,4 @@
-package com.community.cms.dto.project;
+package com.community.cms.web.mvc.dto.content;
 
 import com.community.cms.domain.model.content.About;
 import jakarta.validation.constraints.NotBlank;
@@ -28,7 +28,7 @@ import java.time.LocalDateTime;
  * @since 2025
  * @see About
  */
-public class ProjectArticleForm {
+public class AboutForm {
 
     // ================== СИСТЕМНЫЕ ПОЛЯ ==================
 
@@ -172,7 +172,7 @@ public class ProjectArticleForm {
      * Конструктор по умолчанию.
      * Инициализирует значения по умолчанию.
      */
-    public ProjectArticleForm() {
+    public AboutForm() {
         this.status = About.ArticleStatus.DRAFT;
         this.sortOrder = 0;
     }
@@ -183,7 +183,7 @@ public class ProjectArticleForm {
      *
      * @param article существующая статья проекта
      */
-    public ProjectArticleForm(About article) {
+    public AboutForm(About article) {
         this();
         this.id = article.getId();
         this.projectId = article.getProject() != null ? article.getProject().getId() : null;
@@ -451,7 +451,7 @@ public class ProjectArticleForm {
     }
 
     /**
-     * Преобразует ProjectArticleForm в сущность About.
+     * Преобразует AboutForm в сущность About.
      * Не заполняет связь с проектом (нужно установить отдельно).
      *
      * @return сущность About с заполненными базовыми полями
@@ -503,7 +503,7 @@ public class ProjectArticleForm {
 
     @Override
     public String toString() {
-        return "ProjectArticleForm{" +
+        return "AboutForm{" +
                 "id=" + id +
                 ", projectId=" + projectId +
                 ", title='" + title + '\'' +

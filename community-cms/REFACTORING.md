@@ -206,7 +206,7 @@ src/main/java/com/community/cms/
 │   │   ├── 📁 dto/                       #   • Form DTO (для thymeleaf:form)
 │   │   │   ├── 📁 project/
 │   │   │   │   ├── 🗃️  ProjectForm.java
-│   │   │   │   ├── 🗃️  ProjectArticleForm.java
+│   │   │   │   ├── 🗃️  AboutForm.java
 │   │   │   │   ├── 🗃️  ProjectImageForm.java
 │   │   │   │   ├── 🗃️  ProjectPartnerForm.java
 │   │   │   │   ├── 🗃️  ProjectVideoForm.java
