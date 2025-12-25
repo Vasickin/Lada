@@ -95,186 +95,218 @@
 
 ### 📊 **Дорожная карта:**
 
-```mermaid
-gantt
-    title Дорожная карта рефакторинга
-    dateFormat  YYYY-MM-DD
-    section Подготовка
-    Создание ветки и бекапов     :a1, 2024-03-01, 2d
-    Документация                  :a2, after a1, 1d
-    
-    section Domain слой
-    Entity → domain/model/        :b1, after a2, 2d
-    Repository интерфейсы         :b2, after b1, 2d
-    Бизнес-сервисы                :b3, after b2, 2d
-    
-    section MVC слой (Проекты)
-    Контроллеры проектов          :c1, after b3, 2d
-    Мапперы проектов              :c2, after c1, 2d
-    Валидаторы проектов           :c3, after c2, 2d
-    
-    section MVC слой (Остальное)
-    Галерея                       :d1, after c3, 2d
-    Команда                       :d2, after d1, 2d
-    Пользователи                  :d3, after d2, 2d
-    
-    section Infrastructure
-    JPA реализации                :e1, after d3, 2d
-    Конфигурации                  :e2, after e1, 2d
-    Файловое хранилище            :e3, after e2, 2d
-    
-    section Завершение
-    Тестирование                  :f1, after e3, 3d
-    Финализация                   :f2, after f1, 2d
-    
-```
+
 
 ```shell
 
-src/main/java/com/community/cms/
-├── 📁 domain/                              # 🎯 ЯДРО — бизнес-логика
-│   ├── 📁 model/                          # 📦 Сущности (чистые)
-│   │   ├── 📁 project/                    #   • Проекты
-│   │   │   ├── 🗃️  Project.java
-│   │   │   ├── 🗃️  About.java
-│   │   │   ├── 🗃️  ProjectImage.java
-│   │   │   ├── 🗃️  Partner.java
-│   │   │   ├── 🗃️  VideoGallery.java
-│   │   │   └── 🗃️  TeamMember.java
-│   │   ├── 📁 gallery/                    #   • Галерея
-│   │   │   ├── 🗃️  MediaFile.java
-│   │   │   ├── 🗃️  PhotoGallery.java
-│   │   │   └── 🗃️  PublicationCategory.java
-│   │   ├── 🗃️  Page.java
-│   │   ├── 🗃️  User.java
-│   │   ├── 🗃️  MediaType.java
-│   │   └── 🗃️  PageType.java
+📦 community-cms/
+├── 📁 src/main/java/com/community/cms/
+│   ├── 🏛️  CmsApplication.java
 │   │
-│   ├── 📁 repository/                     # 🔗 Интерфейсы репозиториев
-│   │   ├── 🗃️  ProjectRepository.java
-│   │   ├── 🗃️  AboutRepository.java
-│   │   ├── 🗃️  ProjectImageRepository.java
-│   │   ├── 🗃️  PartnerRepository.java
-│   │   ├── 🗃️  VideoGalleryRepository.java
-│   │   ├── 🗃️  TeamMemberRepository.java
-│   │   ├── 🗃️  MediaFileRepository.java
-│   │   ├── 🗃️  PhotoGalleryRepository.java
-│   │   ├── 🗃️  PublicationCategoryRepository.java
-│   │   ├── 🗃️  PageRepository.java
-│   │   └── 🗃️  UserRepository.java
-│   │
-│   └── 📁 service/                        # ⚙️ Бизнес-сервисы
-│       ├── 📁 project/
-│       │   ├── 🗃️  ProjectService.java
-│       │   ├── 🗃️  AboutService.java
-│       │   ├── 🗃️  ProjectImageService.java
-│       │   ├── 🗃️  PartnerService.java
-│       │   ├── 🗃️  VideoGalleryService.java
-│       │   └── 🗃️  TeamMemberService.java
-│       ├── 📁 gallery/
-│       │   ├── 🗃️  PhotoGalleryService.java
-│       │   └── 🗃️  PublicationCategoryService.java
-│       ├── 🗃️  PageService.java
-│       └── 🗃️  UserService.java
-│
-├── 📁 web/                                # 🌐 ВЕБ-СЛОЙ (зависит от domain)
-│   ├── 📁 mvc/                           # 🖥️  Thymeleaf MVC (текущий)
-│   │   ├── 📁 controller/                #   • Контроллеры (@Controller)
-│   │   │   ├── 📁 admin/                 #     – Админка
-│   │   │   │   ├── 📁 project/
-│   │   │   │   │   ├── 🗃️  ProjectAdminController.java
-│   │   │   │   │   ├── 🗃️  AboutAdminController.java
-│   │   │   │   │   ├── 🗃️  ProjectImageAdminController.java
-│   │   │   │   │   ├── 🗃️  PartnerAdminController.java
-│   │   │   │   │   ├── 🗃️  VideoGalleryAdminController.java
-│   │   │   │   │   └── 🗃️  TeamMemberAdminController.java
-│   │   │   │   ├── 📁 gallery/
-│   │   │   │   │   └── 🗃️  PhotoGalleryAdminController.java
-│   │   │   │   ├── 🗃️  DashboardController.java
-│   │   │   │   ├── 🗃️  UserAdminController.java
-│   │   │   │   └── 🗃️  PageAdminController.java
-│   │   │   ├── 📁 public/                #     – Публичная часть
-│   │   │   │   ├── 🗃️  ProjectPublicController.java
-│   │   │   │   ├── 🗃️  TeamPublicController.java
-│   │   │   │   ├── 🗃️  GalleryPublicController.java
-│   │   │   │   ├── 🗃️  HomeController.java
-│   │   │   │   └── 🗃️  PageController.java
-│   │   │   └── 📁 auth/                  #     – Аутентификация
-│   │   │       ├── 🗃️  LoginController.java
-│   │   │       └── 🗃️  TestAuthController.java
+│   ├── 📁 domain/                          # ЯДРО - бизнес-логика
 │   │   │
-│   │   ├── 📁 dto/                       #   • Form DTO (для thymeleaf:form)
-│   │   │   ├── 📁 project/
-│   │   │   │   ├── 🗃️  ProjectForm.java
-│   │   │   │   ├── 🗃️  AboutForm.java
-│   │   │   │   ├── 🗃️  ProjectImageForm.java
-│   │   │   │   ├── 🗃️  PartnerForm.java
-│   │   │   │   ├── 🗃️  VideoGalleryForm.java
-│   │   │   │   └── 🗃️  TeamMemberForm.java
-│   │   │   ├── 📁 gallery/
-│   │   │   │   └── 🗃️  GalleryForm.java
-│   │   │   └── 🗃️  PageForm.java
+│   │   ├── 📁 enums/                       # ПЕРЕЧИСЛЕНИЯ
+│   │   │   ├── 🗃️  MediaType.java
+│   │   │   └── 🗃️  PageType.java
 │   │   │
-│   │   ├── 📁 mapper/                    #   • Мапперы (Entity ↔ Form)
-│   │   │   ├── 🗃️  ProjectMapper.java
-│   │   │   ├── 🗃️  GalleryMapper.java
-│   │   │   ├── 🗃️  TeamMapper.java
-│   │   │   ├── 🗃️  PageMapper.java
-│   │   │   └── 🗃️  UserMapper.java
+│   │   ├── 📁 model/                       # СУЩНОСТИ (Entity)
+│   │   │   ├── 📁 content/                 # КОНТЕНТ
+│   │   │   │   ├── 🗃️  About.java         # ✅ Страница "О нас"
+│   │   │   │   ├── 🗃️  Project.java       # ✅ Проекты
+│   │   │   │   ├── 🗃️  PhotoGallery.java  # ✅ Фото-галереи
+│   │   │   │   └── 🗃️  VideoGallery.java  # ✅ Видео-галереи
+│   │   │   │
+│   │   │   ├── 📁 media/                   # МЕДИА ФАЙЛЫ
+│   │   │   │   ├── 🗃️  MediaFile.java     # ✅ Универсальный медиа-файл
+│   │   │   │   └── 🗃️  PublicationCategory.java # ✅ Категории публикаций
+│   │   │   │
+│   │   │   ├── 📁 page/                    # СТРАНИЦЫ
+│   │   │   │   └── 🗃️  Page.java          # ❓ Кастомные страницы (бывший EasyPage?)
+│   │   │   │
+│   │   │   └── 📁 people/                  # ЛЮДИ
+│   │   │       ├── 🗃️  User.java          # ✅ Пользователи
+│   │   │       ├── 🗃️  TeamMember.java    # ✅ Члены команды
+│   │   │       └── 🗃️  Partner.java       # ✅ Партнеры
 │   │   │
-│   │   └── 📁 validation/                #   • Валидация форм
-│   │       ├── 🗃️  ProjectValidator.java
-│   │       ├── 🗃️  GalleryValidator.java
-│   │       └── 🗃️  CustomErrorController.java
+│   │   ├── 📁 repository/                  # РЕПОЗИТОРИИ (интерфейсы)
+│   │   │   ├── 📁 content/                 # 1:1 с моделями content
+│   │   │   ├── 📁 media/                   # 1:1 с моделями media
+│   │   │   ├── 📁 page/                    # ❓ PageRepository (нужен EasyPageRepository?)
+│   │   │   └── 📁 people/                  # 1:1 с моделями people
+│   │   │
+│   │   └── 📁 service/                     # СЕРВИСЫ (бизнес-логика)
+│   │       ├── 📁 content/                 # 1:1 с репозиториями content
+│   │       ├── 📁 media/                   # 1:1 с репозиториями media
+│   │       ├── 📁 page/                    # ❓ PageService (нужен EasyPageService?)
+│   │       └── 📁 people/                  # 1:1 с репозиториями people
 │   │
-│   └── 📁 api/                          # 📡 REST API (для будущего)
-│       ├── 📁 controller/               #   • @RestController
-│       ├── 📁 dto/                      #   • Request/Response DTO
-│       └── 📁 mapper/                   #   • API мапперы
-│
-├── 📁 infrastructure/                   # 🛠️  ИНФРАСТРУКТУРА (реализации)
-│   ├── 📁 config/                       #   • Конфигурации Spring
-│   │   ├── 🗃️  DataInitializer.java
-│   │   ├── 🗃️  JpaConfig.java
-│   │   └── 🗃️  SecurityConfig.java
+│   ├── 🌐 web/                             # ВЕБ-СЛОЙ
+│   │   └── 📁 mvc/                         # Thymeleaf MVC (текущий)
+│   │       ├── 📁 controller/              # КОНТРОЛЛЕРЫ
+│   │       │   ├── 📁 admin/               # ✅ АДМИНКА (полная)
+│   │       │   │   ├── 📁 content/         # ✅ Управление контентом
+│   │       │   │   ├── 📁 people/          # ✅ Управление людьми
+│   │       │   │   ├── 🗃️  AdminController.java    # ✅ Дашборд
+│   │       │   │   └── 🗃️  LoginController.java    # ✅ Авторизация
+│   │       │   │
+│   │       │   └── 📁 public_page/         # ⚠️ ПУБЛИЧНАЯ ЧАСТЬ (неполная)
+│   │       │       ├── 🗃️  HomeController.java    # ✅ Главная
+│   │       │       ├── 🗃️  PageController.java    # ❓ Кастомные страницы
+│   │       │       └── 🗃️  TeamController.java    # ✅ Команда
+│   │       │
+│   │       ├── 📁 dto/                     # ⚠️ DTO (частично перенесены)
+│   │       │   ├── 📁 content/             # ✅ Формы для контента
+│   │       │   ├── 📁 people/              # ✅ Формы для людей
+│   │       │   └── 🗃️  PageStatistics.java
+│   │       │
+│   │       └── 📁 validation/              # ВАЛИДАЦИЯ
+│   │           └── 🗃️  CustomErrorController.java
 │   │
-│   ├── 📁 persistence/                  #   • JPA реализации
-│   │   ├── 📁 jpa/
-│   │   │   ├── 🗃️  JpaProjectRepository.java
-│   │   │   ├── 🗃️  JpaProjectArticleRepository.java
-│   │   │   └── ... (остальные)
-│   │   └── 🗃️  ProjectJpaRepository.java  # Существующие Spring Data интерфейсы
+│   ├── 🛠️  infrastructure/                # ⚠️ ИНФРАСТРУКТУРА (минимальная)
+│   │   ├── 📁 config/                     # ✅ КОНФИГУРАЦИИ
+│   │   │   ├── 🗃️  DataInitializer.java
+│   │   │   ├── 🗃️  JpaConfig.java        # ⚠️ НЕОБХОДИМО ДОБАВИТЬ @EnableJpaRepositories
+│   │   │   └── 🗃️  SecurityConfig.java
+│   │   │
+│   │   └── 📁 storage/                    # ✅ ФАЙЛОВОЕ ХРАНИЛИЩЕ
+│   │       └── 🗃️  FileStorageService.java
 │   │
-│   └── 📁 storage/                      #   • Файловое хранилище
-│       └── 🗃️  FileStorageService.java
+│   └── 📁 dto/                            # ⚠️ СТАРЫЕ DTO (нужно перенести)
+│       ├── 📁 gallery/                    # ⚠️ GalleryDTO, PhotoDTO
+│       └── 📁 project/                    # ⚠️ Старые формы проектов
 │
-├── 📁 shared/                           # 🔧 ОБЩИЕ УТИЛИТЫ
-│   ├── 📁 util/                         #   • Утилитные классы
-│   └── 📁 validation/                   #   • Общая валидация
-│       ├── 🗃️  VideoUrl.java
-│       └── 🗃️  VideoUrlValidator.java
-│
-└── 🗃️  CmsApplication.java              # 🚀 Точка входа
+└── 📁 resources/
+    └── 📁 templates/
+        ├── 📁 admin/                      # Шаблоны админки
+        ├── 📁 public/                     # Шаблоны публичной части
+        └── 📁 shared/                     # Общие шаблоны
+        
+        
 ```
+
+## 🔍 АНАЛИЗ ЗАВИСИМОСТЕЙ:
+
+### 1. Кто использует модели (entity):
+
 ```shell
-src/main/resources/
-├── application.properties
-├── application.properties.example
-├── messages.properties
-├── messages_ru_RU.properties
-├── messages_en_US.properties
-├── static/                          # Статические файлы
-│   ├── css/
-│   ├── js/
-│   ├── images/
-│   └── uploads/
-└── templates/                       # Thymeleaf шаблоны
-    ├── admin/
-    ├── public/
-    ├── fragments/
-    └── error/
+# Например: кто использует Page.java?
+find src/main/java -name "*.java" -type f -exec grep -l "import.*\.Page;" {} \;
+
+# Для всех моделей:
+for entity in $(find src/main/java -path "*/model/*" -name "*.java"); do
+    echo "=== $(basename $entity .java) ==="
+    find src/main/java -name "*.java" -type f -exec grep -l "import.*$(basename $entity .java);" {} \;
+    echo
+done
 ```
 
+### 2. Кто использует репозитории:
 
+```shell
+# Например: кто использует PageRepository?
+find src/main/java -name "*.java" -type f -exec grep -l "PageRepository" {} \;
 
+# Все репозитории:
+for repo in $(find src/main/java -name "*Repository.java"); do
+    echo "=== $(basename $repo .java) ==="
+    grep -l "$(basename $repo .java)" src/main/java/com/community/cms/domain/service/*/*.java 2>/dev/null
+    echo
+done
+```
 
+### 3. Кто использует сервисы:
+
+```shell
+# Например: кто использует PageService?
+find src/main/java -name "*.java" -type f -exec grep -l "PageService" {} \;
+
+# Все сервисы:
+for service in $(find src/main/java -name "*Service.java"); do
+    echo "=== $(basename $service .java) ==="
+    grep -l "$(basename $service .java)" src/main/java/com/community/cms/web/mvc/controller/**/*.java 2>/dev/null
+    echo
+done
+```
+
+### 4. Кто использует контроллеры (редко, но может быть):
+
+```shell
+# Какие шаблоны используют контроллеры?
+find src/main/resources/templates -name "*.html" -type f | xargs grep -l "th:action\|th:href" | sort
+```
+
+## 🗺️ КОМПЛЕКСНЫЙ АНАЛИЗ:
+
+### Создаём карту зависимостей для Page (пример):
+
+```shell
+echo "=== КАРТА ЗАВИСИМОСТЕЙ Page ==="
+echo "Модель: Page.java"
+echo "Используется в:"
+find src/main/java -name "*.java" -type f -exec grep -l "import.*\.Page;" {} \;
+echo ""
+echo "Репозиторий: PageRepository.java"
+echo "Используется в сервисе:"
+grep -l "PageRepository" src/main/java/com/community/cms/domain/service/page/PageService.java
+echo ""
+echo "Сервис: PageService.java"
+echo "Используется в контроллерах:"
+grep -l "PageService" src/main/java/com/community/cms/web/mvc/controller/**/*.java 2>/dev/null
+```
+
+## Быстрый анализ всех цепочек:
+
+```shell
+# Создадим файл с анализом:
+cat > /tmp/dependencies.txt << 'EOF'
+АНАЛИЗ ЗАВИСИМОСТЕЙ COMMUNITY CMS
+=================================
+
+EOF
+
+for model in $(find src/main/java -path "*/model/*" -name "*.java" | xargs basename -s .java); do
+    echo "=== $model ===" >> /tmp/dependencies.txt
+    
+    # Репозиторий
+    repo="${model}Repository"
+    if [ -f "src/main/java/com/community/cms/domain/repository/*/${repo}.java" ]; then
+        echo "📦 Репозиторий: $repo" >> /tmp/dependencies.txt
+    fi
+    
+    # Сервис  
+    service="${model}Service"
+    if [ -f "src/main/java/com/community/cms/domain/service/*/${service}.java" ]; then
+        echo "⚙️  Сервис: $service" >> /tmp/dependencies.txt
+        echo "   Используется в контроллерах:" >> /tmp/dependencies.txt
+        grep -l "$service" src/main/java/com/community/cms/web/mvc/controller/**/*.java 2>/dev/null | xargs -I{} basename {} .java >> /tmp/dependencies.txt
+    fi
+    
+    # Контроллер
+    for controller in $(find src/main/java/com/community/cms/web/mvc/controller -name "*${model}*Controller.java"); do
+        echo "🎮 Контроллер: $(basename $controller .java)" >> /tmp/dependencies.txt
+    done
+    
+    echo "" >> /tmp/dependencies.txt
+done
+
+cat /tmp/dependencies.txt
+```
+
+## 🚀 САМАЯ ВАЖНАЯ КОМАНДА СЕЙЧАС:
+
+```shell
+# Какие сервисы НЕ используются в контроллерах?
+for service in $(find src/main/java/com/community/cms/domain/service -name "*.java"); do
+    service_name=$(basename $service .java)
+    if ! grep -r "$service_name" src/main/java/com/community/cms/web/mvc/controller/ > /dev/null; then
+        echo "⚠️  НЕ ИСПОЛЬЗУЕТСЯ: $service_name"
+    fi
+done
+
+# Какие контроллеры НЕ используют сервисы (пустые)?
+for controller in $(find src/main/java/com/community/cms/web/mvc/controller -name "*.java"); do
+    if ! grep -q "Service" "$controller"; then
+        echo "⚠️  НЕТ СЕРВИСА: $(basename $controller .java)"
+    fi
+done
+```
