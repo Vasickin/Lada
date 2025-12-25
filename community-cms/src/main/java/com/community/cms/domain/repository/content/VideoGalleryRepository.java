@@ -15,7 +15,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Repository
-public interface ProjectVideoRepository extends JpaRepository<VideoGallery, Long> {
+public interface VideoGalleryRepository extends JpaRepository<VideoGallery, Long> {
 
     // ================== ПОИСК ПО ПРОЕКТУ ==================
 

@@ -3,7 +3,7 @@ package com.community.cms.domain.service.content;
 import com.community.cms.domain.model.content.Project;
 import com.community.cms.domain.model.content.VideoGallery;
 import com.community.cms.domain.model.content.VideoGallery.VideoType;
-import com.community.cms.domain.repository.content.ProjectVideoRepository;
+import com.community.cms.domain.repository.content.VideoGalleryRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -21,22 +21,22 @@ import java.util.Optional;
  * @version 1.1
  * @since 2025
  * @see VideoGallery
- * @see ProjectVideoRepository
+ * @see VideoGalleryRepository
  */
 @Service
 @Transactional
 public class VideoGalleryService {
 
-    private final ProjectVideoRepository projectVideoRepository;
+    private final VideoGalleryRepository videoGalleryRepository;
 
     /**
      * Конструктор с инъекцией зависимостей.
      *
-     * @param projectVideoRepository репозиторий для работы с видео проектов
+     * @param videoGalleryRepository репозиторий для работы с видео проектов
      */
     @Autowired
-    public VideoGalleryService(ProjectVideoRepository projectVideoRepository) {
-        this.projectVideoRepository = projectVideoRepository;
+    public VideoGalleryService(VideoGalleryRepository videoGalleryRepository) {
+        this.videoGalleryRepository = videoGalleryRepository;
     }
 
     // ================== CRUD ОПЕРАЦИИ ==================
@@ -49,7 +49,7 @@ public class VideoGalleryService {
      */
     public VideoGallery save(VideoGallery videoGallery) {
         validateProjectVideo(videoGallery);
-        return projectVideoRepository.save(videoGallery);
+        return videoGalleryRepository.save(videoGallery);
     }
 
     /**
@@ -60,7 +60,7 @@ public class VideoGalleryService {
      */
     public VideoGallery update(VideoGallery videoGallery) {
         validateProjectVideo(videoGallery);
-        return projectVideoRepository.save(videoGallery);
+        return videoGalleryRepository.save(videoGallery);
     }
 
     /**
@@ -71,7 +71,7 @@ public class VideoGalleryService {
      */
     @Transactional(readOnly = true)
     public Optional<VideoGallery> findById(Long id) {
-        return projectVideoRepository.findById(id);
+        return videoGalleryRepository.findById(id);
     }
 
     /**
@@ -80,7 +80,7 @@ public class VideoGalleryService {
      * @param id идентификатор видео проекта для удаления
      */
     public void deleteById(Long id) {
-        projectVideoRepository.deleteById(id);
+        videoGalleryRepository.deleteById(id);
     }
 
     // ================== ПОИСК ПО ПРОЕКТУ ==================
@@ -93,7 +93,7 @@ public class VideoGalleryService {
      */
     @Transactional(readOnly = true)
     public List<VideoGallery> findByProject(Project project) {
-        return projectVideoRepository.findByProject(project);
+        return videoGalleryRepository.findByProject(project);
     }
 
     /**
@@ -104,7 +104,7 @@ public class VideoGalleryService {
      */
     @Transactional(readOnly = true)
     public List<VideoGallery> findByProjectId(Long projectId) {
-        return projectVideoRepository.findByProjectId(projectId);
+        return videoGalleryRepository.findByProjectId(projectId);
     }
 
     /**
@@ -115,7 +115,7 @@ public class VideoGalleryService {
      */
     @Transactional(readOnly = true)
     public List<VideoGallery> findByProjectOrderBySortOrder(Project project) {
-        return projectVideoRepository.findByProjectOrderBySortOrderAsc(project);
+        return videoGalleryRepository.findByProjectOrderBySortOrderAsc(project);
     }
 
     /**
@@ -126,7 +126,7 @@ public class VideoGalleryService {
      */
     @Transactional(readOnly = true)
     public List<VideoGallery> findByProjectIdOrderBySortOrder(Long projectId) {
-        return projectVideoRepository.findByProjectIdOrderBySortOrderAsc(projectId);
+        return videoGalleryRepository.findByProjectIdOrderBySortOrderAsc(projectId);
     }
 
     // ================== ПОИСК ПО ТИПУ ВИДЕО ==================
@@ -140,7 +140,7 @@ public class VideoGalleryService {
      */
     @Transactional(readOnly = true)
     public List<VideoGallery> findByProjectAndVideoType(Project project, VideoType videoType) {
-        return projectVideoRepository.findByProjectAndVideoType(project, videoType);
+        return videoGalleryRepository.findByProjectAndVideoType(project, videoType);
     }
 
     /**
@@ -152,7 +152,7 @@ public class VideoGalleryService {
      */
     @Transactional(readOnly = true)
     public List<VideoGallery> findByProjectIdAndVideoType(Long projectId, VideoType videoType) {
-        return projectVideoRepository.findByProjectIdAndVideoType(projectId, videoType);
+        return videoGalleryRepository.findByProjectIdAndVideoType(projectId, videoType);
     }
 
     /**
@@ -164,7 +164,7 @@ public class VideoGalleryService {
      */
     @Transactional(readOnly = true)
     public List<VideoGallery> findByProjectAndVideoTypeOrderBySortOrder(Project project, VideoType videoType) {
-        return projectVideoRepository.findByProjectAndVideoTypeOrderBySortOrderAsc(project, videoType);
+        return videoGalleryRepository.findByProjectAndVideoTypeOrderBySortOrderAsc(project, videoType);
     }
 
     // ================== ПОИСК ПО ФЛАГАМ ==================
@@ -177,7 +177,7 @@ public class VideoGalleryService {
      */
     @Transactional(readOnly = true)
     public Optional<VideoGallery> findMainVideoByProject(Project project) {
-        return projectVideoRepository.findByProjectAndIsMainTrue(project);
+        return videoGalleryRepository.findByProjectAndIsMainTrue(project);
     }
 
     /**
@@ -188,7 +188,7 @@ public class VideoGalleryService {
      */
     @Transactional(readOnly = true)
     public Optional<VideoGallery> findMainVideoByProjectId(Long projectId) {
-        return projectVideoRepository.findByProjectIdAndIsMainTrue(projectId);
+        return videoGalleryRepository.findByProjectIdAndIsMainTrue(projectId);
     }
 
     /**
@@ -199,7 +199,7 @@ public class VideoGalleryService {
      */
     @Transactional(readOnly = true)
     public List<VideoGallery> findNonMainVideosByProject(Project project) {
-        return projectVideoRepository.findByProjectAndIsMainFalse(project);
+        return videoGalleryRepository.findByProjectAndIsMainFalse(project);
     }
 
     /**
@@ -210,7 +210,7 @@ public class VideoGalleryService {
      */
     @Transactional(readOnly = true)
     public List<VideoGallery> findNonMainVideosByProjectOrderBySortOrder(Project project) {
-        return projectVideoRepository.findByProjectAndIsMainFalseOrderBySortOrderAsc(project);
+        return videoGalleryRepository.findByProjectAndIsMainFalseOrderBySortOrderAsc(project);
     }
 
     // ================== ПОИСК ПО URL И ID ВИДЕО ==================
@@ -223,7 +223,7 @@ public class VideoGalleryService {
      */
     @Transactional(readOnly = true)
     public Optional<VideoGallery> findByVideoUrl(String videoUrl) {
-        return projectVideoRepository.findByVideoUrl(videoUrl);
+        return videoGalleryRepository.findByVideoUrl(videoUrl);
     }
 
     /**
@@ -234,7 +234,7 @@ public class VideoGalleryService {
      */
     @Transactional(readOnly = true)
     public List<VideoGallery> findByVideoId(String videoId) {
-        return projectVideoRepository.findByVideoId(videoId);
+        return videoGalleryRepository.findByVideoId(videoId);
     }
 
     /**
@@ -246,7 +246,7 @@ public class VideoGalleryService {
      */
     @Transactional(readOnly = true)
     public Optional<VideoGallery> findByProjectAndVideoId(Project project, String videoId) {
-        return projectVideoRepository.findByProjectAndVideoId(project, videoId);
+        return videoGalleryRepository.findByProjectAndVideoId(project, videoId);
     }
 
     /**
@@ -258,7 +258,7 @@ public class VideoGalleryService {
      */
     @Transactional(readOnly = true)
     public boolean existsByProjectIdAndVideoUrl(Long projectId, String videoUrl) {
-        return projectVideoRepository.existsByProjectIdAndVideoUrl(projectId, videoUrl);
+        return videoGalleryRepository.existsByProjectIdAndVideoUrl(projectId, videoUrl);
     }
 
     /**
@@ -270,7 +270,7 @@ public class VideoGalleryService {
      */
     @Transactional(readOnly = true)
     public boolean existsByProjectIdAndVideoId(Long projectId, String videoId) {
-        return projectVideoRepository.existsByProjectIdAndVideoId(projectId, videoId);
+        return videoGalleryRepository.existsByProjectIdAndVideoId(projectId, videoId);
     }
 
     // ================== СПЕЦИАЛЬНЫЕ ЗАПРОСЫ ==================
@@ -284,7 +284,7 @@ public class VideoGalleryService {
      */
     @Transactional(readOnly = true)
     public List<VideoGallery> findFirstNByProject(Project project, int limit) {
-        return projectVideoRepository.findFirstNByProject(project, limit);
+        return videoGalleryRepository.findFirstNByProject(project, limit);
     }
 
     /**
@@ -296,7 +296,7 @@ public class VideoGalleryService {
      */
     @Transactional(readOnly = true)
     public List<VideoGallery> findFirstNByProjectId(Long projectId, int limit) {
-        return projectVideoRepository.findFirstNByProjectId(projectId, limit);
+        return videoGalleryRepository.findFirstNByProjectId(projectId, limit);
     }
 
     /**
@@ -307,7 +307,7 @@ public class VideoGalleryService {
      */
     @Transactional(readOnly = true)
     public List<VideoGallery> findWithoutDescriptionByProject(Project project) {
-        return projectVideoRepository.findWithoutDescriptionByProject(project);
+        return videoGalleryRepository.findWithoutDescriptionByProject(project);
     }
 
     /**
@@ -318,7 +318,7 @@ public class VideoGalleryService {
      */
     @Transactional(readOnly = true)
     public List<VideoGallery> findWithDurationByProject(Project project) {
-        return projectVideoRepository.findByProjectAndDurationSecondsIsNotNull(project);
+        return videoGalleryRepository.findByProjectAndDurationSecondsIsNotNull(project);
     }
 
     /**
@@ -329,7 +329,7 @@ public class VideoGalleryService {
      */
     @Transactional(readOnly = true)
     public List<VideoGallery> findWithoutDurationByProject(Project project) {
-        return projectVideoRepository.findByProjectAndDurationSecondsIsNull(project);
+        return videoGalleryRepository.findByProjectAndDurationSecondsIsNull(project);
     }
 
     /**
@@ -340,7 +340,7 @@ public class VideoGalleryService {
      */
     @Transactional(readOnly = true)
     public List<VideoGallery> findRecentVideos(int limit) {
-        return projectVideoRepository.findRecentVideos(limit);
+        return videoGalleryRepository.findRecentVideos(limit);
     }
 
     /**
@@ -352,7 +352,7 @@ public class VideoGalleryService {
      */
     @Transactional(readOnly = true)
     public List<VideoGallery> findRecentVideosByType(VideoType videoType, int limit) {
-        return projectVideoRepository.findRecentVideosByType(videoType, limit);
+        return videoGalleryRepository.findRecentVideosByType(videoType, limit);
     }
 
     /**
@@ -362,7 +362,7 @@ public class VideoGalleryService {
      */
     @Transactional(readOnly = true)
     public List<Project> findProjectsWithVideos() {
-        return projectVideoRepository.findProjectsWithVideos();
+        return videoGalleryRepository.findProjectsWithVideos();
     }
 
     // ================== СТАТИСТИКА ==================
@@ -375,7 +375,7 @@ public class VideoGalleryService {
      */
     @Transactional(readOnly = true)
     public long countByProject(Project project) {
-        return projectVideoRepository.countByProject(project);
+        return videoGalleryRepository.countByProject(project);
     }
 
     /**
@@ -386,7 +386,7 @@ public class VideoGalleryService {
      */
     @Transactional(readOnly = true)
     public long countByProjectId(Long projectId) {
-        return projectVideoRepository.countByProjectId(projectId);
+        return videoGalleryRepository.countByProjectId(projectId);
     }
 
     /**
@@ -398,7 +398,7 @@ public class VideoGalleryService {
      */
     @Transactional(readOnly = true)
     public long countByProjectAndVideoType(Project project, VideoType videoType) {
-        return projectVideoRepository.countByProjectAndVideoType(project, videoType);
+        return videoGalleryRepository.countByProjectAndVideoType(project, videoType);
     }
 
     /**
@@ -409,7 +409,7 @@ public class VideoGalleryService {
      */
     @Transactional(readOnly = true)
     public long countMainVideosByProject(Project project) {
-        return projectVideoRepository.countByProjectAndIsMainTrue(project);
+        return videoGalleryRepository.countByProjectAndIsMainTrue(project);
     }
 
     /**
@@ -420,7 +420,7 @@ public class VideoGalleryService {
      */
     @Transactional(readOnly = true)
     public long countYouTubeVideosByProject(Project project) {
-        return projectVideoRepository.countYouTubeVideosByProject(project);
+        return videoGalleryRepository.countYouTubeVideosByProject(project);
     }
 
     /**
@@ -431,7 +431,7 @@ public class VideoGalleryService {
      */
     @Transactional(readOnly = true)
     public long countVimeoVideosByProject(Project project) {
-        return projectVideoRepository.countVimeoVideosByProject(project);
+        return videoGalleryRepository.countVimeoVideosByProject(project);
     }
 
     /**
@@ -442,7 +442,7 @@ public class VideoGalleryService {
      */
     @Transactional(readOnly = true)
     public long countRutubeVideosByProject(Project project) {
-        return projectVideoRepository.countRutubeVideosByProject(project);
+        return videoGalleryRepository.countRutubeVideosByProject(project);
     }
 
     // ================== УПРАВЛЕНИЕ ОСНОВНЫМ ВИДЕО ==================
@@ -456,11 +456,11 @@ public class VideoGalleryService {
      */
     public VideoGallery setAsMainVideo(VideoGallery videoGallery) {
         // Сбрасываем флаг основного видео со всех видео проекта
-        projectVideoRepository.resetMainVideoForProject(videoGallery.getProject());
+        videoGalleryRepository.resetMainVideoForProject(videoGallery.getProject());
 
         // Устанавливаем флаг основного видео для указанного видео
         videoGallery.setMain(true);
-        return projectVideoRepository.save(videoGallery);
+        return videoGalleryRepository.save(videoGallery);
     }
 
     /**
@@ -471,7 +471,7 @@ public class VideoGalleryService {
      * @throws IllegalArgumentException если видео не найдено
      */
     public VideoGallery setAsMainVideoById(Long videoId) {
-        VideoGallery videoGallery = projectVideoRepository.findById(videoId)
+        VideoGallery videoGallery = videoGalleryRepository.findById(videoId)
                 .orElseThrow(() -> new IllegalArgumentException("Видео с ID " + videoId + " не найдено"));
         return setAsMainVideo(videoGallery);
     }
@@ -484,7 +484,7 @@ public class VideoGalleryService {
      */
     public VideoGallery removeMainVideo(VideoGallery videoGallery) {
         videoGallery.setMain(false);
-        return projectVideoRepository.save(videoGallery);
+        return videoGalleryRepository.save(videoGallery);
     }
 
     /**
@@ -493,7 +493,7 @@ public class VideoGalleryService {
      * @param project проект
      */
     public void resetMainVideoForProject(Project project) {
-        projectVideoRepository.resetMainVideoForProject(project);
+        videoGalleryRepository.resetMainVideoForProject(project);
     }
 
     /**
@@ -502,7 +502,7 @@ public class VideoGalleryService {
      * @param projectId ID проекта
      */
     public void resetMainVideoForProjectId(Long projectId) {
-        projectVideoRepository.resetMainVideoForProjectId(projectId);
+        videoGalleryRepository.resetMainVideoForProjectId(projectId);
     }
 
     // ================== УДАЛЕНИЕ ПО СВЯЗЯМ ==================
@@ -513,7 +513,7 @@ public class VideoGalleryService {
      * @param project проект
      */
     public void deleteByProject(Project project) {
-        projectVideoRepository.deleteByProject(project);
+        videoGalleryRepository.deleteByProject(project);
     }
 
     /**
@@ -522,7 +522,7 @@ public class VideoGalleryService {
      * @param projectId ID проекта
      */
     public void deleteByProjectId(Long projectId) {
-        projectVideoRepository.deleteByProjectId(projectId);
+        videoGalleryRepository.deleteByProjectId(projectId);
     }
 
     /**
@@ -532,7 +532,7 @@ public class VideoGalleryService {
      * @param videoType тип видеохостинга
      */
     public void deleteByProjectAndVideoType(Project project, VideoType videoType) {
-        projectVideoRepository.deleteByProjectAndVideoType(project, videoType);
+        videoGalleryRepository.deleteByProjectAndVideoType(project, videoType);
     }
 
     // ================== ВСПОМОГАТЕЛЬНЫЕ МЕТОДЫ ==================
@@ -647,6 +647,6 @@ public class VideoGalleryService {
      * @return список обновленных видео
      */
     public List<VideoGallery> updateSortOrder(List<VideoGallery> videoGalleries) {
-        return projectVideoRepository.saveAll(videoGalleries);
+        return videoGalleryRepository.saveAll(videoGalleries);
     }
 }
