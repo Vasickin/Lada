@@ -208,8 +208,8 @@ src/main/java/com/community/cms/
 │   │   │   │   ├── 🗃️  ProjectForm.java
 │   │   │   │   ├── 🗃️  AboutForm.java
 │   │   │   │   ├── 🗃️  ProjectImageForm.java
-│   │   │   │   ├── 🗃️  ProjectPartnerForm.java
-│   │   │   │   ├── 🗃️  ProjectVideoForm.java
+│   │   │   │   ├── 🗃️  PartnerForm.java
+│   │   │   │   ├── 🗃️  VideoGalleryForm.java
 │   │   │   │   └── 🗃️  TeamMemberForm.java
 │   │   │   ├── 📁 gallery/
 │   │   │   │   └── 🗃️  GalleryForm.java

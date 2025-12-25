@@ -1,4 +1,4 @@
-package com.community.cms.dto.project;
+package com.community.cms.web.mvc.dto.people;
 
 import com.community.cms.domain.model.people.Partner;
 import jakarta.validation.constraints.NotBlank;
@@ -17,7 +17,7 @@ import jakarta.validation.constraints.Size;
  * @since 2025
  * @see Partner
  */
-public class ProjectPartnerForm {
+public class PartnerForm {
 
     private Long id;
 
@@ -104,7 +104,7 @@ public class ProjectPartnerForm {
      * Конструктор по умолчанию.
      * Инициализирует значения по умолчанию.
      */
-    public ProjectPartnerForm() {
+    public PartnerForm() {
         this.partnerType = Partner.PartnerType.OTHER;
         this.sortOrder = 0;
         this.active = true;
@@ -116,7 +116,7 @@ public class ProjectPartnerForm {
      *
      * @param partner существующий партнер проекта
      */
-    public ProjectPartnerForm(Partner partner) {
+    public PartnerForm(Partner partner) {
         this();
         this.id = partner.getId();
         this.name = partner.getName();
@@ -373,7 +373,7 @@ public class ProjectPartnerForm {
     }
 
     /**
-     * Преобразует ProjectPartnerForm в сущность Partner.
+     * Преобразует PartnerForm в сущность Partner.
      * Проект не устанавливается (только projectId).
      *
      * @return сущность Partner с заполненными базовыми полями
@@ -419,7 +419,7 @@ public class ProjectPartnerForm {
 
     @Override
     public String toString() {
-        return "ProjectPartnerForm{" +
+        return "PartnerForm{" +
                 "id=" + id +
                 ", name='" + name + '\'' +
                 ", partnerType=" + partnerType +

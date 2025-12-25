@@ -1,4 +1,4 @@
-package com.community.cms.dto.project;
+package com.community.cms.web.mvc.dto.content;
 
 import com.community.cms.domain.model.content.VideoGallery;
 import jakarta.validation.constraints.NotBlank;
@@ -18,7 +18,7 @@ import jakarta.validation.constraints.Size;
  * @since 2025
  * @see VideoGallery
  */
-public class ProjectVideoForm {
+public class VideoGalleryForm {
 
     private Long id;
 
@@ -80,7 +80,7 @@ public class ProjectVideoForm {
      * Конструктор по умолчанию.
      * Инициализирует значения по умолчанию.
      */
-    public ProjectVideoForm() {
+    public VideoGalleryForm() {
         this.sortOrder = 0;
         this.isMain = false;
     }
@@ -91,7 +91,7 @@ public class ProjectVideoForm {
      *
      * @param video существующее видео проекта
      */
-    public ProjectVideoForm(VideoGallery video) {
+    public VideoGalleryForm(VideoGallery video) {
         this();
         this.id = video.getId();
         this.title = video.getTitle();
@@ -273,7 +273,7 @@ public class ProjectVideoForm {
     }
 
     /**
-     * Преобразует ProjectVideoForm в сущность VideoGallery.
+     * Преобразует VideoGalleryForm в сущность VideoGallery.
      * Проект не устанавливается (только projectId).
      *
      * @return сущность VideoGallery с заполненными базовыми полями
@@ -382,7 +382,7 @@ public class ProjectVideoForm {
 
     @Override
     public String toString() {
-        return "ProjectVideoForm{" +
+        return "VideoGalleryForm{" +
                 "id=" + id +
                 ", title='" + title + '\'' +
                 ", projectId=" + projectId +

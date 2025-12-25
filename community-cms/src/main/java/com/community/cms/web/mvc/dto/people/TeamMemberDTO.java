@@ -1,4 +1,4 @@
-package com.community.cms.dto.project;
+package com.community.cms.web.mvc.dto.people;
 
 import com.community.cms.domain.model.people.TeamMember;
 
