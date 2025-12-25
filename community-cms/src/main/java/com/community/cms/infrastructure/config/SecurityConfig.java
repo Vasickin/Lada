@@ -1,4 +1,4 @@
-package com.community.cms.config;
+package com.community.cms.infrastructure.config;
 
 import com.community.cms.domain.model.people.User;
 import com.community.cms.domain.service.people.UserService;
