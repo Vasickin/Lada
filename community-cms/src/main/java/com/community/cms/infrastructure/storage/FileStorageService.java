@@ -1,4 +1,4 @@
-package com.community.cms.infrastructur.storage;
+package com.community.cms.infrastructure.storage;
 
 import com.community.cms.domain.enums.MediaType;
 import org.springframework.beans.factory.annotation.Value;

@@ -6,7 +6,7 @@ import com.community.cms.domain.model.media.PublicationCategory;
 import com.community.cms.domain.repository.media.MediaFileRepository;
 import com.community.cms.domain.repository.content.PhotoGalleryRepository;
 import com.community.cms.domain.repository.media.PublicationCategoryRepository;
-import com.community.cms.infrastructur.storage.FileStorageService;
+import com.community.cms.infrastructure.storage.FileStorageService;
 import jakarta.persistence.EntityNotFoundException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
