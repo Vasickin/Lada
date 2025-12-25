@@ -1,4 +1,4 @@
-package com.community.cms.controller.projectAdmin;
+package com.community.cms.web.mvc.controller.admin.content;
 
 import com.community.cms.domain.model.content.PhotoGallery;
 import com.community.cms.dto.gallery.GalleryDTO;
