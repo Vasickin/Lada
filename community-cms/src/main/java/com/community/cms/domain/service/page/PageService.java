@@ -1,6 +1,6 @@
 package com.community.cms.domain.service.page;
 
-import com.community.cms.dto.PageStatistics;
+import com.community.cms.web.mvc.dto.PageStatistics;
 import com.community.cms.domain.model.page.Page;
 import com.community.cms.domain.enums.PageType;
 import com.community.cms.domain.repository.page.PageRepository;

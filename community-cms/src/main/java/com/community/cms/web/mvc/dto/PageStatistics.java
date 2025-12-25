@@ -1,4 +1,4 @@
-package com.community.cms.dto;
+package com.community.cms.web.mvc.dto;
 
 /**
  * DTO для передачи статистики по страницам.
