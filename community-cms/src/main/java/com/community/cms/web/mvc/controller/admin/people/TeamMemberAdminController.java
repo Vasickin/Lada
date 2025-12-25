@@ -1,4 +1,4 @@
-package com.community.cms.controller.projectAdmin;
+package com.community.cms.web.mvc.controller.admin.people;
 
 import com.community.cms.domain.model.content.Project;
 import com.community.cms.domain.model.people.TeamMember;

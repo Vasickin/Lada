@@ -2,6 +2,7 @@ package com.community.cms.controller;
 
 import com.community.cms.domain.model.page.Page;
 import com.community.cms.domain.service.page.PageService;
+import com.community.cms.web.mvc.controller.admin.AdminController;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -33,7 +34,7 @@ import java.util.Optional;
  * @since 2025
  * @see PageService
  * @see Page
- * @see com.community.cms.controller.AdminController
+ * @see AdminController
  */
 @Controller
 @RequestMapping("/pages")

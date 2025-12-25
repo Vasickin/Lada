@@ -1,4 +1,4 @@
-package com.community.cms.controller;
+package com.community.cms.web.mvc.controller.admin;
 
 import com.community.cms.dto.PageStatistics;
 import com.community.cms.domain.model.page.Page;
