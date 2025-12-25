@@ -1,4 +1,4 @@
-package com.community.cms.controller;
+package com.community.cms.web.mvc.controller.admin.people;
 
 import com.community.cms.domain.model.people.User;
 import com.community.cms.domain.service.people.UserService;

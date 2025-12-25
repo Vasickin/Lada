@@ -1,4 +1,4 @@
-package com.community.cms.controller;
+package com.community.cms.web.mvc.controller.admin;
 
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
