@@ -23,9 +23,9 @@ import java.util.List;
 
 @Controller
 @RequestMapping("/admin/photo-gallery")
-public class PhotoGalleryController {
+public class PhotoGalleryAdminController {
 
-    private static final Logger logger = LoggerFactory.getLogger(PhotoGalleryController.class);
+    private static final Logger logger = LoggerFactory.getLogger(PhotoGalleryAdminController.class);
     private static final int MAX_UPLOAD_FILES = 15;
 
     private final PhotoGalleryService photoGalleryService;
@@ -33,9 +33,9 @@ public class PhotoGalleryController {
     private final FileStorageService fileStorageService;
 
     @Autowired
-    public PhotoGalleryController(PhotoGalleryService photoGalleryService,
-                                  PublicationCategoryService publicationCategoryService,
-                                  FileStorageService fileStorageService) {
+    public PhotoGalleryAdminController(PhotoGalleryService photoGalleryService,
+                                       PublicationCategoryService publicationCategoryService,
+                                       FileStorageService fileStorageService) {
         this.photoGalleryService = photoGalleryService;
         this.publicationCategoryService = publicationCategoryService;
         this.fileStorageService = fileStorageService;
