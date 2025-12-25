@@ -1,4 +1,4 @@
-package com.community.cms.controller;
+package com.community.cms.web.mvc.controller.public_page;
 
 import com.community.cms.domain.model.content.Project;
 import com.community.cms.domain.model.people.TeamMember;

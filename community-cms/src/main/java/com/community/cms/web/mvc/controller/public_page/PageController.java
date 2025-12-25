@@ -1,4 +1,4 @@
-package com.community.cms.controller;
+package com.community.cms.web.mvc.controller.public_page;
 
 import com.community.cms.domain.model.page.Page;
 import com.community.cms.domain.service.page.PageService;

@@ -1,4 +1,4 @@
-package com.community.cms.controller;
+package com.community.cms.web.mvc.controller.public_page;
 
 import com.community.cms.domain.model.page.Page;
 import com.community.cms.domain.enums.PageType;
@@ -8,6 +8,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
 
 import java.util.List;
 import java.util.Optional;
@@ -27,6 +28,7 @@ import java.util.Optional;
  * @since 2025
  */
 @Controller
+@RequestMapping("/")
 public class HomeController {
 
     private final PageService pageService;

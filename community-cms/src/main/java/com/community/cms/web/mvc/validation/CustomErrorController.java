@@ -1,4 +1,4 @@
-package com.community.cms.controller;
+package com.community.cms.web.mvc.validation;
 
 import jakarta.servlet.RequestDispatcher;
 import jakarta.servlet.http.HttpServletRequest;
