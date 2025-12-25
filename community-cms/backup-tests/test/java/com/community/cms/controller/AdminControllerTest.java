@@ -61,7 +61,7 @@ class AdminControllerTest {
     void setUp() {
         testPage = new Page();
         testPage.setId(1L);
-        testPage.setTitle("Test Page");
+        testPage.setTitle("Test EasyPage");
         testPage.setSlug("test-page");
         testPage.setContent("Test content");
         testPage.setPublished(true);

@@ -47,21 +47,21 @@ class PageServiceTest {
     void setUp() {
         testPage = new Page();
         testPage.setId(1L);
-        testPage.setTitle("Test Page");
+        testPage.setTitle("Test EasyPage");
         testPage.setContent("Test content");
         testPage.setSlug("test-page");
         testPage.setPublished(false);
 
         publishedPage = new Page();
         publishedPage.setId(2L);
-        publishedPage.setTitle("Published Page");
+        publishedPage.setTitle("Published EasyPage");
         publishedPage.setContent("Published content");
         publishedPage.setSlug("published-page");
         publishedPage.setPublished(true);
 
         draftPage = new Page();
         draftPage.setId(3L);
-        draftPage.setTitle("Draft Page");
+        draftPage.setTitle("Draft EasyPage");
         draftPage.setContent("Draft content");
         draftPage.setSlug("draft-page");
         draftPage.setPublished(false);
@@ -99,7 +99,7 @@ class PageServiceTest {
 
         // Assert
         assertTrue(result.isPresent());
-        assertEquals("Test Page", result.get().getTitle());
+        assertEquals("Test EasyPage", result.get().getTitle());
         verify(pageRepository, times(1)).findById(1L);
     }
 
@@ -152,7 +152,7 @@ class PageServiceTest {
 
         // Assert
         assertNotNull(result);
-        assertEquals("Test Page", result.getTitle());
+        assertEquals("Test EasyPage", result.getTitle());
         verify(pageRepository, times(1)).save(testPage);
     }
 
