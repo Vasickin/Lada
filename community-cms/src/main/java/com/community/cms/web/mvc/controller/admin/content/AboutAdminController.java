@@ -1,8 +1,8 @@
 package com.community.cms.web.mvc.controller.admin.content;
 
-import com.community.cms.domain.model.page.About;
+import com.community.cms.domain.model.content.About;
 import com.community.cms.domain.model.content.Project;
-import com.community.cms.domain.model.page.About.ArticleStatus;
+import com.community.cms.domain.model.content.About.ArticleStatus;
 import com.community.cms.domain.service.content.AboutService;
 import com.community.cms.domain.service.content.ProjectService;
 import jakarta.validation.Valid;

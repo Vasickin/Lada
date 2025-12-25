@@ -1,8 +1,8 @@
 package com.community.cms.domain.service.content;
 
-import com.community.cms.domain.model.page.About;
+import com.community.cms.domain.model.content.About;
 import com.community.cms.domain.model.content.Project;
-import com.community.cms.domain.model.page.About.ArticleStatus;
+import com.community.cms.domain.model.content.About.ArticleStatus;
 import com.community.cms.domain.repository.page.AboutRepository;
 import com.community.cms.domain.repository.content.ProjectRepository;
 import org.springframework.beans.factory.annotation.Autowired;
