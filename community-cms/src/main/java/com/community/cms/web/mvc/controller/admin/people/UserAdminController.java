@@ -47,7 +47,7 @@ import java.util.Set;
 @Controller
 @RequestMapping("/admin/users")
 @PreAuthorize("hasRole('ADMIN')")
-public class UserController {
+public class UserAdminController {
 
     private final UserService userService;
 
@@ -57,7 +57,7 @@ public class UserController {
      * @param userService сервис для работы с пользователями
      */
     @Autowired
-    public UserController(UserService userService) {
+    public UserAdminController(UserService userService) {
         this.userService = userService;
     }
 

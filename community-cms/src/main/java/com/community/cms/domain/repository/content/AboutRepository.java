@@ -1,4 +1,4 @@
-package com.community.cms.domain.repository.page;
+package com.community.cms.domain.repository.content;
 
 import com.community.cms.domain.model.content.About;
 import com.community.cms.domain.model.content.Project;
