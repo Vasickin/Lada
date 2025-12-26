@@ -29,7 +29,7 @@ import java.time.LocalDateTime;
  */
 @Entity
 @Table(name = "pages")
-public class Page {
+public class CustomPage {
 
     /**
      * Уникальный идентификатор страницы.
@@ -116,7 +116,7 @@ public class Page {
     /**
      * Конструктор по умолчанию, требуемый JPA.
      */
-    public Page() {}
+    public CustomPage() {}
 
     /**
      * Конструктор для создания новой страницы с основными данными.
@@ -125,7 +125,7 @@ public class Page {
      * @param content содержимое страницы
      * @param slug уникальный идентификатор для URL
      */
-    public Page(String title, String content, String slug) {
+    public CustomPage(String title, String content, String slug) {
         this.title = title;
         this.content = content;
         this.slug = slug;
@@ -141,7 +141,7 @@ public class Page {
      * @param slug уникальный идентификатор для URL
      * @param pageType тип страницы
      */
-    public Page(String title, String content, String slug, PageType pageType) {
+    public CustomPage(String title, String content, String slug, PageType pageType) {
         this.title = title;
         this.content = content;
         this.slug = slug;
@@ -357,7 +357,7 @@ public class Page {
      */
     @Override
     public String toString() {
-        return "Page{" +
+        return "CustomPage{" +
                 "id=" + id +
                 ", title='" + title + '\'' +
                 ", slug='" + slug + '\'' +

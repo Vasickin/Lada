@@ -1,8 +1,8 @@
 package com.community.cms.web.mvc.controller.public_page;
 
-import com.community.cms.domain.model.page.Page;
+import com.community.cms.domain.model.page.CustomPage;
 import com.community.cms.domain.enums.PageType;
-import com.community.cms.domain.service.page.PageService;
+import com.community.cms.domain.service.page.CustomPageService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -29,15 +29,15 @@ import java.util.Optional;
 @Controller
 public class HomeController {
 
-    private final PageService pageService;
+    private final CustomPageService pageService;
 
     /**
-     * Конструктор с внедрением зависимости PageService.
+     * Конструктор с внедрением зависимости CustomPageService.
      *
      * @param pageService сервис для работы со страницами
      */
     @Autowired
-    public HomeController(PageService pageService) {
+    public HomeController(CustomPageService pageService) {
         this.pageService = pageService;
     }
 
@@ -53,7 +53,7 @@ public class HomeController {
     @GetMapping("/")
     public String home(Model model) {
         // Получаем опубликованные страницы для отображения на главной
-        List<Page> publishedPages = pageService.findAllPublishedPages();
+        List<CustomPage> publishedPages = pageService.findAllPublishedPages();
         model.addAttribute("publishedPages", publishedPages);
 
         return "index";
@@ -68,7 +68,7 @@ public class HomeController {
      */
     @GetMapping("/about")
     public String about(Model model) {
-        Optional<Page> aboutPage = pageService.findPublishedPageByType(PageType.ABOUT);
+        Optional<CustomPage> aboutPage = pageService.findPublishedPageByType(PageType.ABOUT);
 
         // Передаем флаг наличия контента и саму страницу если она есть
         model.addAttribute("hasContent", aboutPage.isPresent());
@@ -96,7 +96,7 @@ public class HomeController {
      */
     @GetMapping("/projects")
     public String projects(Model model) {
-        Optional<Page> projectsPage = pageService.findPublishedPageByType(PageType.PROJECTS);
+        Optional<CustomPage> projectsPage = pageService.findPublishedPageByType(PageType.PROJECTS);
 
         model.addAttribute("hasContent", projectsPage.isPresent());
         projectsPage.ifPresent(page -> {
@@ -122,7 +122,7 @@ public class HomeController {
      */
     @GetMapping("/gallery")
     public String gallery(Model model) {
-        Optional<Page> galleryPage = pageService.findPublishedPageByType(PageType.GALLERY);
+        Optional<CustomPage> galleryPage = pageService.findPublishedPageByType(PageType.GALLERY);
 
         model.addAttribute("hasContent", galleryPage.isPresent());
         galleryPage.ifPresent(page -> {
@@ -148,7 +148,7 @@ public class HomeController {
      */
     @GetMapping("/patrons")
     public String patrons(Model model) {
-        Optional<Page> patronsPage = pageService.findPublishedPageByType(PageType.PATRONS);
+        Optional<CustomPage> patronsPage = pageService.findPublishedPageByType(PageType.PATRONS);
 
         model.addAttribute("hasContent", patronsPage.isPresent());
         patronsPage.ifPresent(page -> {
@@ -174,7 +174,7 @@ public class HomeController {
      */
     @GetMapping("/contact")
     public String contact(Model model) {
-        Optional<Page> contactPage = pageService.findPublishedPageByType(PageType.CONTACT);
+        Optional<CustomPage> contactPage = pageService.findPublishedPageByType(PageType.CONTACT);
 
         model.addAttribute("hasContent", contactPage.isPresent());
         contactPage.ifPresent(page -> {
@@ -201,10 +201,10 @@ public class HomeController {
      */
     @GetMapping("/pages/{slug}")
     public String showPublicPage(@PathVariable String slug, Model model) {
-        Optional<Page> page = pageService.findPageBySlugAndPublished(slug, true);
+        Optional<CustomPage> page = pageService.findPageBySlugAndPublished(slug, true);
 
         if (page.isPresent()) {
-            Page foundPage = page.get();
+            CustomPage foundPage = page.get();
             model.addAttribute("page", foundPage);
             model.addAttribute("pageTitle", foundPage.getTitle());
             model.addAttribute("metaDescription", foundPage.getMetaDescription());
@@ -241,7 +241,7 @@ public class HomeController {
      */
     @GetMapping("/sitemap")
     public String sitemap(Model model) {
-        List<Page> sitePages = pageService.findPublishedSitePages();
+        List<CustomPage> sitePages = pageService.findPublishedSitePages();
         model.addAttribute("sitePages", sitePages);
         return "sitemap";
     }

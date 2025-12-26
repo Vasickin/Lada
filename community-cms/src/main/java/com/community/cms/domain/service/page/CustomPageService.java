@@ -1,9 +1,9 @@
 package com.community.cms.domain.service.page;
 
+import com.community.cms.domain.model.page.CustomPage;
+import com.community.cms.domain.repository.page.CustomPageRepository;
 import com.community.cms.web.mvc.dto.PageStatistics;
-import com.community.cms.domain.model.page.Page;
 import com.community.cms.domain.enums.PageType;
-import com.community.cms.domain.repository.page.PageRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -19,42 +19,42 @@ import java.util.Optional;
  * @author Vasickin
  * @version 1.1
  * @since 2025
- * @see Page
+ * @see CustomPage
  * @see PageType
- * @see PageRepository
+ * @see CustomPageRepository
  */
 @Service
-public class PageService {
+public class CustomPageService {
 
-    private final PageRepository pageRepository;
+    private final CustomPageRepository pageRepository;
 
     @Autowired
-    public PageService(PageRepository pageRepository) {
+    public CustomPageService(CustomPageRepository pageRepository) {
         this.pageRepository = pageRepository;
     }
 
     // СУЩЕСТВУЮЩИЕ МЕТОДЫ
 
-    public Page savePage(Page page) {
+    public CustomPage savePage(CustomPage page) {
         if (page.getId() == null && pageRepository.existsBySlug(page.getSlug())) {
             throw new IllegalArgumentException("Страница с slug '" + page.getSlug() + "' уже существует");
         }
         return pageRepository.save(page);
     }
 
-    public Optional<Page> findPageById(Long id) {
+    public Optional<CustomPage> findPageById(Long id) {
         return pageRepository.findById(id);
     }
 
-    public Optional<Page> findPageBySlug(String slug) {
+    public Optional<CustomPage> findPageBySlug(String slug) {
         return pageRepository.findBySlug(slug);
     }
 
-    public List<Page> findAllPublishedPages() {
+    public List<CustomPage> findAllPublishedPages() {
         return pageRepository.findByPublishedTrueOrderByCreatedAtDesc();
     }
 
-    public List<Page> findAllPages() {
+    public List<CustomPage> findAllPages() {
         return pageRepository.findAll();
     }
 
@@ -65,21 +65,21 @@ public class PageService {
         pageRepository.deleteById(id);
     }
 
-    public Page publishPage(Long id) {
-        Page page = pageRepository.findById(id)
+    public CustomPage publishPage(Long id) {
+        CustomPage page = pageRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Страница с ID " + id + " не найдена"));
         page.setPublished(true);
         return pageRepository.save(page);
     }
 
-    public Page unpublishPage(Long id) {
-        Page page = pageRepository.findById(id)
+    public CustomPage unpublishPage(Long id) {
+        CustomPage page = pageRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Страница с ID " + id + " не найдена"));
         page.setPublished(false);
         return pageRepository.save(page);
     }
 
-    public List<Page> searchPagesByTitle(String title) {
+    public List<CustomPage> searchPagesByTitle(String title) {
         return pageRepository.findByTitleContainingIgnoreCase(title);
     }
 
@@ -94,11 +94,11 @@ public class PageService {
         return new PageStatistics(totalPages, publishedCount, draftCount);
     }
 
-    public List<Page> findRecentPages(int limit) {
+    public List<CustomPage> findRecentPages(int limit) {
         return pageRepository.findRecentPages(limit);
     }
 
-    public List<Page> findRecentPages() {
+    public List<CustomPage> findRecentPages() {
         return findRecentPages(5);
     }
 
@@ -112,7 +112,7 @@ public class PageService {
      * @param published статус публикации
      * @return Optional содержащий страницу если найдена и соответствует статусу
      */
-    public Optional<Page> findPageBySlugAndPublished(String slug, boolean published) {
+    public Optional<CustomPage> findPageBySlugAndPublished(String slug, boolean published) {
         return pageRepository.findBySlugAndPublished(slug, published);
     }
 
@@ -123,7 +123,7 @@ public class PageService {
      * @param pageType тип страницы
      * @return Optional содержащий опубликованную страницу если найдена
      */
-    public Optional<Page> findPublishedPageByType(PageType pageType) {
+    public Optional<CustomPage> findPublishedPageByType(PageType pageType) {
         return pageRepository.findFirstByPageTypeAndPublished(pageType, true);
     }
 
@@ -133,7 +133,7 @@ public class PageService {
      * @param pageType тип страницы
      * @return список опубликованных страниц указанного типа
      */
-    public List<Page> findPublishedPagesByType(PageType pageType) {
+    public List<CustomPage> findPublishedPagesByType(PageType pageType) {
         return pageRepository.findByPageTypeAndPublished(pageType, true);
     }
 
@@ -147,10 +147,10 @@ public class PageService {
      * @param metaDescription meta-описание для SEO
      * @return сохраненная страница
      */
-    public Page saveSitePage(PageType pageType, String title, String content, String metaDescription) {
-        Optional<Page> existingPage = pageRepository.findFirstByPageTypeAndPublished(pageType, true);
+    public CustomPage saveSitePage(PageType pageType, String title, String content, String metaDescription) {
+        Optional<CustomPage> existingPage = pageRepository.findFirstByPageTypeAndPublished(pageType, true);
 
-        Page page;
+        CustomPage page;
         if (existingPage.isPresent()) {
             // Обновляем существующую страницу
             page = existingPage.get();
@@ -159,7 +159,7 @@ public class PageService {
             page.setMetaDescription(metaDescription);
         } else {
             // Создаем новую страницу
-            page = new Page(title, content, pageType.getSlug(), pageType);
+            page = new CustomPage(title, content, pageType.getSlug(), pageType);
             page.setMetaDescription(metaDescription);
             page.setPublished(true);
         }
@@ -182,7 +182,7 @@ public class PageService {
      *
      * @return список основных страниц сайта
      */
-    public List<Page> findAllSitePages() {
+    public List<CustomPage> findAllSitePages() {
         return pageRepository.findAllSitePages();
     }
 
@@ -191,7 +191,7 @@ public class PageService {
      *
      * @return список опубликованных основных страниц
      */
-    public List<Page> findPublishedSitePages() {
+    public List<CustomPage> findPublishedSitePages() {
         return pageRepository.findPublishedSitePages();
     }
 
@@ -222,8 +222,8 @@ public class PageService {
      *
      * @return список созданных страниц
      */
-    public List<Page> initializeSitePages() {
-        List<Page> createdPages = new java.util.ArrayList<>();
+    public List<CustomPage> initializeSitePages() {
+        List<CustomPage> createdPages = new java.util.ArrayList<>();
 
         for (PageType pageType : PageType.getSitePages()) {
             try {
@@ -232,7 +232,7 @@ public class PageService {
                 // ИСПРАВЛЕНИЕ: Проверяем существование по slug, а не по типу
                 // Это предотвращает дублирование slug в базе данных
                 if (!pageRepository.existsBySlug(expectedSlug)) {
-                    Page page = new Page(
+                    CustomPage page = new CustomPage(
                             pageType.getDisplayName(),
                             getDefaultContentForPageType(pageType),
                             expectedSlug,  // Используем slug из PageType
@@ -241,15 +241,15 @@ public class PageService {
                     page.setMetaDescription(getDefaultMetaDescriptionForPageType(pageType));
                     page.setPublished(true);
 
-                    Page savedPage = pageRepository.save(page);
+                    CustomPage savedPage = pageRepository.save(page);
                     createdPages.add(savedPage);
 
                     System.out.println("✅ Создана страница: " + pageType.getDisplayName() + " (slug: " + expectedSlug + ")");
                 } else {
                     // Страница уже существует - проверяем и обновляем тип если нужно
-                    Optional<Page> existingPage = pageRepository.findBySlug(expectedSlug);
+                    Optional<CustomPage> existingPage = pageRepository.findBySlug(expectedSlug);
                     if (existingPage.isPresent()) {
-                        Page page = existingPage.get();
+                        CustomPage page = existingPage.get();
                         if (!pageType.equals(page.getPageType())) {
                             // Обновляем тип страницы если не совпадает
                             page.setPageType(pageType);

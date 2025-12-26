@@ -1,9 +1,9 @@
 package com.community.cms.web.mvc.controller.admin;
 
+import com.community.cms.domain.model.page.CustomPage;
+import com.community.cms.domain.service.page.CustomPageService;
 import com.community.cms.web.mvc.dto.PageStatistics;
-import com.community.cms.domain.model.page.Page;
 import com.community.cms.domain.enums.PageType;
-import com.community.cms.domain.service.page.PageService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
@@ -35,20 +35,20 @@ import java.util.stream.Collectors;
  * @author Vasickin
  * @version 2.0
  * @since 2025
- * @see PageService
+ * @see CustomPageService
  */
 @Controller
 public class AdminController {
 
-    private final PageService pageService;
+    private final CustomPageService pageService;
 
     /**
-     * Конструктор с внедрением зависимости PageService.
+     * Конструктор с внедрением зависимости CustomPageService.
      *
      * @param pageService сервис для работы со страницами
      */
     @Autowired
-    public AdminController(PageService pageService) {
+    public AdminController(CustomPageService pageService) {
         this.pageService = pageService;
     }
 
@@ -66,10 +66,10 @@ public class AdminController {
     public String dashboard(Model model, Authentication authentication) {
         // Используем эффективные методы сервиса
         PageStatistics statistics = pageService.getPageStatistics();
-        List<Page> recentPages = pageService.findRecentPages(5);
+        List<CustomPage> recentPages = pageService.findRecentPages(5);
 
         // Получаем основные страницы сайта для быстрого доступа
-        List<Page> sitePages = pageService.findAllSitePages();
+        List<CustomPage> sitePages = pageService.findAllSitePages();
 
         // Передаем данные в модель
         model.addAttribute("totalPages", statistics.totalPages());
@@ -111,7 +111,7 @@ public class AdminController {
      */
     @GetMapping("/admin/site-pages")
     public String manageSitePages(Model model) {
-        List<Page> sitePages = pageService.findAllSitePages();
+        List<CustomPage> sitePages = pageService.findAllSitePages();
         model.addAttribute("sitePages", sitePages);
 
         // Добавляем информацию о типах страниц для отображения
@@ -134,14 +134,14 @@ public class AdminController {
     public String editSitePage(@PathVariable String pageType, Model model) {
         try {
             PageType type = PageType.valueOf(pageType.toUpperCase());
-            Optional<Page> pageOpt = pageService.findPublishedPageByType(type);
+            Optional<CustomPage> pageOpt = pageService.findPublishedPageByType(type);
 
-            Page page;
+            CustomPage page;
             if (pageOpt.isPresent()) {
                 page = pageOpt.get();
             } else {
                 // Создаем новую страницу с настройками по умолчанию
-                page = new Page();
+                page = new CustomPage();
                 page.setPageType(type);
                 page.setTitle(getDefaultTitleForPageType(type));
                 page.setSlug(getDefaultSlugForPageType(type));
@@ -180,13 +180,13 @@ public class AdminController {
             PageType type = PageType.valueOf(pageType.toUpperCase());
 
             // Находим существующую страницу или создаем новую
-            Optional<Page> existingPageOpt = pageService.findPublishedPageByType(type);
-            Page page;
+            Optional<CustomPage> existingPageOpt = pageService.findPublishedPageByType(type);
+            CustomPage page;
 
             if (existingPageOpt.isPresent()) {
                 page = existingPageOpt.get();
             } else {
-                page = new Page();
+                page = new CustomPage();
                 page.setPageType(type);
                 page.setSlug(getDefaultSlugForPageType(type));
                 page.setPublished(true);

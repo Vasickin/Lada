@@ -1,6 +1,6 @@
 package com.community.cms.domain.repository.page;
 
-import com.community.cms.domain.model.page.Page;
+import com.community.cms.domain.model.page.CustomPage;
 import com.community.cms.domain.enums.PageType;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -11,7 +11,7 @@ import java.util.List;
 import java.util.Optional;
 
 /**
- * Репозиторий для работы с сущностью Page в базе данных.
+ * Репозиторий для работы с сущностью CustomPage в базе данных.
  * Предоставляет методы для выполнения CRUD операций и пользовательских запросов.
  *
  * <p>Расширен методами для работы с типами страниц и фильтрацией по статусу публикации.
@@ -19,29 +19,29 @@ import java.util.Optional;
  * @author Vasickin
  * @version 1.2
  * @since 2025
- * @see Page
+ * @see CustomPage
  * @see PageType
  * @see org.springframework.data.jpa.repository.JpaRepository
  */
 @Repository
-public interface PageRepository extends JpaRepository<Page, Long> {
+public interface CustomPageRepository extends JpaRepository<CustomPage, Long> {
 
     // СУЩЕСТВУЮЩИЕ МЕТОДЫ
 
-    Optional<Page> findBySlug(String slug);
-    List<Page> findByPublishedTrueOrderByCreatedAtDesc();
-    List<Page> findByPublished(Boolean published);
+    Optional<CustomPage> findBySlug(String slug);
+    List<CustomPage> findByPublishedTrueOrderByCreatedAtDesc();
+    List<CustomPage> findByPublished(Boolean published);
     boolean existsBySlug(String slug);
-    List<Page> findByTitleContainingIgnoreCase(String title);
+    List<CustomPage> findByTitleContainingIgnoreCase(String title);
 
-    @Query("SELECT p FROM Page p WHERE LOWER(p.content) LIKE LOWER(CONCAT('%', :content, '%'))")
-    List<Page> findByContentContaining(@Param("content") String content);
+    @Query("SELECT p FROM CustomPage p WHERE LOWER(p.content) LIKE LOWER(CONCAT('%', :content, '%'))")
+    List<CustomPage> findByContentContaining(@Param("content") String content);
 
     long countByPublished(Boolean published);
-    List<Page> findTop5ByOrderByCreatedAtDesc();
+    List<CustomPage> findTop5ByOrderByCreatedAtDesc();
 
-    @Query("SELECT p FROM Page p ORDER BY p.createdAt DESC LIMIT :limit")
-    List<Page> findRecentPages(@Param("limit") int limit);
+    @Query("SELECT p FROM CustomPage p ORDER BY p.createdAt DESC LIMIT :limit")
+    List<CustomPage> findRecentPages(@Param("limit") int limit);
 
     // НОВЫЕ МЕТОДЫ ДЛЯ РАБОТЫ С ТИПАМИ СТРАНИЦ
 
@@ -53,7 +53,7 @@ public interface PageRepository extends JpaRepository<Page, Long> {
      * @param published статус публикации (true для опубликованных)
      * @return Optional содержащий страницу если найдена и опубликована
      */
-    Optional<Page> findBySlugAndPublished(String slug, Boolean published);
+    Optional<CustomPage> findBySlugAndPublished(String slug, Boolean published);
 
     /**
      * Находит страницы по типу и статусу публикации.
@@ -62,7 +62,7 @@ public interface PageRepository extends JpaRepository<Page, Long> {
      * @param published статус публикации
      * @return список страниц с указанным типом и статусом
      */
-    List<Page> findByPageTypeAndPublished(PageType pageType, Boolean published);
+    List<CustomPage> findByPageTypeAndPublished(PageType pageType, Boolean published);
 
     /**
      * Находит ОДНУ страницу по типу ТОЛЬКО если она опубликована.
@@ -72,7 +72,7 @@ public interface PageRepository extends JpaRepository<Page, Long> {
      * @param published статус публикации (true для опубликованных)
      * @return Optional содержащий страницу если найдена и опубликована
      */
-    Optional<Page> findFirstByPageTypeAndPublished(PageType pageType, Boolean published);
+    Optional<CustomPage> findFirstByPageTypeAndPublished(PageType pageType, Boolean published);
 
     /**
      * Проверяет существование страницы определенного типа.
@@ -88,7 +88,7 @@ public interface PageRepository extends JpaRepository<Page, Long> {
      * @param pageType тип страницы для поиска
      * @return список страниц указанного типа
      */
-    List<Page> findByPageType(PageType pageType);
+    List<CustomPage> findByPageType(PageType pageType);
 
     /**
      * Находит все страницы определенного типа, отсортированные по дате создания.
@@ -96,7 +96,7 @@ public interface PageRepository extends JpaRepository<Page, Long> {
      * @param pageType тип страницы для поиска
      * @return список страниц указанного типа (сначала новые)
      */
-    List<Page> findByPageTypeOrderByCreatedAtDesc(PageType pageType);
+    List<CustomPage> findByPageTypeOrderByCreatedAtDesc(PageType pageType);
 
     /**
      * Находит все основные страницы сайта (исключая CUSTOM тип).
@@ -104,8 +104,8 @@ public interface PageRepository extends JpaRepository<Page, Long> {
      *
      * @return список основных страниц сайта
      */
-    @Query("SELECT p FROM Page p WHERE p.pageType <> com.community.cms.domain.enums.PageType.CUSTOM")
-    List<Page> findAllSitePages();
+    @Query("SELECT p FROM CustomPage p WHERE p.pageType <> com.community.cms.domain.enums.PageType.CUSTOM")
+    List<CustomPage> findAllSitePages();
 
     /**
      * Находит все опубликованные основные страницы сайта.
@@ -113,8 +113,8 @@ public interface PageRepository extends JpaRepository<Page, Long> {
      *
      * @return список опубликованных основных страниц
      */
-    @Query("SELECT p FROM Page p WHERE p.pageType <> com.community.cms.domain.enums.PageType.CUSTOM AND p.published = true")
-    List<Page> findPublishedSitePages();
+    @Query("SELECT p FROM CustomPage p WHERE p.pageType <> com.community.cms.domain.enums.PageType.CUSTOM AND p.published = true")
+    List<CustomPage> findPublishedSitePages();
 
     /**
      * Подсчитывает количество страниц по типу.

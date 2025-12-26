@@ -19,8 +19,8 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 /**
- * Unit tests for PageService class.
- * Тесты для класса PageService.
+ * Unit tests for CustomPageService class.
+ * Тесты для класса CustomPageService.
  *
  * @author Vasickin
  * @version 1.0

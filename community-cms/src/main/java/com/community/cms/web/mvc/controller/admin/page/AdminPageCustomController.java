@@ -1,7 +1,7 @@
 package com.community.cms.web.mvc.controller.admin.page;
 
-import com.community.cms.domain.model.page.Page;
-import com.community.cms.domain.service.page.PageService;
+import com.community.cms.domain.model.page.CustomPage;
+import com.community.cms.domain.service.page.CustomPageService;
 import com.community.cms.web.mvc.controller.admin.AdminController;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,23 +32,23 @@ import java.util.Optional;
  * @author Vasickin
  * @version 1.1
  * @since 2025
- * @see PageService
- * @see Page
+ * @see CustomPageService
+ * @see CustomPage
  * @see AdminController
  */
 @Controller
 @RequestMapping("/pages")
 public class AdminPageCustomController {
 
-    private final PageService pageService;
+    private final CustomPageService pageService;
 
     /**
-     * Конструктор с внедрением зависимости PageService.
+     * Конструктор с внедрением зависимости CustomPageService.
      *
      * @param pageService сервис для работы со страницами
      */
     @Autowired
-    public AdminPageCustomController(PageService pageService) {
+    public AdminPageCustomController(CustomPageService pageService) {
         this.pageService = pageService;
     }
 
@@ -63,7 +63,7 @@ public class AdminPageCustomController {
      */
     @GetMapping
     public String listPages(Model model) {
-        List<Page> pages = pageService.findAllPages();
+        List<CustomPage> pages = pageService.findAllPages();
         model.addAttribute("pages", pages);
         return "pages/list";
     }
@@ -79,7 +79,7 @@ public class AdminPageCustomController {
      */
     @GetMapping("/create")
     public String showCreateForm(Model model) {
-        model.addAttribute("page", new Page());
+        model.addAttribute("page", new CustomPage());
         return "pages/create";
     }
 
@@ -96,7 +96,7 @@ public class AdminPageCustomController {
      * @return перенаправление на список страниц или возврат к форме при ошибках
      */
     @PostMapping("/create")
-    public String createPage(@Valid @ModelAttribute Page page,
+    public String createPage(@Valid @ModelAttribute CustomPage page,
                              BindingResult bindingResult,
                              Model model) {
         if (bindingResult.hasErrors()) {
@@ -124,7 +124,7 @@ public class AdminPageCustomController {
      */
     @GetMapping("/edit/{id}")
     public String showEditForm(@PathVariable Long id, Model model) {
-        Optional<Page> page = pageService.findPageById(id);
+        Optional<CustomPage> page = pageService.findPageById(id);
         if (page.isPresent()) {
             model.addAttribute("page", page.get());
             return "pages/edit";
@@ -147,7 +147,7 @@ public class AdminPageCustomController {
      */
     @PostMapping("/edit/{id}")
     public String updatePage(@PathVariable Long id,
-                             @Valid @ModelAttribute Page page,
+                             @Valid @ModelAttribute CustomPage page,
                              BindingResult bindingResult,
                              Model model) {
         if (bindingResult.hasErrors()) {

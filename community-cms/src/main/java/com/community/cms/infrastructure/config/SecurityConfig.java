@@ -75,7 +75,7 @@ public class SecurityConfig {
 
                         //
                         // PUBLIC PAGE VIEWING / ПУБЛИЧНЫЙ ПРОСМОТР СТРАНИЦ
-                        // Page viewing by slug is public / Просмотр страниц по slug доступен всем
+                        // CustomPage viewing by slug is public / Просмотр страниц по slug доступен всем
                         //
                         .requestMatchers("/pages/{slug}").permitAll()
 

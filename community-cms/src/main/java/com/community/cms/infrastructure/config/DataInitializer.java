@@ -1,9 +1,9 @@
 package com.community.cms.infrastructure.config;
 
-import com.community.cms.domain.model.page.Page;
+import com.community.cms.domain.model.page.CustomPage;
 import com.community.cms.domain.model.people.User;
 import com.community.cms.domain.service.people.UserService;
-import com.community.cms.domain.service.page.PageService;
+import com.community.cms.domain.service.page.CustomPageService;
 import com.community.cms.domain.service.media.PublicationCategoryService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
@@ -31,7 +31,7 @@ import java.time.LocalDateTime;
  * @version 1.2
  * @since 2025
  * @see UserService
- * @see PageService
+ * @see CustomPageService
  * @see PublicationCategoryService
  * @see User
  */
@@ -39,7 +39,7 @@ import java.time.LocalDateTime;
 public class DataInitializer implements CommandLineRunner {
 
     private final UserService userService;
-    private final PageService pageService;
+    private final CustomPageService pageService;
     private final PasswordEncoder passwordEncoder;
 
     // ДОБАВЛЕН НОВЫЙ СЕРВИС
@@ -54,7 +54,7 @@ public class DataInitializer implements CommandLineRunner {
      * @param passwordEncoder кодировщик паролей
      */
     @Autowired
-    public DataInitializer(UserService userService, PageService pageService, PasswordEncoder passwordEncoder) {
+    public DataInitializer(UserService userService, CustomPageService pageService, PasswordEncoder passwordEncoder) {
         this.userService = userService;
         this.pageService = pageService;
         this.passwordEncoder = passwordEncoder;
@@ -109,7 +109,7 @@ public class DataInitializer implements CommandLineRunner {
     private void createDefaultPages() {
         System.out.println("🔄 Проверка основных страниц сайта...");
 
-        // Используем метод из PageService для создания страниц
+        // Используем метод из CustomPageService для создания страниц
         var createdPages = pageService.initializeSitePages();
 
         if (!createdPages.isEmpty()) {
@@ -253,7 +253,7 @@ public class DataInitializer implements CommandLineRunner {
     private void createSampleCustomPage() {
         String sampleSlug = "primer-stranicy";
         if (!pageService.pageExistsBySlug(sampleSlug)) {
-            var samplePage = new Page(
+            var samplePage = new CustomPage(
                     "Пример страницы",
                     """
                     <h2>Добро пожаловать на пример страницы!</h2>

@@ -121,7 +121,7 @@
 │   │   │   │   └── 🗃️  PublicationCategory.java # ✅ Категории публикаций
 │   │   │   │
 │   │   │   ├── 📁 page/                    # СТРАНИЦЫ
-│   │   │   │   └── 🗃️  Page.java          # ❓ Кастомные страницы (бывший EasyPage?)
+│   │   │   │   └── 🗃️  CustomPage.java          # ❓ Кастомные страницы (бывший EasyPage?)
 │   │   │   │
 │   │   │   └── 📁 people/                  # ЛЮДИ
 │   │   │       ├── 🗃️  User.java          # ✅ Пользователи
@@ -131,13 +131,13 @@
 │   │   ├── 📁 repository/                  # РЕПОЗИТОРИИ (интерфейсы)
 │   │   │   ├── 📁 content/                 # 1:1 с моделями content
 │   │   │   ├── 📁 media/                   # 1:1 с моделями media
-│   │   │   ├── 📁 page/                    # ❓ PageRepository (нужен EasyPageRepository?)
+│   │   │   ├── 📁 page/                    # ❓ CustomPageRepository (нужен EasyPageRepository?)
 │   │   │   └── 📁 people/                  # 1:1 с моделями people
 │   │   │
 │   │   └── 📁 service/                     # СЕРВИСЫ (бизнес-логика)
 │   │       ├── 📁 content/                 # 1:1 с репозиториями content
 │   │       ├── 📁 media/                   # 1:1 с репозиториями media
-│   │       ├── 📁 page/                    # ❓ PageService (нужен EasyPageService?)
+│   │       ├── 📁 page/                    # ❓ CustomPageService (нужен EasyPageService?)
 │   │       └── 📁 people/                  # 1:1 с репозиториями people
 │   │
 │   ├── 🌐 web/                             # ВЕБ-СЛОЙ
@@ -189,7 +189,7 @@
 ### 1. Кто использует модели (entity):
 
 ```shell
-# Например: кто использует Page.java?
+# Например: кто использует CustomPage.java?
 find src/main/java -name "*.java" -type f -exec grep -l "import.*\.Page;" {} \;
 
 # Для всех моделей:
@@ -203,7 +203,7 @@ done
 ### 2. Кто использует репозитории:
 
 ```shell
-# Например: кто использует PageRepository?
+# Например: кто использует CustomPageRepository?
 find src/main/java -name "*.java" -type f -exec grep -l "PageRepository" {} \;
 
 # Все репозитории:
@@ -217,7 +217,7 @@ done
 ### 3. Кто использует сервисы:
 
 ```shell
-# Например: кто использует PageService?
+# Например: кто использует CustomPageService?
 find src/main/java -name "*.java" -type f -exec grep -l "PageService" {} \;
 
 # Все сервисы:
@@ -247,7 +247,7 @@ find src/main/java -name "*.java" -type f -exec grep -l "import.*\.Page;" {} \;
 echo ""
 echo "Репозиторий: PageRepository.java"
 echo "Используется в сервисе:"
-grep -l "PageRepository" src/main/java/com/community/cms/domain/service/page/PageService.java
+grep -l "PageRepository" src/main/java/com/community/cms/domain/service/page/CustomPageService.java
 echo ""
 echo "Сервис: PageService.java"
 echo "Используется в контроллерах:"

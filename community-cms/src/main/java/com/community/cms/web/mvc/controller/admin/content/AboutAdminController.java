@@ -372,7 +372,7 @@ public class AboutAdminController {
                     .filter(article -> article.getProject().getId().equals(project.getId()))
                     .toList();
 
-            // Преобразуем List в Page
+            // Преобразуем List в CustomPage
             int start = (int) pageable.getOffset();
             int end = Math.min((start + pageable.getPageSize()), articles.size());
             return new org.springframework.data.domain.PageImpl<>(
