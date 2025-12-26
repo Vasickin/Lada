@@ -1,4 +1,4 @@
-package com.community.cms.dto.gallery;
+package com.community.cms.web.mvc.dto.content;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 

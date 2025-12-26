@@ -1,8 +1,8 @@
 package com.community.cms.web.mvc.controller.admin.content;
 
 import com.community.cms.domain.model.content.PhotoGallery;
-import com.community.cms.dto.gallery.GalleryDTO;
-import com.community.cms.dto.gallery.PhotoDTO;
+import com.community.cms.web.mvc.dto.content.GalleryDTO;
+import com.community.cms.web.mvc.dto.content.PhotoDTO;
 import com.community.cms.domain.model.media.MediaFile;
 import com.community.cms.domain.model.content.Project;
 import com.community.cms.domain.model.people.TeamMember;

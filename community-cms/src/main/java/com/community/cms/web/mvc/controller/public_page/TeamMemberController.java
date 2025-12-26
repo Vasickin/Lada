@@ -28,7 +28,7 @@ import java.util.Optional;
  * @see TeamMemberService
  */
 @Controller
-public class TeamController {
+public class TeamMemberController {
 
     private final TeamMemberService teamMemberService;
     private final ProjectService projectService;
@@ -40,8 +40,8 @@ public class TeamController {
      * @param projectService сервис для работы с проектами
      */
     @Autowired
-    public TeamController(TeamMemberService teamMemberService,
-                          ProjectService projectService) {
+    public TeamMemberController(TeamMemberService teamMemberService,
+                                ProjectService projectService) {
         this.teamMemberService = teamMemberService;
         this.projectService = projectService;
     }
