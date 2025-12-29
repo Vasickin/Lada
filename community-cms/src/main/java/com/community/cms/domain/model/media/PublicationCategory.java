@@ -9,7 +9,6 @@ import java.util.Objects;
 /**
  * Сущность категории публикации.
  * Определяет где может быть опубликован контент (главная, о нас, проекты, галерея).
- *
  * Publication category entity.
  * Defines where content can be published (homepage, about us, projects, gallery).
  *
