@@ -1,5 +1,6 @@
 package com.community.cms.domain.model.content;
 
+import com.community.cms.domain.model.people.Partner;
 import com.community.cms.domain.model.people.TeamMember;
 import com.community.cms.validation.VideoUrl;
 import jakarta.persistence.*;
@@ -470,6 +471,14 @@ public class Project {
         this.showTeam = showTeam;
     }
 
+    public Set<Partner> getPartners() {
+        return partners;
+    }
+
+    public void setPartners(Set<Partner> partners) {
+        this.partners = partners;
+    }
+
     public boolean isShowParticipation() {
         return showParticipation;
     }
@@ -846,4 +855,17 @@ public class Project {
     public void setTeamMembers(Set<TeamMember> teamMembers) {
         this.teamMembers = teamMembers;
     }
+
+
+    /**
+     * Партнеры проекта.
+     * Связь многие-ко-многим.
+     */
+    @ManyToMany
+    @JoinTable(
+            name = "project_partner_links", // Та же таблица
+            joinColumns = @JoinColumn(name = "project_id"),
+            inverseJoinColumns = @JoinColumn(name = "partner_id")
+    )
+    private Set<Partner> partners = new HashSet<>();
 }

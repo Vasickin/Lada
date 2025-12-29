@@ -9,6 +9,8 @@ import jakarta.validation.constraints.Pattern;
 import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.LocalDateTime;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * Сущность партнера проекта организации "ЛАДА".
@@ -66,16 +68,28 @@ public class Partner {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    // ================== СВЯЗИ ==================
+// ================== СВЯЗИ ==================
 
     /**
-     * Проект, к которому относится партнер.
-     * Один партнер может участвовать в нескольких проектах.
+     * Проект, к которому относится партнер (старая связь ManyToOne).
+     * Для обратной совместимости.
      */
     @NotNull(message = "Проект обязателен / Project is required")
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "project_id", nullable = false)
     private Project project;
+
+    /**
+     * Проекты, в которых участвует партнер (новая связь ManyToMany).
+     * Использует новую промежуточную таблицу project_partner_links.
+     */
+    @ManyToMany
+    @JoinTable(
+            name = "project_partner_links", // Новая таблица!
+            joinColumns = @JoinColumn(name = "partner_id"),
+            inverseJoinColumns = @JoinColumn(name = "project_id")
+    )
+    private Set<Project> projects = new HashSet<>();
 
     // ================== ОСНОВНЫЕ ДАННЫЕ ==================
 
@@ -200,6 +214,14 @@ public class Partner {
 
     public void setProject(Project project) {
         this.project = project;
+    }
+
+    public Set<Project> getProjects() {
+        return projects;
+    }
+
+    public void setProjects(Set<Project> projects) {
+        this.projects = projects;
     }
 
     public String getName() {
