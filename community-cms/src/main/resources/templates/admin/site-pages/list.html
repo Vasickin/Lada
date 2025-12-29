@@ -289,11 +289,6 @@
                         <a th:href="@{/admin/projects}" class="btn btn-success btn-action">
                             <i class="bi bi-pencil me-1"></i>Редактировать
                         </a>
-                        <!--
-                        <a th:href="@{/projects}" target="_blank" class="btn btn-outline-success btn-action">
-                            <i class="bi bi-eye me-1"></i>Просмотр
-                        </a>
-                        -->
                     </div>
                 </div>
             </div>
@@ -322,9 +317,6 @@
                     <div class="action-buttons">
                         <a th:href="@{/admin/photo-gallery}" class="btn btn-warning btn-action">
                             <i class="bi bi-pencil me-1"></i>Редактировать
-                        </a>
-                        <a th:href="@{/gallery}" target="_blank" class="btn btn-outline-warning btn-action">
-                            <i class="bi bi-eye me-1"></i>Просмотр
                         </a>
                     </div>
                 </div>
@@ -357,6 +349,35 @@
                         </a>
                         <a th:href="@{/patrons}" target="_blank" class="btn btn-outline-info btn-action">
                             <i class="bi bi-eye me-1"></i>Просмотр
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- СТРАНИЦА "НАША КОМАНДА -->
+        <div class="col-xl-4 col-lg-6 col-md-6">
+            <div class="card page-card border-secondary" style="border-left-color: #cd9cf2 !important;">
+                <div class="page-card-header">
+                    <div class="d-flex align-items-start">
+                        <div class="page-icon-wrapper page-icon-secondary">
+                            <i class="bi bi-telephone"></i>
+                        </div>
+                        <div class="flex-grow-1 ms-3">
+                            <h5 class="page-title">Наша команда</h5>
+                            <span class="badge bg-secondary status-badge">
+                                <i class="bi bi-globe me-1"></i>Наша команда
+                            </span>
+                        </div>
+                    </div>
+                </div>
+                <div class="page-card-body">
+                    <p class="page-description">
+                        Все члены команды принимающие участия в жизни организации
+                    </p>
+                    <div class="action-buttons">
+                        <a th:href="@{/admin/team-members}" class="btn btn-secondary btn-action">
+                            <i class="bi bi-pencil me-1"></i>Редактировать
                         </a>
                     </div>
                 </div>

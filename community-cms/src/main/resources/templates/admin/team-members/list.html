@@ -100,6 +100,16 @@
                         </p>
                     </div>
                     <div>
+                        <!-- ПЕРЕХОД НА САЙТ -->
+                        <a th:href="@{/}" class="btn btn-outline-secondary">
+                            <i class="bi bi-house me-1"></i>На сайт
+                        </a>
+
+                        <!-- КНОПКА УПРАВЛЕНИЕ ОСНОВНЫМИ СТРАНИЦАМИ -->
+                        <a th:href="@{/admin/site-pages}" class="btn btn-outline-success me-2">
+                            🌐 Управление основными страницами
+                        </a>
+
                         <a th:href="@{/admin/team-members/create}" class="btn btn-primary">
                             <i class="bi bi-person-plus me-1"></i>
                             Добавить члена команды
