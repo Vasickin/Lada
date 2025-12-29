@@ -20,8 +20,8 @@ import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
 /**
- * Unit tests for PageController class.
- * Тесты для класса PageController.
+ * Unit tests for AdminPageCustomController class.
+ * Тесты для класса AdminPageCustomController.
  *
  * @author Vasickin
  * @version 1.0
@@ -52,7 +52,7 @@ class PageControllerTest {
     void setUp() {
         testPage = new Page();
         testPage.setId(1L);
-        testPage.setTitle("Test Page");
+        testPage.setTitle("Test EasyPage");
         testPage.setSlug("test-page");
         testPage.setContent("Test content");
         testPage.setPublished(true);
@@ -261,7 +261,7 @@ class PageControllerTest {
     @Test
     void deletePage_WhenPageNotExists_ShouldRedirectToList() {
         // Arrange
-        doThrow(new IllegalArgumentException("Page not found")).when(pageService).deletePage(999L);
+        doThrow(new IllegalArgumentException("EasyPage not found")).when(pageService).deletePage(999L);
 
         // Act
         String viewName = pageController.deletePage(999L);
