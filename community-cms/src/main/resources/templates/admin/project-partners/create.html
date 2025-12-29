@@ -1,0 +1,750 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{fragments/layout}">
+<head>
+    <title>Создание партнера - Админ панель</title>
+
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+
+    <style>
+        .partner-create-container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding-left: 20px;
+            padding-right: 20px;
+        }
+
+        .form-section {
+            margin-bottom: 2rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid #dee2e6;
+        }
+
+        .form-section-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            color: #495057;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid #0d6efd;
+        }
+
+        .required-field::after {
+            content: " *";
+            color: #dc3545;
+        }
+
+        .logo-preview {
+            width: 150px;
+            height: 150px;
+            object-fit: contain;
+            border: 3px solid #dee2e6;
+            background-color: white;
+            padding: 5px;
+        }
+
+        .logo-placeholder-large {
+            width: 150px;
+            height: 150px;
+            background-color: #f8f9fa;
+            color: #6c757d;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 48px;
+            font-weight: bold;
+            border: 3px solid #dee2e6;
+        }
+
+        .partner-type-badge {
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .partner-type-badge:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        .partner-type-badge.selected {
+            border: 2px solid #0d6efd;
+            box-shadow: 0 0 0 3px rgba(13, 110, 253, 0.25);
+        }
+    </style>
+</head>
+<body>
+<div layout:fragment="content">
+    <div class="container-fluid partner-create-container">
+
+        <!-- ========== ЗАГОЛОВОК И НАВИГАЦИЯ ========== -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <!-- Хлебные крошки -->
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item">
+                            <a th:href="@{/admin}">Главная</a>
+                        </li>
+                        <li class="breadcrumb-item">
+                            <a th:href="@{/admin/project-partners}">Партнеры</a>
+                        </li>
+                        <li class="breadcrumb-item active" aria-current="page">
+                            Создание партнера
+                        </li>
+                    </ol>
+                </nav>
+
+                <!-- Заголовок -->
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h1 class="h2 mb-0">
+                            <i class="bi bi-plus-circle me-2"></i>
+                            Создание партнера
+                        </h1>
+                        <p class="text-muted mb-0 mt-1">
+                            Добавление нового партнера проекта
+                        </p>
+                    </div>
+                    <div>
+                        <a th:href="@{/admin/project-partners}" class="btn btn-outline-secondary">
+                            <i class="bi bi-arrow-left me-1"></i>
+                            Назад к списку
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ========== СООБЩЕНИЯ ОБ ОШИБКАХ ========== -->
+        <div class="row mb-4" th:if="${errorMessage}">
+            <div class="col-12">
+                <div class="alert alert-danger alert-dismissible fade show">
+                    <i class="bi bi-exclamation-triangle me-2"></i>
+                    <span th:text="${errorMessage}">Ошибка!</span>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            </div>
+        </div>
+
+        <!-- ========== ОСНОВНАЯ ФОРМА ========== -->
+        <div class="row">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-body">
+                        <!-- Форма создания -->
+                        <form th:action="@{/admin/project-partners/create}"
+                              th:object="${partner}"
+                              method="post"
+                              enctype="multipart/form-data">
+
+                            <!-- Скрытый CSRF токен -->
+                            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+
+                            <!-- ===== СЕКЦИЯ 1: ОСНОВНАЯ ИНФОРМАЦИЯ ===== -->
+                            <div class="form-section">
+                                <h3 class="form-section-title">
+                                    <i class="bi bi-building me-2"></i>
+                                    Основная информация
+                                </h3>
+
+                                <div class="row">
+                                    <!-- Название партнера -->
+                                    <div class="col-md-8 mb-3">
+                                        <label for="name" class="form-label required-field">
+                                            Название партнера
+                                        </label>
+                                        <input type="text"
+                                               class="form-control"
+                                               id="name"
+                                               th:field="*{name}"
+                                               placeholder="Название компании или организации"
+                                               required>
+                                        <div class="form-text">
+                                            Полное официальное название
+                                        </div>
+                                        <div th:if="${#fields.hasErrors('name')}" class="text-danger small">
+                                            <span th:errors="*{name}"></span>
+                                        </div>
+                                    </div>
+
+                                    <!-- Проект (если не выбран в параметре) -->
+                                    <div class="col-md-4 mb-3" th:if="${partner.project == null}">
+                                        <label for="project" class="form-label required-field">
+                                            Проект
+                                        </label>
+                                        <select class="form-select"
+                                                id="project"
+                                                th:field="*{project}"
+                                                required>
+                                            <option value="">Выберите проект</option>
+                                            <option th:each="project : ${projects}"
+                                                    th:value="${project.id}"
+                                                    th:text="${project.title}">
+                                                Проект
+                                            </option>
+                                        </select>
+                                        <div class="form-text">
+                                            Основной проект партнера
+                                        </div>
+                                        <div th:if="${#fields.hasErrors('project')}" class="text-danger small">
+                                            <span th:errors="*{project}"></span>
+                                        </div>
+                                    </div>
+
+                                    <!-- Проект (скрытый, если уже выбран) -->
+                                    <div th:if="${partner.project != null}">
+                                        <input type="hidden" th:field="*{project.id}" />
+                                        <div class="alert alert-info py-2">
+                                            <i class="bi bi-info-circle me-2"></i>
+                                            Проект: <strong th:text="${partner.project.title}">Проект</strong>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Тип партнерства -->
+                                <div class="mb-3">
+                                    <label class="form-label required-field d-block mb-2">Тип партнерства</label>
+
+                                    <!-- Контейнер для кнопок -->
+                                    <div class="row g-2 mb-2" id="partnerTypeContainer">
+                                        <!-- Спонсор -->
+                                        <div class="col-md-4 col-sm-6 mb-2">
+                                            <button type="button"
+                                                    class="btn w-100 text-start p-3 border rounded h-100"
+                                                    th:class="'btn w-100 text-start p-3 border rounded h-100 ' +
+                              (${partner.partnerType?.name()} == 'SPONSOR' ? 'border-primary bg-primary text-white shadow-sm ' : 'btn-light')"
+                                                    data-type="SPONSOR"
+                                                    onclick="selectPartnerType(this)">
+                                                <div class="d-flex align-items-center">
+                                                    <div class="me-3">
+                                                        <i class="bi bi-coin fs-4"
+                                                           th:class="${partner.partnerType?.name()} == 'SPONSOR' ? 'text-white' : 'text-warning'"></i>
+                                                    </div>
+                                                    <div>
+                                                        <div class="fw-medium">Спонсор</div>
+                                                        <div class="small opacity-75">Финансовая поддержка</div>
+                                                    </div>
+                                                </div>
+                                            </button>
+                                        </div>
+
+                                        <!-- Информационный партнер -->
+                                        <div class="col-md-4 col-sm-6 mb-2">
+                                            <button type="button"
+                                                    class="btn w-100 text-start p-3 border rounded h-100"
+                                                    th:class="'btn w-100 text-start p-3 border rounded h-100 ' +
+                              (${partner.partnerType?.name()} == 'INFORMATION_PARTNER' ? 'border-primary bg-primary text-white shadow-sm ' : 'btn-light')"
+                                                    data-type="INFORMATION_PARTNER"
+                                                    onclick="selectPartnerType(this)">
+                                                <div class="d-flex align-items-center">
+                                                    <div class="me-3">
+                                                        <i class="bi bi-megaphone fs-4"
+                                                           th:class="${partner.partnerType?.name()} == 'INFORMATION_PARTNER' ? 'text-white' : 'text-info'"></i>
+                                                    </div>
+                                                    <div>
+                                                        <div class="fw-medium">Информационный партнер</div>
+                                                        <div class="small opacity-75">Информационное освещение</div>
+                                                    </div>
+                                                </div>
+                                            </button>
+                                        </div>
+
+                                        <!-- Организационный партнер -->
+                                        <div class="col-md-4 col-sm-6 mb-2">
+                                            <button type="button"
+                                                    class="btn w-100 text-start p-3 border rounded h-100"
+                                                    th:class="'btn w-100 text-start p-3 border rounded h-100 ' +
+                              (${partner.partnerType?.name()} == 'ORGANIZATIONAL_PARTNER' ? 'border-primary bg-primary text-white shadow-sm ' : 'btn-light')"
+                                                    data-type="ORGANIZATIONAL_PARTNER"
+                                                    onclick="selectPartnerType(this)">
+                                                <div class="d-flex align-items-center">
+                                                    <div class="me-3">
+                                                        <i class="bi bi-diagram-3 fs-4"
+                                                           th:class="${partner.partnerType?.name()} == 'ORGANIZATIONAL_PARTNER' ? 'text-white' : 'text-success'"></i>
+                                                    </div>
+                                                    <div>
+                                                        <div class="fw-medium">Организационный партнер</div>
+                                                        <div class="small opacity-75">Организационная помощь</div>
+                                                    </div>
+                                                </div>
+                                            </button>
+                                        </div>
+
+                                        <!-- Технический партнер -->
+                                        <div class="col-md-4 col-sm-6 mb-2">
+                                            <button type="button"
+                                                    class="btn w-100 text-start p-3 border rounded h-100"
+                                                    th:class="'btn w-100 text-start p-3 border rounded h-100 ' +
+                              (${partner.partnerType?.name()} == 'TECHNICAL_PARTNER' ? 'border-primary bg-primary text-white shadow-sm ' : 'btn-light')"
+                                                    data-type="TECHNICAL_PARTNER"
+                                                    onclick="selectPartnerType(this)">
+                                                <div class="d-flex align-items-center">
+                                                    <div class="me-3">
+                                                        <i class="bi bi-tools fs-4"
+                                                           th:class="${partner.partnerType?.name()} == 'TECHNICAL_PARTNER' ? 'text-white' : 'text-primary'"></i>
+                                                    </div>
+                                                    <div>
+                                                        <div class="fw-medium">Технический партнер</div>
+                                                        <div class="small opacity-75">Техническая поддержка</div>
+                                                    </div>
+                                                </div>
+                                            </button>
+                                        </div>
+
+                                        <!-- Генеральный партнер -->
+                                        <div class="col-md-4 col-sm-6 mb-2">
+                                            <button type="button"
+                                                    class="btn w-100 text-start p-3 border rounded h-100"
+                                                    th:class="'btn w-100 text-start p-3 border rounded h-100 ' +
+                              (${partner.partnerType?.name()} == 'GENERAL_PARTNER' ? 'border-primary bg-primary text-white shadow-sm ' : 'btn-light')"
+                                                    data-type="GENERAL_PARTNER"
+                                                    onclick="selectPartnerType(this)">
+                                                <div class="d-flex align-items-center">
+                                                    <div class="me-3">
+                                                        <i class="bi bi-award fs-4"
+                                                           th:class="${partner.partnerType?.name()} == 'GENERAL_PARTNER' ? 'text-white' : 'text-danger'"></i>
+                                                    </div>
+                                                    <div>
+                                                        <div class="fw-medium">Генеральный партнер</div>
+                                                        <div class="small opacity-75">Генеральное партнерство</div>
+                                                    </div>
+                                                </div>
+                                            </button>
+                                        </div>
+
+                                        <!-- Другой -->
+                                        <div class="col-md-4 col-sm-6 mb-2">
+                                            <button type="button"
+                                                    class="btn w-100 text-start p-3 border rounded h-100"
+                                                    th:class="'btn w-100 text-start p-3 border rounded h-100 ' +
+                              (${partner.partnerType?.name()} == 'OTHER' ? 'border-primary bg-primary text-white shadow-sm ' : 'btn-light')"
+                                                    data-type="OTHER"
+                                                    onclick="selectPartnerType(this)">
+                                                <div class="d-flex align-items-center">
+                                                    <div class="me-3">
+                                                        <i class="bi bi-building fs-4"
+                                                           th:class="${partner.partnerType?.name()} == 'OTHER' ? 'text-white' : 'text-secondary'"></i>
+                                                    </div>
+                                                    <div>
+                                                        <div class="fw-medium">Другой</div>
+                                                        <div class="small opacity-75">Другое участие</div>
+                                                    </div>
+                                                </div>
+                                            </button>
+                                        </div>
+                                    </div>
+
+                                    <!-- Скрытое поле для типа -->
+                                    <input type="hidden" id="partnerType" th:field="*{partnerType}" name="partnerType" />
+
+                                    <!-- Валидация -->
+                                    <div class="form-text">
+                                        Выберите тип участия партнера в проекте
+                                    </div>
+                                    <div th:if="${#fields.hasErrors('partnerType')}" class="text-danger small">
+                                        <span th:errors="*{partnerType}"></span>
+                                    </div>
+                                </div>
+
+                                <!-- Описание -->
+                                <div class="mb-3">
+                                    <label for="description" class="form-label">
+                                        Описание партнера
+                                    </label>
+                                    <textarea class="form-control"
+                                              id="description"
+                                              th:field="*{description}"
+                                              rows="4"
+                                              placeholder="Краткая информация о партнере, сфера деятельности, история сотрудничества..."></textarea>
+                                    <div class="form-text">
+                                        Можно использовать HTML-разметку для форматирования
+                                    </div>
+                                    <div th:if="${#fields.hasErrors('description')}" class="text-danger small">
+                                        <span th:errors="*{description}"></span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- ===== СЕКЦИЯ 2: ЛОГОТИП ===== -->
+                            <div class="form-section">
+                                <h3 class="form-section-title">
+                                    <i class="bi bi-image me-2"></i>
+                                    Логотип партнера
+                                </h3>
+
+                                <div class="row align-items-center">
+                                    <!-- Превью логотипа -->
+                                    <div class="col-md-4 text-center mb-3">
+                                        <div id="logoPreviewContainer">
+                                            <div class="logo-placeholder-large mb-2">
+                                                <i class="bi bi-building"></i>
+                                            </div>
+                                            <p class="text-muted small">Превью будет отображено после выбора файла</p>
+                                        </div>
+                                    </div>
+
+                                    <!-- Поле загрузки -->
+                                    <div class="col-md-8 mb-3">
+                                        <label for="logoFile" class="form-label">
+                                            Загрузить логотип
+                                        </label>
+                                        <input type="file"
+                                               class="form-control"
+                                               id="logoFile"
+                                               name="logoFile"
+                                               accept="image/*">
+                                        <div class="form-text">
+                                            Рекомендуемый размер: 300x300px. Форматы: JPG, PNG, SVG. Прозрачный фон приветствуется.
+                                        </div>
+
+                                        <!-- Ссылка на существующее фото (если редактирование) -->
+                                        <input type="hidden" id="logoPath" th:field="*{logoPath}">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- ===== СЕКЦИЯ 3: КОНТАКТНАЯ ИНФОРМАЦИЯ ===== -->
+                            <div class="form-section">
+                                <h3 class="form-section-title">
+                                    <i class="bi bi-person-lines-fill me-2"></i>
+                                    Контактная информация
+                                </h3>
+
+                                <div class="row">
+                                    <!-- Контактное лицо -->
+                                    <div class="col-md-6 mb-3">
+                                        <label for="contactPerson" class="form-label">
+                                            Контактное лицо
+                                        </label>
+                                        <input type="text"
+                                               class="form-control"
+                                               id="contactPerson"
+                                               th:field="*{contactPerson}"
+                                               placeholder="Иванов Иван Иванович">
+                                        <div class="form-text">
+                                            ФИО ответственного лица
+                                        </div>
+                                        <div th:if="${#fields.hasErrors('contactPerson')}" class="text-danger small">
+                                            <span th:errors="*{contactPerson}"></span>
+                                        </div>
+                                    </div>
+
+                                    <!-- Email -->
+                                    <div class="col-md-6 mb-3">
+                                        <label for="contactEmail" class="form-label">
+                                            Электронная почта
+                                        </label>
+                                        <input type="email"
+                                               class="form-control"
+                                               id="contactEmail"
+                                               th:field="*{contactEmail}"
+                                               placeholder="partner@example.com">
+                                        <div class="form-text">
+                                            Контактный email адрес
+                                        </div>
+                                        <div th:if="${#fields.hasErrors('contactEmail')}" class="text-danger small">
+                                            <span th:errors="*{contactEmail}"></span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="row">
+                                    <!-- Телефон -->
+                                    <div class="col-md-6 mb-3">
+                                        <label for="contactPhone" class="form-label">
+                                            Телефон
+                                        </label>
+                                        <input type="tel"
+                                               class="form-control"
+                                               id="contactPhone"
+                                               th:field="*{contactPhone}"
+                                               placeholder="+7 (XXX) XXX-XX-XX">
+                                        <div class="form-text">
+                                            Контактный номер телефона
+                                        </div>
+                                        <div th:if="${#fields.hasErrors('contactPhone')}" class="text-danger small">
+                                            <span th:errors="*{contactPhone}"></span>
+                                        </div>
+                                    </div>
+
+                                    <!-- Сайт -->
+                                    <div class="col-md-6 mb-3">
+                                        <label for="websiteUrl" class="form-label">
+                                            Сайт партнера
+                                        </label>
+                                        <input type="url"
+                                               class="form-control"
+                                               id="websiteUrl"
+                                               th:field="*{websiteUrl}"
+                                               placeholder="https://example.com">
+                                        <div class="form-text">
+                                            Полный URL сайта компании
+                                        </div>
+                                        <div th:if="${#fields.hasErrors('websiteUrl')}" class="text-danger small">
+                                            <span th:errors="*{websiteUrl}"></span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- ===== СЕКЦИЯ 4: НАСТРОЙКИ ===== -->
+                            <div class="form-section">
+                                <h3 class="form-section-title">
+                                    <i class="bi bi-gear me-2"></i>
+                                    Настройки
+                                </h3>
+
+                                <div class="row">
+                                    <!-- Порядок сортировки -->
+                                    <div class="col-md-4 mb-3">
+                                        <label for="sortOrder" class="form-label">
+                                            Порядок сортировки
+                                        </label>
+                                        <input type="number"
+                                               class="form-control"
+                                               id="sortOrder"
+                                               th:field="*{sortOrder}"
+                                               min="0"
+                                               max="999"
+                                               value="0">
+                                        <div class="form-text">
+                                            Меньшее число = выше в списке
+                                        </div>
+                                        <div th:if="${#fields.hasErrors('sortOrder')}" class="text-danger small">
+                                            <span th:errors="*{sortOrder}"></span>
+                                        </div>
+                                    </div>
+
+                                    <!-- Статус активности -->
+                                    <div class="col-md-4 mb-3">
+                                        <label class="form-label">Статус</label>
+                                        <div class="form-check">
+                                            <input class="form-check-input"
+                                                   type="checkbox"
+                                                   id="active"
+                                                   th:field="*{active}"
+                                                   checked>
+                                            <label class="form-check-label" for="active">
+                                                Активный партнер
+                                            </label>
+                                        </div>
+                                        <div class="form-text">
+                                            Неактивные не отображаются на сайте
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- ===== КНОПКИ ДЕЙСТВИЙ ===== -->
+                            <div class="row mt-4">
+                                <div class="col-12">
+                                    <div class="d-flex justify-content-between">
+                                        <a th:href="@{/admin/project-partners}" class="btn btn-outline-secondary">
+                                            <i class="bi bi-x-circle me-1"></i>
+                                            Отмена
+                                        </a>
+                                        <div>
+                                            <button type="submit" class="btn btn-primary">
+                                                <i class="bi bi-check-circle me-1"></i>
+                                                Создать партнера
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Информационная панель -->
+                <div class="card mt-4">
+                    <div class="card-body">
+                        <h5 class="card-title">
+                            <i class="bi bi-info-circle me-2"></i>
+                            Подсказки по заполнению
+                        </h5>
+                        <ul class="mb-0">
+                            <li><strong>Обязательные поля</strong> отмечены звёздочкой (*)</li>
+                            <li><strong>Тип партнерства</strong> определяет категорию участия в проекте</li>
+                            <li><strong>Порядок сортировки</strong> определяет положение в списке партнеров</li>
+                            <li><strong>Описание</strong> поддерживает HTML-разметку для форматирования</li>
+                            <li><strong>Логотип</strong> можно добавить позже при редактировании</li>
+                            <li><strong>Сайт</strong> должен начинаться с http:// или https://</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Bootstrap JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+<!-- JavaScript для формы -->
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        console.log('Страница создания партнера загружена');
+
+        // ========== ИНИЦИАЛИЗАЦИЯ ТИПА ПАРТНЕРСТВА ==========
+        const partnerTypeInput = document.getElementById('partnerType');
+        if (partnerTypeInput && partnerTypeInput.value) {
+            const selectedButton = document.querySelector(`button[data-type="${partnerTypeInput.value}"]`);
+            if (selectedButton) {
+                selectPartnerType(selectedButton);
+            }
+        }
+
+        // ========== ПРЕДПРОСМОТР ЛОГОТИПА ==========
+        const logoFileInput = document.getElementById('logoFile');
+        const logoPreviewContainer = document.getElementById('logoPreviewContainer');
+
+        if (logoFileInput) {
+            logoFileInput.addEventListener('change', function(e) {
+                const file = e.target.files[0];
+                if (file) {
+                    const reader = new FileReader();
+
+                    reader.onload = function(e) {
+                        logoPreviewContainer.innerHTML = `
+                            <img src="${e.target.result}"
+                                 class="logo-preview mb-2"
+                                 alt="Предпросмотр логотипа">
+                            <p class="text-success small">
+                                <i class="bi bi-check-circle me-1"></i>
+                                Логотип выбран
+                            </p>
+                        `;
+                    };
+
+                    reader.readAsDataURL(file);
+                } else {
+                    logoPreviewContainer.innerHTML = `
+                        <div class="logo-placeholder-large mb-2">
+                            <i class="bi bi-building"></i>
+                        </div>
+                        <p class="text-muted small">Превью будет отображено после выбора файла</p>
+                    `;
+                }
+            });
+        }
+
+        // ========== ИНИЦИАЛЫ ИЗ НАЗВАНИЯ ==========
+        const nameInput = document.getElementById('name');
+        const logoPlaceholder = document.querySelector('.logo-placeholder-large');
+
+        if (nameInput && logoPlaceholder) {
+            nameInput.addEventListener('input', function() {
+                const name = this.value.trim();
+                if (name) {
+                    const words = name.split(' ');
+                    let initials = '';
+                    if (words.length >= 2) {
+                        initials = (words[0].charAt(0) + words[1].charAt(0)).toUpperCase();
+                    } else if (words.length === 1) {
+                        initials = words[0].charAt(0).toUpperCase();
+                    }
+                    logoPlaceholder.textContent = initials;
+                } else {
+                    logoPlaceholder.innerHTML = '<i class="bi bi-building"></i>';
+                }
+            });
+        }
+
+        // ========== ВАЛИДАЦИЯ ФОРМЫ ==========
+        const form = document.querySelector('form');
+        if (form) {
+            form.addEventListener('submit', function(e) {
+                const name = document.getElementById('name').value.trim();
+                const project = document.getElementById('project') ? document.getElementById('project').value : '';
+                const partnerType = document.getElementById('partnerType').value;
+                const hasHiddenProject = document.querySelector('input[type="hidden"][name*="project.id"]');
+
+                let errors = [];
+
+                if (!name) {
+                    errors.push('Название партнера обязательно');
+                }
+
+                if (!project && !hasHiddenProject) {
+                    errors.push('Проект обязателен');
+                }
+
+                if (!partnerType) {
+                    errors.push('Тип партнерства обязателен');
+                }
+
+                if (errors.length > 0) {
+                    e.preventDefault();
+                    alert('Пожалуйста, заполните обязательные поля:\n\n' + errors.join('\n'));
+                    return false;
+                }
+
+                // Автодобавление https:// к URL если нет протокола
+                const websiteUrlInput = document.getElementById('websiteUrl');
+                if (websiteUrlInput && websiteUrlInput.value.trim()) {
+                    let url = websiteUrlInput.value.trim();
+                    if (!url.startsWith('http://') && !url.startsWith('https://') && url.includes('.')) {
+                        websiteUrlInput.value = 'https://' + url;
+                    }
+                }
+
+                return true;
+            });
+        }
+    });
+
+    // ========== ФУНКЦИЯ ВЫБОРА ТИПА ПАРТНЕРСТВА ==========
+function selectPartnerType(selectedButton) {
+    const typeValue = selectedButton.getAttribute('data-type');
+    document.getElementById('partnerType').value = typeValue;
+
+    // Цвета иконок по типам
+    const iconColors = {
+        'SPONSOR': 'text-warning',
+        'INFORMATION_PARTNER': 'text-info',
+        'ORGANIZATIONAL_PARTNER': 'text-success',
+        'TECHNICAL_PARTNER': 'text-primary',
+        'GENERAL_PARTNER': 'text-danger',
+        'OTHER': 'text-secondary'
+    };
+
+    // Сбрасываем все кнопки
+    document.querySelectorAll('#partnerTypeContainer button').forEach(button => {
+        button.classList.remove('border-primary', 'bg-primary', 'text-white', 'shadow-sm');
+        button.classList.add('btn-light');
+
+        // Восстанавливаем цвет иконки
+        const icon = button.querySelector('i');
+        if (icon) {
+            const type = button.getAttribute('data-type');
+            // Убираем белый цвет
+            icon.classList.remove('text-white');
+            // Добавляем цвет по типу
+            if (iconColors[type]) {
+                // Сначала убираем все цвета
+                icon.classList.remove('text-warning', 'text-info', 'text-success', 'text-primary', 'text-danger', 'text-secondary');
+                // Потом добавляем нужный
+                icon.classList.add(iconColors[type]);
+            }
+        }
+    });
+
+    // Выделяем выбранную кнопку
+    selectedButton.classList.remove('btn-light');
+    selectedButton.classList.add('border-primary', 'bg-primary', 'text-white', 'shadow-sm');
+
+    // Делаем иконку белой
+    const selectedIcon = selectedButton.querySelector('i');
+    if (selectedIcon) {
+        selectedIcon.classList.remove('text-warning', 'text-info', 'text-success', 'text-primary', 'text-danger', 'text-secondary');
+        selectedIcon.classList.add('text-white');
+    }
+}
+</script>
+</body>
+</html>

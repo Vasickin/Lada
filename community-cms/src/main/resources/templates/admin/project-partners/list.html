@@ -1,0 +1,571 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{fragments/layout}">
+<head>
+    <title>Партнеры проектов - Админ панель</title>
+
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <!-- Bootstrap 5 JS Bundle -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <style>
+        .partners-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding-left: 20px;
+            padding-right: 20px;
+        }
+
+        .table-container {
+            margin-bottom: 30px;
+        }
+
+        .logo-small {
+            width: 40px;
+            height: 40px;
+            object-fit: contain;
+            border: 1px solid #dee2e6;
+            background-color: white;
+            padding: 2px;
+        }
+
+        .logo-placeholder {
+            width: 40px;
+            height: 40px;
+            background-color: #f8f9fa;
+            color: #6c757d;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 12px;
+            border: 1px solid #dee2e6;
+        }
+
+        .badge-status-active {
+            background-color: #28a745;
+            color: white;
+        }
+
+        .badge-status-inactive {
+            background-color: #6c757d;
+            color: white;
+        }
+
+        .projects-count-badge {
+            background-color: #0d6efd;
+            color: white;
+        }
+
+        .partner-type-badge {
+            font-size: 0.75em;
+            padding: 0.25em 0.5em;
+        }
+
+        .action-buttons {
+            min-width: 150px;
+        }
+
+        .table th {
+            font-weight: 600;
+            background-color: #f8f9fa;
+        }
+
+        .partner-info-cell {
+            min-width: 250px;
+        }
+
+        .status-filter-buttons .btn {
+            border-radius: 20px;
+            padding: 0.25rem 1rem;
+            font-size: 0.875rem;
+        }
+    </style>
+</head>
+<body>
+<div layout:fragment="content">
+    <!-- ========== КОНТЕЙНЕР И ЗАГОЛОВОК ========== -->
+    <div class="container-fluid partners-container">
+
+        <!-- Заголовок и кнопка добавления -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h1 class="h2 mb-0">
+                            <i class="bi bi-handshake me-2"></i>
+                            <span th:text="${title} ?: 'Партнеры проектов'">Партнеры проектов</span>
+                        </h1>
+                        <p class="text-muted mb-0 mt-1">
+                            Управление партнерами проектов организации "ЛАДА"
+                        </p>
+                    </div>
+                    <div>
+                        <!-- ПЕРЕХОД НА САЙТ -->
+                        <a th:href="@{/}" class="btn btn-outline-secondary">
+                            <i class="bi bi-house me-1"></i>На сайт
+                        </a>
+
+                        <!-- КНОПКА УПРАВЛЕНИЕ ОСНОВНЫМИ СТРАНИЦАМИ -->
+                        <a th:href="@{/admin/site-pages}" class="btn btn-outline-success me-2">
+                            🌐 Управление основными страницами
+                        </a>
+
+                        <!-- КНОПКА ВСЕХ ПАРТНЕРОВ (если смотрим по проекту) -->
+                        <a th:href="@{/admin/project-partners}"
+                           th:if="${project != null}"
+                           class="btn btn-outline-info me-2">
+                            <i class="bi bi-people me-1"></i>
+                            Все партнеры
+                        </a>
+
+                        <!-- КНОПКА ДОБАВЛЕНИЯ -->
+                        <a th:href="@{/admin/project-partners/create(projectId=${project.id})}"
+                           th:if="${project != null}"
+                           class="btn btn-primary">
+                            <i class="bi bi-plus-circle me-1"></i>
+                            Добавить партнера
+                        </a>
+                        <a th:href="@{/admin/project-partners/create}"
+                           th:unless="${project != null}"
+                           class="btn btn-primary">
+                            <i class="bi bi-plus-circle me-1"></i>
+                            Добавить партнера
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ========== ФИЛЬТРЫ И ПОИСК ========== -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-body">
+                        <!-- Информация о проекте (если смотрим партнеров проекта) -->
+                        <div th:if="${project != null}" class="mb-3">
+                            <div class="alert alert-info py-2 mb-0">
+                                <i class="bi bi-info-circle me-2"></i>
+                                Партнеры проекта:
+                                <strong th:text="${project.title}">Название проекта</strong>
+                                <span class="text-muted ms-2">
+                                    (<span th:text="${partners != null ? partners.size() : 0}">0</span> партнеров)
+                                </span>
+                            </div>
+                        </div>
+
+                        <!-- Фильтры -->
+                        <div class="d-flex flex-wrap gap-2 mb-3">
+                            <!-- Фильтр по статусу -->
+                            <div class="status-filter-buttons">
+                                <a th:href="@{/admin/project-partners}"
+                                   th:if="${project == null}"
+                                   class="btn btn-outline-primary me-2"
+                                   th:classappend="${showAll == true} ? 'active' : ''">
+                                    <i class="bi bi-person-check me-1"></i>
+                                    Все активные
+                                </a>
+                                <a th:href="@{/admin/project-partners/project/{projectId}(projectId=${project.id})}"
+                                   th:if="${project != null}"
+                                   class="btn btn-outline-primary me-2 active">
+                                    <i class="bi bi-diagram-3 me-1"></i>
+                                    Партнеры проекта
+                                </a>
+                            </div>
+
+                            <!-- Фильтры по типу партнерства -->
+                            <div class="btn-group" role="group">
+                                <a th:href="@{/admin/project-partners}"
+                                   class="btn btn-outline-secondary"
+                                   th:classappend="${filterByType == null} ? 'active' : ''">
+                                    Все типы
+                                </a>
+                                <a th:each="type : ${partnerTypes}"
+                                   th:href="@{/admin/project-partners/type/{type}(type=${type})}"
+                                   class="btn btn-outline-secondary"
+                                   th:classappend="${partnerType == type} ? 'active' : ''"
+                                   th:text="${type.nameRu}">
+                                    Тип
+                                </a>
+                            </div>
+                        </div>
+
+                        <!-- Форма поиска -->
+                        <form th:action="@{/admin/project-partners/search}" method="get" class="row g-3">
+                            <div class="col-md-8">
+                                <div class="input-group">
+                                    <span class="input-group-text">
+                                        <i class="bi bi-search"></i>
+                                    </span>
+                                    <input type="text"
+                                           name="searchTerm"
+                                           class="form-control"
+                                           placeholder="Поиск по названию партнера или контактному лицу..."
+                                           th:value="${searchTerm}"
+                                           required>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="d-grid">
+                                    <button type="submit" class="btn btn-primary">
+                                        <i class="bi bi-search me-1"></i>
+                                        Найти
+                                    </button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ========== СООБЩЕНИЯ ОБ УСПЕХЕ/ОШИБКЕ ========== -->
+        <div class="row mb-3" th:if="${successMessage} or ${errorMessage}">
+            <div class="col-12">
+                <div th:if="${successMessage}"
+                     class="alert alert-success alert-dismissible fade show">
+                    <i class="bi bi-check-circle me-2"></i>
+                    <span th:text="${successMessage}"></span>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+                <div th:if="${errorMessage}"
+                     class="alert alert-danger alert-dismissible fade show">
+                    <i class="bi bi-exclamation-triangle me-2"></i>
+                    <span th:text="${errorMessage}"></span>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            </div>
+        </div>
+
+        <!-- ========== ТАБЛИЦА ПАРТНЕРОВ ========== -->
+        <div class="row">
+            <div class="col-12">
+                <div class="card table-container">
+                    <div class="card-body">
+
+                        <!-- Статистика -->
+                        <div class="row mb-3" th:if="${partners != null and !partners.isEmpty()}">
+                            <div class="col-12">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div class="text-muted small">
+                                        Показано <strong th:text="${partners != null ? partners.size() : 0}">0</strong> партнеров
+                                    </div>
+                                    <div class="text-muted small">
+                                        <a th:href="@{/admin/projects}"
+                                           th:if="${project != null}">
+                                            <i class="bi bi-arrow-left me-1"></i>
+                                            Вернуться к проектам
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Таблица -->
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle">
+                                <thead>
+                                <tr>
+                                    <th width="60">ID</th>
+                                    <th>Партнер</th>
+                                    <th>Тип</th>
+                                    <th width="120">Проекты</th>
+                                    <th width="100">Статус</th>
+                                    <th width="100">Порядок</th>
+                                    <th width="180" class="text-end">Действия</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+
+                                <!-- Если список пуст -->
+                                <tr th:if="${partners == null or partners.isEmpty()}">
+                                    <td colspan="7" class="text-center py-5">
+                                        <i class="bi bi-handshake display-5 text-muted mb-3 d-block"></i>
+                                        <h5 class="text-muted" th:if="${project != null}">
+                                            У этого проекта пока нет партнеров
+                                        </h5>
+                                        <h5 class="text-muted" th:unless="${project != null}">
+                                            Партнеров не найдено
+                                        </h5>
+                                        <p class="text-muted mb-0" th:if="${project != null}">
+                                            <a th:href="@{/admin/project-partners/create(projectId=${project.id})}"
+                                               class="btn btn-primary mt-2">
+                                                <i class="bi bi-plus-circle me-1"></i>
+                                                Добавить первого партнера
+                                            </a>
+                                        </p>
+                                        <p class="text-muted mb-0" th:unless="${project != null}">
+                                            <a th:href="@{/admin/project-partners/create}" class="btn btn-primary mt-2">
+                                                <i class="bi bi-plus-circle me-1"></i>
+                                                Добавить первого партнера
+                                            </a>
+                                        </p>
+                                    </td>
+                                </tr>
+
+                                <!-- Список партнеров -->
+                                <tr th:each="partner : ${partners}" th:classappend="${!partner.active} ? 'table-secondary' : ''">
+                                    <!-- ID -->
+                                    <td>
+                                        <span class="text-muted" th:text="${partner.id}">1</span>
+                                    </td>
+
+                                    <!-- Партнер (с логотипом) -->
+                                    <td class="partner-info-cell">
+                                        <div class="d-flex align-items-center">
+                                            <!-- Логотип -->
+                                            <div class="me-3">
+                                                <img th:if="${partner.hasLogo()}"
+                                                     th:src="@{${partner.logoPath}}"
+                                                     alt="Логотип"
+                                                     class="logo-small">
+                                                <div th:unless="${partner.hasLogo()}"
+                                                     class="logo-placeholder"
+                                                     th:text="${partner.initials}">
+                                                    ПП
+                                                </div>
+                                            </div>
+
+                                            <!-- Информация -->
+                                            <div>
+                                                <div class="fw-medium" th:text="${partner.name}">
+                                                    Название компании
+                                                </div>
+                                                <div class="text-muted small" th:if="${partner.contactPerson}">
+                                                    <i class="bi bi-person me-1"></i>
+                                                    <span th:text="${partner.contactPerson}">Контактное лицо</span>
+                                                </div>
+                                                <div class="text-muted small" th:if="${partner.websiteUrl}">
+                                                    <i class="bi bi-globe me-1"></i>
+                                                    <a th:href="${partner.fullWebsiteUrl}"
+                                                       target="_blank"
+                                                       class="text-decoration-none">
+                                                        Сайт
+                                                    </a>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </td>
+
+                                    <!-- Тип партнерства -->
+                                    <td>
+                                        <span class="badge partner-type-badge"
+                                              th:class="'bg-' + ${{
+                                                  'SPONSOR': 'danger',
+                                                  'INFORMATION_PARTNER': 'info',
+                                                  'ORGANIZATIONAL_PARTNER': 'warning',
+                                                  'TECHNICAL_PARTNER': 'primary',
+                                                  'GENERAL_PARTNER': 'success',
+                                                  'OTHER': 'secondary'
+                                              }[partner.partnerType.name()] ?: 'secondary'}"
+                                              th:text="${partner.partnerTypeDisplayNameRu}">
+                                            Спонсор
+                                        </span>
+                                    </td>
+
+                                    <!-- Проекты -->
+                                    <td>
+                                        <span class="badge projects-count-badge"
+                                              title="Количество проектов"
+                                              data-bs-toggle="tooltip">
+                                            <i class="bi bi-diagram-3 me-1"></i>
+                                            <span th:text="${partner.projectsCount}">1</span>
+                                        </span>
+                                    </td>
+
+                                    <!-- Статус -->
+                                    <td>
+                                        <span th:if="${partner.active}"
+                                              class="badge badge-status-active">
+                                            <i class="bi bi-check-circle me-1"></i>
+                                            Активен
+                                        </span>
+                                        <span th:unless="${partner.active}"
+                                              class="badge badge-status-inactive">
+                                            <i class="bi bi-x-circle me-1"></i>
+                                            Неактивен
+                                        </span>
+                                    </td>
+
+                                    <!-- Порядок сортировки -->
+                                    <td>
+                                        <span class="badge bg-light text-dark border"
+                                              th:text="${partner.sortOrder}">
+                                            1
+                                        </span>
+                                    </td>
+
+                                    <!-- Действия -->
+                                    <td class="text-end action-buttons">
+                                        <div class="btn-group btn-group-sm" role="group">
+                                            <!-- Редактировать -->
+                                            <a th:href="@{/admin/project-partners/edit/{id}(id=${partner.id})}"
+                                               title="Редактировать"
+                                               class="btn btn-outline-secondary">
+                                                <i class="bi bi-pencil"></i>
+                                            </a>
+
+                                            <!-- Активация/деактивация -->
+                                            <form th:action="@{${partner.active} ?
+                                                             '/admin/project-partners/deactivate/' + ${partner.id} :
+                                                             '/admin/project-partners/activate/' + ${partner.id}}"
+                                                  method="post"
+                                                  class="d-inline">
+                                                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+                                                <button type="submit"
+                                                        class="btn btn-outline-warning"
+                                                        th:title="${partner.active} ? 'Деактивировать' : 'Активировать'"
+                                                        data-bs-toggle="tooltip"
+                                                        onclick="return confirm(th:if='${partner.active}' then='Деактивировать партнера?' else='Активировать партнера?')">
+                                                    <i th:class="${partner.active} ?
+                                                                 'bi bi-person-dash' :
+                                                                 'bi bi-person-check'"></i>
+                                                </button>
+                                            </form>
+
+                                            <!-- Удаление -->
+                                            <a th:href="@{/admin/project-partners/delete/{id}(id=${partner.id})}"
+                                               title="Удалить"
+                                               class="btn btn-outline-danger">
+                                                <i class="bi bi-trash"></i>
+                                            </a>
+                                        </div>
+                                    </td>
+                                </tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- Секция спонсоров и инфо-партнеров (если смотрим проект) -->
+                        <div th:if="${project != null and (sponsors != null or infoPartners != null)}" class="row mt-4">
+                            <!-- Спонсоры -->
+                            <div class="col-md-6" th:if="${sponsors != null and !sponsors.isEmpty()}">
+                                <div class="card border-success">
+                                    <div class="card-header bg-success text-white py-2">
+                                        <i class="bi bi-coin me-2"></i>
+                                        Спонсоры проекта
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="d-flex flex-wrap gap-2">
+                                            <div th:each="sponsor : ${sponsors}" class="badge bg-light text-dark border">
+                                                <i class="bi bi-building me-1"></i>
+                                                <span th:text="${sponsor.name}"></span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Информационные партнеры -->
+                            <div class="col-md-6" th:if="${infoPartners != null and !infoPartners.isEmpty()}">
+                                <div class="card border-info">
+                                    <div class="card-header bg-info text-white py-2">
+                                        <i class="bi bi-megaphone me-2"></i>
+                                        Информационные партнеры
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="d-flex flex-wrap gap-2">
+                                            <div th:each="infoPartner : ${infoPartners}" class="badge bg-light text-dark border">
+                                                <i class="bi bi-newspaper me-1"></i>
+                                                <span th:text="${infoPartner.name}"></span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Подсказки -->
+                        <div class="row mt-4">
+                            <div class="col-12">
+                                <div class="alert alert-light border">
+                                    <div class="row">
+                                        <div class="col-md-4">
+                                            <h6><i class="bi bi-info-circle me-2"></i>Как использовать</h6>
+                                            <ul class="small mb-0">
+                                                <li>Нажмите на название для детального просмотра</li>
+                                                <li>Цветные бейджи показывают тип партнерства</li>
+                                                <li>Иконка <i class="bi bi-diagram-3"></i> показывает количество проектов</li>
+                                            </ul>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <h6><i class="bi bi-shield-check me-2"></i>Безопасность</h6>
+                                            <ul class="small mb-0">
+                                                <li>Деактивация вместо удаления</li>
+                                                <li>Подтверждение критических действий</li>
+                                                <li>Все изменения логируются</li>
+                                            </ul>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <h6><i class="bi bi-lightbulb me-2"></i>Советы</h6>
+                                            <ul class="small mb-0">
+                                                <li>Загружайте логотипы для узнаваемости</li>
+                                                <li>Указывайте тип партнерства для классификации</li>
+                                                <li>Используйте порядок сортировки для приоритета</li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ========== JAVASCRIPT ========== -->
+<script th:inline="javascript">
+    /*<![CDATA[*/
+
+    // Инициализация при загрузке страницы
+    document.addEventListener('DOMContentLoaded', function() {
+        console.log('Страница управления партнерами загружена');
+
+        // Инициализация тултипов Bootstrap
+        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+        var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl);
+        });
+
+        // Авто-фокус на поле поиска при загрузке
+        const searchInput = document.querySelector('input[name="searchTerm"]');
+        if (searchInput && !searchInput.value) {
+            searchInput.focus();
+        }
+
+        // Обработка кнопок фильтров
+        const filterButtons = document.querySelectorAll('.btn-group .btn');
+        filterButtons.forEach(btn => {
+            btn.addEventListener('click', function(e) {
+                if (this.classList.contains('active')) {
+                    e.preventDefault();
+                }
+            });
+        });
+
+        // Подтверждение действий
+        document.querySelectorAll('form[method="post"]').forEach(form => {
+            const submitBtn = form.querySelector('button[type="submit"]');
+            if (submitBtn && submitBtn.classList.contains('btn-outline-warning')) {
+                submitBtn.addEventListener('click', function(e) {
+                    const actionText = this.title || 'выполнить это действие';
+                    if (!confirm('Вы уверены, что хотите ' + actionText + '?')) {
+                        e.preventDefault();
+                    }
+                });
+            }
+        });
+
+    }); // КОНЕЦ DOMContentLoaded
+
+    /*]]>*/
+</script>
+</body>
+</html>
