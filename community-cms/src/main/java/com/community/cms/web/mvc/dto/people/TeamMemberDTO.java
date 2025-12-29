@@ -1,6 +1,7 @@
 package com.community.cms.web.mvc.dto.people;
 
 import com.community.cms.domain.model.people.TeamMember;
+import com.community.cms.web.mvc.form.people.TeamMemberForm;
 
 import java.time.LocalDateTime;
 import java.util.Map;

@@ -1,4 +1,4 @@
-package com.community.cms.web.mvc.dto.people;
+package com.community.cms.web.mvc.form.people;
 
 import com.community.cms.domain.model.people.Partner;
 import jakarta.validation.constraints.NotBlank;

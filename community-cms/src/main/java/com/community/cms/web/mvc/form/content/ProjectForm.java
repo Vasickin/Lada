@@ -1,4 +1,4 @@
-package com.community.cms.web.mvc.dto.content;
+package com.community.cms.web.mvc.form.content;
 
 import com.community.cms.domain.model.content.Project;
 import com.community.cms.validation.VideoUrl;
