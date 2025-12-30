@@ -145,9 +145,10 @@ public class PartnerAdminController {
     public String showCreateForm(@RequestParam(required = false) Long projectId,
                                  Model model,
                                  RedirectAttributes redirectAttributes) {
+        // Создаем пустого партнера БЕЗ проекта
         Partner partner = new Partner();
 
-        // Если указан projectId, привязываем партнера к проекту
+        // Если указан projectId, только сохраняем его как информацию для формы
         if (projectId != null) {
             Optional<Project> projectOpt = projectService.findById(projectId);
             if (projectOpt.isEmpty()) {
@@ -155,13 +156,21 @@ public class PartnerAdminController {
                         "Проект с ID " + projectId + " не найден");
                 return "redirect:/admin/projects";
             }
-            partner.setProject(projectOpt.get());
+
+            // НЕ устанавливаем проект в партнера!
+            // Вместо этого передаем информацию в модель
+            Project project = projectOpt.get();
+            model.addAttribute("suggestedProjectId", project.getId());
+            model.addAttribute("suggestedProjectTitle", project.getTitle());
+            model.addAttribute("showProjectSuggestion", true);
+        } else {
+            model.addAttribute("showProjectSuggestion", false);
         }
 
         List<Project> projects = projectService.findAllActive();
-        model.addAttribute("partner", partner);
+        model.addAttribute("partner", partner); // пустой партнер
         model.addAttribute("projects", projects);
-        model.addAttribute("partnerTypes", PartnerType.values());
+        model.addAttribute("partnerTypes", Partner.PartnerType.values()); // исправлено
         model.addAttribute("title", "Создание партнера");
 
         return "admin/project-partners/create";
@@ -178,26 +187,25 @@ public class PartnerAdminController {
     @PostMapping("/create")
     public String createPartner(@Valid @ModelAttribute("partner") Partner partner,
                                 BindingResult bindingResult,
-                                RedirectAttributes redirectAttributes) {
+                                RedirectAttributes redirectAttributes,
+                                Model model) { // Добавляем Model для возврата формы
 
-        // Валидация URL сайта, если указан
+        // Валидация URL сайта
         if (partner.getWebsiteUrl() != null && !partner.getWebsiteUrl().isEmpty()) {
             String url = partner.getWebsiteUrl().trim();
             if (!url.startsWith("http://") && !url.startsWith("https://") &&
                     !url.startsWith("www.") && url.contains(".")) {
-                // Добавляем https:// если нет протокола
                 partner.setWebsiteUrl("https://" + url);
             }
         }
 
         if (bindingResult.hasErrors()) {
+            // Вместо redirect возвращаем форму с ошибками
             List<Project> projects = projectService.findAllActive();
-            redirectAttributes.addFlashAttribute("org.springframework.validation.BindingResult.partner", bindingResult);
-            redirectAttributes.addFlashAttribute("partner", partner);
-            redirectAttributes.addFlashAttribute("projects", projects);
-            redirectAttributes.addFlashAttribute("partnerTypes", PartnerType.values());
-            return "redirect:/admin/project-partners/create" +
-                    (partner.getProject() != null ? "?projectId=" + partner.getProject().getId() : "");
+            model.addAttribute("projects", projects);
+            model.addAttribute("partnerTypes", Partner.PartnerType.values());
+            model.addAttribute("title", "Создание партнера");
+            return "admin/project-partners/create"; // Прямой return, не redirect
         }
 
         try {
