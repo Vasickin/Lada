@@ -90,7 +90,7 @@
                             <a th:href="@{/admin}">Главная</a>
                         </li>
                         <li class="breadcrumb-item">
-                            <a th:href="@{/admin/project-partners}">Партнеры</a>
+                            <a th:href="@{/admin/partners}">Партнеры</a>
                         </li>
                         <li class="breadcrumb-item active" aria-current="page">
                             Создание партнера
@@ -110,7 +110,7 @@
                         </p>
                     </div>
                     <div>
-                        <a th:href="@{/admin/project-partners}" class="btn btn-outline-secondary">
+                        <a th:href="@{/admin/partners}" class="btn btn-outline-secondary">
                             <i class="bi bi-arrow-left me-1"></i>
                             Назад к списку
                         </a>
@@ -136,7 +136,7 @@
                 <div class="card">
                     <div class="card-body">
                         <!-- Форма создания -->
-                        <form th:action="@{/admin/project-partners/create}"
+                        <form th:action="@{/admin/partners/create}"
                               th:object="${partner}"
                               method="post"
                               enctype="multipart/form-data">
@@ -543,7 +543,7 @@
                             <div class="row mt-4">
                                 <div class="col-12">
                                     <div class="d-flex justify-content-between">
-                                        <a th:href="@{/admin/project-partners}" class="btn btn-outline-secondary">
+                                        <a th:href="@{/admin/partners}" class="btn btn-outline-secondary">
                                             <i class="bi bi-x-circle me-1"></i>
                                             Отмена
                                         </a>

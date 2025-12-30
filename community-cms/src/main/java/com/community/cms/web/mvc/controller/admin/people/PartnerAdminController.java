@@ -29,7 +29,7 @@ import java.util.Optional;
  * @see PartnerService
  */
 @Controller
-@RequestMapping("/admin/project-partners")
+@RequestMapping("/admin/partners")
 public class PartnerAdminController {
 
     private final PartnerService partnerService;
@@ -82,7 +82,7 @@ public class PartnerAdminController {
         model.addAttribute("title", "Партнеры проекта: " + project.getTitle());
         model.addAttribute("partnerTypes", PartnerType.values());
 
-        return "admin/project-partners/list";
+        return "admin/partners/list";
     }
 
     /**
@@ -98,7 +98,7 @@ public class PartnerAdminController {
         model.addAttribute("title", "Все партнеры проектов");
         model.addAttribute("partnerTypes", PartnerType.values());
         model.addAttribute("showAll", true);
-        return "admin/project-partners/list";
+        return "admin/partners/list";
     }
 
     /**
@@ -124,7 +124,7 @@ public class PartnerAdminController {
             model.addAttribute("partnerTypes", PartnerType.values());
             model.addAttribute("filterByType", true);
 
-            return "admin/project-partners/list";
+            return "admin/partners/list";
         } catch (IllegalArgumentException e) {
             model.addAttribute("errorMessage", "Неверный тип партнерства: " + partnerType);
             return listAllPartners(model);
@@ -173,7 +173,7 @@ public class PartnerAdminController {
         model.addAttribute("partnerTypes", Partner.PartnerType.values()); // исправлено
         model.addAttribute("title", "Создание партнера");
 
-        return "admin/project-partners/create";
+        return "admin/partners/create";
     }
 
     /**
@@ -205,7 +205,7 @@ public class PartnerAdminController {
             model.addAttribute("projects", projects);
             model.addAttribute("partnerTypes", Partner.PartnerType.values());
             model.addAttribute("title", "Создание партнера");
-            return "admin/project-partners/create"; // Прямой return, не redirect
+            return "admin/partners/create"; // Прямой return, не redirect
         }
 
         try {
@@ -213,11 +213,11 @@ public class PartnerAdminController {
 
             redirectAttributes.addFlashAttribute("successMessage",
                     "Партнер '" + savedPartner.getName() + "' успешно создан!");
-            return "redirect:/admin/project-partners/project/" + savedPartner.getProject().getId();
+            return "redirect:/admin/partners/project/" + savedPartner.getProject().getId();
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("errorMessage",
                     "Ошибка при создании партнера: " + e.getMessage());
-            return "redirect:/admin/project-partners/create";
+            return "redirect:/admin/partners/create";
         }
     }
 
@@ -240,7 +240,7 @@ public class PartnerAdminController {
         if (partnerOpt.isEmpty()) {
             redirectAttributes.addFlashAttribute("errorMessage",
                     "Партнер с ID " + id + " не найден");
-            return "redirect:/admin/project-partners";
+            return "redirect:/admin/partners";
         }
 
         Partner partner = partnerOpt.get();
@@ -251,7 +251,7 @@ public class PartnerAdminController {
         model.addAttribute("partnerTypes", PartnerType.values());
         model.addAttribute("title", "Редактирование партнера: " + partner.getName());
 
-        return "admin/project-partners/edit";
+        return "admin/partners/edit";
     }
 
     /**
@@ -283,7 +283,7 @@ public class PartnerAdminController {
             redirectAttributes.addFlashAttribute("org.springframework.validation.BindingResult.partner", bindingResult);
             redirectAttributes.addFlashAttribute("partner", partner);
             redirectAttributes.addFlashAttribute("partnerTypes", PartnerType.values());
-            return "redirect:/admin/project-partners/edit/" + id;
+            return "redirect:/admin/partners/edit/" + id;
         }
 
         try {
@@ -292,7 +292,7 @@ public class PartnerAdminController {
             if (existingPartnerOpt.isEmpty()) {
                 redirectAttributes.addFlashAttribute("errorMessage",
                         "Партнер с ID " + id + " не найден");
-                return "redirect:/admin/project-partners";
+                return "redirect:/admin/partners";
             }
 
             Partner existingPartner = existingPartnerOpt.get();
@@ -307,11 +307,11 @@ public class PartnerAdminController {
 
             redirectAttributes.addFlashAttribute("successMessage",
                     "Партнер '" + updatedPartner.getName() + "' успешно обновлен!");
-            return "redirect:/admin/project-partners/project/" + updatedPartner.getProject().getId();
+            return "redirect:/admin/partners/project/" + updatedPartner.getProject().getId();
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("errorMessage",
                     "Ошибка при обновлении партнера: " + e.getMessage());
-            return "redirect:/admin/project-partners/edit/" + id;
+            return "redirect:/admin/partners/edit/" + id;
         }
     }
 
@@ -331,11 +331,11 @@ public class PartnerAdminController {
             Partner activatedPartner = partnerService.activateById(id);
             redirectAttributes.addFlashAttribute("successMessage",
                     "Партнер '" + activatedPartner.getName() + "' активирован!");
-            return "redirect:/admin/project-partners/project/" + activatedPartner.getProject().getId();
+            return "redirect:/admin/partners/project/" + activatedPartner.getProject().getId();
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("errorMessage",
                     "Ошибка при активации партнера: " + e.getMessage());
-            return "redirect:/admin/project-partners";
+            return "redirect:/admin/partners";
         }
     }
 
@@ -353,11 +353,11 @@ public class PartnerAdminController {
             Partner deactivatedPartner = partnerService.deactivateById(id);
             redirectAttributes.addFlashAttribute("successMessage",
                     "Партнер '" + deactivatedPartner.getName() + "' деактивирован!");
-            return "redirect:/admin/project-partners/project/" + deactivatedPartner.getProject().getId();
+            return "redirect:/admin/partners/project/" + deactivatedPartner.getProject().getId();
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("errorMessage",
                     "Ошибка при деактивации партнера: " + e.getMessage());
-            return "redirect:/admin/project-partners";
+            return "redirect:/admin/partners";
         }
     }
 
@@ -380,14 +380,14 @@ public class PartnerAdminController {
         if (partnerOpt.isEmpty()) {
             redirectAttributes.addFlashAttribute("errorMessage",
                     "Партнер с ID " + id + " не найден");
-            return "redirect:/admin/project-partners";
+            return "redirect:/admin/partners";
         }
 
         Partner partner = partnerOpt.get();
         model.addAttribute("partner", partner);
         model.addAttribute("title", "Удаление партнера: " + partner.getName());
 
-        return "admin/project-partners/delete";
+        return "admin/partners/delete";
     }
 
     /**
@@ -405,7 +405,7 @@ public class PartnerAdminController {
             if (partnerOpt.isEmpty()) {
                 redirectAttributes.addFlashAttribute("errorMessage",
                         "Партнер с ID " + id + " не найден");
-                return "redirect:/admin/project-partners";
+                return "redirect:/admin/partners";
             }
 
             Partner partner = partnerOpt.get();
@@ -416,11 +416,11 @@ public class PartnerAdminController {
 
             redirectAttributes.addFlashAttribute("successMessage",
                     "Партнер '" + partnerName + "' успешно удален!");
-            return "redirect:/admin/project-partners/project/" + projectId;
+            return "redirect:/admin/partners/project/" + projectId;
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("errorMessage",
                     "Ошибка при удалении партнера: " + e.getMessage());
-            return "redirect:/admin/project-partners";
+            return "redirect:/admin/partners";
         }
     }
 
@@ -458,11 +458,11 @@ public class PartnerAdminController {
 
             redirectAttributes.addFlashAttribute("successMessage",
                     "Порядок партнеров успешно обновлен!");
-            return "redirect:/admin/project-partners/project/" + projectId;
+            return "redirect:/admin/partners/project/" + projectId;
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("errorMessage",
                     "Ошибка при обновлении порядка партнеров: " + e.getMessage());
-            return "redirect:/admin/project-partners/project/" + projectId;
+            return "redirect:/admin/partners/project/" + projectId;
         }
     }
 
@@ -483,7 +483,7 @@ public class PartnerAdminController {
         model.addAttribute("searchTerm", searchTerm);
         model.addAttribute("partnerTypes", PartnerType.values());
         model.addAttribute("showAll", true);
-        return "admin/project-partners/list";
+        return "admin/partners/list";
     }
 
     /**
@@ -511,7 +511,7 @@ public class PartnerAdminController {
             if (name == null || name.trim().isEmpty()) {
                 redirectAttributes.addFlashAttribute("errorMessage",
                         "Название партнера обязательно");
-                return "redirect:/admin/project-partners/project/" + projectId;
+                return "redirect:/admin/partners/project/" + projectId;
             }
 
             Project project = projectOpt.get();
@@ -526,11 +526,11 @@ public class PartnerAdminController {
 
             redirectAttributes.addFlashAttribute("successMessage",
                     "Партнер '" + name + "' быстро добавлен к проекту!");
-            return "redirect:/admin/project-partners/project/" + projectId;
+            return "redirect:/admin/partners/project/" + projectId;
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("errorMessage",
                     "Ошибка при быстром добавлении партнера: " + e.getMessage());
-            return "redirect:/admin/project-partners/project/" + projectId;
+            return "redirect:/admin/partners/project/" + projectId;
         }
     }
 }

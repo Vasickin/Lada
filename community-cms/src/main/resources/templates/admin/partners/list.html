@@ -116,7 +116,7 @@
                         </a>
 
                         <!-- КНОПКА ВСЕХ ПАРТНЕРОВ (если смотрим по проекту) -->
-                        <a th:href="@{/admin/project-partners}"
+                        <a th:href="@{/admin/partners}"
                            th:if="${project != null}"
                            class="btn btn-outline-info me-2">
                             <i class="bi bi-people me-1"></i>
@@ -124,13 +124,13 @@
                         </a>
 
                         <!-- КНОПКА ДОБАВЛЕНИЯ -->
-                        <a th:href="@{/admin/project-partners/create(projectId=${project.id})}"
+                        <a th:href="@{/admin/partners/create(projectId=${project.id})}"
                            th:if="${project != null}"
                            class="btn btn-primary">
                             <i class="bi bi-plus-circle me-1"></i>
                             Добавить партнера
                         </a>
-                        <a th:href="@{/admin/project-partners/create}"
+                        <a th:href="@{/admin/partners/create}"
                            th:unless="${project != null}"
                            class="btn btn-primary">
                             <i class="bi bi-plus-circle me-1"></i>
@@ -162,14 +162,14 @@
                         <div class="d-flex flex-wrap gap-2 mb-3">
                             <!-- Фильтр по статусу -->
                             <div class="status-filter-buttons">
-                                <a th:href="@{/admin/project-partners}"
+                                <a th:href="@{/admin/partners}"
                                    th:if="${project == null}"
                                    class="btn btn-outline-primary me-2"
                                    th:classappend="${showAll == true} ? 'active' : ''">
                                     <i class="bi bi-person-check me-1"></i>
                                     Все активные
                                 </a>
-                                <a th:href="@{/admin/project-partners/project/{projectId}(projectId=${project.id})}"
+                                <a th:href="@{/admin/partners/project/{projectId}(projectId=${project.id})}"
                                    th:if="${project != null}"
                                    class="btn btn-outline-primary me-2 active">
                                     <i class="bi bi-diagram-3 me-1"></i>
@@ -179,13 +179,13 @@
 
                             <!-- Фильтры по типу партнерства -->
                             <div class="btn-group" role="group">
-                                <a th:href="@{/admin/project-partners}"
+                                <a th:href="@{/admin/partners}"
                                    class="btn btn-outline-secondary"
                                    th:classappend="${filterByType == null} ? 'active' : ''">
                                     Все типы
                                 </a>
                                 <a th:each="type : ${partnerTypes}"
-                                   th:href="@{/admin/project-partners/type/{type}(type=${type})}"
+                                   th:href="@{/admin/partners/type/{type}(type=${type})}"
                                    class="btn btn-outline-secondary"
                                    th:classappend="${partnerType == type} ? 'active' : ''"
                                    th:text="${type.nameRu}">
@@ -195,7 +195,7 @@
                         </div>
 
                         <!-- Форма поиска -->
-                        <form th:action="@{/admin/project-partners/search}" method="get" class="row g-3">
+                        <form th:action="@{/admin/partners/search}" method="get" class="row g-3">
                             <div class="col-md-8">
                                 <div class="input-group">
                                     <span class="input-group-text">
@@ -292,14 +292,14 @@
                                             Партнеров не найдено
                                         </h5>
                                         <p class="text-muted mb-0" th:if="${project != null}">
-                                            <a th:href="@{/admin/project-partners/create(projectId=${project.id})}"
+                                            <a th:href="@{/admin/partners/create(projectId=${project.id})}"
                                                class="btn btn-primary mt-2">
                                                 <i class="bi bi-plus-circle me-1"></i>
                                                 Добавить первого партнера
                                             </a>
                                         </p>
                                         <p class="text-muted mb-0" th:unless="${project != null}">
-                                            <a th:href="@{/admin/project-partners/create}" class="btn btn-primary mt-2">
+                                            <a th:href="@{/admin/partners/create}" class="btn btn-primary mt-2">
                                                 <i class="bi bi-plus-circle me-1"></i>
                                                 Добавить первого партнера
                                             </a>
@@ -403,7 +403,7 @@
                                     <td class="text-end action-buttons">
                                         <div class="btn-group btn-group-sm" role="group">
                                             <!-- Редактировать -->
-                                            <a th:href="@{/admin/project-partners/edit/{id}(id=${partner.id})}"
+                                            <a th:href="@{/admin/partners/edit/{id}(id=${partner.id})}"
                                                title="Редактировать"
                                                class="btn btn-outline-secondary">
                                                 <i class="bi bi-pencil"></i>
@@ -411,8 +411,8 @@
 
                                             <!-- Активация/деактивация -->
                                             <form th:action="@{${partner.active} ?
-                                                             '/admin/project-partners/deactivate/' + ${partner.id} :
-                                                             '/admin/project-partners/activate/' + ${partner.id}}"
+                                                             '/admin/partners/deactivate/' + ${partner.id} :
+                                                             '/admin/partners/activate/' + ${partner.id}}"
                                                   method="post"
                                                   class="d-inline">
                                                 <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
@@ -428,7 +428,7 @@
                                             </form>
 
                                             <!-- Удаление -->
-                                            <a th:href="@{/admin/project-partners/delete/{id}(id=${partner.id})}"
+                                            <a th:href="@{/admin/partners/delete/{id}(id=${partner.id})}"
                                                title="Удалить"
                                                class="btn btn-outline-danger">
                                                 <i class="bi bi-trash"></i>

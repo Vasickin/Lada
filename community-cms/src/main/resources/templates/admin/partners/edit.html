@@ -82,7 +82,7 @@
                             <a th:href="@{/admin}">Главная</a>
                         </li>
                         <li class="breadcrumb-item">
-                            <a th:href="@{/admin/project-partners}">Партнеры</a>
+                            <a th:href="@{/admin/partners}">Партнеры</a>
                         </li>
                         <li class="breadcrumb-item active" aria-current="page">
                             Редактирование партнера
@@ -102,7 +102,7 @@
                         </p>
                     </div>
                     <div>
-                        <a th:href="@{/admin/project-partners/project/{id}(id=${partner.project.id})}"
+                        <a th:href="@{/admin/partners/project/{id}(id=${partner.project.id})}"
                            class="btn btn-outline-secondary">
                             <i class="bi bi-arrow-left me-1"></i>
                             Назад к партнерам проекта
@@ -129,7 +129,7 @@
                 <div class="card">
                     <div class="card-body">
                         <!-- Форма редактирования -->
-                        <form th:action="@{/admin/project-partners/edit/{id}(id=${partner.id})}"
+                        <form th:action="@{/admin/partners/edit/{id}(id=${partner.id})}"
                               th:object="${partner}"
                               method="post"
                               enctype="multipart/form-data">
@@ -558,7 +558,7 @@
                             <div class="row mt-4">
                                 <div class="col-12">
                                     <div class="d-flex justify-content-between">
-                                        <a th:href="@{/admin/project-partners/project/{id}(id=${partner.project.id})}"
+                                        <a th:href="@{/admin/partners/project/{id}(id=${partner.project.id})}"
                                            class="btn btn-outline-secondary">
                                             <i class="bi bi-x-circle me-1"></i>
                                             Отмена
