@@ -11,6 +11,7 @@ import org.hibernate.annotations.CreationTimestamp;
 import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * Сущность партнера проекта организации "ЛАДА".
@@ -125,11 +126,8 @@ public class Partner {
     private String logoPath;
 
     /**
-     * URL сайта партнера.
-     * Должен быть валидным URL (начинаться с http:// или https://).
+     * URL сайта партнера (опционально).
      */
-    @Pattern(regexp = "^(https?://)?([\\w\\-]+\\.)+[\\w\\-]{2,}(/.*)?$",
-            message = "Некорректный формат URL / Invalid URL format")
     @Size(max = 500, message = "URL не должен превышать 500 символов / URL must not exceed 500 characters")
     @Column(name = "website_url", length = 500)
     private String websiteUrl;
@@ -476,9 +474,14 @@ public class Partner {
 
     /**
      * Метод предварительной обработки перед сохранением.
+     * Синхронизирует старую и новую связи с проектами.
      */
     @PrePersist
     protected void onCreate() {
+        // Синхронизация связей проект ↔ проекты
+        synchronizeProjectLinks();
+
+        // Инициализация полей по умолчанию
         if (addedAt == null) {
             addedAt = LocalDateTime.now();
         }
@@ -488,5 +491,68 @@ public class Partner {
         if (partnerType == null) {
             partnerType = PartnerType.OTHER;
         }
+    }
+
+    /**
+     * Метод предварительной обработки перед обновлением.
+     */
+    @PreUpdate
+    protected void onUpdate() {
+        // Синхронизируем связи при обновлении
+        synchronizeProjectLinks();
+    }
+
+    /**
+     * Синхронизирует старую и новую связи с проектами.
+     * Если есть projects, но нет project - устанавливаем первый проект как основной.
+     * Если есть project, но нет в projects - добавляем его.
+     */
+    protected void synchronizeProjectLinks() {
+        // Если есть новая связь (projects), но нет старой (project)
+        if (projects != null && !projects.isEmpty() && project == null) {
+            project = projects.iterator().next(); // Берем первый проект
+        }
+
+        // Если есть старая связь (project), но нет в новой (projects)
+        if (project != null) {
+            if (projects == null) {
+                projects = new HashSet<>();
+            }
+            // Добавляем project в projects, если его там нет
+            boolean projectExists = projects.stream()
+                    .anyMatch(p -> p != null && p.getId() != null && p.getId().equals(project.getId()));
+            if (!projectExists) {
+                projects.add(project);
+            }
+        }
+
+
+    }
+
+    /**
+     * Получает количество проектов партнера.
+     *
+     * @return количество проектов
+     */
+    public int getProjectsCount() {
+        if (projects == null) {
+            return 0;
+        }
+        return projects.size();
+    }
+
+
+    /**
+     * Получает ID проектов.
+     *
+     * @return Set ID проектов или пустой Set если проектов нет
+     */
+    public Set<Long> getProjectIds() {
+        if (projects == null || projects.isEmpty()) {
+            return new HashSet<>();
+        }
+        return projects.stream()
+                .map(Project::getId)
+                .collect(Collectors.toSet());
     }
 }

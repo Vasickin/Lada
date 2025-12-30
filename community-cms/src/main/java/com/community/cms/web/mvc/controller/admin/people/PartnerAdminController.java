@@ -179,6 +179,7 @@ public class PartnerAdminController {
     public String createPartner(@Valid @ModelAttribute("partner") Partner partner,
                                 BindingResult bindingResult,
                                 RedirectAttributes redirectAttributes) {
+
         // Валидация URL сайта, если указан
         if (partner.getWebsiteUrl() != null && !partner.getWebsiteUrl().isEmpty()) {
             String url = partner.getWebsiteUrl().trim();

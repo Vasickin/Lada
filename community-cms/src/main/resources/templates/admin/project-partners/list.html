@@ -311,7 +311,7 @@
                                 <tr th:each="partner : ${partners}" th:classappend="${!partner.active} ? 'table-secondary' : ''">
                                     <!-- ID -->
                                     <td>
-                                        <span class="text-muted" th:text="${partner.id}">1</span>
+                                        <span class="text-muted" th:text="${partner.getProjectIds()}">1</span>
                                     </td>
 
                                     <!-- Партнер (с логотипом) -->
