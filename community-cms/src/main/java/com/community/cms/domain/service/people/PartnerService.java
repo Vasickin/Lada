@@ -159,7 +159,8 @@ public class PartnerService {
      */
     @Transactional(readOnly = true)
     public List<Partner> searchByNameOrDescription(String searchTerm) {
-        return partnerRepository.searchByNameOrDescription(searchTerm);
+        String searchPattern = "%" + searchTerm.toLowerCase() + "%";
+        return partnerRepository.searchByNameOrDescription(searchPattern);
     }
 
     /**
@@ -170,7 +171,8 @@ public class PartnerService {
      */
     @Transactional(readOnly = true)
     public List<Partner> searchActiveByNameOrDescription(String searchTerm) {
-        return partnerRepository.searchActiveByNameOrDescription(searchTerm);
+        String searchPattern = "%" + searchTerm.toLowerCase() + "%";
+        return partnerRepository.searchActiveByNameOrDescription(searchPattern);
     }
 
     // ================== ПОИСК ПО ТИПУ ПАРТНЕРА ==================

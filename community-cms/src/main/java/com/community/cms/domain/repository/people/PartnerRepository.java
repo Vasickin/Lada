@@ -3,6 +3,7 @@ package com.community.cms.domain.repository.people;
 import com.community.cms.domain.enums.PartnerType;
 import com.community.cms.domain.model.content.Project;
 import com.community.cms.domain.model.people.Partner;
+import jakarta.annotation.Nonnull;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -97,26 +98,27 @@ public interface PartnerRepository extends JpaRepository<Partner, Long> {
     List<Partner> findByTypeAndActiveTrue(PartnerType type);
 
     /**
-     * Находит партнеров по части названия или описанию (без учета регистра).
+     * Находит партнеров по части названия или описания (без учета регистра).
      * Комплексный поиск для админки.
      *
-     * @param searchTerm поисковый запрос
+     *
      * @return список найденных партнеров
      */
     @Query("SELECT p FROM Partner p WHERE " +
-            "LOWER(p.name) LIKE LOWER(CONCAT('%', :searchTerm, '%')) OR " +
-            "LOWER(p.description) LIKE LOWER(CONCAT('%', :searchTerm, '%'))")
+            "p.name LIKE %:searchTerm% OR " +
+            "p.description LIKE %:searchTerm%")
     List<Partner> searchByNameOrDescription(@Param("searchTerm") String searchTerm);
 
+
     /**
-     * Находит партнеров по части названия или описанию (без учета регистра) среди активных.
+     * Находит партнеров по части названия или описания (без учета регистра) среди активных.
      *
-     * @param searchTerm поисковый запрос
+     *
      * @return список найденных активных партнеров
      */
     @Query("SELECT p FROM Partner p WHERE p.active = true AND (" +
-            "LOWER(p.name) LIKE LOWER(CONCAT('%', :searchTerm, '%')) OR " +
-            "LOWER(p.description) LIKE LOWER(CONCAT('%', :searchTerm, '%')))")
+            "p.name LIKE %:searchTerm% OR " +
+            "p.description LIKE %:searchTerm%)")
     List<Partner> searchActiveByNameOrDescription(@Param("searchTerm") String searchTerm);
 
     // ================== РАБОТА С ПРОЕКТАМИ ==================
@@ -185,7 +187,7 @@ public interface PartnerRepository extends JpaRepository<Partner, Long> {
      * @param pageable объект пагинации
      * @return страница всех партнеров
      */
-    Page<Partner> findAll(Pageable pageable);
+    Page<Partner> findAll(@Nonnull Pageable pageable);
 
     // ================== СОРТИРОВКА ==================
 
@@ -442,27 +444,27 @@ public interface PartnerRepository extends JpaRepository<Partner, Long> {
      */
     Page<Partner> findByTypeAndActiveTrue(PartnerType type, Pageable pageable);
 
-    /**
-     * Комплексный поиск партнеров по названию или описанию с пагинацией.
-     *
-     * @param searchTerm поисковый запрос
-     * @param pageable объект пагинации
-     * @return страница найденных партнеров
-     */
-    @Query("SELECT p FROM Partner p WHERE " +
-            "LOWER(p.name) LIKE LOWER(CONCAT('%', :searchTerm, '%')) OR " +
-            "LOWER(p.description) LIKE LOWER(CONCAT('%', :searchTerm, '%'))")
-    Page<Partner> searchByNameOrDescription(@Param("searchTerm") String searchTerm, Pageable pageable);
-
-    /**
-     * Комплексный поиск активных партнеров по названию или описанию с пагинацией.
-     *
-     * @param searchTerm поисковый запрос
-     * @param pageable объект пагинации
-     * @return страница найденных активных партнеров
-     */
-    @Query("SELECT p FROM Partner p WHERE p.active = true AND (" +
-            "LOWER(p.name) LIKE LOWER(CONCAT('%', :searchTerm, '%')) OR " +
-            "LOWER(p.description) LIKE LOWER(CONCAT('%', :searchTerm, '%')))")
-    Page<Partner> searchActiveByNameOrDescription(@Param("searchTerm") String searchTerm, Pageable pageable);
+//    /**
+//     * Комплексный поиск партнеров по названию или описанию с пагинацией.
+//     *
+//     * @param searchTerm поисковый запрос
+//     * @param pageable объект пагинации
+//     * @return страница найденных партнеров
+//     */
+//    @Query("SELECT p FROM Partner p WHERE " +
+//            "LOWER(p.name) LIKE CONCAT('%', LOWER(:searchTerm), '%') OR " +
+//            "LOWER(p.description) LIKE CONCAT('%', LOWER(:searchTerm), '%')")
+//    List<Partner> searchByNameOrDescription(@Param("searchTerm") String searchTerm);
+//
+//    /**
+//     * Комплексный поиск активных партнеров по названию или описанию с пагинацией.
+//     *
+//     * @param searchTerm поисковый запрос
+//     * @param pageable объект пагинации
+//     * @return страница найденных активных партнеров
+//     */
+//    @Query("SELECT p FROM Partner p WHERE p.active = true AND (" +
+//            "LOWER(p.name) LIKE CONCAT('%', LOWER(:searchTerm), '%') OR " +
+//            "LOWER(p.description) LIKE CONCAT('%', LOWER(:searchTerm), '%'))")
+//    List<Partner> searchActiveByNameOrDescription(@Param("searchTerm") String searchTerm);
 }
