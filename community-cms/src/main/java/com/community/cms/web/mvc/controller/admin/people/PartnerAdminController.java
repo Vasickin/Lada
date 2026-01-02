@@ -88,16 +88,16 @@ public class PartnerAdminController {
 
         Page<Partner> partnersPage;
 
-        // Применяем фильтры в зависимости от параметров
+        // ПРИМЕНЯЕМ ФИЛЬТРЫ В ЗАВИСИМОСТИ ОТ ПАРАМЕТРОВ
         if (search != null && !search.trim().isEmpty()) {
-            // Если есть поисковый запрос - используем поиск
-            partnersPage = searchPartnersWithPagination(search, pageable);
-        } else if (type != null || status != null || hasLogo != null) {
-            // Если есть другие фильтры - применяем их
+            // Если есть поисковый запрос
+            partnersPage = searchPartnersWithPagination(search.trim(), pageable);
+        } else if (type != null || (status != null && !status.isEmpty()) || (hasLogo != null && !hasLogo.isEmpty())) {
+            // Если есть ДРУГИЕ фильтры (тип, статус, логотип)
             partnersPage = filterPartners(type, status, hasLogo, pageable);
         } else {
-            // Иначе показываем всех активных партнеров
-            partnersPage = partnerService.findAllActive(pageable);
+            // ИНАЧЕ: НЕТ ФИЛЬТРОВ - показываем ВСЕХ партнеров (и активных, и неактивных)
+            partnersPage = partnerService.findAll(pageable); // ← ИЗМЕНИЛОСЬ!
         }
 
         // Добавляем данные в модель
@@ -160,11 +160,18 @@ public class PartnerAdminController {
             }
 
             // Дополнительная фильтрация по наличию логотипа
-            if (hasLogo != null) {
-                boolean hasLogoBoolean = Boolean.parseBoolean(hasLogo);
-                filteredList = filteredList.stream()
-                        .filter(p -> p.hasLogo() == hasLogoBoolean)
-                        .collect(Collectors.toList());
+            if (hasLogo != null && !hasLogo.isEmpty()) {
+                if ("true".equalsIgnoreCase(hasLogo)) {
+                    // С логотипом
+                    filteredList = filteredList.stream()
+                            .filter(Partner::hasLogo)
+                            .collect(Collectors.toList());
+                } else if ("false".equalsIgnoreCase(hasLogo)) {
+                    // Без логотипа
+                    filteredList = filteredList.stream()
+                            .filter(p -> !p.hasLogo())
+                            .collect(Collectors.toList());
+                }
             }
 
             // Применяем пагинацию
