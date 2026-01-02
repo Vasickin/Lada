@@ -303,6 +303,7 @@ public class ProjectAdminController {
                 projectService.save(savedProject);
             }
 
+
             // ===== ОБРАБОТКА ПАРТНЁРОВ =====
             if (selectedPartnerIds != null && !selectedPartnerIds.trim().isEmpty()) {
                 String[] ids = selectedPartnerIds.split(",");
@@ -310,19 +311,21 @@ public class ProjectAdminController {
                     try {
                         Long partnerId = Long.parseLong(idStr.trim());
                         partnerService.findById(partnerId).ifPresent(partner -> {
-                            // УБРАТЬ проверку и просто добавлять
+                            // Инициализируем коллекцию если null
                             if (partner.getProjects() == null) {
                                 partner.setProjects(new HashSet<>());
                             }
-                            // Просто добавляем связь
+                            // Добавляем проект к партнёру
                             partner.getProjects().add(savedProject);
+                            // Добавляем партнёра к проекту
                             savedProject.getPartners().add(partner);
+                            // Сохраняем партнёра
                             partnerService.save(partner);
                         });
                     } catch (NumberFormatException ignored) {}
                 }
-                // УБРАТЬ повторное сохранение проекта
-                // projectService.save(savedProject); // ЗАКОММЕНТИРОВАТЬ
+                // СОХРАНЯЕМ проект после добавления партнёров!
+                projectService.save(savedProject);
             }
 
             // ===== ОБРАБОТКА ФОТО =====
@@ -543,8 +546,7 @@ public class ProjectAdminController {
             }
 
             // ===== ОБРАБОТКА ОБНОВЛЕНИЯ КОМАНДЫ =====
-            // ... ваш существующий код для команды ...
-            if (selectedTeamMemberIds != null) {
+                        if (selectedTeamMemberIds != null) {
                 // 1. Удаляем всех текущих членов из проекта
                 List<TeamMember> currentMembers = teamMemberService.findByProject(existingProject);
                 for (TeamMember member : currentMembers) {
@@ -576,61 +578,46 @@ public class ProjectAdminController {
                 }
             }
 
-            // ===== ОБРАБОТКА ОБНОВЛЕНИЯ ПАРТНЁРОВ (ПРОСТОЙ ВАРИАНТ) =====
+
+            // ===== ОБРАБОТКА ОБНОВЛЕНИЯ ПАРТНЁРОВ  =====
             if (selectedPartnerIds != null) {
-                // 1. Инициализация коллекций
-                if (existingProject.getPartners() == null) {
-                    existingProject.setPartners(new HashSet<>());
-                }
+                // 1. Получаем текущих партнёров проекта
+                List<Partner> currentPartners = partnerService.findByProject(existingProject);
 
-                // 2. Создать Set новых ID
-                Set<Long> newPartnerIds = new HashSet<>();
-                if (!selectedPartnerIds.trim().isEmpty()) {
-                    String[] ids = selectedPartnerIds.split(",");
-                    for (String idStr : ids) {
-                        try {
-                            newPartnerIds.add(Long.parseLong(idStr.trim()));
-                        } catch (NumberFormatException ignored) {}
-                    }
-                }
-
-                // 3. Удалить старых партнёров
-                Set<Partner> partnersToRemove = new HashSet<>();
-                for (Partner partner : existingProject.getPartners()) {
-                    if (!newPartnerIds.contains(partner.getId())) {
-                        partnersToRemove.add(partner);
-                    }
-                }
-
-                for (Partner partner : partnersToRemove) {
-                    existingProject.getPartners().remove(partner);
+                // 2. Удаляем проект у текущих партнёров
+                for (Partner partner : currentPartners) {
                     partner.getProjects().remove(existingProject);
                     partnerService.save(partner);
                 }
 
-                // 4. Добавить новых партнёров
-                for (Long partnerId : newPartnerIds) {
-                    boolean alreadyExists = existingProject.getPartners().stream()
-                            .anyMatch(p -> p.getId().equals(partnerId));
+                // 3. ОЧИЩАЕМ коллекцию у проекта
+                existingProject.getPartners().clear();
 
-                    if (!alreadyExists) {
-                        partnerService.findById(partnerId).ifPresent(partner -> {
-                            if (partner.getProjects() == null) {
-                                partner.setProjects(new HashSet<>());
-                            }
+                // 4. Сохраняем проект С ПУСТОЙ коллекцией
+                projectService.save(existingProject);
 
-                            // Проверить, нет ли уже связи
-                            boolean projectAlreadyInPartner = partner.getProjects().stream()
-                                    .anyMatch(p -> p.getId().equals(existingProject.getId()));
-
-                            if (!projectAlreadyInPartner) {
+                // 5. Добавляем новых партнёров (если есть)
+                if (!selectedPartnerIds.trim().isEmpty()) {
+                    String[] ids = selectedPartnerIds.split(",");
+                    for (String idStr : ids) {
+                        try {
+                            Long partnerId = Long.parseLong(idStr.trim());
+                            partnerService.findById(partnerId).ifPresent(partner -> {
+                                // Инициализируем коллекцию если null
+                                if (partner.getProjects() == null) {
+                                    partner.setProjects(new HashSet<>());
+                                }
+                                // Добавляем проект к партнёру
                                 partner.getProjects().add(existingProject);
+                                // Добавляем партнёра к проекту
+                                existingProject.getPartners().add(partner);
+                                // Сохраняем партнёра
                                 partnerService.save(partner);
-                            }
-
-                            existingProject.getPartners().add(partner);
-                        });
+                            });
+                        } catch (NumberFormatException ignored) {}
                     }
+                    // Сохраняем проект с новыми партнёрами
+                    projectService.save(existingProject);
                 }
             }
 
