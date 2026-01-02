@@ -440,10 +440,10 @@
                                     <td colspan="9" class="text-center text-muted py-5">
                                         <i class="bi bi-people display-6 text-muted mb-3"></i>
                                         <h5>Партнеры не найдены</h5>
-                                        <p th:if="${selectedSearch or selectedType or selectedStatus or selectedHasLogo}">
+                                        <p th:if="${selectedSearch != null or selectedType != null or selectedStatus != null or selectedHasLogo != null}">
                                             По заданным фильтрам ничего не найдено
                                         </p>
-                                        <p th:unless="${selectedSearch or selectedType or selectedStatus or selectedHasLogo}">
+                                        <p th:if="${selectedSearch != null or selectedType != null or selectedStatus != null or selectedHasLogo != null}">
                                             Партнеры еще не добавлены
                                         </p>
                                         <a th:href="@{/admin/partners/create}" class="btn btn-primary mt-2">
