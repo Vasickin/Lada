@@ -1,10 +1,12 @@
 package com.community.cms.domain.service.people;
 
-import com.community.cms.domain.model.people.Partner;
+import com.community.cms.domain.enums.PartnerType;
 import com.community.cms.domain.model.content.Project;
-import com.community.cms.domain.model.people.Partner.PartnerType;
+import com.community.cms.domain.model.people.Partner;
 import com.community.cms.domain.repository.people.PartnerRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -12,10 +14,10 @@ import java.util.List;
 import java.util.Optional;
 
 /**
- * Сервис для управления партнерами проектов.
+ * Сервис для управления партнерами организации "ЛАДА".
  *
- * <p>Предоставляет бизнес-логику для работы с партнерами проектов,
- * включая спонсоров, информационных партнеров и других участников.</p>
+ * <p>Предоставляет бизнес-логику для работы с партнерами,
+ * включая управление участием в проектах.</p>
  *
  * @author Community CMS
  * @version 1.0
@@ -27,180 +29,105 @@ import java.util.Optional;
 @Transactional
 public class PartnerService {
 
-    private final PartnerRepository projectPartnerRepository;
+    private final PartnerRepository partnerRepository;
 
     /**
      * Конструктор с инъекцией зависимостей.
      *
-     * @param projectPartnerRepository репозиторий для работы с партнерами проектов
+     * @param partnerRepository репозиторий для работы с партнерами
      */
     @Autowired
-    public PartnerService(PartnerRepository projectPartnerRepository) {
-        this.projectPartnerRepository = projectPartnerRepository;
+    public PartnerService(PartnerRepository partnerRepository) {
+        this.partnerRepository = partnerRepository;
     }
 
     // ================== CRUD ОПЕРАЦИИ ==================
 
     /**
-     * Сохраняет партнера проекта.
+     * Сохраняет партнера.
      *
-     * @param projectPartner партнер проекта для сохранения
-     * @return сохраненный партнер проекта
+     * @param partner партнер для сохранения
+     * @return сохраненный партнер
      */
-    public Partner save(Partner projectPartner) {
-        validateProjectPartner(projectPartner);
-        return projectPartnerRepository.save(projectPartner);
+    public Partner save(Partner partner) {
+        validatePartner(partner);
+        return partnerRepository.save(partner);
     }
 
     /**
-     * Обновляет существующего партнера проекта.
+     * Обновляет существующего партнера.
      *
-     * @param projectPartner партнер проекта для обновления
-     * @return обновленный партнер проекта
+     * @param partner партнер для обновления
+     * @return обновленный партнер
      */
-    public Partner update(Partner projectPartner) {
-        validateProjectPartner(projectPartner);
-        return projectPartnerRepository.save(projectPartner);
+    public Partner update(Partner partner) {
+        validatePartner(partner);
+        return partnerRepository.save(partner);
     }
 
     /**
-     * Находит партнера проекта по ID.
+     * Находит партнера по ID.
      *
-     * @param id идентификатор партнера проекта
-     * @return Optional с партнером проекта, если найден
+     * @param id идентификатор партнера
+     * @return Optional с партнером, если найден
      */
     @Transactional(readOnly = true)
     public Optional<Partner> findById(Long id) {
-        return projectPartnerRepository.findById(id);
+        return partnerRepository.findById(id);
     }
 
     /**
-     * Удаляет партнера проекта по ID.
+     * Удаляет партнера по ID.
      *
-     * @param id идентификатор партнера проекта для удаления
+     * @param id идентификатор партнера для удаления
      */
     public void deleteById(Long id) {
-        projectPartnerRepository.deleteById(id);
-    }
-
-    // ================== ПОИСК ПО ПРОЕКТУ ==================
-
-    /**
-     * Находит всех партнеров указанного проекта.
-     *
-     * @param project проект
-     * @return список партнеров проекта
-     */
-    @Transactional(readOnly = true)
-    public List<Partner> findByProject(Project project) {
-        return projectPartnerRepository.findByProject(project);
-    }
-
-    /**
-     * Находит всех партнеров проекта по ID проекта.
-     * ТРЕБУЕТСЯ РЕАЛИЗАЦИЯ В РЕПОЗИТОРИИ.
-     *
-     * @param projectId ID проекта
-     * @return список партнеров проекта
-     * @throws UnsupportedOperationException пока не реализовано
-     */
-    @Transactional(readOnly = true)
-    public List<Partner> findByProjectId(Long projectId) {
-        // Для работы этого метода нужно добавить в PartnerRepository:
-        // @Query("SELECT pp FROM Partner pp WHERE pp.project.id = :projectId")
-        // List<Partner> findByProjectId(@Param("projectId") Long projectId);
-
-        throw new UnsupportedOperationException(
-                "Метод findByProjectId требует реализации в PartnerRepository. " +
-                        "Добавьте: @Query(\"SELECT pp FROM Partner pp WHERE pp.project.id = :projectId\") " +
-                        "List<Partner> findByProjectId(@Param(\"projectId\") Long projectId);"
-        );
-    }
-
-    /**
-     * Находит всех партнеров проекта, отсортированных по порядку сортировки.
-     *
-     * @param project проект
-     * @return список партнеров проекта (по sortOrder)
-     */
-    @Transactional(readOnly = true)
-    public List<Partner> findByProjectOrderBySortOrder(Project project) {
-        return projectPartnerRepository.findByProjectOrderBySortOrderAsc(project);
-    }
-
-    /**
-     * Находит всех партнеров проекта, отсортированных по названию.
-     *
-     * @param project проект
-     * @return список партнеров проекта (по названию)
-     */
-    @Transactional(readOnly = true)
-    public List<Partner> findByProjectOrderByName(Project project) {
-        return projectPartnerRepository.findByProjectOrderByNameAsc(project);
-    }
-
-    // ================== ПОИСК ПО ТИПУ ПАРТНЕРСТВА ==================
-
-    /**
-     * Находит партнеров проекта по типу партнерства.
-     *
-     * @param project проект
-     * @param partnerType тип партнерства
-     * @return список партнеров проекта указанного типа
-     */
-    @Transactional(readOnly = true)
-    public List<Partner> findByProjectAndPartnerType(Project project, PartnerType partnerType) {
-        return projectPartnerRepository.findByProjectAndPartnerType(project, partnerType);
-    }
-
-    /**
-     * Находит партнеров проекта по типу партнерства, отсортированных по порядку сортировки.
-     *
-     * @param project проект
-     * @param partnerType тип партнерства
-     * @return список партнеров проекта указанного типа (по sortOrder)
-     */
-    @Transactional(readOnly = true)
-    public List<Partner> findByProjectAndPartnerTypeOrderBySortOrder(Project project, PartnerType partnerType) {
-        return projectPartnerRepository.findByProjectAndPartnerTypeOrderBySortOrderAsc(project, partnerType);
+        partnerRepository.deleteById(id);
     }
 
     // ================== ПОИСК ПО АКТИВНОСТИ ==================
 
     /**
-     * Находит активных партнеров проекта.
+     * Находит всех активных партнеров.
      *
-     * @param project проект
-     * @return список активных партнеров проекта
+     * @return список активных партнеров
      */
     @Transactional(readOnly = true)
-    public List<Partner> findActiveByProject(Project project) {
-        return projectPartnerRepository.findByProjectAndActiveTrue(project);
+    public List<Partner> findAllActive() {
+        return partnerRepository.findByActiveTrue();
     }
 
     /**
-     * Находит активных партнеров проекта, отсортированных по порядку сортировки.
+     * Находит всех активных партнеров, отсортированных по порядку сортировки.
      *
-     * @param project проект
-     * @return список активных партнеров проекта (по sortOrder)
+     * @return список активных партнеров (по sortOrder)
      */
     @Transactional(readOnly = true)
-    public List<Partner> findActiveByProjectOrderBySortOrder(Project project) {
-        return projectPartnerRepository.findByProjectAndActiveTrueOrderBySortOrderAsc(project);
+    public List<Partner> findAllActiveOrderBySortOrder() {
+        return partnerRepository.findByActiveTrueOrderBySortOrderAsc();
     }
 
     /**
-     * Находит неактивных партнеров проекта.
+     * Находит всех активных партнеров, отсортированных по названию.
      *
-     * @param project проект
-     * @return список неактивных партнеров проекта
+     * @return список активных партнеров (по названию)
      */
     @Transactional(readOnly = true)
-    public List<Partner> findInactiveByProject(Project project) {
-        return projectPartnerRepository.findByProjectAndActiveFalse(project);
+    public List<Partner> findAllActiveOrderByName() {
+        return partnerRepository.findByActiveTrueOrderByNameAsc();
     }
 
-    // ================== ПОИСК ПО НАЗВАНИЮ И КОНТАКТАМ ==================
+    /**
+     * Находит всех неактивных партнеров.
+     *
+     * @return список неактивных партнеров
+     */
+    @Transactional(readOnly = true)
+    public List<Partner> findAllInactive() {
+        return partnerRepository.findByActiveFalse();
+    }
+
+    // ================== ПОИСК ПО НАЗВАНИЮ И ОПИСАНИЮ ==================
 
     /**
      * Находит партнеров по части названия (без учета регистра).
@@ -210,7 +137,7 @@ public class PartnerService {
      */
     @Transactional(readOnly = true)
     public List<Partner> findByNameContaining(String name) {
-        return projectPartnerRepository.findByNameContainingIgnoreCase(name);
+        return partnerRepository.findByNameContainingIgnoreCase(name);
     }
 
     /**
@@ -221,32 +148,280 @@ public class PartnerService {
      */
     @Transactional(readOnly = true)
     public List<Partner> findActiveByNameContaining(String name) {
-        return projectPartnerRepository.findByNameContainingIgnoreCaseAndActiveTrue(name);
+        return partnerRepository.findByNameContainingIgnoreCaseAndActiveTrue(name);
     }
 
     /**
-     * Находит партнеров по email.
+     * Комплексный поиск партнеров по названию или описанию (без учета регистра).
      *
-     * @param email email для поиска
-     * @return список партнеров с указанным email
-     */
-    @Transactional(readOnly = true)
-    public List<Partner> findByContactEmail(String email) {
-        return projectPartnerRepository.findByContactEmail(email);
-    }
-
-    /**
-     * Находит партнеров по контактному лицу (без учета регистра).
-     *
-     * @param contactPerson фрагмент имени контактного лица для поиска
+     * @param searchTerm поисковый запрос
      * @return список найденных партнеров
      */
     @Transactional(readOnly = true)
-    public List<Partner> findByContactPersonContaining(String contactPerson) {
-        return projectPartnerRepository.findByContactPersonContainingIgnoreCase(contactPerson);
+    public List<Partner> searchByNameOrDescription(String searchTerm) {
+        return partnerRepository.searchByNameOrDescription(searchTerm);
     }
 
-    // ================== ПОИСК ПО ЛОГОТИПУ И САЙТУ ==================
+    /**
+     * Комплексный поиск активных партнеров по названию или описанию.
+     *
+     * @param searchTerm поисковый запрос
+     * @return список найденных активных партнеров
+     */
+    @Transactional(readOnly = true)
+    public List<Partner> searchActiveByNameOrDescription(String searchTerm) {
+        return partnerRepository.searchActiveByNameOrDescription(searchTerm);
+    }
+
+    // ================== ПОИСК ПО ТИПУ ПАРТНЕРА ==================
+
+    /**
+     * Находит партнеров по типу партнерства.
+     *
+     * @param type тип партнера
+     * @return список партнеров указанного типа
+     */
+    @Transactional(readOnly = true)
+    public List<Partner> findByType(PartnerType type) {
+        return partnerRepository.findByType(type);
+    }
+
+    /**
+     * Находит активных партнеров по типу партнерства.
+     *
+     * @param type тип партнера
+     * @return список активных партнеров указанного типа
+     */
+    @Transactional(readOnly = true)
+    public List<Partner> findActiveByType(PartnerType type) {
+        return partnerRepository.findByTypeAndActiveTrue(type);
+    }
+
+    /**
+     * Находит спонсоров.
+     *
+     * @return список спонсоров
+     */
+    @Transactional(readOnly = true)
+    public List<Partner> findSponsors() {
+        return partnerRepository.findSponsors();
+    }
+
+    /**
+     * Находит активных спонсоров.
+     *
+     * @return список активных спонсоров
+     */
+    @Transactional(readOnly = true)
+    public List<Partner> findActiveSponsors() {
+        return partnerRepository.findActiveSponsors();
+    }
+
+    /**
+     * Находит информационных партнеров.
+     *
+     * @return список информационных партнеров
+     */
+    @Transactional(readOnly = true)
+    public List<Partner> findInformationPartners() {
+        return partnerRepository.findInformationPartners();
+    }
+
+    /**
+     * Находит активных информационных партнеров.
+     *
+     * @return список активных информационных партнеров
+     */
+    @Transactional(readOnly = true)
+    public List<Partner> findActiveInformationPartners() {
+        return partnerRepository.findActiveInformationPartners();
+    }
+
+    /**
+     * Находит технических партнеров.
+     *
+     * @return список технических партнеров
+     */
+    @Transactional(readOnly = true)
+    public List<Partner> findTechnicalPartners() {
+        return partnerRepository.findTechnicalPartners();
+    }
+
+    /**
+     * Находит активных технических партнеров.
+     *
+     * @return список активных технических партнеров
+     */
+    @Transactional(readOnly = true)
+    public List<Partner> findActiveTechnicalPartners() {
+        return partnerRepository.findActiveTechnicalPartners();
+    }
+
+    // ================== РАБОТА С ПРОЕКТАМИ ==================
+
+    /**
+     * Находит партнеров, участвующих в указанном проекте.
+     *
+     * @param project проект
+     * @return список партнеров участвующих в проекте
+     */
+    @Transactional(readOnly = true)
+    public List<Partner> findByProject(Project project) {
+        return partnerRepository.findByProject(project);
+    }
+
+    /**
+     * Находит партнеров, участвующих в указанном проекте, отсортированных по порядку сортировки.
+     *
+     * @param project проект
+     * @return список партнеров участвующих в проекте (по sortOrder)
+     */
+    @Transactional(readOnly = true)
+    public List<Partner> findByProjectOrderBySortOrder(Project project) {
+        return partnerRepository.findByProjectOrderBySortOrder(project);
+    }
+
+    /**
+     * Находит партнеров, участвующих в проекте по ID проекта.
+     *
+     * @param projectId ID проекта
+     * @return список партнеров участвующих в проекте
+     */
+    @Transactional(readOnly = true)
+    public List<Partner> findByProjectId(Long projectId) {
+        return partnerRepository.findByProjectId(projectId);
+    }
+
+    /**
+     * Находит партнеров, НЕ участвующих в указанном проекте.
+     *
+     * @param project проект
+     * @return список партнеров не участвующих в проекте
+     */
+    @Transactional(readOnly = true)
+    public List<Partner> findNotInProject(Project project) {
+        return partnerRepository.findNotInProject(project);
+    }
+
+    /**
+     * Находит партнеров, не имеющих проектов.
+     *
+     * @return список партнеров без проектов
+     */
+    @Transactional(readOnly = true)
+    public List<Partner> findWithoutProjects() {
+        return partnerRepository.findWithoutProjects();
+    }
+
+    // ================== ПАГИНАЦИЯ ==================
+
+    /**
+     * Находит всех активных партнеров с пагинацией.
+     *
+     * @param pageable параметры пагинации
+     * @return страница активных партнеров
+     */
+    @Transactional(readOnly = true)
+    public Page<Partner> findAllActive(Pageable pageable) {
+        return partnerRepository.findByActiveTrue(pageable);
+    }
+
+    /**
+     * Находит всех партнеров с пагинацией.
+     *
+     * @param pageable параметры пагинации
+     * @return страница всех партнеров
+     */
+    @Transactional(readOnly = true)
+    public Page<Partner> findAll(Pageable pageable) {
+        return partnerRepository.findAll(pageable);
+    }
+
+    // ================== СОРТИРОВКА ==================
+
+    /**
+     * Находит всех партнеров, отсортированных по названию (A-Z).
+     *
+     * @return список всех партнеров отсортированных по названию
+     */
+    @Transactional(readOnly = true)
+    public List<Partner> findAllOrderByName() {
+        return partnerRepository.findAllByOrderByNameAsc();
+    }
+
+    /**
+     * Находит всех партнеров, отсортированных по порядку сортировки.
+     *
+     * @return список всех партнеров отсортированных по sortOrder
+     */
+    @Transactional(readOnly = true)
+    public List<Partner> findAllOrderBySortOrder() {
+        return partnerRepository.findAllByOrderBySortOrderAsc();
+    }
+
+    /**
+     * Находит всех партнеров, отсортированных по дате создания (новые сначала).
+     *
+     * @return список всех партнеров отсортированных по дате создания
+     */
+    @Transactional(readOnly = true)
+    public List<Partner> findAllOrderByCreatedDateDesc() {
+        return partnerRepository.findAllByOrderByCreatedAtDesc();
+    }
+
+    /**
+     * Находит всех партнеров, отсортированных по типу.
+     *
+     * @return список всех партнеров отсортированных по типу
+     */
+    @Transactional(readOnly = true)
+    public List<Partner> findAllOrderByType() {
+        return partnerRepository.findAllByOrderByTypeAsc();
+    }
+
+    // ================== СТАТИСТИКА И СПЕЦИАЛЬНЫЕ ЗАПРОСЫ ==================
+
+    /**
+     * Подсчитывает количество активных партнеров.
+     *
+     * @return количество активных партнеров
+     */
+    @Transactional(readOnly = true)
+    public long countActive() {
+        return partnerRepository.countByActiveTrue();
+    }
+
+    /**
+     * Подсчитывает количество неактивных партнеров.
+     *
+     * @return количество неактивных партнеров
+     */
+    @Transactional(readOnly = true)
+    public long countInactive() {
+        return partnerRepository.countByActiveFalse();
+    }
+
+    /**
+     * Подсчитывает количество партнеров указанного типа.
+     *
+     * @param type тип партнера
+     * @return количество партнеров указанного типа
+     */
+    @Transactional(readOnly = true)
+    public long countByType(PartnerType type) {
+        return partnerRepository.countByType(type);
+    }
+
+    /**
+     * Подсчитывает количество активных партнеров указанного типа.
+     *
+     * @param type тип партнера
+     * @return количество активных партнеров указанного типа
+     */
+    @Transactional(readOnly = true)
+    public long countActiveByType(PartnerType type) {
+        return partnerRepository.countByTypeAndActiveTrue(type);
+    }
 
     /**
      * Находит партнеров с логотипом.
@@ -255,7 +430,7 @@ public class PartnerService {
      */
     @Transactional(readOnly = true)
     public List<Partner> findWithLogo() {
-        return projectPartnerRepository.findByLogoPathIsNotNull();
+        return partnerRepository.findByLogoUrlIsNotNull();
     }
 
     /**
@@ -265,39 +440,72 @@ public class PartnerService {
      */
     @Transactional(readOnly = true)
     public List<Partner> findWithoutLogo() {
-        return projectPartnerRepository.findByLogoPathIsNull();
+        return partnerRepository.findByLogoUrlIsNull();
     }
 
     /**
-     * Находит партнеров с сайтом.
+     * Находит партнеров с описанием.
      *
-     * @return список партнеров с сайтом
+     * @return список партнеров с описанием
+     */
+    @Transactional(readOnly = true)
+    public List<Partner> findWithDescription() {
+        return partnerRepository.findWithDescription();
+    }
+
+    /**
+     * Находит партнеров без описания.
+     *
+     * @return список партнеров без описания
+     */
+    @Transactional(readOnly = true)
+    public List<Partner> findWithoutDescription() {
+        return partnerRepository.findWithoutDescription();
+    }
+
+    /**
+     * Находит партнеров с веб-сайтом.
+     *
+     * @return список партнеров с веб-сайтом
      */
     @Transactional(readOnly = true)
     public List<Partner> findWithWebsite() {
-        return projectPartnerRepository.findByWebsiteUrlIsNotNull();
+        return partnerRepository.findWithWebsite();
     }
 
     /**
-     * Находит партнеров без сайта.
+     * Находит партнеров без веб-сайта.
      *
-     * @return список партнеров без сайта
+     * @return список партнеров без веб-сайта
      */
     @Transactional(readOnly = true)
     public List<Partner> findWithoutWebsite() {
-        return projectPartnerRepository.findByWebsiteUrlIsNull();
+        return partnerRepository.findWithoutWebsite();
     }
 
     /**
-     * Проверяет существование партнера с указанным URL сайта.
+     * Находит последних N добавленных партнеров.
      *
-     * @param websiteUrl URL сайта для проверки
-     * @return true если партнер с таким сайтом существует, иначе false
+     * @param limit количество партнеров
+     * @return список последних добавленных партнеров
      */
     @Transactional(readOnly = true)
-    public boolean existsByWebsiteUrl(String websiteUrl) {
-        return projectPartnerRepository.existsByWebsiteUrl(websiteUrl);
+    public List<Partner> findRecentPartners(int limit) {
+        return partnerRepository.findRecentPartners(limit);
     }
+
+    /**
+     * Находит ключевых партнеров (с высокой позицией в сортировке).
+     *
+     * @param limit количество партнеров
+     * @return список ключевых партнеров
+     */
+    @Transactional(readOnly = true)
+    public List<Partner> findKeyPartners(int limit) {
+        return partnerRepository.findKeyPartners(limit);
+    }
+
+    // ================== РАБОТА С КОНТАКТАМИ ==================
 
     /**
      * Проверяет существование партнера с указанным email.
@@ -306,374 +514,271 @@ public class PartnerService {
      * @return true если партнер с таким email существует, иначе false
      */
     @Transactional(readOnly = true)
-    public boolean existsByContactEmail(String email) {
-        return projectPartnerRepository.existsByContactEmail(email);
+    public boolean existsByEmail(String email) {
+        return partnerRepository.existsByContactEmail(email);
     }
 
-    // ================== СПЕЦИАЛЬНЫЕ ЗАПРОСЫ ==================
-
     /**
-     * Находит спонсоров проекта.
+     * Находит партнера по email.
      *
-     * @param project проект
-     * @return список спонсоров проекта
+     * @param email email для поиска
+     * @return Optional с партнером, если найден
      */
     @Transactional(readOnly = true)
-    public List<Partner> findSponsorsByProject(Project project) {
-        return projectPartnerRepository.findSponsorsByProject(project);
+    public Optional<Partner> findByEmail(String email) {
+        return partnerRepository.findByContactEmail(email);
     }
 
     /**
-     * Находит информационных партнеров проекта.
+     * Находит активного партнера по email.
      *
-     * @param project проект
-     * @return список информационных партнеров проекта
+     * @param email email для поиска
+     * @return Optional с активным партнером, если найден
      */
     @Transactional(readOnly = true)
-    public List<Partner> findInformationPartnersByProject(Project project) {
-        return projectPartnerRepository.findInformationPartnersByProject(project);
+    public Optional<Partner> findActiveByEmail(String email) {
+        return partnerRepository.findByContactEmailAndActiveTrue(email);
     }
 
     /**
-     * Находит первые N активных партнеров проекта.
+     * Проверяет существование партнера с указанным сайтом.
      *
-     * @param project проект
-     * @param limit количество партнеров
-     * @return список первых N активных партнеров проекта
+     * @param website сайт для проверки
+     * @return true если партнер с таким сайтом существует, иначе false
      */
     @Transactional(readOnly = true)
-    public List<Partner> findFirstNActiveByProject(Project project, int limit) {
-        return projectPartnerRepository.findFirstNByProject(project, limit);
+    public boolean existsByWebsite(String website) {
+        return partnerRepository.existsByWebsite(website);
     }
 
     /**
-     * Находит партнеров проекта без описания.
+     * Находит партнеров по контактному лицу.
      *
-     * @param project проект
-     * @return список партнеров проекта без описания
+     * @param contactPerson имя контактного лица
+     * @return список партнеров с указанным контактным лицом
      */
     @Transactional(readOnly = true)
-    public List<Partner> findWithoutDescriptionByProject(Project project) {
-        return projectPartnerRepository.findWithoutDescriptionByProject(project);
-    }
-
-    /**
-     * Находит партнеров проекта без контактной информации.
-     *
-     * @param project проект
-     * @return список партнеров проекта без контактной информации
-     */
-    @Transactional(readOnly = true)
-    public List<Partner> findWithoutContactInfoByProject(Project project) {
-        return projectPartnerRepository.findWithoutContactInfoByProject(project);
-    }
-
-    /**
-     * Находит партнеров, участвующих в нескольких проектах.
-     *
-     * @param minProjects минимальное количество проектов
-     * @return список партнеров, участвующих в minProjects и более проектах
-     */
-    @Transactional(readOnly = true)
-    public List<Partner> findPartnersInMultipleProjects(int minProjects) {
-        return projectPartnerRepository.findPartnersInMultipleProjects(minProjects);
-    }
-
-    // ================== СТАТИСТИКА ==================
-
-    /**
-     * Подсчитывает количество партнеров проекта.
-     *
-     * @param project проект
-     * @return количество партнеров проекта
-     */
-    @Transactional(readOnly = true)
-    public long countByProject(Project project) {
-        return projectPartnerRepository.countByProject(project);
-    }
-
-    /**
-     * Подсчитывает количество активных партнеров проекта.
-     *
-     * @param project проект
-     * @return количество активных партнеров проекта
-     */
-    @Transactional(readOnly = true)
-    public long countActiveByProject(Project project) {
-        return projectPartnerRepository.countByProjectAndActiveTrue(project);
-    }
-
-    /**
-     * Подсчитывает количество партнеров проекта по типу партнерства.
-     *
-     * @param project проект
-     * @param partnerType тип партнерства
-     * @return количество партнеров проекта указанного типа
-     */
-    @Transactional(readOnly = true)
-    public long countByProjectAndPartnerType(Project project, PartnerType partnerType) {
-        return projectPartnerRepository.countByProjectAndPartnerType(project, partnerType);
-    }
-
-    /**
-     * Находит все уникальные типы партнерства проекта.
-     *
-     * @param project проект
-     * @return список уникальных типов партнерства проекта
-     */
-    @Transactional(readOnly = true)
-    public List<PartnerType> findDistinctPartnerTypesByProject(Project project) {
-        return projectPartnerRepository.findDistinctPartnerTypesByProject(project);
-    }
-
-    // ================== УДАЛЕНИЕ ПО СВЯЗЯМ ==================
-
-    /**
-     * Удаляет всех партнеров указанного проекта.
-     *
-     * @param project проект
-     */
-    public void deleteByProject(Project project) {
-        projectPartnerRepository.deleteByProject(project);
-    }
-
-    /**
-     * Удаляет партнеров проекта по типу партнерства.
-     *
-     * @param project проект
-     * @param partnerType тип партнерства
-     */
-    public void deleteByProjectAndPartnerType(Project project, PartnerType partnerType) {
-        projectPartnerRepository.deleteByProjectAndPartnerType(project, partnerType);
+    public List<Partner> findByContactPerson(String contactPerson) {
+        return partnerRepository.findByContactPersonContainingIgnoreCase(contactPerson);
     }
 
     // ================== ВСПОМОГАТЕЛЬНЫЕ МЕТОДЫ ==================
 
     /**
-     * Проверяет бизнес-правила для партнера проекта.
+     * Проверяет бизнес-правила для партнера.
      *
-     * @param projectPartner партнер проекта для валидации
-     * @throws IllegalArgumentException если партнер проекта невалиден
+     * @param partner партнер для валидации
+     * @throws IllegalArgumentException если партнер невалиден
      */
-    private void validateProjectPartner(Partner projectPartner) {
-        if (projectPartner == null) {
-            throw new IllegalArgumentException("Партнер проекта не может быть null");
+    private void validatePartner(Partner partner) {
+        if (partner == null) {
+            throw new IllegalArgumentException("Партнер не может быть null");
         }
 
-        if (projectPartner.getProject() == null) {
-            throw new IllegalArgumentException("Партнер должен быть привязан к проекту");
-        }
-
-        if (projectPartner.getName() == null || projectPartner.getName().trim().isEmpty()) {
+        if (partner.getName() == null || partner.getName().trim().isEmpty()) {
             throw new IllegalArgumentException("Название партнера обязательно");
         }
 
-        if (projectPartner.getPartnerType() == null) {
-            projectPartner.setPartnerType(PartnerType.OTHER);
-        }
-
-        if (projectPartner.getSortOrder() == null) {
-            projectPartner.setSortOrder(0);
+        if (partner.getSortOrder() == null) {
+            partner.setSortOrder(0);
         }
     }
 
     /**
-     * Создает нового партнера проекта.
+     * Создает нового партнера.
      *
-     * @param project проект
-     * @param name название партнера
-     * @param partnerType тип партнерства
+     * @param name название организации
+     * @param type тип партнерства
      * @param description описание (опционально)
-     * @param logoPath путь к логотипу (опционально)
-     * @param websiteUrl URL сайта (опционально)
-     * @param contactEmail контактный email (опционально)
-     * @param contactPhone контактный телефон (опционально)
+     * @param logoUrl URL логотипа (опционально)
+     * @param website сайт (опционально)
+     * @param contactEmail email для контактов (опционально)
+     * @param contactPhone телефон (опционально)
      * @param contactPerson контактное лицо (опционально)
      * @param sortOrder порядок сортировки
-     * @return созданный партнер проекта
+     * @return созданный партнер
      */
-    public Partner createProjectPartner(Project project, String name, PartnerType partnerType,
-                                        String description, String logoPath, String websiteUrl,
-                                        String contactEmail, String contactPhone, String contactPerson,
-                                        Integer sortOrder) {
-        Partner projectPartner = new Partner(project, name, partnerType);
-        projectPartner.setDescription(description);
-        projectPartner.setLogoPath(logoPath);
-        projectPartner.setWebsiteUrl(websiteUrl);
-        projectPartner.setContactEmail(contactEmail);
-        projectPartner.setContactPhone(contactPhone);
-        projectPartner.setContactPerson(contactPerson);
-        projectPartner.setSortOrder(sortOrder != null ? sortOrder : 0);
-        projectPartner.setActive(true);
+    public Partner createPartner(String name, PartnerType type,
+                                 String description, String logoUrl,
+                                 String website, String contactEmail,
+                                 String contactPhone, String contactPerson,
+                                 Integer sortOrder) {
+        Partner partner = new Partner(name, type);
+        partner.setDescription(description);
+        partner.setLogoUrl(logoUrl);
+        partner.setWebsite(website);
+        partner.setContactEmail(contactEmail);
+        partner.setContactPhone(contactPhone);
+        partner.setContactPerson(contactPerson);
+        partner.setSortOrder(sortOrder != null ? sortOrder : 0);
+        partner.setActive(true);
 
-        return save(projectPartner);
+        return save(partner);
     }
 
     /**
-     * Активирует партнера проекта.
+     * Активирует партнера.
      *
-     * @param projectPartner партнер для активации
-     * @return активированный партнер проекта
+     * @param partner партнер для активации
+     * @return активированный партнер
      */
-    public Partner activate(Partner projectPartner) {
-        projectPartner.setActive(true);
-        return projectPartnerRepository.save(projectPartner);
+    public Partner activate(Partner partner) {
+        partner.setActive(true);
+        return partnerRepository.save(partner);
     }
 
     /**
-     * Деактивирует партнера проекта.
+     * Деактивирует партнера.
      *
-     * @param projectPartner партнер для деактивации
-     * @return деактивированный партнер проекта
+     * @param partner партнер для деактивации
+     * @return деактивированный партнер
      */
-    public Partner deactivate(Partner projectPartner) {
-        projectPartner.setActive(false);
-        return projectPartnerRepository.save(projectPartner);
+    public Partner deactivate(Partner partner) {
+        partner.setActive(false);
+        return partnerRepository.save(partner);
     }
 
     /**
-     * Активирует партнера проекта по ID.
+     * Активирует партнера по ID.
      *
      * @param id ID партнера
-     * @return активированный партнер проекта
+     * @return активированный партнер
      * @throws IllegalArgumentException если партнер не найден
      */
     public Partner activateById(Long id) {
-        Partner projectPartner = projectPartnerRepository.findById(id)
+        Partner partner = partnerRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Партнер с ID " + id + " не найден"));
-        return activate(projectPartner);
+        return activate(partner);
     }
 
     /**
-     * Деактивирует партнера проекта по ID.
+     * Деактивирует партнера по ID.
      *
      * @param id ID партнера
-     * @return деактивированный партнер проекта
+     * @return деактивированный партнер
      * @throws IllegalArgumentException если партнер не найден
      */
     public Partner deactivateById(Long id) {
-        Partner projectPartner = projectPartnerRepository.findById(id)
+        Partner partner = partnerRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Партнер с ID " + id + " не найден"));
-        return deactivate(projectPartner);
+        return deactivate(partner);
     }
+
+    /**
+     * Добавляет проект к партнеру.
+     *
+     * @param partner партнер
+     * @param project проект для добавления
+     * @return обновленный партнер
+     */
+    public Partner addProjectToPartner(Partner partner, Project project) {
+        partner.addProject(project);
+        return partnerRepository.save(partner);
+    }
+
+    /**
+     * Удаляет проект у партнера.
+     *
+     * @param partner партнер
+     * @param project проект для удаления
+     * @return обновленный партнер
+     */
+    public Partner removeProjectFromPartner(Partner partner, Project project) {
+        partner.removeProject(project);
+        return partnerRepository.save(partner);
+    }
+
+    // ================== ПРОВЕРКИ И УТИЛИТЫ ==================
 
     /**
      * Проверяет имеет ли партнер логотип.
      *
-     * @param projectPartner партнер для проверки
+     * @param partner партнер
      * @return true если у партнера есть логотип, иначе false
      */
-    public boolean hasLogo(Partner projectPartner) {
-        return projectPartner.hasLogo();
-    }
-
-    /**
-     * Проверяет имеет ли партнер сайт.
-     *
-     * @param projectPartner партнер для проверки
-     * @return true если у партнера есть сайт, иначе false
-     */
-    public boolean hasWebsite(Partner projectPartner) {
-        return projectPartner.hasWebsite();
+    public boolean hasLogo(Partner partner) {
+        return partner.hasLogo();
     }
 
     /**
      * Проверяет имеет ли партнер описание.
      *
-     * @param projectPartner партнер для проверки
+     * @param partner партнер
      * @return true если у партнера есть описание, иначе false
      */
-    public boolean hasDescription(Partner projectPartner) {
-        return projectPartner.hasDescription();
+    public boolean hasDescription(Partner partner) {
+        return partner.hasDescription();
     }
 
     /**
-     * Проверяет имеет ли партнер контактную информацию.
+     * Проверяет имеет ли партнер сайт.
      *
-     * @param projectPartner партнер для проверки
-     * @return true если у партнера есть контактная информация, иначе false
+     * @param partner партнер
+     * @return true если у партнера есть сайт, иначе false
      */
-    public boolean hasContactInfo(Partner projectPartner) {
-        return projectPartner.hasContactInfo();
+    public boolean hasWebsite(Partner partner) {
+        return partner.hasWebsite();
     }
 
     /**
-     * Получает полную контактную информацию партнера в виде строки.
+     * Проверяет указано ли контактное лицо.
      *
-     * @param projectPartner партнер
-     * @return форматированная контактная информация
+     * @param partner партнер
+     * @return true если у партнера указано контактное лицо, иначе false
      */
-    public String getFormattedContactInfo(Partner projectPartner) {
-        return projectPartner.getFormattedContactInfo();
+    public boolean hasContactPerson(Partner partner) {
+        return partner.hasContactPerson();
     }
 
     /**
-     * Получает URL сайта с протоколом.
+     * Получает количество проектов, в которых участвует партнер.
      *
-     * @param projectPartner партнер
-     * @return полный URL с протоколом
+     * @param partner партнер
+     * @return количество проектов
      */
-    public String getFullWebsiteUrl(Partner projectPartner) {
-        return projectPartner.getFullWebsiteUrl();
+    public int getProjectsCount(Partner partner) {
+        return partner.getProjectsCount();
     }
 
     /**
-     * Получает отображаемое имя типа партнерства на русском.
+     * Получает отображаемое название типа партнера.
      *
-     * @param projectPartner партнер
-     * @return русское название типа партнерства
+     * @param partner партнер
+     * @return отображаемое название типа
      */
-    public String getPartnerTypeDisplayNameRu(Partner projectPartner) {
-        return projectPartner.getPartnerTypeDisplayNameRu();
+    public String getTypeDisplayName(Partner partner) {
+        return partner.getTypeDisplayName();
     }
 
     /**
-     * Получает отображаемое имя типа партнерства на английском.
+     * Проверяет участвует ли партнер в указанном проекте.
      *
-     * @param projectPartner партнер
-     * @return английское название типа партнерства
+     * @param partner партнер
+     * @param project проект для проверки
+     * @return true если участвует, иначе false
      */
-    public String getPartnerTypeDisplayNameEn(Partner projectPartner) {
-        return projectPartner.getPartnerTypeDisplayNameEn();
+    public boolean participatesInProject(Partner partner, Project project) {
+        return partner.participatesInProject(project);
     }
 
     /**
-     * Проверяет является ли партнер спонсором.
+     * Проверяет участвует ли партнер в проекте по ID.
      *
-     * @param projectPartner партнер для проверки
-     * @return true если партнер является спонсором, иначе false
+     * @param partner партнер
+     * @param projectId ID проекта для проверки
+     * @return true если участвует, иначе false
      */
-    public boolean isSponsor(Partner projectPartner) {
-        return projectPartner.isSponsor();
+    public boolean participatesInProject(Partner partner, Long projectId) {
+        return partner.participatesInProject(projectId);
     }
 
     /**
-     * Проверяет является ли партнер информационным партнером.
+     * Обновляет порядок сортировки партнеров.
      *
-     * @param projectPartner партнер для проверки
-     * @return true если партнер является информационным партнером, иначе false
-     */
-    public boolean isInformationPartner(Partner projectPartner) {
-        return projectPartner.isInformationPartner();
-    }
-
-    /**
-     * Получает инициалы партнера (для заглушки логотипа).
-     *
-     * @param projectPartner партнер
-     * @return инициалы партнера (2 буквы)
-     */
-    public String getInitials(Partner projectPartner) {
-        return projectPartner.getInitials();
-    }
-
-    /**
-     * Обновляет порядок сортировки партнеров проекта.
-     *
-     * @param projectPartners список партнеров с обновленными sortOrder
+     * @param partners список партнеров с обновленными sortOrder
      * @return список обновленных партнеров
      */
-    public List<Partner> updateSortOrder(List<Partner> projectPartners) {
-        return projectPartnerRepository.saveAll(projectPartners);
+    public List<Partner> updateSortOrder(List<Partner> partners) {
+        return partnerRepository.saveAll(partners);
     }
 }

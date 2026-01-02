@@ -772,7 +772,7 @@
                                 </div>
 
                                 <!-- Скрытое поле для связи с основной формой -->
-                                <input type="hidden" id="showPartners" name="showPartners" value="true">
+                             <!--   <input type="hidden" id="showPartners" name="showPartners" value="true"> -->
 
                                 <!-- Статистика -->
                                 <div class="row mb-3">
@@ -863,7 +863,7 @@
                                                                 </div>
                                                                 <div class="flex-grow-1">
                                                                     <strong th:text="${partner.name}"></strong><br>
-                                                                    <small class="text-muted" th:text="${partner.partnerType} ?: 'Тип не указан'"></small>
+                                                                    <small class="text-muted" th:text="${partner.type} ?: 'Тип не указан'"></small>
                                                                 </div>
                                                                 <div class="text-end">
                                                                     <span class="badge bg-info">Доступен</span>
@@ -2959,283 +2959,483 @@ function updateSelectedPhotosCounter() {
 </script>
 
 
+<!-- === JavaScript для Drag and Drop партнёров (РАБОЧАЯ ВЕРСИЯ) === -->
 <script>
-    // === JavaScript для Drag and Drop партнёров ===
+    // === Глобальные переменные ===
+    let draggedPartner = null;
 
-document.addEventListener('DOMContentLoaded', function() {
-    // Инициализация перетаскивания для партнёров
-    initPartnersDragAndDrop();
-    updatePartnersCounters();
+    // === ОСНОВНЫЕ ФУНКЦИИ ===
 
-    // Инициализация превью
-    showPartnersPreview();
-});
+    // Инициализация при загрузке страницы
+    document.addEventListener('DOMContentLoaded', function() {
+        console.log('Инициализация DnD для партнёров...');
 
-// === Основные функции для партнёров ===
+        // 1. Настраиваем перетаскивание
+        initPartnersDragAndDrop();
 
-function allowDropPartner(event) {
-    event.preventDefault();
-}
+        // 2. Инициализируем счетчики
+        updatePartnersCounters();
 
-function dragPartner(event) {
-    event.dataTransfer.setData('text/plain', event.target.getAttribute('data-partner-id'));
-    event.target.classList.add('dragging');
-}
+        // 3. Инициализируем превью (только если есть контейнер)
+        if (document.getElementById('selectedPartnersPreview')) {
+            updatePartnersPreview();
+        }
 
-function dropPartner(event) {
-    event.preventDefault();
-    const partnerId = event.dataTransfer.getData('text/plain');
-    const draggedElement = document.querySelector(`[data-partner-id="${partnerId}"]`);
-    const targetContainer = event.target.closest('#availablePartnersContainer, #projectPartnersContainer');
+        // 4. Заполняем скрытое поле изначальными данными (для edit.html)
+        updatePartnersHiddenInput();
+    });
 
-    if (draggedElement && targetContainer && draggedElement.parentElement !== targetContainer) {
-        movePartnerToContainer(partnerId, targetContainer.id);
+    // Разрешить перетаскивание
+    function allowDropPartner(event) {
+        event.preventDefault();
     }
 
-    // Убираем класс dragging со всех элементов
-    document.querySelectorAll('.partner-draggable.dragging').forEach(el => el.classList.remove('dragging'));
-}
+    // Начать перетаскивание
+    function dragPartner(event) {
+        draggedPartner = event.target;
+        event.dataTransfer.setData('text/plain', event.target.getAttribute('data-partner-id'));
+        event.target.classList.add('dragging');
+        console.log('Начато перетаскивание партнёра:', event.target.getAttribute('data-partner-id'));
+    }
 
-function initPartnersDragAndDrop() {
-    // Настраиваем перетаскивание для всех партнёров
-    document.querySelectorAll('.partner-draggable').forEach(item => {
-        item.setAttribute('draggable', 'true');
+    // Завершить перетаскивание
+    function dropPartner(event) {
+        event.preventDefault();
 
-        item.addEventListener('dragstart', function(e) {
-            e.dataTransfer.setData('text/plain', this.getAttribute('data-partner-id'));
-            this.classList.add('dragging');
+        // Убираем подсветку зоны drop
+        event.target.closest('#availablePartnersContainer, #projectPartnersContainer')?.classList.remove('partner-drop-zone-active');
+
+        // Получаем ID перетаскиваемого партнёра
+        const partnerId = event.dataTransfer.getData('text/plain');
+        console.log('Drop партнёра ID:', partnerId);
+
+        // Находим элемент партнёра
+        const draggedElement = document.querySelector(`[data-partner-id="${partnerId}"]`);
+        if (!draggedElement) {
+            console.error('Не найден элемент партнёра с ID:', partnerId);
+            return;
+        }
+
+        // Определяем целевую колонку
+        const targetContainer = event.target.closest('#availablePartnersContainer, #projectPartnersContainer');
+        if (!targetContainer) {
+            console.error('Не найдена целевая колонка');
+            return;
+        }
+
+        console.log('Перемещаем из:', draggedElement.parentElement.id, 'в:', targetContainer.id);
+
+        // Перемещаем партнёра
+        movePartnerToContainer(partnerId, targetContainer.id);
+
+        // Убираем класс dragging
+        document.querySelectorAll('.partner-draggable.dragging').forEach(el => {
+            el.classList.remove('dragging');
+        });
+    }
+
+    // Инициализация DnD
+    function initPartnersDragAndDrop() {
+        console.log('Настройка DnD для партнёров...');
+
+        // Настраиваем все элементы партнёров
+        document.querySelectorAll('.partner-draggable').forEach(item => {
+            // Устанавливаем атрибут draggable
+            item.setAttribute('draggable', 'true');
+
+            // Обработчик начала перетаскивания
+            item.addEventListener('dragstart', function(e) {
+                dragPartner(e);
+            });
+
+            // Обработчик конца перетаскивания
+            item.addEventListener('dragend', function() {
+                this.classList.remove('dragging');
+                draggedPartner = null;
+            });
+
+            // Клик для выделения
+            item.addEventListener('click', function(e) {
+                // Ctrl/Cmd для множественного выбора
+                if (!e.ctrlKey && !e.metaKey) {
+                    // Снимаем выделение со всех
+                    document.querySelectorAll('.partner-draggable.selected').forEach(el => {
+                        el.classList.remove('selected');
+                    });
+                }
+                this.classList.toggle('selected');
+                console.log('Выбран партнёр:', this.getAttribute('data-partner-id'));
+            });
         });
 
-        item.addEventListener('dragend', function() {
+        // Настраиваем зоны drop (Доступные партнёры)
+        const availableContainer = document.getElementById('availablePartnersContainer');
+        if (availableContainer) {
+            availableContainer.addEventListener('dragover', function(e) {
+                e.preventDefault();
+                this.classList.add('partner-drop-zone-active');
+            });
+
+            availableContainer.addEventListener('dragleave', function() {
+                this.classList.remove('partner-drop-zone-active');
+            });
+
+            availableContainer.addEventListener('drop', function(e) {
+                dropPartner(e);
+            });
+        }
+
+        // Настраиваем зоны drop (Партнёры проекта)
+        const projectContainer = document.getElementById('projectPartnersContainer');
+        if (projectContainer) {
+            projectContainer.addEventListener('dragover', function(e) {
+                e.preventDefault();
+                this.classList.add('partner-drop-zone-active');
+            });
+
+            projectContainer.addEventListener('dragleave', function() {
+                this.classList.remove('partner-drop-zone-active');
+            });
+
+            projectContainer.addEventListener('drop', function(e) {
+                dropPartner(e);
+            });
+        }
+
+        console.log('DnD для партнёров настроен');
+    }
+
+    // Перемещение партнёра между колонками
+    function movePartnerToContainer(partnerId, targetContainerId) {
+        console.log(`movePartnerToContainer: ${partnerId} -> ${targetContainerId}`);
+
+        // Находим элемент партнёра
+        const partnerElement = document.querySelector(`[data-partner-id="${partnerId}"]`);
+        if (!partnerElement) {
+            console.error('Партнёр не найден:', partnerId);
+            return;
+        }
+
+        // Находим целевую колонку
+        const targetContainer = document.getElementById(targetContainerId);
+        if (!targetContainer) {
+            console.error('Целевая колонка не найдена:', targetContainerId);
+            return;
+        }
+
+        // Проверяем, не перемещаем ли мы в ту же колонку
+        if (partnerElement.parentElement === targetContainer) {
+            console.log('Партнёр уже в целевой колонке');
+            return;
+        }
+
+        // Определяем направление перемещения
+        const isMovingToProject = targetContainerId === 'projectPartnersContainer';
+
+        // Клонируем элемент с новыми стилями
+        const clonedElement = partnerElement.cloneNode(true);
+
+        // Очищаем классы выделения
+        clonedElement.classList.remove('selected', 'dragging');
+
+        // Меняем стили в зависимости от колонки
+        if (isMovingToProject) {
+            // Перемещаем в проект - зеленые стили
+            const icon = clonedElement.querySelector('.bi-building, .bi-handshake');
+            if (icon) {
+                icon.className = 'bi bi-handshake fs-4 text-success';
+            }
+
+            const badge = clonedElement.querySelector('.badge');
+            if (badge) {
+                badge.className = 'badge bg-success text-white';
+                badge.textContent = 'В проекте';
+            }
+
+            console.log(`Партнёр ${partnerId} перемещён в проект`);
+        } else {
+            // Перемещаем в доступные - синие стили
+            const icon = clonedElement.querySelector('.bi-building, .bi-handshake');
+            if (icon) {
+                icon.className = 'bi bi-building fs-4 text-info';
+            }
+
+            const badge = clonedElement.querySelector('.badge');
+            if (badge) {
+                badge.className = 'badge bg-info text-white';
+                badge.textContent = 'Доступен';
+            }
+
+            console.log(`Партнёр ${partnerId} перемещён в доступные`);
+        }
+
+        // Удаляем старый элемент
+        partnerElement.remove();
+
+        // Добавляем новый элемент в целевую колонку
+        targetContainer.appendChild(clonedElement);
+
+        // Реинициализируем события для нового элемента
+        initPartnerElementEvents(clonedElement);
+
+        // Обновляем UI
+        updatePartnersCounters();
+
+        // Обновляем сообщения о пустоте
+        updateEmptyMessages();
+
+        console.log('Партнёр успешно перемещён');
+    }
+
+    // Инициализация событий для элемента партнёра
+    function initPartnerElementEvents(element) {
+        element.setAttribute('draggable', 'true');
+
+        element.addEventListener('dragstart', function(e) {
+            dragPartner(e);
+        });
+
+        element.addEventListener('dragend', function() {
             this.classList.remove('dragging');
         });
 
-        // Клик для выделения
-        item.addEventListener('click', function(e) {
+        element.addEventListener('click', function(e) {
             if (!e.ctrlKey && !e.metaKey) {
-                // Снимаем выделение со всех партнёров
                 document.querySelectorAll('.partner-draggable.selected').forEach(el => {
                     el.classList.remove('selected');
                 });
             }
             this.classList.toggle('selected');
-            updatePartnersSelectionButtons();
         });
-    });
+    }
 
-    // Настраиваем зоны drop
-    const availableContainer = document.getElementById('availablePartnersContainer');
-    const projectContainer = document.getElementById('projectPartnersContainer');
+    // Обновление счетчиков (УНИВЕРСАЛЬНАЯ ФУНКЦИЯ для create.html и edit.html)
+    function updatePartnersCounters() {
+        console.log('Обновление счетчиков партнёров...');
 
-    [availableContainer, projectContainer].forEach(container => {
-        container.addEventListener('dragover', function(e) {
-            e.preventDefault();
-            this.classList.add('partner-drop-zone-active');
-        });
+        // Получаем контейнеры
+        const availableContainer = document.getElementById('availablePartnersContainer');
+        const projectContainer = document.getElementById('projectPartnersContainer');
 
-        container.addEventListener('dragleave', function() {
-            this.classList.remove('partner-drop-zone-active');
-        });
+        // Считаем количество
+        const availableCount = availableContainer ?
+            availableContainer.querySelectorAll('.partner-draggable').length : 0;
+        const projectCount = projectContainer ?
+            projectContainer.querySelectorAll('.partner-draggable').length : 0;
 
-        container.addEventListener('drop', function(e) {
-            e.preventDefault();
-            this.classList.remove('partner-drop-zone-active');
+        console.log(`Доступно: ${availableCount}, В проекте: ${projectCount}`);
 
-            const partnerId = e.dataTransfer.getData('text/plain');
-            const draggedElement = document.querySelector(`[data-partner-id="${partnerId}"]`);
+        // === ОБНОВЛЯЕМ ВСЕ ВОЗМОЖНЫЕ ЭЛЕМЕНТЫ (с проверкой существования) ===
 
-            if (draggedElement && draggedElement.parentElement !== this) {
-                movePartnerToContainer(partnerId, this.id);
+        // 1. Счетчик доступных партнёров (есть в обеих страницах)
+        const availableCountElement = document.getElementById('availablePartnersCount');
+        if (availableCountElement) {
+            availableCountElement.textContent = availableCount;
+        }
+
+        // 2. Счетчик партнёров в DnD колонке (есть в обеих страницах)
+        const projectDragCountElement = document.getElementById('projectPartnersDragCount');
+        if (projectDragCountElement) {
+            projectDragCountElement.textContent = projectCount;
+        }
+
+        // 3. Общий счетчик выбранных партнёров (есть в обеих страницах)
+        const selectedCountElement = document.getElementById('selectedPartnersCount');
+        if (selectedCountElement) {
+            selectedCountElement.textContent = projectCount;
+        }
+
+        // 4. Счетчик в заголовке секции (ТОЛЬКО в edit.html)
+        const projectCountElement = document.getElementById('projectPartnersCount');
+        if (projectCountElement) {
+            projectCountElement.textContent = projectCount;
+        }
+
+        // 5. Обновляем превью
+        updatePartnersPreview();
+
+        // 6. Обновляем скрытое поле
+        updatePartnersHiddenInput();
+
+        console.log('Счетчики обновлены');
+    }
+
+    // Обновление сообщений о пустых колонках
+    function updateEmptyMessages() {
+        // Сообщение о пустых доступных партнёрах
+        const availableContainer = document.getElementById('availablePartnersContainer');
+        if (availableContainer) {
+            const hasAvailablePartners = availableContainer.querySelectorAll('.partner-draggable').length > 0;
+            const emptyMessage = availableContainer.querySelector('.text-center.py-4');
+            if (emptyMessage) {
+                emptyMessage.style.display = hasAvailablePartners ? 'none' : 'block';
             }
-        });
-    });
-}
-
-function movePartnerToContainer(partnerId, targetContainerId) {
-    const partnerElement = document.querySelector(`[data-partner-id="${partnerId}"]`);
-    if (!partnerElement) return;
-
-    const targetContainer = document.getElementById(targetContainerId);
-    const isMovingToProject = targetContainerId === 'projectPartnersContainer';
-
-    // Клонируем элемент с новыми стилями
-    const cloned = partnerElement.cloneNode(true);
-
-    if (isMovingToProject) {
-        // Перемещаем в проект
-        const icon = cloned.querySelector('.bi-building');
-        if (icon) icon.className = 'bi bi-handshake fs-4 text-success';
-
-        const badge = cloned.querySelector('.badge');
-        if (badge) {
-            badge.className = 'badge bg-success text-white';
-            badge.textContent = 'В проекте';
         }
-    } else {
-        // Перемещаем обратно в доступные
-        const icon = cloned.querySelector('.bi-handshake');
-        if (icon) icon.className = 'bi bi-building fs-4 text-info';
 
-        const badge = cloned.querySelector('.badge');
-        if (badge) {
-            badge.className = 'badge bg-info text-white';
-            badge.textContent = 'Доступен';
+        // Сообщение о пустых партнёрах проекта
+        const projectContainer = document.getElementById('projectPartnersContainer');
+        if (projectContainer) {
+            const hasProjectPartners = projectContainer.querySelectorAll('.partner-draggable').length > 0;
+            const emptyMessage = document.getElementById('emptyPartnersMessage');
+            if (emptyMessage) {
+                emptyMessage.style.display = hasProjectPartners ? 'none' : 'block';
+            }
         }
     }
 
-    // Удаляем старый элемент
-    partnerElement.remove();
-
-    // Добавляем новый в целевую колонку
-    targetContainer.appendChild(cloned);
-
-    // Реинициализируем события для нового элемента
-    cloned.setAttribute('draggable', 'true');
-    cloned.addEventListener('dragstart', function(e) {
-        e.dataTransfer.setData('text/plain', this.getAttribute('data-partner-id'));
-        this.classList.add('dragging');
-    });
-    cloned.addEventListener('dragend', function() {
-        this.classList.remove('dragging');
-    });
-    cloned.addEventListener('click', function(e) {
-        if (!e.ctrlKey && !e.metaKey) {
-            document.querySelectorAll('.partner-draggable.selected').forEach(el => {
-                el.classList.remove('selected');
-            });
+    // Обновление скрытого поля с выбранными ID
+    function updatePartnersHiddenInput() {
+        const projectContainer = document.getElementById('projectPartnersContainer');
+        if (!projectContainer) {
+            console.log('Контейнер партнёров проекта не найден');
+            return;
         }
-        this.classList.toggle('selected');
-        updatePartnersSelectionButtons();
-    });
 
-    // Обновляем UI
-    updatePartnersCounters();
-    updatePartnersHiddenInput();
+        // Собираем все ID партнёров в проекте
+        const selectedElements = projectContainer.querySelectorAll('[data-partner-id]');
+        const ids = Array.from(selectedElements).map(el => el.getAttribute('data-partner-id'));
 
-    // Скрываем/показываем сообщения о пустоте
-    const emptyMsg = document.getElementById('emptyPartnersMessage');
-    if (emptyMsg) {
-        emptyMsg.style.display =
-            document.querySelectorAll('#projectPartnersContainer .partner-draggable').length === 0 ? 'block' : 'none';
-    }
-}
+        console.log('Выбранные ID партнёров:', ids);
 
-// Кнопки для массового перемещения
-function addSelectedPartnersToProject() {
-    const selected = document.querySelectorAll('#availablePartnersContainer .partner-draggable.selected');
-    selected.forEach(partner => {
-        const partnerId = partner.getAttribute('data-partner-id');
-        movePartnerToContainer(partnerId, 'projectPartnersContainer');
-    });
-}
+        // Находим скрытое поле
+        let hiddenField = document.getElementById('selectedPartnerIds');
 
-function removeSelectedPartnersFromProject() {
-    const selected = document.querySelectorAll('#projectPartnersContainer .partner-draggable.selected');
-    selected.forEach(partner => {
-        const partnerId = partner.getAttribute('data-partner-id');
-        movePartnerToContainer(partnerId, 'availablePartnersContainer');
-    });
-}
+        // Если поля нет - создаем его
+        if (!hiddenField) {
+            console.log('Создаем скрытое поле selectedPartnerIds');
+            hiddenField = document.createElement('input');
+            hiddenField.type = 'hidden';
+            hiddenField.id = 'selectedPartnerIds';
+            hiddenField.name = 'selectedPartnerIds';
 
-function updatePartnersSelectionButtons() {
-    const hasAvailableSelected = document.querySelectorAll('#availablePartnersContainer .partner-draggable.selected').length > 0;
-    const hasProjectSelected = document.querySelectorAll('#projectPartnersContainer .partner-draggable.selected').length > 0;
+            // Добавляем поле в форму
+            const form = document.querySelector('form.needs-validation');
+            if (form) {
+                form.appendChild(hiddenField);
+            } else {
+                console.error('Форма не найдена');
+                return;
+            }
+        }
 
-    // Можно добавить визуальную индикацию для кнопок если нужно
-}
-
-function updatePartnersCounters() {
-    const availableCount = document.querySelectorAll('#availablePartnersContainer .partner-draggable').length;
-    const projectCount = document.querySelectorAll('#projectPartnersContainer .partner-draggable').length;
-
-    document.getElementById('availablePartnersCount').textContent = availableCount;
-    document.getElementById('projectPartnersDragCount').textContent = projectCount;
-    document.getElementById('selectedPartnersCount').textContent = projectCount;
-
-    // Обновляем также общий счетчик в заголовке
-    document.getElementById('projectPartnersCount').textContent = projectCount;
-}
-
-function updatePartnersHiddenInput() {
-    const selectedElements = document.querySelectorAll('#projectPartnersContainer [data-partner-id]');
-    const ids = Array.from(selectedElements).map(el => el.getAttribute('data-partner-id'));
-
-    document.getElementById('selectedPartnerIds').value = ids.join(',');
-
-    // Показываем превью
-    showPartnersPreview();
-}
-
-// Функция для отображения превью партнёров
-function showPartnersPreview() {
-    const previewContainer = document.getElementById('selectedPartnersPreview');
-    if (!previewContainer) return;
-
-    const selectedElements = document.querySelectorAll('#projectPartnersContainer [data-partner-id]');
-
-    if (selectedElements.length === 0) {
-        previewContainer.innerHTML = `
-            <div class="col-12">
-                <div class="alert alert-light text-center py-4">
-                    <i class="bi bi-handshake display-4 text-muted mb-3"></i>
-                    <h6 class="text-muted">Партнёры не выбраны</h6>
-                    <p class="text-muted small mb-0">
-                        Добавьте партнёров в проект для отображения логотипов на странице
-                    </p>
-                </div>
-            </div>
-        `;
-        return;
+        // Записываем ID через запятую
+        hiddenField.value = ids.join(',');
+        console.log('Скрытое поле обновлено:', hiddenField.value);
     }
 
-    let html = '<div class="col-12 mb-2"><strong>Выбранные партнёры:</strong></div>';
+    // Обновление превью партнёров
+    function updatePartnersPreview() {
+        const previewContainer = document.getElementById('selectedPartnersPreview');
+        if (!previewContainer) {
+            console.log('Контейнер превью партнёров не найден');
+            return;
+        }
 
-    selectedElements.forEach((element, index) => {
-        const partnerId = element.getAttribute('data-partner-id');
-        const name = element.querySelector('strong')?.textContent || `Партнёр ${partnerId}`;
-        const type = element.querySelector('small')?.textContent || 'Тип не указан';
+        // Получаем все партнёры в проекте
+        const projectContainer = document.getElementById('projectPartnersContainer');
+        if (!projectContainer) {
+            console.log('Контейнер партнёров проекта не найден для превью');
+            return;
+        }
 
-        html += `
-            <div class="col-6 col-md-4 col-lg-3 mb-3">
-                <div class="card h-100">
-                    <div class="card-body text-center">
-                        <div class="mb-3" style="height: 60px; display: flex; align-items: center; justify-content: center;">
-                            <i class="bi bi-building fs-1 text-info"></i>
-                        </div>
-                        <h6 class="mb-1">${name}</h6>
-                        <small class="text-muted d-block mb-2">${type}</small>
-                        <span class="badge bg-success">В проекте</span>
+        const selectedElements = projectContainer.querySelectorAll('[data-partner-id]');
+
+        if (selectedElements.length === 0) {
+            // Показываем сообщение об отсутствии партнёров
+            previewContainer.innerHTML = `
+                <div class="col-12">
+                    <div class="alert alert-light text-center py-4">
+                        <i class="bi bi-handshake display-4 text-muted mb-3"></i>
+                        <h6 class="text-muted">Партнёры не выбраны</h6>
+                        <p class="text-muted small mb-0">
+                            Добавьте партнёров в проект для отображения логотипов на странице
+                        </p>
                     </div>
                 </div>
-            </div>
-        `;
-    });
+            `;
+            return;
+        }
 
-    previewContainer.innerHTML = html;
-}
+        // Создаем превью карточек
+        let html = '<div class="col-12 mb-2"><strong>Выбранные партнёры:</strong></div>';
 
-// Функция для переключения видимости секции партнёров
-function togglePartnersSection() {
-    const switchElement = document.getElementById('showPartnersSwitch');
-    const hiddenField = document.getElementById('showPartners');
-    const section = document.getElementById('partnersSection');
+        selectedElements.forEach((element, index) => {
+            const partnerId = element.getAttribute('data-partner-id');
+            const name = element.querySelector('strong')?.textContent || `Партнёр ${partnerId}`;
+            const typeElement = element.querySelector('small.text-muted');
+            const type = typeElement ? typeElement.textContent : 'Тип не указан';
 
-    const isChecked = switchElement.checked;
-    hiddenField.value = isChecked;
-
-    // Если секция скрыта, визуально её затемняем
-    if (!isChecked) {
-        section.style.opacity = '0.6';
-        section.querySelectorAll('.card').forEach(card => {
-            card.style.opacity = '0.6';
+            html += `
+                <div class="col-6 col-md-4 col-lg-3 mb-3">
+                    <div class="card h-100">
+                        <div class="card-body text-center">
+                            <div class="mb-3" style="height: 60px; display: flex; align-items: center; justify-content: center;">
+                                <i class="bi bi-handshake fs-1 text-success"></i>
+                            </div>
+                            <h6 class="mb-1">${escapeHtml(name)}</h6>
+                            <small class="text-muted d-block mb-2">${escapeHtml(type)}</small>
+                            <span class="badge bg-success">В проекте</span>
+                        </div>
+                    </div>
+                </div>
+            `;
         });
-    } else {
-        section.style.opacity = '1';
-        section.querySelectorAll('.card').forEach(card => {
-            card.style.opacity = '1';
+
+        previewContainer.innerHTML = html;
+        console.log('Превью обновлено, партнёров:', selectedElements.length);
+    }
+
+    // Функции для массового перемещения
+    function addSelectedPartnersToProject() {
+        console.log('Добавление выбранных партнёров в проект...');
+
+        const selected = document.querySelectorAll('#availablePartnersContainer .partner-draggable.selected');
+        console.log('Выбрано для добавления:', selected.length);
+
+        selected.forEach(partner => {
+            const partnerId = partner.getAttribute('data-partner-id');
+            console.log('Добавляем партнёра:', partnerId);
+            movePartnerToContainer(partnerId, 'projectPartnersContainer');
         });
     }
-}
+
+    function removeSelectedPartnersFromProject() {
+        console.log('Удаление выбранных партнёров из проекта...');
+
+        const selected = document.querySelectorAll('#projectPartnersContainer .partner-draggable.selected');
+        console.log('Выбрано для удаления:', selected.length);
+
+        selected.forEach(partner => {
+            const partnerId = partner.getAttribute('data-partner-id');
+            console.log('Удаляем партнёра:', partnerId);
+            movePartnerToContainer(partnerId, 'availablePartnersContainer');
+        });
+    }
+
+    // Вспомогательная функция для экранирования HTML
+    function escapeHtml(text) {
+        if (!text) return '';
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    }
+
+    // Функция для отладки - показывает все партнёры
+    function debugShowPartners() {
+        console.log('=== DEBUG: Все партнёры ===');
+
+        const available = document.querySelectorAll('#availablePartnersContainer [data-partner-id]');
+        const project = document.querySelectorAll('#projectPartnersContainer [data-partner-id]');
+
+        console.log('Доступные партнёры:', available.length);
+        available.forEach(p => console.log('  ID:', p.getAttribute('data-partner-id')));
+
+        console.log('Партнёры в проекте:', project.length);
+        project.forEach(p => console.log('  ID:', p.getAttribute('data-partner-id')));
+
+        const hiddenField = document.getElementById('selectedPartnerIds');
+        console.log('Скрытое поле:', hiddenField ? hiddenField.value : 'не найдено');
+    }
 </script>
 </body>
 </html>

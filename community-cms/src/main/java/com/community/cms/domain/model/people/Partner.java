@@ -1,30 +1,31 @@
 package com.community.cms.domain.model.people;
 
+import com.community.cms.domain.enums.PartnerType;
 import com.community.cms.domain.model.content.Project;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
-import jakarta.validation.constraints.Pattern;
 import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 /**
- * Сущность партнера проекта организации "ЛАДА".
+ * Сущность партнера организации "ЛАДА".
  *
- * <p>Представляет организацию-партнера, участвующую в проекте.
- * Содержит информацию о партнере, логотип и ссылку на сайт.</p>
+ * <p>Представляет партнерскую организацию с информацией о типе партнерства,
+ * контактных данных и участии в различных проектах. Используется для отображения
+ * партнеров на сайте и управления партнерскими отношениями.</p>
  *
  * <p>Основные характеристики:
  * <ul>
- *   <li>Название и описание партнера</li>
- *   <li>Логотип для отображения на сайте</li>
- *   <li>Ссылка на сайт партнера</li>
- *   <li>Тип партнерства (спонсор, информационный партнер и т.д.)</li>
+ *   <li>Название организации и описание</li>
+ *   <li>Тип партнерства (спонсор, информационный и т.д.)</li>
+ *   <li>Логотип и ссылка на сайт</li>
+ *   <li>Контактные данные (лицо, email, телефон)</li>
+ *   <li>Возможность участия в нескольких проектах</li>
  *   <li>Порядок отображения в списке партнеров</li>
  * </ul>
  *
@@ -33,119 +34,69 @@ import java.util.stream.Collectors;
  * @since 2025
  */
 @Entity
-@Table(name = "project_partners")
+@Table(name = "partners")
 public class Partner {
-
-    /**
-     * Типы партнерства для классификации партнеров.
-     * Partner types for classification.
-     */
-    public enum PartnerType {
-        SPONSOR("Спонсор", "Sponsor"),
-        INFORMATION_PARTNER("Информационный партнер", "Information Partner"),
-        ORGANIZATIONAL_PARTNER("Организационный партнер", "Organizational Partner"),
-        TECHNICAL_PARTNER("Технический партнер", "Technical Partner"),
-        GENERAL_PARTNER("Генеральный партнер", "General Partner"),
-        OTHER("Другой", "Other");
-
-        private final String nameRu;
-        private final String nameEn;
-
-        PartnerType(String nameRu, String nameEn) {
-            this.nameRu = nameRu;
-            this.nameEn = nameEn;
-        }
-
-        public String getNameRu() {
-            return nameRu;
-        }
-
-        public String getNameEn() {
-            return nameEn;
-        }
-    }
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-// ================== СВЯЗИ ==================
-
-    /**
-     * Проект, к которому относится партнер (старая связь ManyToOne).
-     * Для обратной совместимости.
-     */
-    @NotNull(message = "Проект обязателен / Project is required")
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "project_id", nullable = false)
-    private Project project;
-
-    /**
-     * Проекты, в которых участвует партнер (новая связь ManyToMany).
-     * Использует новую промежуточную таблицу project_partner_links.
-     */
-    @ManyToMany
-    @JoinTable(
-            name = "project_partner_links", // Новая таблица!
-            joinColumns = @JoinColumn(name = "partner_id"),
-            inverseJoinColumns = @JoinColumn(name = "project_id")
-    )
-    private Set<Project> projects = new HashSet<>();
-
-    // ================== ОСНОВНЫЕ ДАННЫЕ ==================
-
     /**
      * Название партнерской организации.
+     * Отображается на сайте в карточке партнера.
      */
-    @NotBlank(message = "Название партнера обязательно / Partner name is required")
-    @Size(min = 2, max = 255, message = "Название должно быть от 2 до 255 символов / Name must be between 2 and 255 characters")
+    @NotBlank(message = "Название организации обязательно / Organization name is required")
+    @Size(min = 2, max = 255, message = "Название организации должно быть от 2 до 255 символов / Organization name must be between 2 and 255 characters")
     @Column(nullable = false)
     private String name;
 
     /**
-     * Описание партнера (опционально).
-     * Краткая информация о партнере и его участии в проекте.
+     * Описание партнера.
+     * Поддерживает HTML разметку для форматирования.
      */
-    @Size(max = 1000, message = "Описание не должно превышать 1000 символов / Description must not exceed 1000 characters")
+    @Lob
     @Column(columnDefinition = "TEXT")
     private String description;
 
     /**
      * Тип партнерства.
-     * Определяет категорию участия партнера в проекте.
+     * Определяется перечислением PartnerType.
      */
     @Enumerated(EnumType.STRING)
-    @Column(name = "partner_type", nullable = false, length = 50)
-    private PartnerType partnerType = PartnerType.OTHER;
+    @Column(length = 50)
+    private PartnerType type;
 
     /**
-     * Путь к логотипу партнера.
-     * Отображается на странице проекта.
+     * URL логотипа партнера.
+     * Используется в карточках и на страницах проекта.
      */
-    @Column(name = "logo_path", length = 500)
-    private String logoPath;
+    @Column(name = "logo_url", length = 500)
+    private String logoUrl;
 
     /**
-     * URL сайта партнера (опционально).
+     * Сайт партнера.
      */
-    @Size(max = 500, message = "URL не должен превышать 500 символов / URL must not exceed 500 characters")
-    @Column(name = "website_url", length = 500)
-    private String websiteUrl;
+    @Size(max = 500, message = "Сайт не должен превышать 500 символов / Website must not exceed 500 characters")
+    private String website;
 
     /**
-     * Контактный email партнера (опционально).
+     * Электронная почта для контактов.
+     * Может использоваться для связи с представителем партнера.
      */
     @Size(max = 100, message = "Email не должен превышать 100 символов / Email must not exceed 100 characters")
+    @Column(name = "contact_email")
     private String contactEmail;
 
     /**
-     * Контактный телефон партнера (опционально).
+     * Телефон для контактов.
      */
     @Size(max = 50, message = "Телефон не должен превышать 50 символов / Phone must not exceed 50 characters")
+    @Column(name = "contact_phone")
     private String contactPhone;
 
     /**
-     * Контактное лицо от партнера (опционально).
+     * Контактное лицо.
+     * Имя представителя партнерской организации.
      */
     @Size(max = 100, message = "Контактное лицо не должно превышать 100 символов / Contact person must not exceed 100 characters")
     @Column(name = "contact_person")
@@ -155,44 +106,63 @@ public class Partner {
      * Порядок сортировки в списке партнеров.
      * Меньшее значение = выше в списке.
      */
-    @Column(name = "sort_order", nullable = false)
+    @Column(name = "sort_order")
     private Integer sortOrder = 0;
 
     /**
      * Флаг активности партнера.
      * Неактивные партнеры не отображаются на сайте.
      */
-    @Column(nullable = false)
     private boolean active = true;
+
+    // ================== СВЯЗИ С ПРОЕКТАМИ ==================
+
+    /**
+     * Проекты, в которых участвует партнер.
+     * Связь многие-ко-многим через промежуточную таблицу project_partner_associations.
+     */
+    @ManyToMany
+    @JoinTable(
+            name = "project_partner_associations",
+            joinColumns = @JoinColumn(name = "partner_id"),
+            inverseJoinColumns = @JoinColumn(name = "project_id")
+    )
+    private Set<Project> projects = new HashSet<>();
 
     // ================== СИСТЕМНЫЕ ПОЛЯ ==================
 
     /**
-     * Дата и время добавления партнера.
+     * Дата и время создания записи.
      */
     @CreationTimestamp
-    @Column(name = "added_at", nullable = false, updatable = false)
-    private LocalDateTime addedAt;
+    @Column(name = "created_at", updatable = false)
+    private LocalDateTime createdAt;
+
+    /**
+     * Дата и время последнего обновления.
+     */
+    @UpdateTimestamp
+    @Column(name = "updated_at")
+    private LocalDateTime updatedAt;
 
     /**
      * Конструктор по умолчанию.
      */
     public Partner() {
-        this.addedAt = LocalDateTime.now();
+        this.createdAt = LocalDateTime.now();
+        this.updatedAt = LocalDateTime.now();
     }
 
     /**
-     * Конструктор с основными параметрами.
+     * Конструктор с основными параметрами партнера.
      *
-     * @param project проект
-     * @param name название партнера
-     * @param partnerType тип партнерства
+     * @param name название организации
+     * @param type тип партнерства
      */
-    public Partner(Project project, String name, PartnerType partnerType) {
+    public Partner(String name, PartnerType type) {
         this();
-        this.project = project;
         this.name = name;
-        this.partnerType = partnerType;
+        this.type = type;
         this.active = true;
     }
 
@@ -204,22 +174,6 @@ public class Partner {
 
     public void setId(Long id) {
         this.id = id;
-    }
-
-    public Project getProject() {
-        return project;
-    }
-
-    public void setProject(Project project) {
-        this.project = project;
-    }
-
-    public Set<Project> getProjects() {
-        return projects;
-    }
-
-    public void setProjects(Set<Project> projects) {
-        this.projects = projects;
     }
 
     public String getName() {
@@ -238,28 +192,28 @@ public class Partner {
         this.description = description;
     }
 
-    public PartnerType getPartnerType() {
-        return partnerType;
+    public PartnerType getType() {
+        return type;
     }
 
-    public void setPartnerType(PartnerType partnerType) {
-        this.partnerType = partnerType;
+    public void setType(PartnerType type) {
+        this.type = type;
     }
 
-    public String getLogoPath() {
-        return logoPath;
+    public String getLogoUrl() {
+        return logoUrl;
     }
 
-    public void setLogoPath(String logoPath) {
-        this.logoPath = logoPath;
+    public void setLogoUrl(String logoUrl) {
+        this.logoUrl = logoUrl;
     }
 
-    public String getWebsiteUrl() {
-        return websiteUrl;
+    public String getWebsite() {
+        return website;
     }
 
-    public void setWebsiteUrl(String websiteUrl) {
-        this.websiteUrl = websiteUrl;
+    public void setWebsite(String website) {
+        this.website = website;
     }
 
     public String getContactEmail() {
@@ -302,32 +256,79 @@ public class Partner {
         this.active = active;
     }
 
-    public LocalDateTime getAddedAt() {
-        return addedAt;
+    public Set<Project> getProjects() {
+        return projects;
     }
 
-    public void setAddedAt(LocalDateTime addedAt) {
-        this.addedAt = addedAt;
+    public void setProjects(Set<Project> projects) {
+        this.projects = projects;
+    }
+
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(LocalDateTime createdAt) {
+        this.createdAt = createdAt;
+    }
+
+    public LocalDateTime getUpdatedAt() {
+        return updatedAt;
+    }
+
+    public void setUpdatedAt(LocalDateTime updatedAt) {
+        this.updatedAt = updatedAt;
     }
 
     // ================== ВСПОМОГАТЕЛЬНЫЕ МЕТОДЫ ==================
 
     /**
-     * Проверяет имеет ли партнер логотип.
+     * Добавляет проект к партнеру.
      *
-     * @return true если logoPath не пустой, иначе false
+     * @param project проект для добавления
      */
-    public boolean hasLogo() {
-        return logoPath != null && !logoPath.trim().isEmpty();
+    public void addProject(Project project) {
+        this.projects.add(project);
     }
 
     /**
-     * Проверяет имеет ли партнер сайт.
+     * Удаляет проект из списка участия партнера.
      *
-     * @return true если websiteUrl не пустой, иначе false
+     * @param project проект для удаления
+     * @return true если проект был удален, false если не найден
      */
-    public boolean hasWebsite() {
-        return websiteUrl != null && !websiteUrl.trim().isEmpty();
+    public boolean removeProject(Project project) {
+        return this.projects.remove(project);
+    }
+
+    /**
+     * Проверяет участвует ли партнер в указанном проекте.
+     *
+     * @param project проект для проверки
+     * @return true если участвует, иначе false
+     */
+    public boolean participatesInProject(Project project) {
+        return this.projects.contains(project);
+    }
+
+    /**
+     * Проверяет участвует ли партнер в проекте по ID.
+     *
+     * @param projectId ID проекта для проверки
+     * @return true если участвует, иначе false
+     */
+    public boolean participatesInProject(Long projectId) {
+        return this.projects.stream()
+                .anyMatch(project -> project.getId().equals(projectId));
+    }
+
+    /**
+     * Проверяет имеет ли партнер логотип.
+     *
+     * @return true если logoUrl не пустой, иначе false
+     */
+    public boolean hasLogo() {
+        return logoUrl != null && !logoUrl.trim().isEmpty();
     }
 
     /**
@@ -340,125 +341,39 @@ public class Partner {
     }
 
     /**
-     * Проверяет имеет ли партнер контактную информацию.
+     * Проверяет имеет ли партнер сайт.
      *
-     * @return true если есть email или телефон, иначе false
+     * @return true если website не пустой, иначе false
      */
-    public boolean hasContactInfo() {
-        return (contactEmail != null && !contactEmail.trim().isEmpty()) ||
-                (contactPhone != null && !contactPhone.trim().isEmpty());
+    public boolean hasWebsite() {
+        return website != null && !website.trim().isEmpty();
     }
 
     /**
-     * Получает полную контактную информацию в виде строки.
+     * Проверяет указано ли контактное лицо.
      *
-     * @return форматированная контактная информация
+     * @return true если contactPerson не пустой, иначе false
      */
-    public String getFormattedContactInfo() {
-        StringBuilder info = new StringBuilder();
-
-        if (contactPerson != null && !contactPerson.trim().isEmpty()) {
-            info.append(contactPerson);
-        }
-
-        if (contactEmail != null && !contactEmail.trim().isEmpty()) {
-            if (info.length() > 0) info.append(", ");
-            info.append("Email: ").append(contactEmail);
-        }
-
-        if (contactPhone != null && !contactPhone.trim().isEmpty()) {
-            if (info.length() > 0) info.append(", ");
-            info.append("Тел: ").append(contactPhone);
-        }
-
-        return info.toString();
+    public boolean hasContactPerson() {
+        return contactPerson != null && !contactPerson.trim().isEmpty();
     }
 
     /**
-     * Получает URL сайта с протоколом.
-     * Если websiteUrl не начинается с http:// или https://, добавляет https://.
+     * Получает количество проектов, в которых участвует партнер.
      *
-     * @return полный URL с протоколом
+     * @return количество проектов
      */
-    public String getFullWebsiteUrl() {
-        if (websiteUrl == null || websiteUrl.trim().isEmpty()) {
-            return null;
-        }
-
-        String url = websiteUrl.trim();
-        if (!url.startsWith("http://") && !url.startsWith("https://")) {
-            return "https://" + url;
-        }
-
-        return url;
+    public int getProjectsCount() {
+        return projects != null ? projects.size() : 0;
     }
 
     /**
-     * Получает отображаемое имя типа партнерства на русском.
+     * Получает отображаемое название типа партнера.
      *
-     * @return русское название типа партнерства
+     * @return отображаемое название типа или пустая строка если тип не указан
      */
-    public String getPartnerTypeDisplayNameRu() {
-        return partnerType.getNameRu();
-    }
-
-    /**
-     * Получает отображаемое имя типа партнерства на английском.
-     *
-     * @return английское название типа партнерства
-     */
-    public String getPartnerTypeDisplayNameEn() {
-        return partnerType.getNameEn();
-    }
-
-    /**
-     * Проверяет является ли партнер спонсором.
-     *
-     * @return true если partnerType == SPONSOR
-     */
-    public boolean isSponsor() {
-        return partnerType == PartnerType.SPONSOR;
-    }
-
-    /**
-     * Проверяет является ли партнер информационным партнером.
-     *
-     * @return true если partnerType == INFORMATION_PARTNER
-     */
-    public boolean isInformationPartner() {
-        return partnerType == PartnerType.INFORMATION_PARTNER;
-    }
-
-    /**
-     * Получает инициалы партнера (для заглушки логотипа).
-     * Пример: "Русская Община" → "РО"
-     *
-     * @return инициалы (2 буквы)
-     */
-    public String getInitials() {
-        if (name == null || name.trim().isEmpty()) {
-            return "PP";
-        }
-
-        String[] words = name.split("\\s+");
-        if (words.length >= 2) {
-            // Берем первые буквы первых двух слов
-            return (words[0].charAt(0) + "" + words[1].charAt(0)).toUpperCase();
-        } else if (words.length == 1 && words[0].length() >= 2) {
-            // Если только одно слово, берем первые две буквы
-            return words[0].substring(0, 2).toUpperCase();
-        }
-
-        return name.substring(0, Math.min(2, name.length())).toUpperCase();
-    }
-
-    /**
-     * Получает ID проекта для быстрого доступа.
-     *
-     * @return ID проекта или null если проект не установлен
-     */
-    public Long getProjectId() {
-        return project != null ? project.getId() : null;
+    public String getTypeDisplayName() {
+        return type != null ? type.getDisplayName() : "";
     }
 
     @Override
@@ -466,93 +381,24 @@ public class Partner {
         return "Partner{" +
                 "id=" + id +
                 ", name='" + name + '\'' +
-                ", partnerType=" + partnerType +
+                ", type=" + (type != null ? type.name() : "null") +
                 ", active=" + active +
-                ", projectId=" + getProjectId() +
+                ", projectsCount=" + getProjectsCount() +
                 '}';
     }
 
     /**
      * Метод предварительной обработки перед сохранением.
-     * Синхронизирует старую и новую связи с проектами.
      */
     @PrePersist
-    protected void onCreate() {
-        // Синхронизация связей проект ↔ проекты
-        synchronizeProjectLinks();
-
-        // Инициализация полей по умолчанию
-        if (addedAt == null) {
-            addedAt = LocalDateTime.now();
-        }
+    @PreUpdate
+    protected void validate() {
         if (sortOrder == null) {
             sortOrder = 0;
         }
-        if (partnerType == null) {
-            partnerType = PartnerType.OTHER;
+        if (createdAt == null) {
+            createdAt = LocalDateTime.now();
         }
-    }
-
-    /**
-     * Метод предварительной обработки перед обновлением.
-     */
-    @PreUpdate
-    protected void onUpdate() {
-        // Синхронизируем связи при обновлении
-        synchronizeProjectLinks();
-    }
-
-    /**
-     * Синхронизирует старую и новую связи с проектами.
-     * Если есть projects, но нет project - устанавливаем первый проект как основной.
-     * Если есть project, но нет в projects - добавляем его.
-     */
-    protected void synchronizeProjectLinks() {
-        // Если есть новая связь (projects), но нет старой (project)
-        if (projects != null && !projects.isEmpty() && project == null) {
-            project = projects.iterator().next(); // Берем первый проект
-        }
-
-        // Если есть старая связь (project), но нет в новой (projects)
-        if (project != null) {
-            if (projects == null) {
-                projects = new HashSet<>();
-            }
-            // Добавляем project в projects, если его там нет
-            boolean projectExists = projects.stream()
-                    .anyMatch(p -> p != null && p.getId() != null && p.getId().equals(project.getId()));
-            if (!projectExists) {
-                projects.add(project);
-            }
-        }
-
-
-    }
-
-    /**
-     * Получает количество проектов партнера.
-     *
-     * @return количество проектов
-     */
-    public int getProjectsCount() {
-        if (projects == null) {
-            return 0;
-        }
-        return projects.size();
-    }
-
-
-    /**
-     * Получает ID проектов.
-     *
-     * @return Set ID проектов или пустой Set если проектов нет
-     */
-    public Set<Long> getProjectIds() {
-        if (projects == null || projects.isEmpty()) {
-            return new HashSet<>();
-        }
-        return projects.stream()
-                .map(Project::getId)
-                .collect(Collectors.toSet());
+        updatedAt = LocalDateTime.now();
     }
 }

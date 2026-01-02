@@ -471,14 +471,6 @@ public class Project {
         this.showTeam = showTeam;
     }
 
-    public Set<Partner> getPartners() {
-        return partners;
-    }
-
-    public void setPartners(Set<Partner> partners) {
-        this.partners = partners;
-    }
-
     public boolean isShowParticipation() {
         return showParticipation;
     }
@@ -857,15 +849,55 @@ public class Project {
     }
 
 
+// В класс Project.java нужно добавить:
+
     /**
-     * Партнеры проекта.
-     * Связь многие-ко-многим.
+     * Партнеры, участвующие в проекте.
+     * Связь многие-ко-многим через промежуточную таблицу project_partner_associations.
      */
-    @ManyToMany
-    @JoinTable(
-            name = "project_partner_links", // Та же таблица
-            joinColumns = @JoinColumn(name = "project_id"),
-            inverseJoinColumns = @JoinColumn(name = "partner_id")
-    )
+    @ManyToMany(mappedBy = "projects")
     private Set<Partner> partners = new HashSet<>();
+
+// И соответствующие геттеры/сеттеры:
+
+    public Set<Partner> getPartners() {
+        return partners;
+    }
+
+    public void setPartners(Set<Partner> partners) {
+        this.partners = partners;
+    }
+
+    /**
+     * Добавляет партнера к проекту.
+     *
+     * @param partner партнер для добавления
+     */
+    public void addPartner(Partner partner) {
+        this.partners.add(partner);
+        partner.getProjects().add(this);
+    }
+
+    /**
+     * Удаляет партнера из проекта.
+     *
+     * @param partner партнер для удаления
+     * @return true если партнер был удален, false если не найден
+     */
+    public boolean removePartner(Partner partner) {
+        boolean removed = this.partners.remove(partner);
+        if (removed) {
+            partner.getProjects().remove(this);
+        }
+        return removed;
+    }
+
+    /**
+     * Получает количество партнеров проекта.
+     *
+     * @return количество партнеров
+     */
+    public int getPartnersCount() {
+        return partners != null ? partners.size() : 0;
+    }
 }

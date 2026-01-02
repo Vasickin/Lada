@@ -1,11 +1,10 @@
 package com.community.cms.web.mvc.controller.admin.people;
 
-import com.community.cms.domain.model.people.Partner;
+import com.community.cms.domain.enums.PartnerType;
 import com.community.cms.domain.model.content.Project;
-import com.community.cms.domain.model.people.Partner.PartnerType;
-import com.community.cms.domain.service.people.PartnerService;
+import com.community.cms.domain.model.people.Partner;
 import com.community.cms.domain.service.content.ProjectService;
-import com.community.cms.util.PartnerTypeUtils;
+import com.community.cms.domain.service.people.PartnerService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -14,13 +13,21 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 /**
- * Контроллер административной панели для управления партнерами проектов.
+ * Контроллер административной панели для управления партнерами.
+ *
+ * <p>Предоставляет интерфейс для создания, редактирования, удаления
+ * и управления партнерами организации "ЛАДА". Интегрирован с системой
+ * проектов для назначения партнеров на проекты.</p>
+ *
+ * @author Community CMS
+ * @version 1.0
+ * @since 2025
+ * @see Partner
+ * @see PartnerService
  */
 @Controller
 @RequestMapping("/admin/partners")
@@ -29,6 +36,12 @@ public class PartnerAdminController {
     private final PartnerService partnerService;
     private final ProjectService projectService;
 
+    /**
+     * Конструктор с инъекцией зависимостей.
+     *
+     * @param partnerService сервис для работы с партнерами
+     * @param projectService сервис для работы с проектами
+     */
     @Autowired
     public PartnerAdminController(PartnerService partnerService,
                                   ProjectService projectService) {
@@ -36,243 +49,92 @@ public class PartnerAdminController {
         this.projectService = projectService;
     }
 
-    // ================== СПИСОК ВСЕХ ПАРТНЕРОВ С ФИЛЬТРАЦИЕЙ ==================
+    // ================== СПИСОК ПАРТНЕРОВ ==================
 
     /**
-     * Отображает список всех партнеров с фильтрацией (единая точка входа).
+     * Отображает список всех партнеров.
+     *
+     * @param model модель для передачи данных в представление
+     * @return шаблон списка партнеров
      */
     @GetMapping
-    public String listAllPartners(
-            @RequestParam(required = false) String search,
-            @RequestParam(required = false) String partnerType,
-            @RequestParam(required = false) String status,
-            @RequestParam(required = false) Long projectId,
-            @RequestParam(required = false) String logoFilter,
-            @RequestParam(required = false) String websiteFilter,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "20") int size,
-            Model model) {
-
-        // Получаем все проекты для фильтра
-        List<Project> allProjects = projectService.findAllActive();
-        model.addAttribute("allProjects", allProjects);
+    public String listPartners(Model model) {
+        List<Partner> partners = partnerService.findAllActiveOrderBySortOrder();
+        model.addAttribute("partners", partners);
+        model.addAttribute("title", "Управление партнерами");
         model.addAttribute("partnerTypes", PartnerType.values());
-
-        // Ищем партнеров с учетом фильтров
-        List<Partner> filteredPartners = applyFilters(search, partnerType, status, projectId, logoFilter, websiteFilter);
-
-        // Пагинация вручную
-        int totalItems = filteredPartners.size();
-        int totalPages = (int) Math.ceil((double) totalItems / size);
-
-        // Получаем страницу
-        int start = page * size;
-        int end = Math.min(start + size, totalItems);
-        List<Partner> pagePartners = (start < totalItems) ?
-                filteredPartners.subList(start, end) : new ArrayList<>();
-
-        // Добавляем атрибуты в модель
-        model.addAttribute("partners", pagePartners);
-        model.addAttribute("selectedSearch", search);
-
-        // Безопасное преобразование PartnerType с помощью утилиты
-        PartnerType selectedType = null;
-        if (partnerType != null && !partnerType.isEmpty()) {
-            selectedType = PartnerTypeUtils.safeValueOf(partnerType);
-        }
-        model.addAttribute("selectedPartnerType", selectedType);
-
-        model.addAttribute("selectedStatus", status);
-        model.addAttribute("selectedProjectId", projectId);
-        model.addAttribute("selectedLogoFilter", logoFilter);
-        model.addAttribute("selectedWebsiteFilter", websiteFilter);
-
-        // Добавляем информацию о проекте для отображения названия
-        if (projectId != null) {
-            Optional<Project> projectOpt = projectService.findById(projectId);
-            projectOpt.ifPresent(project ->
-                    model.addAttribute("selectedProjectTitle", project.getTitle()));
-        }
-
-        // Пагинационные атрибуты
-        model.addAttribute("currentPage", page);
-        model.addAttribute("pageSize", size);
-        model.addAttribute("totalItems", totalItems);
-        model.addAttribute("totalPages", totalPages);
-
-        model.addAttribute("title", "Все партнеры проектов");
-
+        // НЕ добавляем showInactive здесь - оно будет null для активного списка
         return "admin/partners/list";
     }
 
     /**
-     * Применяет фильтры к списку партнеров.
+     * Отображает список неактивных партнеров.
+     *
+     * @param model модель для передачи данных в представление
+     * @return шаблон списка неактивных партнеров
      */
-    private List<Partner> applyFilters(String search, String partnerType, String status,
-                                       Long projectId, String logoFilter, String websiteFilter) {
-
-        List<Partner> partners = new ArrayList<>();
-
-        // 1. Базовый запрос - все партнеры
-        if (search != null && !search.isEmpty()) {
-            partners = partnerService.findByNameContaining(search);
-        } else {
-            // Получаем всех партнеров
-            partners = partnerService.findByNameContaining("");
-        }
-
-        // 2. Фильтр по типу партнерства
-        if (partnerType != null && !partnerType.isEmpty()) {
-            PartnerType type = PartnerTypeUtils.safeValueOf(partnerType);
-            final PartnerType filterType = type;
-            partners = partners.stream()
-                    .filter(p -> p.getPartnerType() == filterType)
-                    .collect(Collectors.toList());
-        }
-
-        // 3. Фильтр по статусу активности
-        if ("ACTIVE".equals(status)) {
-            partners = partners.stream()
-                    .filter(Partner::isActive)
-                    .collect(Collectors.toList());
-        } else if ("INACTIVE".equals(status)) {
-            partners = partners.stream()
-                    .filter(p -> !p.isActive())
-                    .collect(Collectors.toList());
-        }
-
-        // 4. Фильтр по проекту
-        if (projectId != null) {
-            Optional<Project> projectOpt = projectService.findById(projectId);
-            if (projectOpt.isPresent()) {
-                Project project = projectOpt.get();
-                List<Partner> projectPartners = partnerService.findByProject(project);
-                // Пересечение с уже отфильтрованным списком
-                List<Long> projectPartnerIds = projectPartners.stream()
-                        .map(Partner::getId)
-                        .collect(Collectors.toList());
-
-                partners = partners.stream()
-                        .filter(p -> projectPartnerIds.contains(p.getId()))
-                        .collect(Collectors.toList());
-            }
-        }
-
-        // 5. Фильтр по логотипу
-        if ("yes".equals(logoFilter)) {
-            partners = partners.stream()
-                    .filter(Partner::hasLogo)
-                    .collect(Collectors.toList());
-        } else if ("no".equals(logoFilter)) {
-            partners = partners.stream()
-                    .filter(p -> !p.hasLogo())
-                    .collect(Collectors.toList());
-        }
-
-        // 6. Фильтр по сайту
-        if ("yes".equals(websiteFilter)) {
-            partners = partners.stream()
-                    .filter(Partner::hasWebsite)
-                    .collect(Collectors.toList());
-        } else if ("no".equals(websiteFilter)) {
-            partners = partners.stream()
-                    .filter(p -> !p.hasWebsite())
-                    .collect(Collectors.toList());
-        }
-
-        return partners;
-    }
-
-    // ================== УПРОЩЕННЫЕ МЕТОДЫ ==================
-
-    /**
-     * Поиск партнеров по названию.
-     */
-    @GetMapping("/search")
-    public String searchPartners(@RequestParam String searchTerm,
-                                 @RequestParam(defaultValue = "0") int page,
-                                 @RequestParam(defaultValue = "20") int size,
-                                 Model model) {
-        // Просто перенаправляем на основной метод с параметром поиска
-        return "redirect:/admin/partners?search=" + searchTerm + "&page=" + page + "&size=" + size;
+    @GetMapping("/inactive")
+    public String listInactivePartners(Model model) {
+        List<Partner> inactivePartners = partnerService.findAllInactive();
+        model.addAttribute("partners", inactivePartners);
+        model.addAttribute("title", "Неактивные партнеры");
+        model.addAttribute("showInactive", true); // Только здесь добавляем
+        model.addAttribute("partnerTypes", PartnerType.values());
+        return "admin/partners/list";
     }
 
     /**
-     * Отображает партнеров по типу.
+     * Отображает список партнеров по типу.
+     *
+     * @param type тип партнера
+     * @param model модель для передачи данных в представление
+     * @return шаблон списка партнеров по типу
      */
-    @GetMapping("/type/{partnerType}")
-    public String listPartnersByType(@PathVariable String partnerType,
-                                     @RequestParam(defaultValue = "0") int page,
-                                     @RequestParam(defaultValue = "20") int size,
-                                     Model model) {
-        // Перенаправляем на основной метод с фильтром по типу
-        return "redirect:/admin/partners?partnerType=" + partnerType + "&page=" + page + "&size=" + size;
-    }
+    @GetMapping("/type/{type}")
+    public String listPartnersByType(@PathVariable String type, Model model) {
+        PartnerType partnerType = PartnerType.fromString(type);
+        if (partnerType == null) {
+            return "redirect:/admin/partners";
+        }
 
-    /**
-     * Партнеры конкретного проекта (упрощенный вариант).
-     */
-    @GetMapping("/project/{projectId}")
-    public String listProjectPartners(@PathVariable Long projectId,
-                                      @RequestParam(defaultValue = "0") int page,
-                                      @RequestParam(defaultValue = "20") int size,
-                                      RedirectAttributes redirectAttributes) {
-        // Просто перенаправляем на основной метод с фильтром по проекту
-        return "redirect:/admin/partners?projectId=" + projectId + "&page=" + page + "&size=" + size;
+        List<Partner> partners = partnerService.findByType(partnerType);
+        model.addAttribute("partners", partners);
+        model.addAttribute("title", "Партнеры: " + partnerType.getDisplayName());
+        model.addAttribute("filterType", partnerType);
+        model.addAttribute("partnerTypes", PartnerType.values());
+        return "admin/partners/list";
     }
 
     // ================== СОЗДАНИЕ ПАРТНЕРА ==================
 
     /**
      * Отображает форму создания нового партнера.
+     *
+     * @param model модель для передачи данных в представление
+     * @return шаблон формы создания партнера
      */
     @GetMapping("/create")
-    public String showCreateForm(@RequestParam(required = false) Long projectId,
-                                 Model model,
-                                 RedirectAttributes redirectAttributes) {
-        Partner partner = new Partner();
-
-        if (projectId != null) {
-            Optional<Project> projectOpt = projectService.findById(projectId);
-            if (projectOpt.isPresent()) {
-                Project project = projectOpt.get();
-                // Предварительно устанавливаем проект для нового партнера
-                partner.setProject(project);
-                model.addAttribute("suggestedProjectTitle", project.getTitle());
-            }
-        }
-
-        List<Project> projects = projectService.findAllActive();
-        model.addAttribute("partner", partner);
-        model.addAttribute("projects", projects);
-        model.addAttribute("partnerTypes", PartnerType.values());
+    public String showCreateForm(Model model) {
+        model.addAttribute("partner", new Partner());
         model.addAttribute("title", "Создание партнера");
-
+        model.addAttribute("partnerTypes", PartnerType.values());
+        model.addAttribute("allProjects", projectService.findAllActive());
         return "admin/partners/create";
     }
 
     /**
      * Обрабатывает создание нового партнера.
+     *
+     * @param partner создаваемый партнер
+     * @param bindingResult результаты валидации
+     * @param redirectAttributes атрибуты для редиректа
+     * @return редирект на список партнеров или форму с ошибками
      */
     @PostMapping("/create")
     public String createPartner(@Valid @ModelAttribute("partner") Partner partner,
                                 BindingResult bindingResult,
-                                RedirectAttributes redirectAttributes,
-                                Model model) {
-
-        if (partner.getWebsiteUrl() != null && !partner.getWebsiteUrl().isEmpty()) {
-            String url = partner.getWebsiteUrl().trim();
-            if (!url.startsWith("http://") && !url.startsWith("https://") &&
-                    !url.startsWith("www.") && url.contains(".")) {
-                partner.setWebsiteUrl("https://" + url);
-            }
-        }
-
+                                RedirectAttributes redirectAttributes) {
         if (bindingResult.hasErrors()) {
-            List<Project> projects = projectService.findAllActive();
-            model.addAttribute("projects", projects);
-            model.addAttribute("partnerTypes", PartnerType.values());
-            model.addAttribute("title", "Создание партнера");
             return "admin/partners/create";
         }
 
@@ -292,6 +154,11 @@ public class PartnerAdminController {
 
     /**
      * Отображает форму редактирования партнера.
+     *
+     * @param id идентификатор партнера
+     * @param model модель для передачи данных в представление
+     * @param redirectAttributes атрибуты для редиректа
+     * @return шаблон формы редактирования или редирект с ошибкой
      */
     @GetMapping("/edit/{id}")
     public String showEditForm(@PathVariable Long id,
@@ -306,41 +173,36 @@ public class PartnerAdminController {
         }
 
         Partner partner = partnerOpt.get();
-        List<Project> projects = projectService.findAllActive();
-
         model.addAttribute("partner", partner);
-        model.addAttribute("projects", projects);
+        model.addAttribute("title", "Редактирование: " + partner.getName());
         model.addAttribute("partnerTypes", PartnerType.values());
-        model.addAttribute("title", "Редактирование партнера: " + partner.getName());
+        model.addAttribute("allProjects", projectService.findAllActive());
+        model.addAttribute("partnerProjects", partner.getProjects());
 
         return "admin/partners/edit";
     }
 
     /**
      * Обрабатывает обновление партнера.
+     *
+     * @param id идентификатор партнера
+     * @param partner обновленные данные партнера
+     * @param bindingResult результаты валидации
+     * @param redirectAttributes атрибуты для редиректа
+     * @return редирект на список партнеров или форму с ошибками
      */
     @PostMapping("/edit/{id}")
     public String updatePartner(@PathVariable Long id,
                                 @Valid @ModelAttribute("partner") Partner partner,
                                 BindingResult bindingResult,
                                 RedirectAttributes redirectAttributes) {
-        if (partner.getWebsiteUrl() != null && !partner.getWebsiteUrl().isEmpty()) {
-            String url = partner.getWebsiteUrl().trim();
-            if (!url.startsWith("http://") && !url.startsWith("https://") &&
-                    !url.startsWith("www.") && url.contains(".")) {
-                partner.setWebsiteUrl("https://" + url);
-            }
-        }
-
         if (bindingResult.hasErrors()) {
-            partner.setId(id);
-            redirectAttributes.addFlashAttribute("org.springframework.validation.BindingResult.partner", bindingResult);
-            redirectAttributes.addFlashAttribute("partner", partner);
-            redirectAttributes.addFlashAttribute("partnerTypes", PartnerType.values());
-            return "redirect:/admin/partners/edit/" + id;
+            partner.setId(id); // Сохраняем ID для формы
+            return "admin/partners/edit";
         }
 
         try {
+            // Проверяем существование партнера
             Optional<Partner> existingPartnerOpt = partnerService.findById(id);
             if (existingPartnerOpt.isEmpty()) {
                 redirectAttributes.addFlashAttribute("errorMessage",
@@ -348,12 +210,10 @@ public class PartnerAdminController {
                 return "redirect:/admin/partners";
             }
 
+            // Сохраняем существующие связи с проектами
             Partner existingPartner = existingPartnerOpt.get();
-            partner.setId(id);
-
-            if (partner.getProject() == null) {
-                partner.setProject(existingPartner.getProject());
-            }
+            partner.setProjects(existingPartner.getProjects());
+            partner.setId(id); // Убедимся, что ID сохраняется
 
             Partner updatedPartner = partnerService.update(partner);
             redirectAttributes.addFlashAttribute("successMessage",
@@ -370,6 +230,10 @@ public class PartnerAdminController {
 
     /**
      * Активирует партнера.
+     *
+     * @param id идентификатор партнера
+     * @param redirectAttributes атрибуты для редиректа
+     * @return редирект на список партнеров
      */
     @PostMapping("/activate/{id}")
     public String activatePartner(@PathVariable Long id,
@@ -378,16 +242,19 @@ public class PartnerAdminController {
             Partner activatedPartner = partnerService.activateById(id);
             redirectAttributes.addFlashAttribute("successMessage",
                     "Партнер '" + activatedPartner.getName() + "' активирован!");
-            return "redirect:/admin/partners";
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("errorMessage",
                     "Ошибка при активации партнера: " + e.getMessage());
-            return "redirect:/admin/partners";
         }
+        return "redirect:/admin/partners";
     }
 
     /**
      * Деактивирует партнера.
+     *
+     * @param id идентификатор партнера
+     * @param redirectAttributes атрибуты для редиректа
+     * @return редирект на список партнеров
      */
     @PostMapping("/deactivate/{id}")
     public String deactivatePartner(@PathVariable Long id,
@@ -396,18 +263,22 @@ public class PartnerAdminController {
             Partner deactivatedPartner = partnerService.deactivateById(id);
             redirectAttributes.addFlashAttribute("successMessage",
                     "Партнер '" + deactivatedPartner.getName() + "' деактивирован!");
-            return "redirect:/admin/partners";
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("errorMessage",
                     "Ошибка при деактивации партнера: " + e.getMessage());
-            return "redirect:/admin/partners";
         }
+        return "redirect:/admin/partners";
     }
 
     // ================== УДАЛЕНИЕ ПАРТНЕРА ==================
 
     /**
      * Отображает страницу подтверждения удаления партнера.
+     *
+     * @param id идентификатор партнера
+     * @param model модель для передачи данных в представление
+     * @param redirectAttributes атрибуты для редиректа
+     * @return шаблон подтверждения удаления или редирект с ошибкой
      */
     @GetMapping("/delete/{id}")
     public String showDeleteConfirmation(@PathVariable Long id,
@@ -425,11 +296,19 @@ public class PartnerAdminController {
         model.addAttribute("partner", partner);
         model.addAttribute("title", "Удаление партнера: " + partner.getName());
 
+        // Проверяем участие в проектах
+        int projectCount = partner.getProjectsCount();
+        model.addAttribute("projectCount", projectCount);
+
         return "admin/partners/delete";
     }
 
     /**
      * Обрабатывает удаление партнера.
+     *
+     * @param id идентификатор партнера
+     * @param redirectAttributes атрибуты для редиректа
+     * @return редирект на список партнеров
      */
     @PostMapping("/delete/{id}")
     public String deletePartner(@PathVariable Long id,
@@ -445,90 +324,176 @@ public class PartnerAdminController {
             Partner partner = partnerOpt.get();
             String partnerName = partner.getName();
 
+            // Удаляем связи с проектами перед удалением
+            partner.getProjects().clear();
+            partnerService.update(partner);
+
+            // Удаляем партнера
             partnerService.deleteById(id);
+
             redirectAttributes.addFlashAttribute("successMessage",
                     "Партнер '" + partnerName + "' успешно удален!");
-            return "redirect:/admin/partners";
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("errorMessage",
                     "Ошибка при удалении партнера: " + e.getMessage());
+        }
+        return "redirect:/admin/partners";
+    }
+
+    // ================== УПРАВЛЕНИЕ ПРОЕКТАМИ ==================
+
+    /**
+     * Отображает форму управления проектами партнера.
+     *
+     * @param id идентификатор партнера
+     * @param model модель для передачи данных в представление
+     * @param redirectAttributes атрибуты для редиректа
+     * @return шаблон управления проектами или редирект с ошибкой
+     */
+    @GetMapping("/projects/{id}")
+    public String manageProjects(@PathVariable Long id,
+                                 Model model,
+                                 RedirectAttributes redirectAttributes) {
+        Optional<Partner> partnerOpt = partnerService.findById(id);
+
+        if (partnerOpt.isEmpty()) {
+            redirectAttributes.addFlashAttribute("errorMessage",
+                    "Партнер с ID " + id + " не найден");
             return "redirect:/admin/partners";
         }
-    }
 
-    // ================== УПРАВЛЕНИЕ ПОРЯДКОМ СОРТИРОВКИ ==================
+        Partner partner = partnerOpt.get();
+        List<Project> allProjects = projectService.findAllActive();
+        List<Project> partnerProjects = List.copyOf(partner.getProjects());
+        List<Project> availableProjects = allProjects.stream()
+                .filter(project -> !partnerProjects.contains(project))
+                .toList();
 
-    /**
-     * Обновляет порядок сортировки партнеров.
-     */
-    @PostMapping("/update-order/{projectId}")
-    public String updatePartnerOrder(@PathVariable Long projectId,
-                                     @RequestParam Long[] partnerIds,
-                                     RedirectAttributes redirectAttributes) {
-        try {
-            Optional<Project> projectOpt = projectService.findById(projectId);
-            if (projectOpt.isEmpty()) {
-                redirectAttributes.addFlashAttribute("errorMessage",
-                        "Проект с ID " + projectId + " не найден");
-                return "redirect:/admin/projects";
-            }
+        model.addAttribute("partner", partner);
+        model.addAttribute("title", "Управление проектами: " + partner.getName());
+        model.addAttribute("partnerProjects", partnerProjects);
+        model.addAttribute("availableProjects", availableProjects);
 
-            for (int i = 0; i < partnerIds.length; i++) {
-                Optional<Partner> partnerOpt = partnerService.findById(partnerIds[i]);
-                if (partnerOpt.isPresent()) {
-                    Partner partner = partnerOpt.get();
-                    partner.setSortOrder(i);
-                    partnerService.update(partner);
-                }
-            }
-
-            redirectAttributes.addFlashAttribute("successMessage",
-                    "Порядок партнеров успешно обновлен!");
-            return "redirect:/admin/partners?projectId=" + projectId;
-        } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("errorMessage",
-                    "Ошибка при обновлении порядка партнеров: " + e.getMessage());
-            return "redirect:/admin/partners?projectId=" + projectId;
-        }
+        return "admin/partners/projects";
     }
 
     /**
-     * Быстрое добавление партнера к проекту.
+     * Добавляет проект к партнеру.
+     *
+     * @param partnerId идентификатор партнера
+     * @param projectId идентификатор проекта
+     * @param redirectAttributes атрибуты для редиректа
+     * @return редирект на страницу управления проектами
      */
-    @PostMapping("/quick-add/{projectId}")
-    public String quickAddPartner(@PathVariable Long projectId,
-                                  @RequestParam String name,
-                                  @RequestParam PartnerType partnerType,
-                                  RedirectAttributes redirectAttributes) {
+    @PostMapping("/projects/{partnerId}/add")
+    public String addProjectToPartner(@PathVariable Long partnerId,
+                                      @RequestParam Long projectId,
+                                      RedirectAttributes redirectAttributes) {
         try {
+            Optional<Partner> partnerOpt = partnerService.findById(partnerId);
             Optional<Project> projectOpt = projectService.findById(projectId);
-            if (projectOpt.isEmpty()) {
+
+            if (partnerOpt.isEmpty() || projectOpt.isEmpty()) {
                 redirectAttributes.addFlashAttribute("errorMessage",
-                        "Проект с ID " + projectId + " не найден");
-                return "redirect:/admin/projects";
+                        "Партнер или проект не найден");
+                return "redirect:/admin/partners/projects/" + partnerId;
             }
 
-            if (name == null || name.trim().isEmpty()) {
-                redirectAttributes.addFlashAttribute("errorMessage",
-                        "Название партнера обязательно");
-                return "redirect:/admin/partners?projectId=" + projectId;
-            }
-
+            Partner partner = partnerOpt.get();
             Project project = projectOpt.get();
-            Partner partner = new Partner(project, name.trim(), partnerType);
-            partner.setActive(true);
 
-            long partnerCount = partnerService.countByProject(project);
-            partner.setSortOrder((int) partnerCount);
+            partnerService.addProjectToPartner(partner, project);
 
-            partnerService.save(partner);
             redirectAttributes.addFlashAttribute("successMessage",
-                    "Партнер '" + name + "' быстро добавлен к проекту!");
-            return "redirect:/admin/partners?projectId=" + projectId;
+                    "Проект '" + project.getTitle() + "' добавлен к партнеру '" +
+                            partner.getName() + "'");
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("errorMessage",
-                    "Ошибка при быстром добавлении партнера: " + e.getMessage());
-            return "redirect:/admin/partners?projectId=" + projectId;
+                    "Ошибка при добавлении проекта: " + e.getMessage());
         }
+
+        return "redirect:/admin/partners/projects/" + partnerId;
+    }
+
+    /**
+     * Удаляет проект у партнера.
+     *
+     * @param partnerId идентификатор партнера
+     * @param projectId идентификатор проекта
+     * @param redirectAttributes атрибуты для редиректа
+     * @return редирект на страницу управления проектами
+     */
+    @PostMapping("/projects/{partnerId}/remove")
+    public String removeProjectFromPartner(@PathVariable Long partnerId,
+                                           @RequestParam Long projectId,
+                                           RedirectAttributes redirectAttributes) {
+        try {
+            Optional<Partner> partnerOpt = partnerService.findById(partnerId);
+            Optional<Project> projectOpt = projectService.findById(projectId);
+
+            if (partnerOpt.isEmpty() || projectOpt.isEmpty()) {
+                redirectAttributes.addFlashAttribute("errorMessage",
+                        "Партнер или проект не найден");
+                return "redirect:/admin/partners/projects/" + partnerId;
+            }
+
+            Partner partner = partnerOpt.get();
+            Project project = projectOpt.get();
+
+            partnerService.removeProjectFromPartner(partner, project);
+
+            redirectAttributes.addFlashAttribute("successMessage",
+                    "Проект '" + project.getTitle() + "' удален у партнера '" +
+                            partner.getName() + "'");
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("errorMessage",
+                    "Ошибка при удалении проекта: " + e.getMessage());
+        }
+
+        return "redirect:/admin/partners/projects/" + partnerId;
+    }
+
+    // ================== ПОИСК И ФИЛЬТРАЦИЯ ==================
+
+    /**
+     * Поиск партнеров по названию или описанию.
+     *
+     * @param searchTerm поисковый запрос
+     * @param model модель для передачи данных в представление
+     * @return шаблон списка с результатами поиска
+     */
+    @GetMapping("/search")
+    public String searchPartners(@RequestParam String searchTerm, Model model) {
+        List<Partner> searchResults = partnerService.searchByNameOrDescription(searchTerm);
+        model.addAttribute("partners", searchResults);
+        model.addAttribute("title", "Результаты поиска: " + searchTerm);
+        model.addAttribute("searchTerm", searchTerm);
+        model.addAttribute("partnerTypes", PartnerType.values());
+        return "admin/partners/list";
+    }
+
+    /**
+     * Фильтрация партнеров по типу.
+     *
+     * @param type тип партнера
+     * @param model модель для передачи данных в представление
+     * @return шаблон списка с отфильтрованными партнерами
+     */
+    @GetMapping("/filter")
+    public String filterByType(@RequestParam(required = false) PartnerType type,
+                               Model model) {
+        List<Partner> partners;
+        if (type != null) {
+            partners = partnerService.findByType(type);
+            model.addAttribute("title", "Партнеры: " + type.getDisplayName());
+            model.addAttribute("filterType", type);
+        } else {
+            partners = partnerService.findAllActiveOrderBySortOrder();
+            model.addAttribute("title", "Все партнеры");
+        }
+
+        model.addAttribute("partners", partners);
+        model.addAttribute("partnerTypes", PartnerType.values());
+        return "admin/partners/list";
     }
 }
