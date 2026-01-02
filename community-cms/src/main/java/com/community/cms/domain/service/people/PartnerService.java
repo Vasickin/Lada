@@ -315,27 +315,6 @@ public class PartnerService {
 
     // ================== ПАГИНАЦИЯ ==================
 
-    /**
-     * Находит всех активных партнеров с пагинацией.
-     *
-     * @param pageable параметры пагинации
-     * @return страница активных партнеров
-     */
-    @Transactional(readOnly = true)
-    public Page<Partner> findAllActive(Pageable pageable) {
-        return partnerRepository.findByActiveTrue(pageable);
-    }
-
-    /**
-     * Находит всех партнеров с пагинацией.
-     *
-     * @param pageable параметры пагинации
-     * @return страница всех партнеров
-     */
-    @Transactional(readOnly = true)
-    public Page<Partner> findAll(Pageable pageable) {
-        return partnerRepository.findAll(pageable);
-    }
 
     // ================== СОРТИРОВКА ==================
 
@@ -780,5 +759,90 @@ public class PartnerService {
      */
     public List<Partner> updateSortOrder(List<Partner> partners) {
         return partnerRepository.saveAll(partners);
+    }
+
+    // ================== ПАГИНАЦИЯ ==================
+
+    /**
+     * Находит всех активных партнеров с пагинацией.
+     *
+     * @param pageable параметры пагинации
+     * @return страница активных партнеров
+     */
+    @Transactional(readOnly = true)
+    public Page<Partner> findAllActive(Pageable pageable) {
+        return partnerRepository.findByActiveTrue(pageable);
+    }
+
+    /**
+     * Находит всех партнеров с пагинацией.
+     *
+     * @param pageable параметры пагинации
+     * @return страница всех партнеров
+     */
+    @Transactional(readOnly = true)
+    public Page<Partner> findAll(Pageable pageable) {
+        return partnerRepository.findAll(pageable);
+    }
+
+    /**
+     * Находит всех неактивных партнеров с пагинацией.
+     *
+     * @param pageable параметры пагинации
+     * @return страница неактивных партнеров
+     */
+    @Transactional(readOnly = true)
+    public Page<Partner> findAllInactiveWithPagination(Pageable pageable) {
+        // Нужно добавить метод в репозиторий: Page<Partner> findByActiveFalse(Pageable pageable);
+        // Временно используем создание Page из List
+        List<Partner> inactivePartners = findAllInactive(); // Используем существующий метод
+        return createPageFromList(inactivePartners, pageable);
+    }
+
+    /**
+     * Находит партнеров по типу с пагинацией.
+     *
+     * @param type тип партнера
+     * @param pageable параметры пагинации
+     * @return страница партнеров указанного типа
+     */
+    @Transactional(readOnly = true)
+    public Page<Partner> findByTypeWithPagination(PartnerType type, Pageable pageable) {
+        // Нужно добавить метод в репозиторий: Page<Partner> findByType(PartnerType type, Pageable pageable);
+        // Временно используем создание Page из List
+        List<Partner> partnersByType = findByType(type); // Используем существующий метод
+        return createPageFromList(partnersByType, pageable);
+    }
+
+    /**
+     * Поиск партнеров с пагинацией.
+     *
+     * @param searchTerm поисковый запрос
+     * @param pageable параметры пагинации
+     * @return страница с результатами поиска
+     */
+    @Transactional(readOnly = true)
+    public Page<Partner> searchByNameOrDescriptionWithPagination(String searchTerm, Pageable pageable) {
+        // Нужно добавить метод в репозиторий для поиска с пагинацией
+        // Временно используем создание Page из List
+        List<Partner> searchResults = searchByNameOrDescription(searchTerm);
+        return createPageFromList(searchResults, pageable);
+    }
+
+    /**
+     * Вспомогательный метод для создания Page из List.
+     * Временное решение до добавления пагинации в репозиторий.
+     */
+    private Page<Partner> createPageFromList(List<Partner> list, Pageable pageable) {
+        int start = (int) pageable.getOffset();
+        int end = Math.min((start + pageable.getPageSize()), list.size());
+
+        if (start > list.size()) {
+            return Page.empty(pageable);
+        }
+
+        List<Partner> pageContent = list.subList(start, end);
+        return new org.springframework.data.domain.PageImpl<>(
+                pageContent, pageable, list.size());
     }
 }

@@ -144,6 +144,8 @@ public enum PartnerType {
         return this == ORGANIZER;
     }
 
+
+
     /**
      * Возвращает массив всех типов партнеров с их отображаемыми названиями.
      * Удобно для заполнения выпадающих списков в UI.
@@ -157,5 +159,50 @@ public enum PartnerType {
             result[i] = types[i].name() + " - " + types[i].getDisplayName();
         }
         return result;
+    }
+
+    /**
+     * Возвращает CSS класс цвета для данного типа партнера.
+     * Используется для визуального выделения в интерфейсе.
+     *
+     * @return Название CSS класса цвета (без префикса "bg-")
+     */
+    public String getColorClass() {
+        switch (this) {
+            case SPONSOR:
+                return "success"; // Зеленый
+            case INFORMATION:
+                return "info"; // Голубой
+            case TECHNICAL:
+                return "warning"; // Желтый/оранжевый
+            case ORGANIZER:
+                return "primary"; // Синий
+            case PARTNER:
+                return "secondary"; // Серый
+            case OTHER:
+                return "dark"; // Темный
+            default:
+                return "secondary"; // По умолчанию
+        }
+    }
+
+    /**
+     * Возвращает иконку Bootstrap Icons для данного типа партнера.
+     *
+     * @return Название класса иконки
+     */
+    public String getIconClass() {
+        switch (this) {
+            case SPONSOR:
+                return "bi-cash-coin";
+            case INFORMATION:
+                return "bi-megaphone";
+            case TECHNICAL:
+                return "bi-gear";
+            case ORGANIZER:
+                return "bi-people";
+            default:
+                return "bi-shake";
+        }
     }
 }

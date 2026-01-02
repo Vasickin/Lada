@@ -413,4 +413,56 @@ public interface PartnerRepository extends JpaRepository<Partner, Long> {
      * @return список партнеров с указанным контактным лицом
      */
     List<Partner> findByContactPersonContainingIgnoreCase(String contactPerson);
+
+    // ================== ПАГИНАЦИЯ С ФИЛЬТРАМИ ==================
+
+    /**
+     * Находит всех неактивных партнеров с пагинацией.
+     *
+     * @param pageable объект пагинации
+     * @return страница неактивных партнеров
+     */
+    Page<Partner> findByActiveFalse(Pageable pageable);
+
+    /**
+     * Находит партнеров по типу с пагинацией.
+     *
+     * @param type тип партнера
+     * @param pageable объект пагинации
+     * @return страница партнеров указанного типа
+     */
+    Page<Partner> findByType(PartnerType type, Pageable pageable);
+
+    /**
+     * Находит партнеров по типу среди активных с пагинацией.
+     *
+     * @param type тип партнера
+     * @param pageable объект пагинации
+     * @return страница активных партнеров указанного типа
+     */
+    Page<Partner> findByTypeAndActiveTrue(PartnerType type, Pageable pageable);
+
+    /**
+     * Комплексный поиск партнеров по названию или описанию с пагинацией.
+     *
+     * @param searchTerm поисковый запрос
+     * @param pageable объект пагинации
+     * @return страница найденных партнеров
+     */
+    @Query("SELECT p FROM Partner p WHERE " +
+            "LOWER(p.name) LIKE LOWER(CONCAT('%', :searchTerm, '%')) OR " +
+            "LOWER(p.description) LIKE LOWER(CONCAT('%', :searchTerm, '%'))")
+    Page<Partner> searchByNameOrDescription(@Param("searchTerm") String searchTerm, Pageable pageable);
+
+    /**
+     * Комплексный поиск активных партнеров по названию или описанию с пагинацией.
+     *
+     * @param searchTerm поисковый запрос
+     * @param pageable объект пагинации
+     * @return страница найденных активных партнеров
+     */
+    @Query("SELECT p FROM Partner p WHERE p.active = true AND (" +
+            "LOWER(p.name) LIKE LOWER(CONCAT('%', :searchTerm, '%')) OR " +
+            "LOWER(p.description) LIKE LOWER(CONCAT('%', :searchTerm, '%')))")
+    Page<Partner> searchActiveByNameOrDescription(@Param("searchTerm") String searchTerm, Pageable pageable);
 }

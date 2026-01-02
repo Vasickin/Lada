@@ -7,14 +7,20 @@ import com.community.cms.domain.service.content.ProjectService;
 import com.community.cms.domain.service.people.PartnerService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 /**
  * Контроллер административной панели для управления партнерами.
@@ -24,7 +30,7 @@ import java.util.Optional;
  * проектов для назначения партнеров на проекты.</p>
  *
  * @author Community CMS
- * @version 1.0
+ * @version 2.0
  * @since 2025
  * @see Partner
  * @see PartnerService
@@ -35,6 +41,11 @@ public class PartnerAdminController {
 
     private final PartnerService partnerService;
     private final ProjectService projectService;
+
+    // Константы для сортировки по умолчанию
+    private static final String DEFAULT_SORT_FIELD = "sortOrder";
+    private static final Sort.Direction DEFAULT_SORT_DIRECTION = Sort.Direction.ASC;
+    private static final int DEFAULT_PAGE_SIZE = 20;
 
     /**
      * Конструктор с инъекцией зависимостей.
@@ -49,59 +60,264 @@ public class PartnerAdminController {
         this.projectService = projectService;
     }
 
-    // ================== СПИСОК ПАРТНЕРОВ ==================
+    // ================== СПИСОК ПАРТНЕРОВ С ПАГИНАЦИЕЙ И ФИЛЬТРАМИ ==================
 
     /**
-     * Отображает список всех партнеров.
+     * Отображает список всех партнеров с поддержкой пагинации и фильтрации.
      *
+     * @param search поисковый запрос (опционально)
+     * @param type тип партнера (опционально)
+     * @param status статус активности (ACTIVE/INACTIVE) (опционально)
+     * @param hasLogo наличие логотипа (true/false) (опционально)
+     * @param page номер страницы (начинается с 0)
+     * @param size количество элементов на странице
      * @param model модель для передачи данных в представление
      * @return шаблон списка партнеров
      */
     @GetMapping
-    public String listPartners(Model model) {
-        List<Partner> partners = partnerService.findAllActiveOrderBySortOrder();
-        model.addAttribute("partners", partners);
+    public String listPartners(@RequestParam(required = false) String search,
+                               @RequestParam(required = false) PartnerType type,
+                               @RequestParam(required = false) String status,
+                               @RequestParam(required = false) String hasLogo,
+                               @RequestParam(defaultValue = "0") int page,
+                               @RequestParam(defaultValue = "20") int size,
+                               Model model) {
+
+        // Создаем Pageable с сортировкой по умолчанию
+        Pageable pageable = PageRequest.of(page, size, Sort.by(DEFAULT_SORT_DIRECTION, DEFAULT_SORT_FIELD));
+
+        Page<Partner> partnersPage;
+
+        // Применяем фильтры в зависимости от параметров
+        if (search != null && !search.trim().isEmpty()) {
+            // Если есть поисковый запрос - используем поиск
+            partnersPage = searchPartnersWithPagination(search, pageable);
+        } else if (type != null || status != null || hasLogo != null) {
+            // Если есть другие фильтры - применяем их
+            partnersPage = filterPartners(type, status, hasLogo, pageable);
+        } else {
+            // Иначе показываем всех активных партнеров
+            partnersPage = partnerService.findAllActive(pageable);
+        }
+
+        // Добавляем данные в модель
+        model.addAttribute("partnersPage", partnersPage);
         model.addAttribute("title", "Управление партнерами");
         model.addAttribute("partnerTypes", PartnerType.values());
-        // НЕ добавляем showInactive здесь - оно будет null для активного списка
+
+        // Добавляем параметры фильтров для сохранения состояния
+        model.addAttribute("selectedSearch", search);
+        model.addAttribute("selectedType", type);
+        model.addAttribute("selectedStatus", status);
+        model.addAttribute("selectedHasLogo", hasLogo);
+
         return "admin/partners/list";
     }
 
     /**
-     * Отображает список неактивных партнеров.
+     * Поиск партнеров с пагинацией.
      *
+     * @param search поисковый запрос
+     * @param pageable параметры пагинации
+     * @return страница с результатами поиска
+     */
+    private Page<Partner> searchPartnersWithPagination(String search, Pageable pageable) {
+        return partnerService.searchByNameOrDescriptionWithPagination(search, pageable);
+    }
+
+    /**
+     * Фильтрация партнеров с пагинацией.
+     *
+     * @param type тип партнера
+     * @param status статус активности
+     * @param hasLogo наличие логотипа
+     * @param pageable параметры пагинации
+     * @return страница с отфильтрованными партнерами
+     */
+    private Page<Partner> filterPartners(PartnerType type, String status, String hasLogo, Pageable pageable) {
+        // Если есть конкретные фильтры, используем временное решение
+        if (status != null || hasLogo != null) {
+            List<Partner> filteredList;
+
+            if (status != null) {
+                boolean isActive = "ACTIVE".equalsIgnoreCase(status);
+                if (type != null) {
+                    // Фильтр по типу и статусу
+                    filteredList = isActive ?
+                            partnerService.findActiveByType(type) :
+                            partnerService.findByType(type).stream()
+                                    .filter(p -> p.isActive() == isActive)
+                                    .collect(Collectors.toList());
+                } else {
+                    // Фильтр только по статусу
+                    filteredList = isActive ?
+                            partnerService.findAllActive() :
+                            partnerService.findAllInactive();
+                }
+            } else {
+                // Фильтр только по типу
+                filteredList = partnerService.findByType(type);
+            }
+
+            // Дополнительная фильтрация по наличию логотипа
+            if (hasLogo != null) {
+                boolean hasLogoBoolean = Boolean.parseBoolean(hasLogo);
+                filteredList = filteredList.stream()
+                        .filter(p -> p.hasLogo() == hasLogoBoolean)
+                        .collect(Collectors.toList());
+            }
+
+            // Применяем пагинацию
+            return createPageFromList(filteredList, pageable);
+        } else if (type != null) {
+            // Только фильтр по типу - используем новый метод
+            return partnerService.findByTypeWithPagination(type, pageable);
+        } else {
+            // Нет фильтров - показываем всех активных
+            return partnerService.findAllActive(pageable);
+        }
+    }
+
+    /**
+     * Создает Page из List с учетом пагинации.
+     * Временное решение до добавления пагинации в репозиторий.
+     */
+    private Page<Partner> createPageFromList(List<Partner> list, Pageable pageable) {
+        int start = (int) pageable.getOffset();
+        int end = Math.min((start + pageable.getPageSize()), list.size());
+
+        if (start > list.size()) {
+            return Page.empty(pageable);
+        }
+
+        List<Partner> pageContent = list.subList(start, end);
+        return new org.springframework.data.domain.PageImpl<>(
+                pageContent, pageable, list.size());
+    }
+
+    /**
+     * Отображает список неактивных партнеров с пагинацией.
+     *
+     * @param page номер страницы
+     * @param size количество элементов на странице
      * @param model модель для передачи данных в представление
      * @return шаблон списка неактивных партнеров
      */
     @GetMapping("/inactive")
-    public String listInactivePartners(Model model) {
-        List<Partner> inactivePartners = partnerService.findAllInactive();
-        model.addAttribute("partners", inactivePartners);
+    public String listInactivePartners(@RequestParam(defaultValue = "0") int page,
+                                       @RequestParam(defaultValue = "20") int size,
+                                       Model model) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by(DEFAULT_SORT_DIRECTION, DEFAULT_SORT_FIELD));
+        Page<Partner> inactivePartnersPage = partnerService.findAllInactiveWithPagination(pageable);
+
+        model.addAttribute("partnersPage", inactivePartnersPage);
         model.addAttribute("title", "Неактивные партнеры");
-        model.addAttribute("showInactive", true); // Только здесь добавляем
+        model.addAttribute("showInactive", true);
         model.addAttribute("partnerTypes", PartnerType.values());
+        model.addAttribute("selectedStatus", "INACTIVE");
+
         return "admin/partners/list";
     }
 
     /**
-     * Отображает список партнеров по типу.
+     * Отображает список партнеров по типу с пагинацией.
      *
      * @param type тип партнера
+     * @param page номер страницы
+     * @param size количество элементов на странице
      * @param model модель для передачи данных в представление
      * @return шаблон списка партнеров по типу
      */
     @GetMapping("/type/{type}")
-    public String listPartnersByType(@PathVariable String type, Model model) {
+    public String listPartnersByType(@PathVariable String type,
+                                     @RequestParam(defaultValue = "0") int page,
+                                     @RequestParam(defaultValue = "20") int size,
+                                     Model model) {
         PartnerType partnerType = PartnerType.fromString(type);
         if (partnerType == null) {
             return "redirect:/admin/partners";
         }
 
-        List<Partner> partners = partnerService.findByType(partnerType);
-        model.addAttribute("partners", partners);
+        Pageable pageable = PageRequest.of(page, size, Sort.by(DEFAULT_SORT_DIRECTION, DEFAULT_SORT_FIELD));
+        Page<Partner> partnersPage = partnerService.findByTypeWithPagination(partnerType, pageable);
+
+        model.addAttribute("partnersPage", partnersPage);
         model.addAttribute("title", "Партнеры: " + partnerType.getDisplayName());
         model.addAttribute("filterType", partnerType);
         model.addAttribute("partnerTypes", PartnerType.values());
+        model.addAttribute("selectedType", partnerType);
+
+        return "admin/partners/list";
+    }
+
+    // ================== ПОИСК И ФИЛЬТРАЦИЯ (новые методы) ==================
+
+    /**
+     * Поиск партнеров по названию или описанию с пагинацией.
+     *
+     * @param searchTerm поисковый запрос
+     * @param page номер страницы
+     * @param size количество элементов на странице
+     * @param model модель для передачи данных в представление
+     * @return шаблон списка с результатами поиска
+     */
+    @GetMapping("/search")
+    public String searchPartners(@RequestParam String searchTerm,
+                                 @RequestParam(defaultValue = "0") int page,
+                                 @RequestParam(defaultValue = "20") int size,
+                                 Model model) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by(DEFAULT_SORT_DIRECTION, DEFAULT_SORT_FIELD));
+        Page<Partner> searchResultsPage = searchPartnersWithPagination(searchTerm, pageable);
+
+        model.addAttribute("partnersPage", searchResultsPage);
+        model.addAttribute("title", "Результаты поиска: " + searchTerm);
+        model.addAttribute("searchTerm", searchTerm);
+        model.addAttribute("partnerTypes", PartnerType.values());
+        model.addAttribute("selectedSearch", searchTerm);
+
+        return "admin/partners/list";
+    }
+
+    /**
+     * Фильтрация партнеров по типу с пагинацией.
+     *
+     * @param type тип партнера
+     * @param status статус активности
+     * @param hasLogo наличие логотипа
+     * @param page номер страницы
+     * @param size количество элементов на странице
+     * @param model модель для передачи данных в представление
+     * @return шаблон списка с отфильтрованными партнерами
+     */
+    @GetMapping("/filter")
+    public String filterByType(@RequestParam(required = false) PartnerType type,
+                               @RequestParam(required = false) String status,
+                               @RequestParam(required = false) String hasLogo,
+                               @RequestParam(defaultValue = "0") int page,
+                               @RequestParam(defaultValue = "20") int size,
+                               Model model) {
+
+        Pageable pageable = PageRequest.of(page, size, Sort.by(DEFAULT_SORT_DIRECTION, DEFAULT_SORT_FIELD));
+        Page<Partner> partnersPage = filterPartners(type, status, hasLogo, pageable);
+
+        String title;
+        if (type != null) {
+            title = "Партнеры: " + type.getDisplayName();
+        } else if (status != null) {
+            title = "Партнеры: " + ("ACTIVE".equals(status) ? "Активные" : "Неактивные");
+        } else if (hasLogo != null) {
+            title = "Партнеры: " + ("true".equals(hasLogo) ? "С логотипом" : "Без логотипа");
+        } else {
+            title = "Все партнеры";
+        }
+
+        model.addAttribute("partnersPage", partnersPage);
+        model.addAttribute("title", title);
+        model.addAttribute("partnerTypes", PartnerType.values());
+        model.addAttribute("selectedType", type);
+        model.addAttribute("selectedStatus", status);
+        model.addAttribute("selectedHasLogo", hasLogo);
+
         return "admin/partners/list";
     }
 
@@ -453,47 +669,14 @@ public class PartnerAdminController {
         return "redirect:/admin/partners/projects/" + partnerId;
     }
 
-    // ================== ПОИСК И ФИЛЬТРАЦИЯ ==================
+    // ================== ВСПОМОГАТЕЛЬНЫЕ МЕТОДЫ ==================
 
     /**
-     * Поиск партнеров по названию или описанию.
-     *
-     * @param searchTerm поисковый запрос
-     * @param model модель для передачи данных в представление
-     * @return шаблон списка с результатами поиска
+     * Метод для отладки - показывает все параметры запроса.
      */
-    @GetMapping("/search")
-    public String searchPartners(@RequestParam String searchTerm, Model model) {
-        List<Partner> searchResults = partnerService.searchByNameOrDescription(searchTerm);
-        model.addAttribute("partners", searchResults);
-        model.addAttribute("title", "Результаты поиска: " + searchTerm);
-        model.addAttribute("searchTerm", searchTerm);
-        model.addAttribute("partnerTypes", PartnerType.values());
-        return "admin/partners/list";
-    }
-
-    /**
-     * Фильтрация партнеров по типу.
-     *
-     * @param type тип партнера
-     * @param model модель для передачи данных в представление
-     * @return шаблон списка с отфильтрованными партнерами
-     */
-    @GetMapping("/filter")
-    public String filterByType(@RequestParam(required = false) PartnerType type,
-                               Model model) {
-        List<Partner> partners;
-        if (type != null) {
-            partners = partnerService.findByType(type);
-            model.addAttribute("title", "Партнеры: " + type.getDisplayName());
-            model.addAttribute("filterType", type);
-        } else {
-            partners = partnerService.findAllActiveOrderBySortOrder();
-            model.addAttribute("title", "Все партнеры");
-        }
-
-        model.addAttribute("partners", partners);
-        model.addAttribute("partnerTypes", PartnerType.values());
-        return "admin/partners/list";
+    @ModelAttribute
+    public void addAttributes(@RequestParam java.util.Map<String, String> allParams, Model model) {
+        // Для отладки можно логировать параметры
+        // System.out.println("Параметры запроса: " + allParams);
     }
 }
