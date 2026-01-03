@@ -138,7 +138,15 @@ public class PartnerAdminController {
     private Page<Partner> filterPartners(PartnerType type, String status, String hasLogo, Pageable pageable) {
 
         // 1. Начинаем со ВСЕХ партнеров (по умолчанию активных)
-        List<Partner> filteredList = new ArrayList<>(partnerService.findAllActive());
+        List<Partner> filteredList;
+
+        if (status != null && "INACTIVE".equalsIgnoreCase(status)) {
+            // Если точно хотим неактивных - начинаем с неактивных
+            filteredList = new ArrayList<>(partnerService.findAllInactive());
+        } else {
+            // Во всех остальных случаях (включая null, пустую строку, "ACTIVE") - начинаем с активных
+            filteredList = new ArrayList<>(partnerService.findAllActive());
+        }
 
         // 2. Фильтруем по статусу (если указан)
         if (status != null && !status.isEmpty()) {

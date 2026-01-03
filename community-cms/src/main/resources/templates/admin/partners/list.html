@@ -415,7 +415,8 @@
                                                         class="btn"
                                                         th:classappend="${partner.active} ? 'btn-outline-warning' : 'btn-outline-success'"
                                                         th:title="${partner.active} ? 'Деактивировать' : 'Активировать'"
-                                                        onclick="showCustomConfirm('[[${partner.active} ? 'Деактивировать' : 'Активировать']] партнера «[[${partner.name}]]»?', this.closest('form'))">
+                                                        th:data-confirm-message="${partner.active} ? 'Деактивировать' : 'Активировать' + ' партнера «' + ${partner.name} + '»?'"
+                                                        onclick="showCustomConfirm(this.getAttribute('data-confirm-message'), this.closest('form'))">
                                                     <i th:classappend="${partner.active} ? 'bi-eye-slash' : 'bi-eye'"></i>
                                                 </button>
                                             </form>
