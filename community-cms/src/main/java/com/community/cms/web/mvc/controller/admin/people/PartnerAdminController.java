@@ -17,6 +17,7 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
@@ -135,54 +136,46 @@ public class PartnerAdminController {
      * @return страница с отфильтрованными партнерами
      */
     private Page<Partner> filterPartners(PartnerType type, String status, String hasLogo, Pageable pageable) {
-        // Если есть конкретные фильтры, используем временное решение
-        if (status != null || hasLogo != null) {
-            List<Partner> filteredList;
 
-            if (status != null) {
-                boolean isActive = "ACTIVE".equalsIgnoreCase(status);
-                if (type != null) {
-                    // Фильтр по типу и статусу
-                    filteredList = isActive ?
-                            partnerService.findActiveByType(type) :
-                            partnerService.findByType(type).stream()
-                                    .filter(p -> p.isActive() == isActive)
-                                    .collect(Collectors.toList());
-                } else {
-                    // Фильтр только по статусу
-                    filteredList = isActive ?
-                            partnerService.findAllActive() :
-                            partnerService.findAllInactive();
-                }
-            } else {
-                // Фильтр только по типу
-                filteredList = partnerService.findByType(type);
-            }
+        // 1. Начинаем со ВСЕХ партнеров (по умолчанию активных)
+        List<Partner> filteredList = new ArrayList<>(partnerService.findAllActive());
 
-            // Дополнительная фильтрация по наличию логотипа
-            if (hasLogo != null && !hasLogo.isEmpty()) {
-                if ("true".equalsIgnoreCase(hasLogo)) {
-                    // С логотипом
-                    filteredList = filteredList.stream()
-                            .filter(Partner::hasLogo)
-                            .collect(Collectors.toList());
-                } else if ("false".equalsIgnoreCase(hasLogo)) {
-                    // Без логотипа
-                    filteredList = filteredList.stream()
-                            .filter(p -> !p.hasLogo())
-                            .collect(Collectors.toList());
-                }
-            }
-
-            // Применяем пагинацию
-            return createPageFromList(filteredList, pageable);
-        } else if (type != null) {
-            // Только фильтр по типу - используем новый метод
-            return partnerService.findByTypeWithPagination(type, pageable);
-        } else {
-            // Нет фильтров - показываем всех активных
-            return partnerService.findAllActive(pageable);
+        // 2. Фильтруем по статусу (если указан)
+        if (status != null && !status.isEmpty()) {
+            boolean isActive = "ACTIVE".equalsIgnoreCase(status);
+            filteredList = filteredList.stream()
+                    .filter(p -> p.isActive() == isActive)
+                    .collect(Collectors.toList());
         }
+
+        // 3. Фильтруем по типу (если указан)
+        if (type != null) {
+            filteredList = filteredList.stream()
+                    .filter(p -> type.equals(p.getType()))
+                    .collect(Collectors.toList());
+        }
+
+        // 4. Фильтруем по логотипу (если указан) ← ИСПРАВЛЕНО!
+        if (hasLogo != null && !hasLogo.isEmpty()) {
+            if ("true".equalsIgnoreCase(hasLogo)) {
+                // С логотипом
+                filteredList = filteredList.stream()
+                        .filter(Partner::hasLogo)
+                        .collect(Collectors.toList());
+            } else if ("false".equalsIgnoreCase(hasLogo)) {
+                // Без логотипа
+                filteredList = filteredList.stream()
+                        .filter(p -> !p.hasLogo())
+                        .collect(Collectors.toList());
+            }
+        }
+
+        // 5. Применяем пагинацию
+        if (filteredList.isEmpty()) {
+            return Page.empty(pageable);
+        }
+
+        return createPageFromList(filteredList, pageable);
     }
 
     /**
@@ -684,6 +677,6 @@ public class PartnerAdminController {
     @ModelAttribute
     public void addAttributes(@RequestParam java.util.Map<String, String> allParams, Model model) {
         // Для отладки можно логировать параметры
-        // System.out.println("Параметры запроса: " + allParams);
+        // System.out.println("Параметры запроса:+ allParams);
     }
 }
