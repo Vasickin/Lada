@@ -56,8 +56,26 @@ public class PartnerService {
      * @return сохраненный партнер
      */
     public Partner save(Partner partner) {
+
+// ======== ЛОГИРОВАНИЕ ========
+        System.out.println("=== PartnerService.save() START ===");
+        System.out.println("Partner name: " + partner.getName());
+        System.out.println("Partner.logoFile: " + partner.getLogoFile());
+        System.out.println("Partner.logoFile is null? " + (partner.getLogoFile() == null));
+        System.out.println("Partner.logoFile isEmpty? " +
+                (partner.getLogoFile() != null ? partner.getLogoFile().isEmpty() : "N/A"));
+
+
         validatePartner(partner);
         processLogoFile(partner);
+
+        System.out.println("After processLogoFile - partner.logoUrl: " + partner.getLogoUrl());
+
+        Partner saved = partnerRepository.save(partner);
+
+        System.out.println("After repository.save - saved.logoUrl: " + saved.getLogoUrl());
+        System.out.println("=== PartnerService.save() END ===\n");
+
         return partnerRepository.save(partner);
     }
 
