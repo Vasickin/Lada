@@ -3,7 +3,7 @@
       xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
       layout:decorate="~{fragments/layout}">
 <head>
-    <title>Члены команды - Админ панель</title>
+    <title>Команда - Админ панель</title>
 
     <!-- Bootstrap 5 CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -24,79 +24,54 @@
             margin-bottom: 30px;
         }
 
-        .avatar-small {
+        .avatar-placeholder-small {
             width: 40px;
             height: 40px;
+            background-color: #e9ecef;
             border-radius: 50%;
-            object-fit: cover;
-            border: 2px solid #dee2e6;
-        }
-
-        .avatar-placeholder {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            background-color: #6c757d;
-            color: white;
             display: flex;
             align-items: center;
             justify-content: center;
             font-weight: bold;
+            color: #6c757d;
             font-size: 14px;
-            border: 2px solid #dee2e6;
         }
 
-        .badge-status-active {
-            background-color: #28a745;
-            color: white;
+        .avatar-small {
+            width: 40px;
+            height: 40px;
+            object-fit: cover;
+            border-radius: 50%;
         }
 
-        .badge-status-inactive {
-            background-color: #6c757d;
-            color: white;
+        .contact-info {
+            font-size: 0.85rem;
+            line-height: 1.3;
         }
 
-        .projects-count-badge {
-            background-color: #0d6efd;
-            color: white;
-        }
-
-        .action-buttons {
-            min-width: 150px;
-        }
-
-        .table th {
-            font-weight: 600;
-            background-color: #f8f9fa;
-        }
-
-        .member-info-cell {
-            min-width: 250px;
-        }
-
-        .status-filter-buttons .btn {
-            border-radius: 20px;
-            padding: 0.25rem 1rem;
-            font-size: 0.875rem;
+        .position-badge {
+            background-color: #e3f2fd;
+            color: #1976d2;
+            font-size: 0.8rem;
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
         }
     </style>
 </head>
 <body>
 <div layout:fragment="content">
-    <!-- ========== КОНТЕЙНЕР И ЗАГОЛОВОК ========== -->
+    <!-- ========== ЗАГОЛОВОК И КНОПКА ДОБАВЛЕНИЯ ========== -->
     <div class="container-fluid team-members-container">
-
-        <!-- Заголовок и кнопка добавления -->
         <div class="row mb-4">
             <div class="col-12">
                 <div class="d-flex justify-content-between align-items-center">
                     <div>
                         <h1 class="h2 mb-0">
-                            <i class="bi bi-people me-2"></i>
-                            Члены команды
+                            <i class="bi bi-people-fill me-2"></i>
+                            Команда
                         </h1>
                         <p class="text-muted mb-0 mt-1">
-                            Управление членами команды организации "ЛАДА"
+                            Управление командой организации "ЛАДА"
                         </p>
                     </div>
                     <div>
@@ -122,67 +97,145 @@
         <!-- ========== ФИЛЬТРЫ И ПОИСК ========== -->
         <div class="row mb-4">
             <div class="col-12">
-                <div class="card">
-                    <div class="card-body">
-                        <!-- Фильтры по статусу -->
-                        <div class="status-filter-buttons mb-3">
-                            <a th:href="@{/admin/team-members}"
-                               class="btn btn-outline-primary me-2"
-                               th:classappend="${showInactive == null} ? 'active' : ''">
-                                <i class="bi bi-person-check me-1"></i>
-                                Активные
-                            </a>
-                            <a th:href="@{/admin/team-members/inactive}"
-                               class="btn btn-outline-secondary"
-                               th:classappend="${showInactive} ? 'active' : ''">
-                                <i class="bi bi-person-x me-1"></i>
-                                Неактивные
+                <div class="card border-0 shadow-sm">
+                    <div class="card-header bg-light py-3 d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">
+                            <i class="bi bi-funnel me-2"></i>
+                            Фильтры и поиск
+                        </h5>
+                        <div class="d-flex gap-2">
+                            <button type="submit" form="filterForm" class="btn btn-primary">
+                                <i class="bi bi-funnel me-1"></i>
+                                Применить фильтры
+                            </button>
+                            <a th:href="@{/admin/team-members}" class="btn btn-outline-secondary">
+                                <i class="bi bi-x-circle me-1"></i>
+                                Сбросить все
                             </a>
                         </div>
+                    </div>
+                    <div class="card-body p-4">
+                        <form th:action="@{/admin/team-members}" method="get" class="row g-3" id="filterForm">
 
-                        <!-- Форма поиска -->
-                        <form th:action="@{/admin/team-members/search}" method="get" class="row g-3">
-                            <div class="col-md-8">
+                            <!-- ПОИСК -->
+                            <div class="col-xl-4 col-lg-4 col-md-6">
+                                <label class="form-label fw-semibold">
+                                    <i class="bi bi-search me-1"></i>Поиск члена команды
+                                </label>
                                 <div class="input-group">
-                                    <span class="input-group-text">
-                                        <i class="bi bi-search"></i>
+                                    <span class="input-group-text bg-white border-end-0">
+                                        <i class="bi bi-search text-muted"></i>
                                     </span>
                                     <input type="text"
-                                           name="searchTerm"
-                                           class="form-control"
-                                           placeholder="Поиск по имени или должности..."
-                                           th:value="${searchTerm}"
-                                           required>
+                                           name="search"
+                                           class="form-control border-start-0 ps-0"
+                                           placeholder="Имя, фамилия или должность..."
+                                           th:value="${selectedSearch}">
+                                </div>
+                                <div class="form-text small text-muted">
+                                    Поиск по имени, фамилии или должности
                                 </div>
                             </div>
-                            <div class="col-md-4">
-                                <div class="d-grid">
-                                    <button type="submit" class="btn btn-primary">
-                                        <i class="bi bi-search me-1"></i>
-                                        Найти
-                                    </button>
-                                </div>
-                            </div>
-                        </form>
-                    </div>
-                </div>
-            </div>
-        </div>
 
-        <!-- ========== СООБЩЕНИЯ ОБ УСПЕХЕ/ОШИБКЕ ========== -->
-        <div class="row mb-3" th:if="${successMessage} or ${errorMessage}">
-            <div class="col-12">
-                <div th:if="${successMessage}"
-                     class="alert alert-success alert-dismissible fade show">
-                    <i class="bi bi-check-circle me-2"></i>
-                    <span th:text="${successMessage}"></span>
-                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                </div>
-                <div th:if="${errorMessage}"
-                     class="alert alert-danger alert-dismissible fade show">
-                    <i class="bi bi-exclamation-triangle me-2"></i>
-                    <span th:text="${errorMessage}"></span>
-                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                            <!-- СТАТУС -->
+                            <div class="col-xl-2 col-lg-3 col-md-4">
+                                <label class="form-label fw-semibold">
+                                    <i class="bi bi-circle-fill me-1"></i>Статус
+                                </label>
+                                <select name="status" class="form-select">
+                                    <option value="">Все статусы</option>
+                                    <option value="ACTIVE"
+                                            th:selected="${selectedStatus == 'ACTIVE'}">
+                                        Активные
+                                    </option>
+                                    <option value="INACTIVE"
+                                            th:selected="${selectedStatus == 'INACTIVE'}">
+                                        Неактивные
+                                    </option>
+                                </select>
+                            </div>
+
+                            <!-- ИМЕЕТ АВАТАР -->
+                            <div class="col-xl-2 col-lg-3 col-md-4">
+                                <label class="form-label fw-semibold">
+                                    <i class="bi bi-image me-1"></i>Аватар
+                                </label>
+                                <select name="hasAvatar" class="form-select">
+                                    <option value="">Все</option>
+                                    <option value="true"
+                                            th:selected="${selectedHasAvatar == 'true'}">
+                                        С аватаром
+                                    </option>
+                                    <option value="false"
+                                            th:selected="${selectedHasAvatar == 'false'}">
+                                        Без аватара
+                                    </option>
+                                </select>
+                            </div>
+
+                            <!-- УЧАСТИЕ В ПРОЕКТАХ -->
+                            <div class="col-xl-2 col-lg-3 col-md-4">
+                                <label class="form-label fw-semibold">
+                                    <i class="bi bi-diagram-3 me-1"></i>Проекты
+                                </label>
+                                <select name="projectsFilter" class="form-select" id="projectsFilter">
+                                    <option value="">Все</option>
+                                    <option value="with_projects">С проектами</option>
+                                    <option value="without_projects">Без проектов</option>
+                                </select>
+                            </div>
+
+                            <!-- КОЛИЧЕСТВО НА СТРАНИЦЕ -->
+                            <div class="col-xl-2 col-lg-3 col-md-4">
+                                <label class="form-label fw-semibold">
+                                    <i class="bi bi-layout-text-sidebar-reverse me-1"></i>Членов на странице
+                                </label>
+                                <select name="size" class="form-select">
+                                    <option value="5" th:selected="${teamMembersPage.size == 5}">5</option>
+                                    <option value="10" th:selected="${teamMembersPage.size == 10}">10</option>
+                                    <option value="20" th:selected="${teamMembersPage.size == 20 or teamMembersPage.size == null}">20</option>
+                                    <option value="50" th:selected="${teamMembersPage.size == 50}">50</option>
+                                    <option value="100" th:selected="${teamMembersPage.size == 100}">100</option>
+                                </select>
+                            </div>
+
+                        </form>
+
+                        <!-- ИНФОРМАЦИЯ О ПРИМЕНЕННЫХ ФИЛЬТРАХ -->
+                        <div class="row mt-4"
+                             th:if="${selectedStatus != null or selectedHasAvatar != null or (selectedSearch != null and selectedSearch != '')}">
+                            <div class="col-12">
+                                <div class="alert alert-light border d-flex align-items-center justify-content-between py-2">
+                                    <div>
+                                        <i class="bi bi-filter-circle text-primary me-2"></i>
+                                        <strong>Применены фильтры:</strong>
+                                        <span th:if="${selectedSearch != null and selectedSearch != ''}" class="badge bg-primary ms-2">
+                                            Поиск: "<span th:text="${selectedSearch}"></span>"
+                                        </span>
+                                        <span th:if="${selectedStatus != null and selectedStatus != ''}" class="badge ms-2">
+                                            <span th:switch="${selectedStatus}">
+                                                <span th:case="'ACTIVE'" class="badge bg-success">Активные</span>
+                                                <span th:case="'INACTIVE'" class="badge bg-danger">Неактивные</span>
+                                            </span>
+                                        </span>
+                                        <span th:if="${selectedHasAvatar != null}" class="badge ms-2">
+                                            <span th:switch="${selectedHasAvatar}">
+                                                <span th:case="'true'" class="badge bg-info">С аватаром</span>
+                                                <span th:case="'false'" class="badge bg-secondary">Без аватара</span>
+                                            </span>
+                                        </span>
+                                        <span class="badge bg-light text-dark border ms-2">
+                                            На странице: <span th:text="${teamMembersPage.size}">20</span>
+                                        </span>
+                                    </div>
+                                    <div class="text-muted small">
+                                        Найдено: <span class="fw-bold" th:text="${teamMembersPage.totalElements}">0</span> членов команды
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
                 </div>
             </div>
         </div>
@@ -190,221 +243,294 @@
         <!-- ========== ТАБЛИЦА ЧЛЕНОВ КОМАНДЫ ========== -->
         <div class="row">
             <div class="col-12">
-                <div class="card table-container">
-                    <div class="card-body">
-
-                        <!-- Статистика -->
-                        <div class="row mb-3" th:if="${teamMembers != null and !teamMembers.isEmpty()}">
-                            <div class="col-12">
-                                <div class="d-flex justify-content-between align-items-center">
-                                    <div class="text-muted small">
-                                        Показано <strong th:text="${teamMembers != null ? teamMembers.size() : 0}">0</strong> членов команды
-                                    </div>
-                                    <div class="text-muted small">
-                                        <a th:href="@{/admin/team-members}"
-                                           th:if="${showInactive}">
-                                            <i class="bi bi-arrow-left me-1"></i>
-                                            Вернуться к активным
-                                        </a>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Таблица -->
+                <div class="card border-0 shadow-sm table-container">
+                    <div class="card-header bg-light py-3">
+                        <h5 class="mb-0">
+                            <i class="bi bi-table me-2"></i>
+                            Список команды
+                            <small class="text-muted ms-2">
+                                (<span th:text="${teamMembersPage.totalElements}">0</span> всего)
+                            </small>
+                        </h5>
+                    </div>
+                    <div class="card-body p-0">
                         <div class="table-responsive">
-                            <table class="table table-hover align-middle">
+                            <table class="table table-hover mb-0">
                                 <thead>
                                 <tr>
-                                    <th width="60">ID</th>
-                                    <th>Член команды</th>
+                                    <th>ID</th>
+                                    <th>Фото и имя</th>
                                     <th>Должность</th>
-                                    <th width="120">Проекты</th>
-                                    <th width="100">Статус</th>
-                                    <th width="100">Порядок</th>
-                                    <th width="180" class="text-end">Действия</th>
+                                    <th>Контактная информация</th>
+                                    <th>Проекты</th>
+                                    <th>Аватар</th>
+                                    <th>Статус</th>
+                                    <th>Создан</th>
+                                    <th>Действия</th>
                                 </tr>
                                 </thead>
                                 <tbody>
-
-                                <!-- Если список пуст -->
-                                <tr th:if="${teamMembers == null or teamMembers.isEmpty()}">
-                                    <td colspan="7" class="text-center py-5">
-                                        <i class="bi bi-people display-5 text-muted mb-3 d-block"></i>
-                                        <h5 class="text-muted">Членов команды не найдено</h5>
-                                        <p class="text-muted mb-0" th:if="${showInactive}">
-                                            Нет неактивных членов команды
-                                        </p>
-                                        <p class="text-muted mb-0" th:unless="${showInactive}">
-                                            <a th:href="@{/admin/team-members/create}" class="btn btn-primary mt-2">
-                                                <i class="bi bi-person-plus me-1"></i>
-                                                Добавить первого члена команды
-                                            </a>
-                                        </p>
-                                    </td>
-                                </tr>
-
-                                <!-- Список членов команды -->
-                                <tr th:each="member : ${teamMembers}" th:classappend="${!member.active} ? 'table-secondary' : ''">
+                                <tr th:each="member : ${teamMembersPage.content}">
                                     <!-- ID -->
+                                    <td th:text="${member.id}">1</td>
+
+                                    <!-- ФОТО И ИМЯ -->
                                     <td>
-                                        <span class="text-muted" th:text="${member.id}">1</span>
-                                    </td>
-
-                                    <!-- Член команды (с аватаром) -->
-                                    <td class="member-info-cell">
                                         <div class="d-flex align-items-center">
-                                            <!-- Аватар -->
                                             <div class="me-3">
-                                                <img th:if="${member.avatarPath != null and member.avatarPath != ''}"
-                                                     th:src="@{${member.avatarPath}}"
-                                                     alt="Аватар"
+                                                <!-- Аватар или инициалы -->
+                                                <div th:if="${!member.hasAvatar()}" class="avatar-placeholder-small">
+                                                    <span th:text="${member.initials}">ИП</span>
+                                                </div>
+                                                <img th:if="${member.hasAvatar()}"
+                                                     th:src="${member.avatarPath}"
+                                                     alt="Фото"
                                                      class="avatar-small">
-                                                <div th:unless="${member.avatarPath != null and member.avatarPath != ''}"
-                                                     class="avatar-placeholder"
-                                                     th:text="${member.initials}">
-                                                    ИП
-                                                </div>
                                             </div>
-
-                                            <!-- Информация -->
                                             <div>
-                                                <div class="fw-medium" th:text="${member.fullName}">
-                                                    Иванов Иван Иванович
-                                                </div>
-                                                <div class="text-muted small" th:if="${member.email}">
-                                                    <i class="bi bi-envelope me-1"></i>
-                                                    <span th:text="${member.email}">ivanov@example.com</span>
+                                                <a th:href="@{/admin/team-members/edit/{id}(id=${member.id})}"
+                                                   th:text="${member.fullName}"
+                                                   class="fw-medium">
+                                                    Иван Петров
+                                                </a>
+                                                <div class="small text-muted">
+                                                    <i class="bi bi-sort-numeric-down me-1"></i>
+                                                    Порядок: <span th:text="${member.sortOrder}">0</span>
                                                 </div>
                                             </div>
                                         </div>
                                     </td>
 
-                                    <!-- Должность -->
+                                    <!-- ДОЛЖНОСТЬ -->
                                     <td>
-                                        <span th:text="${member.position} ?: 'Должность не указана'">
-                                            Руководитель проекта
+                                        <span class="position-badge" th:text="${member.position}">
+                                            Художественный руководитель
                                         </span>
                                     </td>
 
-                                    <!-- Проекты -->
+                                    <!-- КОНТАКТНАЯ ИНФОРМАЦИЯ -->
                                     <td>
-                                        <a th:href="@{/admin/team-members/projects/{id}(id=${member.id})}"
-                                           class="badge projects-count-badge text-decoration-none"
-                                           title="Управление проектами"
-                                           data-bs-toggle="tooltip">
-                                            <i class="bi bi-kanban me-1"></i>
-                                            <span th:text="${member.projectsCount}">3</span>
-                                        </a>
+                                        <div class="contact-info">
+                                            <div th:if="${member.email}" class="text-truncate">
+                                                <i class="bi bi-envelope me-1"></i>
+                                                <a th:href="'mailto:' + ${member.email}"
+                                                   th:text="${member.email}"
+                                                   class="text-decoration-none small"></a>
+                                            </div>
+                                            <div th:if="${member.phone}">
+                                                <i class="bi bi-telephone me-1"></i>
+                                                <span th:text="${member.phone}" class="small"></span>
+                                            </div>
+                                            <div th:if="${member.socialLinks != null and member.socialLinks != ''}"
+                                                 class="text-primary small">
+                                                <i class="bi bi-share me-1"></i>
+                                                Соцсети
+                                            </div>
+                                            <div th:if="${(member.email == null or member.email == '') and
+              (member.phone == null or member.phone == '') and
+              (member.socialLinks == null or member.socialLinks == '')}"
+                                                 class="text-muted small">
+                                                Контакты не указаны
+                                            </div>
+                                        </div>
                                     </td>
 
-                                    <!-- Статус -->
+                                    <!-- ПРОЕКТЫ -->
                                     <td>
-                                        <span th:if="${member.active}"
-                                              class="badge badge-status-active">
-                                            <i class="bi bi-check-circle me-1"></i>
-                                            Активен
+                                        <span th:if="${member.projectsCount > 0}"
+                                              class="badge bg-primary rounded-pill">
+                                            <i class="bi bi-diagram-3 me-1"></i>
+                                            <span th:text="${member.projectsCount}">0</span>
                                         </span>
-                                        <span th:unless="${member.active}"
-                                              class="badge badge-status-inactive">
-                                            <i class="bi bi-x-circle me-1"></i>
-                                            Неактивен
+                                        <span th:unless="${member.projectsCount > 0}" class="text-muted small">
+                                            Нет проектов
+                                        </span>
+                                        <div class="mt-1" th:if="${member.projectsCount > 0}">
+                                            <a th:href="@{/admin/team-members/projects/{id}(id=${member.id})}"
+                                               class="small text-decoration-none">
+                                                Управлять
+                                            </a>
+                                        </div>
+                                    </td>
+
+                                    <!-- АВАТАР -->
+                                    <td>
+                                        <div th:if="${member.hasAvatar()}" class="text-center">
+                                            <span class="badge bg-success" title="Есть аватар">
+                                                <i class="bi bi-check-circle"></i>
+                                            </span>
+                                        </div>
+                                        <div th:unless="${member.hasAvatar()}" class="text-center">
+                                            <span class="badge bg-danger" title="Нет аватара">
+                                                <i class="bi bi-x-circle"></i>
+                                            </span>
+                                        </div>
+                                    </td>
+
+                                    <!-- СТАТУС -->
+                                    <td>
+                                        <span th:if="${member.active}" class="badge bg-success">
+                                            <i class="bi bi-check-circle me-1"></i> Активен
+                                        </span>
+                                        <span th:unless="${member.active}" class="badge bg-danger">
+                                            <i class="bi bi-x-circle me-1"></i> Неактивен
                                         </span>
                                     </td>
 
-                                    <!-- Порядок сортировки -->
-                                    <td>
-                                        <span class="badge bg-light text-dark border"
-                                              th:text="${member.sortOrder}">
-                                            1
-                                        </span>
+                                    <!-- ДАТА СОЗДАНИЯ -->
+                                    <td th:text="${member.createdAt != null} ? ${#temporals.format(member.createdAt, 'dd.MM.yyyy')} : '—'">
+                                        10.12.2024
                                     </td>
 
-                                    <!-- Действия -->
-                                    <td class="text-end action-buttons">
+                                    <!-- ДЕЙСТВИЯ -->
+                                    <td>
                                         <div class="btn-group btn-group-sm" role="group">
-                                            <!-- Предпросмотр (если есть slug) -->
-                                            <a th:if="${member.active}"
-                                               th:href="@{/team/member/{id}(id=${member.id})}"
-                                               title="Предпросмотр"
+                                            <!-- ПРЕДПРОСМОТР -->
+                                            <a th:href="@{/team/{id}(id=${member.id})}"
+                                               title="Предпросмотр на сайте"
                                                class="btn btn-outline-primary"
                                                target="_blank">
                                                 <i class="bi bi-eye"></i>
                                             </a>
 
-                                            <!-- Редактировать -->
+                                            <!-- РЕДАКТИРОВАНИЕ -->
                                             <a th:href="@{/admin/team-members/edit/{id}(id=${member.id})}"
                                                title="Редактировать"
                                                class="btn btn-outline-secondary">
                                                 <i class="bi bi-pencil"></i>
                                             </a>
 
-                                            <!-- Активация/деактивация -->
-                                            <form th:action="@{${member.active} ?
-                                                             '/admin/team-members/deactivate/' + ${member.id} :
-                                                             '/admin/team-members/activate/' + ${member.id}}"
+                                            <!-- ПРОЕКТЫ -->
+                                            <a th:href="@{/admin/team-members/projects/{id}(id=${member.id})}"
+                                               title="Управление проектами"
+                                               class="btn btn-outline-info">
+                                                <i class="bi bi-diagram-3"></i>
+                                            </a>
+
+                                            <!-- АКТИВАЦИЯ/ДЕАКТИВАЦИЯ -->
+                                            <form th:action="@{/admin/team-members/{action}/{id}(action=${member.active} ? 'deactivate' : 'activate', id=${member.id})}"
                                                   method="post"
                                                   class="d-inline">
-                                                <button type="submit"
-                                                        class="btn btn-outline-warning"
-                                                        title="${member.active} ? 'Деактивировать' : 'Активировать'"
-                                                        data-bs-toggle="tooltip"
-                                                        onclick="return confirm('${member.active} ?
-                                                                                 'Деактивировать члена команды?' :
-                                                                                 'Активировать члена команды?')">
-                                                    <i th:class="${member.active} ?
-                                                                 'bi bi-person-dash' :
-                                                                 'bi bi-person-check'"></i>
+                                                <button type="button"
+                                                        class="btn"
+                                                        th:classappend="${member.active} ? 'btn-outline-warning' : 'btn-outline-success'"
+                                                        th:title="${member.active} ? 'Деактивировать' : 'Активировать'"
+                                                        th:data-confirm-message="${member.active} ? 'Деактивировать' : 'Активировать' + ' члена команды «' + ${member.fullName} + '»?'"
+                                                        onclick="showCustomConfirm(this.getAttribute('data-confirm-message'), this.closest('form'))">
+                                                    <i th:classappend="${member.active} ? 'bi-eye-slash' : 'bi-eye'"></i>
                                                 </button>
                                             </form>
 
-                                            <!-- Удаление -->
-                                            <a th:href="@{/admin/team-members/delete/{id}(id=${member.id})}"
-                                               title="Удалить"
-                                               class="btn btn-outline-danger">
-                                                <i class="bi bi-trash"></i>
-                                            </a>
+                                            <!-- УДАЛЕНИЕ -->
+                                            <form th:action="@{/admin/team-members/delete/{id}(id=${member.id})}"
+                                                  method="post"
+                                                  class="d-inline">
+                                                <button type="button"
+                                                        class="btn btn-outline-danger"
+                                                        onclick="showCustomConfirm('Удалить члена команды «[[${member.fullName}]]»? Это действие нельзя отменить.', this.closest('form'))"
+                                                        title="Удалить">
+                                                    <i class="bi bi-trash"></i>
+                                                </button>
+                                            </form>
                                         </div>
+                                    </td>
+                                </tr>
+
+                                <!-- ЕСЛИ ЧЛЕНОВ КОМАНДЫ НЕТ -->
+                                <tr th:if="${teamMembersPage.totalElements == 0}">
+                                    <td colspan="9" class="text-center text-muted py-5">
+                                        <i class="bi bi-people-fill display-6 text-muted mb-3"></i>
+                                        <h5>Члены команды не найдены</h5>
+                                        <p th:if="${selectedSearch != null or selectedStatus != null or selectedHasAvatar != null}">
+                                            По заданным фильтрам ничего не найдено
+                                        </p>
+                                        <p th:unless="${selectedSearch != null or selectedStatus != null or selectedHasAvatar != null}">
+                                            Члены команды еще не добавлены
+                                        </p>
+                                        <a th:href="@{/admin/team-members/create}" class="btn btn-primary mt-2">
+                                            <i class="bi bi-person-plus me-1"></i>
+                                            Добавить первого члена команды
+                                        </a>
                                     </td>
                                 </tr>
                                 </tbody>
                             </table>
                         </div>
 
-                        <!-- Подсказки -->
-                        <div class="row mt-4">
-                            <div class="col-12">
-                                <div class="alert alert-light border">
-                                    <div class="row">
-                                        <div class="col-md-4">
-                                            <h6><i class="bi bi-info-circle me-2"></i>Как использовать</h6>
-                                            <ul class="small mb-0">
-                                                <li>Нажмите на имя для детального просмотра</li>
-                                                <li>Используйте значок <i class="bi bi-kanfan"></i> для управления проектами</li>
-                                                <li>Сортировка по полю "Порядок"</li>
-                                            </ul>
-                                        </div>
-                                        <div class="col-md-4">
-                                            <h6><i class="bi bi-shield-check me-2"></i>Безопасность</h6>
-                                            <ul class="small mb-0">
-                                                <li>Деактивация вместо удаления</li>
-                                                <li>Подтверждение критических действий</li>
-                                                <li>Сохранение истории изменений</li>
-                                            </ul>
-                                        </div>
-                                        <div class="col-md-4">
-                                            <h6><i class="bi bi-lightbulb me-2"></i>Советы</h6>
-                                            <ul class="small mb-0">
-                                                <li>Используйте порядок для приоритета отображения</li>
-                                                <li>Загружайте фото для лучшего восприятия</li>
-                                                <li>Регулярно обновляйте информацию</li>
-                                            </ul>
-                                        </div>
+                        <!-- ПАГИНАЦИЯ С УЛУЧШЕННЫМ ДИЗАЙНОМ -->
+                        <div class="card-footer bg-light border-top-0 pt-3" th:if="${teamMembersPage.totalElements > 0}">
+                            <div class="d-flex flex-column flex-md-row justify-content-between align-items-center">
+                                <!-- ИНФОРМАЦИЯ О СТРАНИЦЕ -->
+                                <div class="mb-2 mb-md-0 text-muted">
+                                    <i class="bi bi-info-circle me-1"></i>
+                                    Показано
+                                    <span class="fw-bold" th:text="${teamMembersPage.number * teamMembersPage.size + 1}">1</span>
+                                    -
+                                    <span class="fw-bold" th:text="${teamMembersPage.number * teamMembersPage.size + teamMembersPage.numberOfElements}">
+                                        20
+                                    </span>
+                                    из
+                                    <span class="fw-bold" th:text="${teamMembersPage.totalElements}">0</span>
+                                    членов команды
+                                </div>
+
+                                <!-- НАВИГАЦИЯ -->
+                                <nav aria-label="Навигация по страницам" th:if="${teamMembersPage.totalPages > 1}">
+                                    <ul class="pagination pagination-sm mb-0">
+                                        <!-- Предыдущая -->
+                                        <li class="page-item" th:classappend="${teamMembersPage.first} ? 'disabled' : ''">
+                                            <a class="page-link"
+                                               th:href="${teamMembersPage.first} ? '#' :
+                                               @{/admin/team-members(size=${teamMembersPage.size}, page=${teamMembersPage.number-1},
+                                               search=${selectedSearch}, status=${selectedStatus},
+                                               hasAvatar=${selectedHasAvatar})}"
+                                               aria-label="Предыдущая">
+                                                <i class="bi bi-chevron-left"></i>
+                                            </a>
+                                        </li>
+
+                                        <!-- Номера страниц -->
+                                        <li th:each="pageNum : ${#numbers.sequence(1, teamMembersPage.totalPages)}"
+                                            th:classappend="${pageNum == teamMembersPage.number + 1} ? 'active' : ''"
+                                            class="page-item">
+                                            <a class="page-link"
+                                               th:href="@{/admin/team-members(size=${teamMembersPage.size}, page=${pageNum-1},
+                                               search=${selectedSearch}, status=${selectedStatus},
+                                               hasAvatar=${selectedHasAvatar})}"
+                                               th:text="${pageNum}"></a>
+                                        </li>
+
+                                        <!-- Следующая -->
+                                        <li class="page-item" th:classappend="${teamMembersPage.last} ? 'disabled' : ''">
+                                            <a class="page-link"
+                                               th:href="${teamMembersPage.last} ? '#' :
+                                               @{/admin/team-members(size=${teamMembersPage.size}, page=${teamMembersPage.number+1},
+                                               search=${selectedSearch}, status=${selectedStatus},
+                                               hasAvatar=${selectedHasAvatar})}"
+                                               aria-label="Следующая">
+                                                <i class="bi bi-chevron-right"></i>
+                                            </a>
+                                        </li>
+                                    </ul>
+                                </nav>
+
+                                <!-- ВЫБОР РАЗМЕРА СТРАНИЦЫ (в футере) -->
+                                <div class="mt-2 mt-md-0">
+                                    <div class="input-group input-group-sm" style="width: 120px;">
+                                        <span class="input-group-text bg-white border-end-0">
+                                            <i class="bi bi-list-ul text-muted"></i>
+                                        </span>
+                                        <select class="form-select border-start-0 ps-0"
+                                                onchange="changePageSize(this.value)">
+                                            <option value="5" th:selected="${teamMembersPage.size == 5}">5</option>
+                                            <option value="10" th:selected="${teamMembersPage.size == 10}">10</option>
+                                            <option value="20" th:selected="${teamMembersPage.size == 20}">20</option>
+                                            <option value="50" th:selected="${teamMembersPage.size == 50}">50</option>
+                                        </select>
                                     </div>
                                 </div>
                             </div>
                         </div>
-
                     </div>
                 </div>
             </div>
@@ -412,40 +538,147 @@
     </div>
 </div>
 
-<!-- ========== JAVASCRIPT ========== -->
+<!-- КАСТОМНОЕ ОКНО ПОДТВЕРЖДЕНИЯ -->
+<div class="modal fade" id="customConfirmModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Подтверждение</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p id="customConfirmMessage">Вы уверены?</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+                <button type="button" class="btn btn-primary" id="customConfirmButton">Подтвердить</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ========== SCRIPTS ========== -->
 <script th:inline="javascript">
     /*<![CDATA[*/
 
-    // Инициализация при загрузке страницы
-    document.addEventListener('DOMContentLoaded', function() {
-        console.log('Страница управления командой загружена');
+    let currentForm = null;
 
-        // Инициализация тултипов Bootstrap
-        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+    function showCustomConfirm(message, form) {
+        console.log('showCustomConfirm вызвана');
+        document.getElementById('customConfirmMessage').textContent = message;
+        currentForm = form;
+
+        const modal = new bootstrap.Modal(document.getElementById('customConfirmModal'));
+        modal.show();
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        console.log('DOM загружен - кастомное подтверждение');
+
+        // Кнопка подтверждения в модалке
+        const confirmBtn = document.getElementById('customConfirmButton');
+        if (confirmBtn) {
+            confirmBtn.addEventListener('click', function() {
+                console.log('Нажата кнопка подтверждения');
+                if (currentForm) {
+                    const modal = bootstrap.Modal.getInstance(document.getElementById('customConfirmModal'));
+                    if (modal) {
+                        modal.hide();
+                    }
+                    console.log('Отправляем форму');
+                    currentForm.submit();
+                }
+            });
+        }
+
+        // Инициализация tooltips для всей страницы
+        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[title]'));
         var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
             return new bootstrap.Tooltip(tooltipTriggerEl);
         });
 
-        // Авто-фокус на поле поиска при загрузке
-        const searchInput = document.querySelector('input[name="searchTerm"]');
-        if (searchInput && !searchInput.value) {
-            searchInput.focus();
+        console.log('Инициализировано tooltips: ' + tooltipList.length);
+    });
+
+    /*]]>*/
+</script>
+
+<!-- ========== JAVASCRIPT ДЛЯ ФИЛЬТРОВ ========== -->
+<script th:inline="javascript">
+    /*<![CDATA[*/
+
+    document.addEventListener('DOMContentLoaded', function() {
+        console.log('DOM загружен - фильтры команды');
+
+        // ========== ОБРАБОТКА ФИЛЬТРОВ КОМАНДЫ ==========
+
+        // 1. Автоотправка формы фильтров при изменении значений
+        const filterForm = document.getElementById('filterForm');
+        if (filterForm) {
+            console.log('Найдена форма фильтров команды');
+
+            // Автоотправка при изменении выпадающих списков
+            const filterSelects = filterForm.querySelectorAll('select');
+            filterSelects.forEach(select => {
+                select.addEventListener('change', function() {
+                    console.log('Фильтр изменен: ' + this.name + ' = ' + this.value);
+                    // Небольшая задержка для лучшего UX
+                    setTimeout(() => {
+                        filterForm.submit();
+                    }, 100);
+                });
+            });
+
+            // Для поля поиска - debounce с задержкой
+            const searchInput = filterForm.querySelector('input[name="search"]');
+            if (searchInput) {
+                let searchTimeout;
+                searchInput.addEventListener('input', function() {
+                    clearTimeout(searchTimeout);
+                    searchTimeout = setTimeout(function() {
+                        console.log('Отправка поиска после задержки');
+                        filterForm.submit();
+                    }, 3000); // 3000ms debounce
+                });
+
+                // Обработка Enter в поле поиска
+                searchInput.addEventListener('keypress', function(e) {
+                    if (e.key === 'Enter') {
+                        e.preventDefault();
+                        console.log('Enter нажат в поле поиска');
+                        filterForm.submit();
+                    }
+                });
+            }
+        } else {
+            console.warn('Форма фильтров команды не найдена (id="filterForm")');
         }
 
-        // Обработка кнопок статуса (активные/неактивные)
-        const statusButtons = document.querySelectorAll('.status-filter-buttons .btn');
-        statusButtons.forEach(btn => {
-            btn.addEventListener('click', function(e) {
-                // Удаляем класс active у всех кнопок
-                statusButtons.forEach(b => b.classList.remove('active'));
-                // Добавляем класс active текущей кнопке
-                this.classList.add('active');
+        // 2. Кнопка сброса фильтров
+        const resetBtn = document.querySelector('a[href="/admin/team-members"]');
+        if (resetBtn && (resetBtn.textContent.includes('Сбросить') || resetBtn.textContent.includes('Очистить все'))) {
+            resetBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                console.log('Сброс фильтров команды');
+                window.location.href = '/admin/team-members';
             });
-        });
+        }
+
+        console.log('Инициализация фильтров команды завершена');
 
     }); // КОНЕЦ DOMContentLoaded
 
     /*]]>*/
+</script>
+
+<!-- ФУНКЦИЯ ДЛЯ СМЕНЫ РАЗМЕРА СТРАНИЦЫ -->
+<script>
+    function changePageSize(size) {
+        const url = new URL(window.location.href);
+        url.searchParams.set('size', size);
+        url.searchParams.set('page', '0'); // Возвращаемся на первую страницу
+        window.location.href = url.toString();
+    }
 </script>
 </body>
 </html>
