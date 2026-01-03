@@ -4,11 +4,13 @@ import com.community.cms.domain.enums.PartnerType;
 import com.community.cms.domain.model.content.Project;
 import com.community.cms.domain.model.people.Partner;
 import com.community.cms.domain.repository.people.PartnerRepository;
+import com.community.cms.infrastructure.storage.FileStorageService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 import java.util.Optional;
@@ -30,15 +32,19 @@ import java.util.Optional;
 public class PartnerService {
 
     private final PartnerRepository partnerRepository;
+    private final FileStorageService fileStorageService;
 
     /**
      * Конструктор с инъекцией зависимостей.
      *
      * @param partnerRepository репозиторий для работы с партнерами
+     * @param fileStorageService сервис для работы с файлами
      */
     @Autowired
-    public PartnerService(PartnerRepository partnerRepository) {
+    public PartnerService(PartnerRepository partnerRepository,
+                          FileStorageService fileStorageService) {
         this.partnerRepository = partnerRepository;
+        this.fileStorageService = fileStorageService;
     }
 
     // ================== CRUD ОПЕРАЦИИ ==================
@@ -51,6 +57,7 @@ public class PartnerService {
      */
     public Partner save(Partner partner) {
         validatePartner(partner);
+        processLogoFile(partner);
         return partnerRepository.save(partner);
     }
 
@@ -62,6 +69,7 @@ public class PartnerService {
      */
     public Partner update(Partner partner) {
         validatePartner(partner);
+        processLogoFile(partner);
         return partnerRepository.save(partner);
     }
 
@@ -82,7 +90,61 @@ public class PartnerService {
      * @param id идентификатор партнера для удаления
      */
     public void deleteById(Long id) {
+        // Удаляем файл логотипа если есть
+        Optional<Partner> partnerOpt = partnerRepository.findById(id);
+        if (partnerOpt.isPresent()) {
+            Partner partner = partnerOpt.get();
+            if (partner.hasLogo()) {
+                deleteLogoFile(partner.getLogoUrl());
+            }
+        }
+
         partnerRepository.deleteById(id);
+    }
+
+    // ================== ОБРАБОТКА ЛОГОТИПА ==================
+
+    /**
+     * Обрабатывает загрузку файла логотипа.
+     */
+    private void processLogoFile(Partner partner) {
+        MultipartFile logoFile = partner.getLogoFile();
+
+        if (logoFile != null && !logoFile.isEmpty()) {
+            try {
+                // Валидируем файл
+                fileStorageService.validateFile(logoFile);
+
+                // Если есть старый логотип - удаляем
+                if (partner.hasLogo()) {
+                    deleteLogoFile(partner.getLogoUrl());
+                }
+
+                // Сохраняем новый файл
+                String fileName = fileStorageService.storeFile(logoFile);
+
+                // Сохраняем путь к файлу
+                partner.setLogoUrl("/uploads/" + fileName);
+
+            } catch (Exception e) {
+                throw new IllegalArgumentException("Ошибка при обработке логотипа: " + e.getMessage());
+            }
+        }
+    }
+
+    /**
+     * Удаляет файл логотипа.
+     */
+    private void deleteLogoFile(String logoUrl) {
+        if (logoUrl != null && logoUrl.startsWith("/uploads/")) {
+            try {
+                String fileName = logoUrl.substring("/uploads/".length());
+                fileStorageService.deleteFile(fileName);
+            } catch (Exception e) {
+                // Логируем ошибку, но не прерываем выполнение
+                System.err.println("Ошибка при удалении файла логотипа: " + e.getMessage());
+            }
+        }
     }
 
     // ================== ПОИСК ПО АКТИВНОСТИ ==================
@@ -314,9 +376,6 @@ public class PartnerService {
     public List<Partner> findWithoutProjects() {
         return partnerRepository.findWithoutProjects();
     }
-
-    // ================== ПАГИНАЦИЯ ==================
-
 
     // ================== СОРТИРОВКА ==================
 

@@ -7,6 +7,7 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDateTime;
 import java.util.HashSet;
@@ -67,7 +68,8 @@ public class Partner {
     private PartnerType type;
 
     /**
-     * URL логотипа партнера.
+     * Путь к логотипу партнера.
+     * Сохраняется в формате: "/uploads/имя_файла"
      * Используется в карточках и на страницах проекта.
      */
     @Column(name = "logo_url", length = 500)
@@ -128,6 +130,15 @@ public class Partner {
             inverseJoinColumns = @JoinColumn(name = "project_id")
     )
     private Set<Project> projects = new HashSet<>();
+
+    // ================== ПОЛЕ ДЛЯ ЗАГРУЗКИ ФАЙЛА ==================
+
+    /**
+     * Файл логотипа для загрузки.
+     * Не сохраняется в БД, используется только для передачи файла.
+     */
+    @Transient
+    private MultipartFile logoFile;
 
     // ================== СИСТЕМНЫЕ ПОЛЯ ==================
 
@@ -278,6 +289,14 @@ public class Partner {
 
     public void setUpdatedAt(LocalDateTime updatedAt) {
         this.updatedAt = updatedAt;
+    }
+
+    public MultipartFile getLogoFile() {
+        return logoFile;
+    }
+
+    public void setLogoFile(MultipartFile logoFile) {
+        this.logoFile = logoFile;
     }
 
     // ================== ВСПОМОГАТЕЛЬНЫЕ МЕТОДЫ ==================

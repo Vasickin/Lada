@@ -5,6 +5,7 @@ import com.community.cms.domain.model.content.Project;
 import com.community.cms.domain.model.people.Partner;
 import com.community.cms.domain.service.content.ProjectService;
 import com.community.cms.domain.service.people.PartnerService;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -15,6 +16,8 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.multipart.MultipartHttpServletRequest;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.util.ArrayList;
@@ -357,16 +360,29 @@ public class PartnerAdminController {
     @PostMapping("/create")
     public String createPartner(@Valid @ModelAttribute("partner") Partner partner,
                                 BindingResult bindingResult,
+                                HttpServletRequest request,
                                 RedirectAttributes redirectAttributes) {
+
         if (bindingResult.hasErrors()) {
+            // Возвращаем на форму с ошибками
             return "admin/partners/create";
         }
 
         try {
+            // Получаем файл логотипа из запроса
+            if (request instanceof MultipartHttpServletRequest multipartRequest) {
+                MultipartFile logoFile = multipartRequest.getFile("logoFile");
+
+                if (logoFile != null && !logoFile.isEmpty()) {
+                    partner.setLogoFile(logoFile);
+                }
+            }
+
             Partner savedPartner = partnerService.save(partner);
             redirectAttributes.addFlashAttribute("successMessage",
                     "Партнер '" + savedPartner.getName() + "' успешно создан!");
             return "redirect:/admin/partners";
+
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("errorMessage",
                     "Ошибка при создании партнера: " + e.getMessage());
@@ -419,7 +435,9 @@ public class PartnerAdminController {
     public String updatePartner(@PathVariable Long id,
                                 @Valid @ModelAttribute("partner") Partner partner,
                                 BindingResult bindingResult,
+                                HttpServletRequest request,
                                 RedirectAttributes redirectAttributes) {
+
         if (bindingResult.hasErrors()) {
             partner.setId(id); // Сохраняем ID для формы
             return "admin/partners/edit";
@@ -439,10 +457,20 @@ public class PartnerAdminController {
             partner.setProjects(existingPartner.getProjects());
             partner.setId(id); // Убедимся, что ID сохраняется
 
+            // Получаем файл логотипа из запроса
+            if (request instanceof MultipartHttpServletRequest multipartRequest) {
+                MultipartFile logoFile = multipartRequest.getFile("logoFile");
+
+                if (logoFile != null && !logoFile.isEmpty()) {
+                    partner.setLogoFile(logoFile);
+                }
+            }
+
             Partner updatedPartner = partnerService.update(partner);
             redirectAttributes.addFlashAttribute("successMessage",
                     "Партнер '" + updatedPartner.getName() + "' успешно обновлен!");
             return "redirect:/admin/partners";
+
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("errorMessage",
                     "Ошибка при обновлении партнера: " + e.getMessage());
