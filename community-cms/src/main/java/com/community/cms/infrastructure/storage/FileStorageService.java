@@ -14,7 +14,6 @@ import java.util.UUID;
 /**
  * Сервис для управления файловым хранилищем
  * Service for file storage management
- *
  * Обеспечивает загрузку, удаление и валидацию медиафайлов
  * Provides upload, deletion and validation of media files
  *

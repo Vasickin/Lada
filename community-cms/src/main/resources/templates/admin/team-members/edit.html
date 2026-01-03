@@ -3,7 +3,7 @@
       xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
       layout:decorate="~{fragments/layout}">
 <head>
-    <title>Редактирование члена команды - Админ панель</title>
+    <title th:text="'Редактирование: ' + ${teamMember.fullName} + ' - Админ панель'">Редактирование - Админ панель</title>
 
     <!-- Bootstrap 5 CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -11,686 +11,616 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
 
     <style>
-        .team-edit-container {
-            max-width: 900px;
+        .team-member-form-container {
+            max-width: 1000px;
             margin: 0 auto;
-            padding-left: 20px;
-            padding-right: 20px;
+            padding: 20px;
         }
 
-        .form-section {
-            margin-bottom: 2rem;
-            padding-bottom: 1.5rem;
-            border-bottom: 1px solid #dee2e6;
-        }
-
-        .form-section-title {
-            font-size: 1.1rem;
-            font-weight: 600;
-            margin-bottom: 1rem;
-            color: #495057;
-            padding-bottom: 0.5rem;
-            border-bottom: 2px solid #0d6efd;
-        }
-
-        .required-field::after {
-            content: " *";
-            color: #dc3545;
-        }
-
-        .avatar-preview {
-            width: 150px;
-            height: 150px;
+        .avatar-preview-container {
+            width: 180px;
+            height: 180px;
+            border: 2px dashed #dee2e6;
             border-radius: 50%;
-            object-fit: cover;
-            border: 3px solid #dee2e6;
-            background-color: #f8f9fa;
-        }
-
-        .avatar-placeholder-large {
-            width: 150px;
-            height: 150px;
-            border-radius: 50%;
-            background-color: #6c757d;
-            color: white;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 48px;
+            overflow: hidden;
+            background-color: #f8f9fa;
+            margin: 0 auto 20px;
+        }
+
+        .avatar-preview-container img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .avatar-preview-placeholder {
+            text-align: center;
+            color: #6c757d;
+            padding: 20px;
+        }
+
+        .avatar-preview-placeholder i {
+            font-size: 3rem;
+            margin-bottom: 10px;
+        }
+
+        .initials-preview {
+            font-size: 3rem;
             font-weight: bold;
-            border: 3px solid #dee2e6;
+            color: #6c757d;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            height: 100%;
+            background-color: #e9ecef;
+            border-radius: 50%;
         }
 
         .current-avatar-info {
-            background-color: #f8f9fa;
-            border-radius: 8px;
-            padding: 15px;
+            text-align: center;
             margin-top: 10px;
+            padding: 10px;
+            background-color: #f8f9fa;
+            border-radius: 5px;
+            border: 1px solid #dee2e6;
         }
 
-        .member-info-card {
-            background-color: #f8f9fa;
-            border-left: 4px solid #0d6efd;
-            border-radius: 8px;
-            padding: 15px;
-            margin-bottom: 20px;
+        .section-title {
+            border-bottom: 2px solid #0d6efd;
+            padding-bottom: 10px;
+            margin-bottom: 25px;
+            color: #0d6efd;
+        }
+
+        .form-section {
+            background: white;
+            border-radius: 10px;
+            padding: 25px;
+            box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+            margin-bottom: 30px;
         }
     </style>
 </head>
 <body>
 <div layout:fragment="content">
-    <div class="container-fluid team-edit-container">
-
-        <!-- ========== ЗАГОЛОВОК И НАВИГАЦИЯ ========== -->
+    <div class="container-fluid team-member-form-container">
+        <!-- ========== ЗАГОЛОВОК ========== -->
         <div class="row mb-4">
             <div class="col-12">
-                <!-- Хлебные крошки -->
-                <nav aria-label="breadcrumb">
-                    <ol class="breadcrumb">
-                        <li class="breadcrumb-item">
-                            <a th:href="@{/admin}">Главная</a>
-                        </li>
-                        <li class="breadcrumb-item">
-                            <a th:href="@{/admin/team-members}">Команда</a>
-                        </li>
-                        <li class="breadcrumb-item active" aria-current="page">
-                            Редактирование
-                        </li>
-                    </ol>
-                </nav>
-
-                <!-- Заголовок и информация о члене команды -->
                 <div class="d-flex justify-content-between align-items-center">
                     <div>
                         <h1 class="h2 mb-0">
-                            <i class="bi bi-person-gear me-2"></i>
+                            <i class="bi bi-pencil-square me-2"></i>
                             Редактирование члена команды
                         </h1>
                         <p class="text-muted mb-0 mt-1">
-                            ID: <strong th:text="${teamMember.id}">#</strong> |
-                            Создан: <span th:text="${teamMember.createdAt != null ? #temporals.format(teamMember.createdAt, 'dd.MM.yyyy HH:mm') : '—'}">—</span>
+                            <span th:text="${teamMember.fullName}"></span>
+                            <span class="mx-1">•</span>
+                            <span th:text="${teamMember.position}"></span>
                         </p>
                     </div>
                     <div>
-                        <a th:href="@{/admin/team-members}" class="btn btn-outline-secondary me-2">
-                            <i class="bi bi-arrow-left me-1"></i>
-                            Назад к списку
+                        <a th:href="@{/admin/team-members}" class="btn btn-outline-secondary">
+                            <i class="bi bi-arrow-left me-1"></i>Назад к списку
                         </a>
-                        <a th:href="@{/admin/team-members/projects/{id}(id=${teamMember.id})}"
-                           class="btn btn-outline-primary">
-                            <i class="bi bi-kanban me-1"></i>
-                            Управление проектами
-                        </a>
-                    </div>
-                </div>
-
-                <!-- Карточка информации -->
-                <div class="member-info-card mt-3">
-                    <div class="row">
-                        <div class="col-md-6">
-                            <strong>Член команды:</strong>
-                            <span th:text="${teamMember.fullName}">ФИО</span>
-                        </div>
-                        <div class="col-md-6">
-                            <strong>Статус:</strong>
-                            <span th:if="${teamMember.active}" class="badge bg-success">Активен</span>
-                            <span th:unless="${teamMember.active}" class="badge bg-secondary">Неактивен</span>
-                        </div>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- ========== СООБЩЕНИЯ ========== -->
-        <div class="row mb-4" th:if="${successMessage} or ${errorMessage}">
-            <div class="col-12">
-                <div th:if="${successMessage}"
-                     class="alert alert-success alert-dismissible fade show">
-                    <i class="bi bi-check-circle me-2"></i>
-                    <span th:text="${successMessage}"></span>
-                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                </div>
-                <div th:if="${errorMessage}"
-                     class="alert alert-danger alert-dismissible fade show">
-                    <i class="bi bi-exclamation-triangle me-2"></i>
-                    <span th:text="${errorMessage}"></span>
-                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                </div>
-            </div>
-        </div>
-
-        <!-- ========== ОСНОВНАЯ ФОРМА ========== -->
+        <!-- ========== ФОРМА РЕДАКТИРОВАНИЯ ========== -->
         <div class="row">
             <div class="col-12">
-                <div class="card">
-                    <div class="card-body">
-                        <!-- Форма редактирования -->
-                        <form th:action="@{/admin/team-members/edit/{id}(id=${teamMember.id})}"
-                              th:object="${teamMember}"
-                              method="post">
+                <form th:action="@{/admin/team-members/edit/{id}(id=${teamMember.id})}"
+                      method="post"
+                      th:object="${teamMember}"
+                      enctype="multipart/form-data"
+                      class="needs-validation"
+                      novalidate>
 
-                            <!-- Скрытый CSRF токен -->
-                            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+                    <!-- ========== ОСНОВНАЯ ИНФОРМАЦИЯ ========== -->
+                    <div class="form-section">
+                        <h3 class="section-title">
+                            <i class="bi bi-info-circle me-2"></i>
+                            Основная информация
+                        </h3>
 
-                            <!-- Скрытое поле ID -->
-                            <input type="hidden" th:field="*{id}" />
-
-                            <!-- ===== СЕКЦИЯ 1: ОСНОВНАЯ ИНФОРМАЦИЯ ===== -->
-                            <div class="form-section">
-                                <h3 class="form-section-title">
-                                    <i class="bi bi-person-circle me-2"></i>
-                                    Основная информация
-                                </h3>
-
-                                <div class="row">
-                                    <!-- Полное имя -->
-                                    <div class="col-md-6 mb-3">
-                                        <label for="fullName" class="form-label required-field">
-                                            Полное имя
-                                        </label>
-                                        <input type="text"
-                                               class="form-control"
-                                               id="fullName"
-                                               th:field="*{fullName}"
-                                               placeholder="Иванов Иван Иванович"
-                                               required>
-                                        <div class="form-text">
-                                            Фамилия Имя Отчество полностью
-                                        </div>
-                                        <div th:if="${#fields.hasErrors('fullName')}" class="text-danger small">
-                                            <span th:errors="*{fullName}"></span>
-                                        </div>
-                                    </div>
-
-                                    <!-- Должность -->
-                                    <div class="col-md-6 mb-3">
-                                        <label for="position" class="form-label required-field">
-                                            Должность
-                                        </label>
-                                        <input type="text"
-                                               class="form-control"
-                                               id="position"
-                                               th:field="*{position}"
-                                               placeholder="Руководитель проекта"
-                                               required>
-                                        <div class="form-text">
-                                            Основная должность в организации
-                                        </div>
-                                        <div th:if="${#fields.hasErrors('position')}" class="text-danger small">
-                                            <span th:errors="*{position}"></span>
-                                        </div>
-                                    </div>
+                        <div class="row">
+                            <!-- Полное имя -->
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label fw-semibold">
+                                    <i class="bi bi-person-vcard me-1"></i>Полное имя *
+                                </label>
+                                <input type="text"
+                                       th:field="*{fullName}"
+                                       class="form-control"
+                                       required
+                                       minlength="2"
+                                       maxlength="100">
+                                <div class="invalid-feedback">
+                                    Имя должно содержать от 2 до 100 символов
+                                </div>
+                                <div th:if="${#fields.hasErrors('fullName')}" class="text-danger small mt-1">
+                                    <span th:errors="*{fullName}"></span>
                                 </div>
                             </div>
 
-                            <!-- ===== СЕКЦИЯ 2: АВАТАР ===== -->
-                            <div class="form-section">
-                                <h3 class="form-section-title">
-                                    <i class="bi bi-image me-2"></i>
-                                    Фотография (аватар)
-                                </h3>
-
-                                <div class="row align-items-center">
-                                    <!-- Превью текущего аватара -->
-                                    <div class="col-md-4 text-center mb-3">
-                                        <div id="avatarPreviewContainer">
-                                            <img th:if="${teamMember.avatarPath != null and teamMember.avatarPath != ''}"
-                                                 th:src="@{${teamMember.avatarPath}}"
-                                                 class="avatar-preview mb-2"
-                                                 alt="Текущий аватар">
-                                            <div th:unless="${teamMember.avatarPath != null and teamMember.avatarPath != ''}"
-                                                 class="avatar-placeholder-large mb-2"
-                                                 th:text="${teamMember.initials}">
-                                                ИП
-                                            </div>
-
-                                            <!-- Информация о текущем аватаре -->
-                                            <div th:if="${teamMember.avatarPath != null and teamMember.avatarPath != ''}"
-                                                 class="current-avatar-info">
-                                                <p class="mb-1 small">
-                                                    <i class="bi bi-check-circle text-success me-1"></i>
-                                                    Фото загружено
-                                                </p>
-                                                <button type="button"
-                                                        class="btn btn-sm btn-outline-danger"
-                                                        onclick="clearAvatar()">
-                                                    <i class="bi bi-trash me-1"></i>
-                                                    Удалить фото
-                                                </button>
-                                            </div>
-                                            <div th:unless="${teamMember.avatarPath != null and teamMember.avatarPath != ''}"
-                                                 class="current-avatar-info">
-                                                <p class="mb-0 small text-muted">
-                                                    <i class="bi bi-image me-1"></i>
-                                                    Фото не загружено
-                                                </p>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <!-- Поле загрузки нового аватара -->
-                                    <div class="col-md-8 mb-3">
-                                        <label for="avatarFile" class="form-label">
-                                            Заменить фото
-                                        </label>
-                                        <input type="file"
-                                               class="form-control"
-                                               id="avatarFile"
-                                               name="avatarFile"
-                                               accept="image/*">
-                                        <div class="form-text">
-                                            Рекомендуемый размер: 400x400px. Форматы: JPG, PNG
-                                            <br>Оставьте пустым, чтобы сохранить текущее фото
-                                        </div>
-
-                                        <!-- Скрытое поле для пути к аватару -->
-                                        <input type="hidden" id="avatarPath" th:field="*{avatarPath}">
-                                        <input type="hidden" id="clearAvatarFlag" name="clearAvatar" value="false">
-                                    </div>
+                            <!-- Должность -->
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label fw-semibold">
+                                    <i class="bi bi-briefcase me-1"></i>Должность *
+                                </label>
+                                <input type="text"
+                                       th:field="*{position}"
+                                       class="form-control"
+                                       required
+                                       maxlength="100">
+                                <div class="invalid-feedback">
+                                    Введите должность члена команды
+                                </div>
+                                <div th:if="${#fields.hasErrors('position')}" class="text-danger small mt-1">
+                                    <span th:errors="*{position}"></span>
                                 </div>
                             </div>
 
-                            <!-- ===== СЕКЦИЯ 3: КОНТАКТНАЯ ИНФОРМАЦИЯ ===== -->
-                            <div class="form-section">
-                                <h3 class="form-section-title">
-                                    <i class="bi bi-envelope me-2"></i>
-                                    Контактная информация
-                                </h3>
-
-                                <div class="row">
-                                    <!-- Email -->
-                                    <div class="col-md-6 mb-3">
-                                        <label for="email" class="form-label">
-                                            Электронная почта
-                                        </label>
-                                        <input type="email"
-                                               class="form-control"
-                                               id="email"
-                                               th:field="*{email}"
-                                               placeholder="ivanov@example.com">
-                                        <div class="form-text">
-                                            Рабочий email адрес
-                                        </div>
-                                        <div th:if="${#fields.hasErrors('email')}" class="text-danger small">
-                                            <span th:errors="*{email}"></span>
-                                        </div>
-                                    </div>
-
-                                    <!-- Телефон -->
-                                    <div class="col-md-6 mb-3">
-                                        <label for="phone" class="form-label">
-                                            Телефон
-                                        </label>
-                                        <input type="tel"
-                                               class="form-control"
-                                               id="phone"
-                                               th:field="*{phone}"
-                                               placeholder="+7 (XXX) XXX-XX-XX">
-                                        <div class="form-text">
-                                            Рабочий номер телефона
-                                        </div>
-                                        <div th:if="${#fields.hasErrors('phone')}" class="text-danger small">
-                                            <span th:errors="*{phone}"></span>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- ===== СЕКЦИЯ 4: БИОГРАФИЯ ===== -->
-                            <div class="form-section">
-                                <h3 class="form-section-title">
-                                    <i class="bi bi-file-text me-2"></i>
-                                    Биография
-                                </h3>
-
-                                <div class="row">
-                                    <div class="col-12 mb-3">
-                                        <label for="bio" class="form-label">
-                                            Биография
-                                        </label>
-                                        <textarea class="form-control"
-                                                  id="bio"
-                                                  th:field="*{bio}"
-                                                  rows="5"
-                                                  placeholder="Опыт работы, образование, достижения..."></textarea>
-                                        <div class="form-text">
-                                            Можно использовать HTML-разметку для форматирования
-                                        </div>
-                                        <div th:if="${#fields.hasErrors('bio')}" class="text-danger small">
-                                            <span th:errors="*{bio}"></span>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- ===== СЕКЦИЯ 5: НАСТРОЙКИ ===== -->
-                            <div class="form-section">
-                                <h3 class="form-section-title">
-                                    <i class="bi bi-gear me-2"></i>
-                                    Настройки
-                                </h3>
-
-                                <div class="row">
-                                    <!-- Порядок сортировки -->
-                                    <div class="col-md-4 mb-3">
-                                        <label for="sortOrder" class="form-label">
-                                            Порядок сортировки
-                                        </label>
-                                        <input type="number"
-                                               class="form-control"
-                                               id="sortOrder"
-                                               th:field="*{sortOrder}"
-                                               min="0"
-                                               max="999">
-                                        <div class="form-text">
-                                            Меньшее число = выше в списке
-                                        </div>
-                                        <div th:if="${#fields.hasErrors('sortOrder')}" class="text-danger small">
-                                            <span th:errors="*{sortOrder}"></span>
-                                        </div>
-                                    </div>
-
-                                    <!-- Статус активности -->
-                                    <div class="col-md-4 mb-3">
-                                        <label class="form-label">Статус</label>
-                                        <div class="form-check">
-                                            <input class="form-check-input"
-                                                   type="checkbox"
-                                                   id="active"
-                                                   th:field="*{active}">
-                                            <label class="form-check-label" for="active">
-                                                Активный член команды
-                                            </label>
-                                        </div>
-                                        <div class="form-text">
-                                            Неактивные не отображаются на сайте
-                                        </div>
-                                    </div>
-
-                                    <!-- Дата обновления (только для информации) -->
-                                    <div class="col-md-4 mb-3">
-                                        <label class="form-label">Последнее обновление</label>
-                                        <p class="form-control-plaintext">
-                                            <span th:if="${teamMember.updatedAt != null}"
-                                                  th:text="${#temporals.format(teamMember.updatedAt, 'dd.MM.yyyy HH:mm')}">
-                                            </span>
-                                            <span th:unless="${teamMember.updatedAt != null}" class="text-muted">
-                                                —
-                                            </span>
-                                        </p>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- ===== КНОПКИ ДЕЙСТВИЙ ===== -->
-                            <div class="row mt-4">
-                                <div class="col-12">
-                                    <div class="d-flex justify-content-between">
-                                        <div>
-                                            <a th:href="@{/admin/team-members/delete/{id}(id=${teamMember.id})}"
-                                               class="btn btn-outline-danger me-2">
-                                                <i class="bi bi-trash me-1"></i>
-                                                Удалить
-                                            </a>
-                                            <a th:href="@{/admin/team-members}" class="btn btn-outline-secondary">
-                                                <i class="bi bi-x-circle me-1"></i>
-                                                Отмена
-                                            </a>
-                                        </div>
-                                        <div>
-                                            <button type="submit" class="btn btn-primary">
-                                                <i class="bi bi-check-circle me-1"></i>
-                                                Сохранить изменения
-                                            </button>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </form>
-                    </div>
-                </div>
-
-                <!-- Дополнительная информация -->
-                <div class="row mt-4">
-                    <!-- Статистика -->
-                    <div class="col-md-6 mb-3">
-                        <div class="card">
-                            <div class="card-body">
-                                <h5 class="card-title">
-                                    <i class="bi bi-kanban me-2"></i>
-                                    Участие в проектах
-                                </h5>
-                                <div class="d-flex align-items-center">
-                                    <span class="display-6 me-3" th:text="${memberProjects != null ? memberProjects.size() : 0}">0</span>
-                                    <div>
-                                        <p class="mb-1">Проектов</p>
-                                        <a th:href="@{/admin/team-members/projects/{id}(id=${teamMember.id})}"
-                                           class="btn btn-sm btn-outline-primary">
-                                            Управление проектами
-                                        </a>
-                                    </div>
+                            <!-- Биография -->
+                            <div class="col-12 mb-3">
+                                <label class="form-label fw-semibold">
+                                    <i class="bi bi-card-text me-1"></i>Биография
+                                </label>
+                                <textarea th:field="*{bio}"
+                                          class="form-control"
+                                          rows="5"
+                                          placeholder="Расскажите о профессиональном опыте, образовании, достижениях члена команды..."></textarea>
+                                <div class="form-text">
+                                    Поддерживает HTML разметку для форматирования текста.
+                                    Можно использовать теги &lt;strong&gt;, &lt;em&gt;, &lt;ul&gt;, &lt;li&gt;, &lt;a&gt;
                                 </div>
                             </div>
                         </div>
                     </div>
 
-                    <!-- Подсказки -->
-                    <div class="col-md-6 mb-3">
-                        <div class="card">
-                            <div class="card-body">
-                                <h5 class="card-title">
-                                    <i class="bi bi-lightbulb me-2"></i>
-                                    Подсказки
-                                </h5>
-                                <ul class="small mb-0">
-                                    <li>Измените порядок сортировки, чтобы управлять положением в списке</li>
-                                    <li>Деактивируйте члена команды, чтобы временно скрыть с сайта</li>
-                                    <li>Для полного удаления используйте кнопку "Удалить"</li>
-                                </ul>
+                    <!-- ========== ФОТОГРАФИЯ ========== -->
+                    <div class="form-section">
+                        <h3 class="section-title">
+                            <i class="bi bi-image me-2"></i>
+                            Фотография (аватар)
+                        </h3>
+
+                        <div class="row align-items-center">
+                            <div class="col-md-4">
+                                <!-- Preview текущего аватара или инициалов -->
+                                <div id="avatarDisplayArea">
+                                    <!-- Если есть аватар -->
+                                    <div th:if="${teamMember.avatarPath != null and teamMember.avatarPath != ''}"
+                                         id="currentAvatarPreview"
+                                         class="avatar-preview-container">
+                                        <img th:src="@{${teamMember.avatarPath}}"
+                                             th:alt="${teamMember.fullName} + ' фото'"
+                                             id="currentAvatarImage">
+                                    </div>
+
+                                    <!-- Если нет аватара - показываем инициалы -->
+                                    <div th:unless="${teamMember.avatarPath != null and teamMember.avatarPath != ''}"
+                                         id="initialsPreview"
+                                         class="avatar-preview-container">
+                                        <div class="initials-preview" id="initialsText">
+                                            <span th:text="${teamMember.initials}">TM</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Информация о текущем аватаре -->
+                                <div th:if="${teamMember.avatarPath != null and teamMember.avatarPath != ''}"
+                                     class="current-avatar-info mb-3">
+                                    <p class="mb-1 small">
+                                        <i class="bi bi-check-circle text-success me-1"></i>
+                                        Фото загружено
+                                    </p>
+                                    <div class="mt-2">
+                                        <button type="button"
+                                                class="btn btn-sm btn-outline-danger"
+                                                onclick="toggleAvatarRemoval()">
+                                            <i class="bi bi-trash me-1"></i>
+                                            Удалить фото
+                                        </button>
+                                    </div>
+                                </div>
+                                <div th:unless="${teamMember.avatarPath != null and teamMember.avatarPath != ''}"
+                                     class="current-avatar-info mb-3">
+                                    <p class="mb-0 small text-muted">
+                                        <i class="bi bi-image me-1"></i>
+                                        Фото не загружено
+                                    </p>
+                                </div>
+                            </div>
+
+                            <div class="col-md-8">
+                                <div class="mb-3">
+                                    <label class="form-label fw-semibold">
+                                        Заменить фото
+                                    </label>
+                                    <input type="file"
+                                           name="avatarFile"
+                                           id="avatarFile"
+                                           accept=".jpg,.jpeg,.png,.gif,.webp"
+                                           class="form-control"
+                                           onchange="previewNewAvatar(this)">
+                                    <div class="form-text">
+                                        <i class="bi bi-info-circle me-1"></i>
+                                        Поддерживаемые форматы: JPG, PNG, GIF, WEBP. Максимальный размер: 10MB.
+                                    </div>
+                                    <div class="form-text">
+                                        <i class="bi bi-lightbulb me-1"></i>
+                                        Рекомендуемый размер: 400×400 пикселей. Оставьте пустым, чтобы сохранить текущее фото
+                                    </div>
+                                </div>
+
+                                <!-- Скрытые поля для управления аватаром -->
+                                <input type="hidden" id="avatarPath" th:field="*{avatarPath}">
+                                <input type="hidden" id="clearAvatarFlag" name="clearAvatar" value="false">
+
+                                <div id="avatarRemovalWarning" class="alert alert-warning d-none mt-3" role="alert">
+                                    <i class="bi bi-exclamation-triangle me-2"></i>
+                                    <strong>Внимание!</strong> Фотография будет удалена при сохранении.
+                                    <button type="button" class="btn btn-sm btn-outline-secondary ms-2" onclick="cancelAvatarRemoval()">
+                                        Отмена удаления
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     </div>
-                </div>
+
+                    <!-- ========== КОНТАКТНАЯ ИНФОРМАЦИЯ ========== -->
+                    <div class="form-section">
+                        <h3 class="section-title">
+                            <i class="bi bi-person-lines-fill me-2"></i>
+                            Контактная информация
+                        </h3>
+
+                        <div class="row">
+                            <!-- Email -->
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label fw-semibold">
+                                    <i class="bi bi-envelope me-1"></i>Email для контактов
+                                </label>
+                                <input type="email"
+                                       th:field="*{email}"
+                                       class="form-control"
+                                       placeholder="ivan.petrov@example.com"
+                                       maxlength="100">
+                                <div class="form-text">
+                                    Используется для формы "Связаться с командой"
+                                </div>
+                            </div>
+
+                            <!-- Телефон -->
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label fw-semibold">
+                                    <i class="bi bi-telephone me-1"></i>Телефон
+                                </label>
+                                <input type="tel"
+                                       th:field="*{phone}"
+                                       class="form-control"
+                                       placeholder="+7 (XXX) XXX-XX-XX"
+                                       maxlength="50">
+                            </div>
+
+                            <!-- Социальные сети -->
+                            <div class="col-12 mb-3">
+                                <label class="form-label fw-semibold">
+                                    <i class="bi bi-share me-1"></i>Социальные сети
+                                </label>
+                                <textarea th:field="*{socialLinks}"
+                                          class="form-control"
+                                          rows="3"
+                                          placeholder='{"facebook": "https://facebook.com/username", "instagram": "https://instagram.com/username", "vk": "https://vk.com/username"}'></textarea>
+                                <div class="form-text">
+                                    <i class="bi bi-code me-1"></i>
+                                    В формате JSON. Пример: {"название_платформы": "ссылка"}
+                                </div>
+                                <div class="form-text">
+                                    <i class="bi bi-shield-check me-1"></i>
+                                    Поддерживаемые платформы: facebook, instagram, vk, telegram, youtube
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- ========== НАСТРОЙКИ ========== -->
+                    <div class="form-section">
+                        <h3 class="section-title">
+                            <i class="bi bi-gear me-2"></i>
+                            Настройки отображения
+                        </h3>
+
+                        <div class="row">
+                            <!-- Порядок сортировки -->
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label fw-semibold">
+                                    <i class="bi bi-sort-numeric-down me-1"></i>Порядок сортировки
+                                </label>
+                                <input type="number"
+                                       th:field="*{sortOrder}"
+                                       class="form-control"
+                                       min="0"
+                                       max="1000">
+                                <div class="form-text">
+                                    Меньшее число = выше в списке команды
+                                </div>
+                            </div>
+
+                            <!-- Статус активности -->
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label fw-semibold">
+                                    <i class="bi bi-toggle-on me-1"></i>Статус
+                                </label>
+                                <div class="form-check form-switch mt-2">
+                                    <input class="form-check-input"
+                                           type="checkbox"
+                                           role="switch"
+                                           th:field="*{active}">
+                                    <label class="form-check-label">
+                                        <span class="badge"
+                                              th:class="${teamMember.active} ? 'bg-success' : 'bg-secondary'"
+                                              th:text="${teamMember.active} ? 'Активен' : 'Неактивен'">
+                                            Статус
+                                        </span>
+                                    </label>
+                                </div>
+                                <div class="form-text">
+                                    Неактивные члены команды не отображаются на сайте
+                                </div>
+                            </div>
+
+                            <!-- Проекты -->
+                            <div class="col-md-4 mb-3" th:if="${allProjects != null and !allProjects.isEmpty()}">
+                                <label class="form-label fw-semibold">
+                                    <i class="bi bi-diagram-3 me-1"></i>Проекты
+                                </label>
+                                <div class="mb-2">
+                                    <span class="badge bg-info">
+                                        <i class="bi bi-diagram-3 me-1"></i>
+                                        Участвует в проектах:
+                                        <span th:text="${teamMember.projectsCount}">0</span>
+                                    </span>
+                                </div>
+                                <div class="form-text">
+                                    <i class="bi bi-info-circle me-1"></i>
+                                    <a th:href="@{/admin/team-members/projects/{id}(id=${teamMember.id})}"
+                                       class="text-decoration-none">
+                                        Управление проектами
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- ========== КНОПКИ ========== -->
+                    <div class="row mt-4">
+                        <div class="col-12">
+                            <div class="d-flex justify-content-between">
+                                <div>
+                                    <a th:href="@{/admin/team-members}" class="btn btn-outline-secondary">
+                                        <i class="bi bi-x-circle me-1"></i>
+                                        Отмена
+                                    </a>
+                                    <a th:href="@{/admin/team-members/delete/{id}(id=${teamMember.id})}"
+                                       class="btn btn-outline-danger ms-2">
+                                        <i class="bi bi-trash me-1"></i>
+                                        Удалить
+                                    </a>
+                                </div>
+                                <div>
+                                    <button type="submit" class="btn btn-primary">
+                                        <i class="bi bi-check-circle me-1"></i>
+                                        Сохранить изменения
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </form>
             </div>
         </div>
     </div>
 </div>
 
-<!-- Bootstrap JS -->
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-
-<!-- JavaScript для редактирования -->
+<!-- ========== SCRIPTS ========== -->
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        console.log('Страница редактирования члена команды загружена');
+    // Флаг удаления аватара
+    let isAvatarMarkedForRemoval = false;
 
-        // Предпросмотр нового аватара
-        const avatarFileInput = document.getElementById('avatarFile');
-        const avatarPreviewContainer = document.getElementById('avatarPreviewContainer');
-        const avatarPathInput = document.getElementById('avatarPath');
-        const clearAvatarFlag = document.getElementById('clearAvatarFlag');
+    // Preview нового аватара
+    function previewNewAvatar(input) {
+        const avatarDisplayArea = document.getElementById('avatarDisplayArea');
+        const initialsPreview = document.getElementById('initialsPreview');
 
-        if (avatarFileInput) {
-            avatarFileInput.addEventListener('change', function(e) {
-                const file = e.target.files[0];
-                if (file) {
-                    const reader = new FileReader();
+        if (input.files && input.files[0]) {
+            const reader = new FileReader();
 
-                    reader.onload = function(e) {
-                        // Обновляем превью
-                        avatarPreviewContainer.innerHTML = `
-                            <img src="${e.target.result}"
-                                 class="avatar-preview mb-2"
-                                 alt="Новый аватар">
-                            <div class="current-avatar-info">
-                                <p class="mb-1 small text-success">
-                                    <i class="bi bi-arrow-clockwise me-1"></i>
-                                    Новое фото выбрано
-                                </p>
-                                <button type="button"
-                                        class="btn btn-sm btn-outline-danger"
-                                        onclick="clearNewAvatar()">
-                                    <i class="bi bi-x-circle me-1"></i>
-                                    Отмена замены
-                                </button>
-                            </div>
-                        `;
+            reader.onload = function(e) {
+                // Создаем новый preview контейнер
+                const newPreview = document.createElement('div');
+                newPreview.className = 'avatar-preview-container';
+                newPreview.innerHTML = `<img src="${e.target.result}" alt="Новое фото">`;
 
-                        // Сбрасываем флаг удаления, если пользователь загружает новое фото
-                        clearAvatarFlag.value = 'false';
-                    };
+                // Заменяем содержимое области отображения
+                avatarDisplayArea.innerHTML = '';
+                avatarDisplayArea.appendChild(newPreview);
 
-                    reader.readAsDataURL(file);
-                }
-            });
-        }
+                // Скрываем информацию о текущем аватаре
+                document.querySelector('.current-avatar-info')?.classList.add('d-none');
 
-        // Автоматическое определение инициалов из имени
-        const fullNameInput = document.getElementById('fullName');
+                // Скрываем предупреждение об удалении если оно было
+                const removalWarning = document.getElementById('avatarRemovalWarning');
+                if (removalWarning) removalWarning.classList.add('d-none');
 
-        if (fullNameInput) {
-            fullNameInput.addEventListener('input', function() {
-                const name = this.value.trim();
-                const currentAvatar = avatarPathInput.value;
-
-                // Если аватар не загружен, обновляем инициалы в превью
-                if (!currentAvatar && name) {
-                    const words = name.split(' ');
-                    let initials = '';
-
-                    if (words.length >= 2) {
-                        initials = (words[0].charAt(0) + words[1].charAt(0)).toUpperCase();
-                    } else if (words.length === 1) {
-                        initials = words[0].charAt(0).toUpperCase();
-                    }
-
-                    // Обновляем заглушку в превью
-                    const placeholder = avatarPreviewContainer.querySelector('.avatar-placeholder-large');
-                    if (placeholder && !avatarFileInput.files[0]) {
-                        placeholder.textContent = initials;
-                    }
-                }
-            });
-        }
-
-        // Валидация формы перед отправкой
-        const form = document.querySelector('form');
-        if (form) {
-            form.addEventListener('submit', function(e) {
-                const fullName = document.getElementById('fullName').value.trim();
-                const position = document.getElementById('position').value.trim();
-
-                if (!fullName || !position) {
-                    e.preventDefault();
-                    alert('Пожалуйста, заполните обязательные поля: Полное имя и Должность');
-                    return false;
-                }
-
-                return true;
-            });
-        }
-    });
-
-    // Функция для удаления текущего аватара
-    function clearAvatar() {
-        if (confirm('Удалить текущее фото? Это действие нельзя отменить.')) {
-            document.getElementById('clearAvatarFlag').value = 'true';
-            document.getElementById('avatarPath').value = '';
-
-            // Обновляем превью
-            const avatarPreviewContainer = document.getElementById('avatarPreviewContainer');
-            const fullNameInput = document.getElementById('fullName');
-            let initials = '';
-
-            if (fullNameInput) {
-                const name = fullNameInput.value.trim();
-                const words = name.split(' ');
-
-                if (words.length >= 2) {
-                    initials = (words[0].charAt(0) + words[1].charAt(0)).toUpperCase();
-                } else if (words.length === 1) {
-                    initials = words[0].charAt(0).toUpperCase();
-                }
+                // Сбрасываем флаг удаления
+                isAvatarMarkedForRemoval = false;
+                document.getElementById('clearAvatarFlag').value = 'false';
             }
 
-            avatarPreviewContainer.innerHTML = `
-                <div class="avatar-placeholder-large mb-2">
-                    ${initials || '<i class="bi bi-person"></i>'}
-                </div>
-                <div class="current-avatar-info">
-                    <p class="mb-0 small text-danger">
-                        <i class="bi bi-trash me-1"></i>
-                        Фото будет удалено при сохранении
-                    </p>
-                </div>
-            `;
-
-            // Сбрасываем поле загрузки файла
-            const avatarFileInput = document.getElementById('avatarFile');
-            if (avatarFileInput) {
-                avatarFileInput.value = '';
-            }
-        }
-    }
-
-    // Функция для отмены загрузки нового аватара
-    function clearNewAvatar() {
-        const avatarFileInput = document.getElementById('avatarFile');
-        const avatarPreviewContainer = document.getElementById('avatarPreviewContainer');
-        const avatarPath = document.getElementById('avatarPath').value;
-        const fullNameInput = document.getElementById('fullName');
-
-        // Сбрасываем поле файла
-        avatarFileInput.value = '';
-
-        // Восстанавливаем оригинальное превью
-        if (avatarPath) {
-            // Если был оригинальный аватар
-            avatarPreviewContainer.innerHTML = `
-                <img th:src="@{${teamMember.avatarPath}}"
-                     src="${avatarPath}"
-                     class="avatar-preview mb-2"
-                     alt="Текущий аватар">
-                <div class="current-avatar-info">
-                    <p class="mb-1 small">
-                        <i class="bi bi-check-circle text-success me-1"></i>
-                        Фото загружено
-                    </p>
-                    <button type="button"
-                            class="btn btn-sm btn-outline-danger"
-                            onclick="clearAvatar()">
-                        <i class="bi bi-trash me-1"></i>
-                        Удалить фото
-                    </button>
-                </div>
-            `;
+            reader.readAsDataURL(input.files[0]);
         } else {
-            // Если аватара не было
-            let initials = '';
-            if (fullNameInput) {
-                const name = fullNameInput.value.trim();
-                const words = name.split(' ');
-
-                if (words.length >= 2) {
-                    initials = (words[0].charAt(0) + words[1].charAt(0)).toUpperCase();
-                } else if (words.length === 1) {
-                    initials = words[0].charAt(0).toUpperCase();
-                }
-            }
-
-            avatarPreviewContainer.innerHTML = `
-                <div class="avatar-placeholder-large mb-2">
-                    ${initials || '<i class="bi bi-person"></i>'}
-                </div>
-                <div class="current-avatar-info">
-                    <p class="mb-0 small text-muted">
-                        <i class="bi bi-image me-1"></i>
-                        Фото не загружено
-                    </p>
-                </div>
-            `;
+            // Если файл не выбран, возвращаем исходное состояние
+            resetAvatarDisplay();
         }
     }
+
+    // Переключение флага удаления аватара
+    function toggleAvatarRemoval() {
+        isAvatarMarkedForRemoval = !isAvatarMarkedForRemoval;
+        const clearAvatarFlag = document.getElementById('clearAvatarFlag');
+        const removalWarning = document.getElementById('avatarRemovalWarning');
+        const avatarDisplayArea = document.getElementById('avatarDisplayArea');
+
+        if (isAvatarMarkedForRemoval) {
+            // Показываем предупреждение
+            if (removalWarning) removalWarning.classList.remove('d-none');
+
+            // Устанавливаем флаг
+            clearAvatarFlag.value = 'true';
+
+            // Показываем инициалы вместо фото
+            const initials = document.getElementById('initialsText')?.textContent || 'TM';
+            avatarDisplayArea.innerHTML = `
+                <div class="avatar-preview-container">
+                    <div class="initials-preview">${initials}</div>
+                </div>`;
+        } else {
+            // Скрываем предупреждение
+            if (removalWarning) removalWarning.classList.add('d-none');
+
+            // Сбрасываем флаг
+            clearAvatarFlag.value = 'false';
+
+            // Возвращаем исходное фото
+            resetAvatarDisplay();
+        }
+    }
+
+    // Отмена удаления аватара
+    function cancelAvatarRemoval() {
+        isAvatarMarkedForRemoval = false;
+        document.getElementById('clearAvatarFlag').value = 'false';
+        document.getElementById('avatarRemovalWarning').classList.add('d-none');
+        resetAvatarDisplay();
+    }
+
+    // Восстановление исходного отображения аватара
+    function resetAvatarDisplay() {
+        const avatarDisplayArea = document.getElementById('avatarDisplayArea');
+        const currentAvatarImage = document.getElementById('currentAvatarImage');
+        const initialsText = document.getElementById('initialsText');
+
+        if (currentAvatarImage && currentAvatarImage.src) {
+            // Восстанавливаем исходное фото
+            avatarDisplayArea.innerHTML = `
+                <div id="currentAvatarPreview" class="avatar-preview-container">
+                    <img src="${currentAvatarImage.src}" alt="Текущее фото" id="currentAvatarImage">
+                </div>`;
+        } else if (initialsText) {
+            // Или показываем инициалы
+            avatarDisplayArea.innerHTML = `
+                <div id="initialsPreview" class="avatar-preview-container">
+                    <div class="initials-preview" id="initialsText">${initialsText.textContent}</div>
+                </div>`;
+        }
+
+        // Показываем информацию о текущем аватаре
+        document.querySelector('.current-avatar-info')?.classList.remove('d-none');
+    }
+
+    // Обновление инициалов при изменении имени
+    function updateInitialsFromName() {
+        const fullNameInput = document.querySelector('input[th\\:field="*{fullName}"]');
+        const initialsText = document.getElementById('initialsText');
+
+        if (fullNameInput && initialsText && !isAvatarMarkedForRemoval) {
+            fullNameInput.addEventListener('input', function() {
+                const names = this.value.trim().split(' ');
+                let initials = '';
+
+                if (names.length >= 2) {
+                    initials = (names[0].charAt(0) + names[names.length - 1].charAt(0)).toUpperCase();
+                } else if (names.length === 1) {
+                    initials = names[0].length >= 2
+                        ? names[0].substring(0, 2).toUpperCase()
+                        : names[0].toUpperCase();
+                }
+
+                if (initials) {
+                    // Обновляем только если сейчас отображаются инициалы (нет фото)
+                    const currentAvatarImage = document.getElementById('currentAvatarImage');
+                    if (!currentAvatarImage || !currentAvatarImage.src) {
+                        initialsText.textContent = initials;
+                    }
+                }
+            });
+        }
+    }
+
+    // Валидация формы
+    (function() {
+        'use strict';
+
+        const forms = document.querySelectorAll('.needs-validation');
+
+        Array.from(forms).forEach(function(form) {
+            form.addEventListener('submit', function(event) {
+                if (!form.checkValidity()) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                }
+
+                form.classList.add('was-validated');
+            }, false);
+        });
+    })();
+
+    // Инициализация при загрузке
+    document.addEventListener('DOMContentLoaded', function() {
+        updateInitialsFromName();
+
+        // Автосохранение в localStorage (опционально)
+        const form = document.querySelector('form');
+        if (!form) return;
+
+        const formFields = form.querySelectorAll('input, textarea, select');
+
+        // Загружаем сохраненные данные
+        formFields.forEach(field => {
+            const savedValue = localStorage.getItem(`team_member_edit_${field.name}_${form.action.split('/').pop()}`);
+            if (savedValue && !field.value && field.type !== 'file') {
+                field.value = savedValue;
+            }
+        });
+
+        // Сохраняем при изменении
+        formFields.forEach(field => {
+            if (field.type === 'file') return;
+
+            field.addEventListener('input', function() {
+                localStorage.setItem(`team_member_edit_${this.name}_${form.action.split('/').pop()}`, this.value);
+            });
+        });
+
+        // Очищаем при успешной отправке
+        form.addEventListener('submit', function() {
+            formFields.forEach(field => {
+                if (field.type === 'file') return;
+                localStorage.removeItem(`team_member_edit_${field.name}_${form.action.split('/').pop()}`);
+            });
+        });
+    });
 </script>
+
+<!-- Bootstrap 5 JS Bundle -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

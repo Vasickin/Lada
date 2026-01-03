@@ -4,12 +4,14 @@ import com.community.cms.domain.model.content.Project;
 import com.community.cms.domain.model.people.TeamMember;
 import com.community.cms.domain.service.content.ProjectService;
 import com.community.cms.domain.service.people.TeamMemberService;
+import com.community.cms.infrastructure.storage.FileStorageService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.util.List;
@@ -34,6 +36,7 @@ public class TeamMemberAdminController {
 
     private final TeamMemberService teamMemberService;
     private final ProjectService projectService;
+    private final FileStorageService fileStorageService;
 
     /**
      * Конструктор с инъекцией зависимостей.
@@ -43,9 +46,11 @@ public class TeamMemberAdminController {
      */
     @Autowired
     public TeamMemberAdminController(TeamMemberService teamMemberService,
-                                     ProjectService projectService) {
+                                     ProjectService projectService,
+                                     FileStorageService fileStorageService) {
         this.teamMemberService = teamMemberService;
         this.projectService = projectService;
+        this.fileStorageService = fileStorageService;
     }
 
     // ================== СПИСОК ЧЛЕНОВ КОМАНДЫ ==================
@@ -105,6 +110,7 @@ public class TeamMemberAdminController {
      */
     @PostMapping("/create")
     public String createTeamMember(@Valid @ModelAttribute("teamMember") TeamMember teamMember,
+                                   @RequestParam(value = "avatarFile", required = false) MultipartFile avatarFile,
                                    BindingResult bindingResult,
                                    RedirectAttributes redirectAttributes) {
         if (bindingResult.hasErrors()) {
@@ -112,6 +118,19 @@ public class TeamMemberAdminController {
         }
 
         try {
+            // ========== ТОЛЬКО ЭТОТ БЛОК ДОБАВЛЯЕМ ==========
+            if (avatarFile != null && !avatarFile.isEmpty()) {
+                try {
+                    String fileName = fileStorageService.storeFile(avatarFile);
+                    // Сохраняем имя файла (без /uploads/ префикса, FileStorageService уже возвращает только имя)
+                    teamMember.setAvatarPath(fileName);
+                } catch (Exception e) {
+                    redirectAttributes.addFlashAttribute("errorMessage",
+                            "Ошибка при загрузке аватарки: " + e.getMessage());
+                    return "redirect:/admin/team-members/create";
+                }
+            }
+            // ========== КОНЕЦ НОВОГО БЛОКА ==========
             TeamMember savedMember = teamMemberService.save(teamMember);
             redirectAttributes.addFlashAttribute("successMessage",
                     "Член команды '" + savedMember.getFullName() + "' успешно создан!");
@@ -166,6 +185,8 @@ public class TeamMemberAdminController {
     @PostMapping("/edit/{id}")
     public String updateTeamMember(@PathVariable Long id,
                                    @Valid @ModelAttribute("teamMember") TeamMember teamMember,
+                                   @RequestParam(value = "avatarFile", required = false) MultipartFile avatarFile,
+                                   @RequestParam(value = "clearAvatar", defaultValue = "false") boolean clearAvatar,
                                    BindingResult bindingResult,
                                    RedirectAttributes redirectAttributes) {
         if (bindingResult.hasErrors()) {
@@ -184,6 +205,46 @@ public class TeamMemberAdminController {
 
             // Сохраняем существующие связи с проектами
             TeamMember existingMember = existingMemberOpt.get();
+            // ========== ТОЛЬКО ЭТОТ БЛОК ДОБАВЛЯЕМ ==========
+            // 1. Обработка флага удаления аватарки
+            if (clearAvatar) {
+                // Удаляем файл если он есть
+                if (existingMember.getAvatarPath() != null && !existingMember.getAvatarPath().isEmpty()) {
+                    try {
+                        fileStorageService.deleteFile(existingMember.getAvatarPath());
+                    } catch (Exception e) {
+                        // Логируем ошибку, но не прерываем выполнение
+                        System.err.println("Ошибка при удалении аватарки: " + e.getMessage());
+                    }
+                }
+                teamMember.setAvatarPath(null); // Очищаем путь
+            }
+            // 2. Обработка загрузки новой аватарки
+            else if (avatarFile != null && !avatarFile.isEmpty()) {
+                try {
+                    // Удаляем старый файл если есть
+                    if (existingMember.getAvatarPath() != null && !existingMember.getAvatarPath().isEmpty()) {
+                        try {
+                            fileStorageService.deleteFile(existingMember.getAvatarPath());
+                        } catch (Exception e) {
+                            // Логируем, но продолжаем
+                            System.err.println("Ошибка при удалении старой аватарки: " + e.getMessage());
+                        }
+                    }
+
+                    // Сохраняем новый файл
+                    String fileName = fileStorageService.storeFile(avatarFile);
+                    teamMember.setAvatarPath(fileName);
+                } catch (Exception e) {
+                    redirectAttributes.addFlashAttribute("errorMessage",
+                            "Ошибка при загрузке аватарки: " + e.getMessage());
+                    return "redirect:/admin/team-members/edit/" + id;
+                }
+            }
+            // 3. Сохраняем существующую аватарку
+            else {
+                teamMember.setAvatarPath(existingMember.getAvatarPath());
+            }
             teamMember.setProjects(existingMember.getProjects());
             teamMember.setId(id); // Убедимся, что ID сохраняется
 

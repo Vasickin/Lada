@@ -12,6 +12,7 @@ import com.community.cms.domain.service.content.PhotoGalleryService;
 import com.community.cms.domain.service.content.ProjectService;
 import com.community.cms.domain.service.people.TeamMemberService;
 import com.community.cms.domain.service.people.PartnerService;
+import jakarta.annotation.Nonnull;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
@@ -343,16 +344,7 @@ public class ProjectAdminController {
             }
 
             // Формирование сообщения об успехе
-            String successMessage = "Проект успешно создан";
-            if (selectedTeamMemberIds != null && !selectedTeamMemberIds.trim().isEmpty()) {
-                successMessage += " с командой из " + selectedTeamMemberIds.split(",").length + " человек";
-            }
-            if (selectedPartnerIds != null && !selectedPartnerIds.trim().isEmpty()) {
-                successMessage += ", партнерами: " + selectedPartnerIds.split(",").length;
-            }
-            if (selectedPhotoIds != null && !selectedPhotoIds.trim().isEmpty()) {
-                successMessage += " и " + selectedPhotoIds.split(",").length + " фото";
-            }
+            String successMessage = getSuccessMessage(selectedTeamMemberIds, selectedPartnerIds, selectedPhotoIds);
 
             redirectAttributes.addFlashAttribute("successMessage", successMessage);
             return "redirect:/admin/projects";
@@ -363,6 +355,21 @@ public class ProjectAdminController {
             bindingResult.reject("error.project", "Ошибка при создании проекта: " + e.getMessage());
             return "admin/projects/create";
         }
+    }
+
+    @Nonnull
+    private static String getSuccessMessage(String selectedTeamMemberIds, String selectedPartnerIds, String selectedPhotoIds) {
+        String successMessage = "Проект успешно создан";
+        if (selectedTeamMemberIds != null && !selectedTeamMemberIds.trim().isEmpty()) {
+            successMessage += " с командой из " + selectedTeamMemberIds.split(",").length + " человек";
+        }
+        if (selectedPartnerIds != null && !selectedPartnerIds.trim().isEmpty()) {
+            successMessage += ", партнерами: " + selectedPartnerIds.split(",").length;
+        }
+        if (selectedPhotoIds != null && !selectedPhotoIds.trim().isEmpty()) {
+            successMessage += " и " + selectedPhotoIds.split(",").length + " фото";
+        }
+        return successMessage;
     }
 
     // ================== РЕДАКТИРОВАНИЕ ПРОЕКТА ==================
