@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="ru" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+
+<!-- HEADER FRAGMENT -->
+<head th:replace="fragments/header :: html-head(${pageTitle})">
+  <!-- Контент заменяется фрагментом хедера -->
+</head>
+
+<body>
+<!-- NAVIGATION FRAGMENT -->
+<div th:replace="fragments/navigation :: main-navigation"></div>
+
+<!-- BANNER FRAGMENT -->
+<div th:replace="fragments/banner :: header-banner('Наша команда - сердце культурных инициатив')"></div>
+
+<main class="container my-5 py-4">
+  <!--
+      HERO INTRODUCTION SECTION
+      Берем данные из модели контроллера
+  -->
+  <div class="row mb-5">
+    <div class="col-12 text-center">
+      <h1 class="section-title" th:text="${pageTitle}">Наша команда</h1>
+      <p class="lead text-muted" th:text="${metaDescription}">
+        Творческие и увлеченные люди, которые делают культурные события реальностью.
+        Наша команда объединяет профессионалов в области организации праздников,
+        фестивалей, конкурсов и общественных мероприятий.
+      </p>
+
+      <!-- Информация о количестве участников -->
+      <div class="mt-3">
+                <span class="badge bg-primary fs-6">
+                    <i class="bi bi-people-fill me-1"></i>
+                    <span th:text="${teamSize}">0</span> участников
+                </span>
+      </div>
+    </div>
+  </div>
+
+  <!--
+      TEAM STRUCTURE SECTION
+      Показываем только если есть участники
+  -->
+  <div class="row mb-5" th:if="${teamMembers != null and !teamMembers.isEmpty()}">
+    <div class="col-12">
+      <div class="structure-card p-4 rounded-3 text-center">
+        <h3 class="fw-bold mb-3">Как мы работаем</h3>
+        <p class="text-muted mb-0">
+          Каждый член нашей команды вносит уникальный вклад в создание
+          запоминающихся культурных событий и праздников для нашего сообщества.
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <!--
+      TEAM MEMBERS SECTION
+      Динамическое отображение участников из базы данных
+  -->
+  <div class="row mb-5" th:if="${teamMembers != null and !teamMembers.isEmpty()}">
+    <div class="col-12 mb-4">
+      <h2 class="text-center fw-bold mb-4 section-subtitle">
+        <span th:if="${keyMembers}">Руководство и координация</span>
+        <span th:if="${sortedByName}">Наша команда (по алфавиту)</span>
+        <span th:if="${keyMembers == null and sortedByName == null}">Наша команда</span>
+      </h2>
+    </div>
+
+    <!--
+        ЦИКЛ ПО УЧАСТНИКАМ КОМАНДЫ
+        Используем Thymeleaf для динамического отображения
+    -->
+    <div th:each="member, stat : ${teamMembers}"
+         class="col-lg-4 col-md-6 mb-4">
+      <div class="card team-card border-0 h-100">
+        <div class="card-body p-4 text-center">
+
+          <!-- АВАТАР ИЛИ ИНИЦИАЛЫ -->
+          <div class="team-avatar mb-3">
+            <div th:if="${member.hasAvatar()}" class="avatar-image">
+              <img th:src="${member.avatarPath}"
+                   th:alt="${member.fullName}"
+                   class="rounded-circle"
+                   style="width: 100px; height: 100px; object-fit: cover;">
+            </div>
+            <div th:unless="${member.hasAvatar()}" class="avatar-placeholder">
+              <span th:text="${member.initials}" class="fw-bold">ИП</span>
+            </div>
+          </div>
+
+          <!-- ИМЯ И ДОЛЖНОСТЬ -->
+          <h4 class="card-title fw-bold mb-1" th:text="${member.fullName}">Имя Фамилия</h4>
+          <p class="text-primary mb-3" th:text="${member.position}">Должность / Роль</p>
+
+          <!-- БИОГРАФИЯ (если есть) -->
+          <p class="card-text text-muted mb-4"
+             th:if="${member.hasBio()}"
+             th:text="${#strings.abbreviate(member.bio, 150)}">
+            Краткое описание профессионального опыта...
+          </p>
+          <p class="card-text text-muted mb-4"
+             th:if="${member.hasBio() and member.bio.length() <= 100}"
+             th:text="${member.bio}">
+            Краткое описание...
+          </p>
+          <p class="card-text text-muted mb-4"
+             th:unless="${member.hasBio()}">
+            Профессиональный опыт и вклад в проекты организации.
+          </p>
+
+          <!-- КОНТАКТНЫЕ/ИНФОРМАЦИОННЫЕ БЕЙДЖИ -->
+          <div class="team-info mt-auto">
+            <!-- Бейдж контактов -->
+            <span th:if="${member.hasContacts()}"
+                  class="badge bg-info text-dark me-1 mb-1">
+                            <i class="bi bi-telephone me-1"></i>Контакты
+                        </span>
+
+            <!-- Бейдж социальных сетей -->
+            <span th:if="${member.hasSocialLinks()}"
+                  class="badge bg-light text-dark me-1 mb-1">
+                            <i class="bi bi-share me-1"></i>Соцсети
+                        </span>
+
+            <!-- Бейдж биографии -->
+            <span th:if="${member.hasBio()}"
+                  class="badge bg-light text-dark mb-1">
+                            <i class="bi bi-card-text me-1"></i>Опыт
+                        </span>
+          </div>
+
+          <!-- ССЫЛКА НА ДЕТАЛЬНУЮ СТРАНИЦУ -->
+          <div class="mt-3">
+            <a th:href="@{/team/{id}(id=${stat.index + 1})}"
+               class="btn btn-sm btn-outline-primary">
+              <i class="bi bi-person-circle me-1"></i>Подробнее
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!--
+      ЕСЛИ КОМАНДА ПУСТАЯ
+      Показываем сообщение если нет участников
+  -->
+  <div class="row mb-5" th:if="${teamMembers == null or teamMembers.isEmpty()}">
+    <div class="col-12 text-center py-5">
+      <i class="bi bi-people display-1 text-muted mb-4"></i>
+      <h3>Команда формируется</h3>
+      <p class="text-muted mb-4">
+        Информация о команде будет доступна в ближайшее время.
+        Наши специалисты работают над наполнением раздела.
+      </p>
+
+      <!-- Ссылка на контакты для желающих присоединиться -->
+      <a href="/contact" class="btn btn-primary" th:href="@{/contact}">
+        <i class="bi bi-envelope me-1"></i>Хотите присоединиться?
+      </a>
+    </div>
+  </div>
+
+  <!--
+      ДОПОЛНИТЕЛЬНЫЕ ВАРИАНТЫ ОТОБРАЖЕНИЯ
+      Ссылки на разные представления команды
+  -->
+  <div class="row mb-4" th:if="${teamMembers != null and !teamMembers.isEmpty()}">
+    <div class="col-12">
+      <div class="d-flex justify-content-center flex-wrap gap-2">
+        <a th:href="@{/team}"
+           class="btn btn-sm"
+           th:classappend="${keyMembers == null and sortedByName == null} ? 'btn-primary' : 'btn-outline-primary'">
+          <i class="bi bi-sort-numeric-down me-1"></i>По порядку
+        </a>
+        <a th:href="@{/team/sorted-by-name}"
+           class="btn btn-sm"
+           th:classappend="${sortedByName} ? 'btn-primary' : 'btn-outline-primary'">
+          <i class="bi bi-sort-alpha-down me-1"></i>По алфавиту
+        </a>
+        <a th:href="@{/team/key-members}"
+           class="btn btn-sm"
+           th:classappend="${keyMembers} ? 'btn-primary' : 'btn-outline-primary'">
+          <i class="bi bi-star me-1"></i>Ключевые
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!--
+      JOIN OUR TEAM SECTION
+      Призыв к действию для волонтеров и новых членов
+      Показываем только если есть участники
+  -->
+  <div class="row mt-5" th:if="${teamMembers != null and !teamMembers.isEmpty()}">
+    <div class="col-12 text-center">
+      <div class="join-team p-5 rounded-3">
+        <h3 class="fw-bold mb-3">Хотите присоединиться к нашей команде?</h3>
+        <p class="text-muted mb-4">
+          Мы всегда рады творческим и увлеченным людям, которые хотят
+          вносить вклад в развитие культурной жизни нашего сообщества.
+        </p>
+        <div class="d-flex justify-content-center flex-wrap gap-3">
+          <a href="/contact" class="btn btn-primary-custom" th:href="@{/contact}">
+            <i class="bi bi-envelope me-1"></i>Связаться с нами
+          </a>
+          <a href="/patrons" class="btn btn-outline-primary" th:href="@{/patrons}">
+            <i class="bi bi-people me-1"></i>Стать волонтером
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<!-- FOOTER FRAGMENT -->
+<div th:replace="fragments/footer :: main-footer"></div>
+
+<!-- SCRIPTS FRAGMENT -->
+<div th:replace="fragments/scripts :: main-scripts"></div>
+
+<!--
+    ADDITIONAL STYLES FOR TEAM PAGE
+    Сохраняем оригинальные стили с небольшими улучшениями
+-->
+<style>
+  /* Team card styling */
+  .team-card {
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+      background: linear-gradient(135deg, var(--surface), var(--background));
+      border: 1px solid var(--border-light) !important;
+  }
+
+  .team-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+  }
+
+  /* Avatar placeholder styling */
+  .avatar-placeholder {
+      width: 100px;
+      height: 100px;
+      margin: 0 auto;
+      background: linear-gradient(135deg, var(--primary-light), var(--primary));
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.5rem;
+      font-weight: bold;
+      color: white;
+  }
+
+  /* Avatar image styling */
+  .avatar-image {
+      width: 100px;
+      height: 100px;
+      margin: 0 auto;
+      border-radius: 50%;
+      overflow: hidden;
+      border: 3px solid var(--primary-light);
+  }
+
+  /* Structure card styling */
+  .structure-card {
+      background: linear-gradient(135deg, var(--primary-light), var(--primary));
+      color: white;
+      border: none;
+  }
+
+  .structure-card h3,
+  .structure-card p {
+      color: white !important;
+  }
+
+  /* Join team section styling */
+  .join-team {
+      background: linear-gradient(135deg, var(--surface), var(--background));
+      border: 1px solid var(--border-light);
+  }
+
+  /* Section subtitle */
+  .section-subtitle {
+      font-size: var(--text-2xl);
+      color: var(--text-primary);
+      position: relative;
+      padding-bottom: 1rem;
+  }
+
+  .section-subtitle::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 60px;
+      height: 3px;
+      background: var(--primary);
+      border-radius: 2px;
+  }
+
+  /* Team info badges */
+  .team-info .badge {
+      font-size: 0.75rem;
+      padding: 0.4rem 0.7rem;
+      border: 1px solid var(--border-light);
+  }
+
+  /* Responsive adjustments */
+  @media (max-width: 768px) {
+      .avatar-placeholder,
+      .avatar-image {
+          width: 80px;
+          height: 80px;
+      }
+
+      .avatar-placeholder {
+          font-size: 1.2rem;
+      }
+
+      .team-card .card-body {
+          padding: 1.5rem !important;
+      }
+  }
+
+  /* Bootstrap Icons support */
+  @import url("https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css");
+</style>
+</body>
+</html>

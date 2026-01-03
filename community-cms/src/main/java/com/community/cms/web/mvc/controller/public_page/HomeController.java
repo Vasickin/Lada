@@ -3,6 +3,10 @@ package com.community.cms.web.mvc.controller.public_page;
 import com.community.cms.domain.model.page.CustomPage;
 import com.community.cms.domain.enums.PageType;
 import com.community.cms.domain.service.page.CustomPageService;
+import com.community.cms.domain.model.people.TeamMember;
+import com.community.cms.domain.service.people.TeamMemberService;
+import com.community.cms.web.mvc.dto.people.TeamMemberDTO;
+import com.community.cms.web.mvc.mapper.people.TeamMemberMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -14,235 +18,262 @@ import java.util.Optional;
 
 /**
  * Контроллер для главной страницы и публичных разделов сайта.
- *
- * <p>Обеспечивает отображение публичной части сайта, доступной всем посетителям
- * без необходимости аутентификации. Включает главную страницу, информацию об организации
- * и другие публичные разделы.</p>
- *
- * <p>Обновлен для работы с динамическим контентом из базы данных.
- * Если контент отсутствует - страница отображается пустой.</p>
- *
- * @author Vasickin
- * @version 1.1
- * @since 2025
  */
 @Controller
 public class HomeController {
 
     private final CustomPageService pageService;
+    private final TeamMemberService teamMemberService;
+    private final TeamMemberMapper teamMemberMapper;
 
     /**
-     * Конструктор с внедрением зависимости CustomPageService.
-     *
-     * @param pageService сервис для работы со страницами
+     * Конструктор с внедрением зависимостей.
      */
     @Autowired
-    public HomeController(CustomPageService pageService) {
+    public HomeController(CustomPageService pageService,
+                          TeamMemberService teamMemberService,
+                          TeamMemberMapper teamMemberMapper) {
         this.pageService = pageService;
+        this.teamMemberService = teamMemberService;
+        this.teamMemberMapper = teamMemberMapper;
     }
 
-    /**
-     * Отображает главную страницу сайта.
-     *
-     * <p>На главной странице отображаются опубликованные страницы организации,
-     * краткая информация и навигационные элементы для посетителей.</p>
-     *
-     * @param model модель для передачи данных в представление
-     * @return имя шаблона главной страницы ("index")
-     */
+    // ================== СУЩЕСТВУЮЩИЕ МЕТОДЫ (БЕЗ ИЗМЕНЕНИЙ) ==================
+
     @GetMapping("/")
     public String home(Model model) {
-        // Получаем опубликованные страницы для отображения на главной
         List<CustomPage> publishedPages = pageService.findAllPublishedPages();
         model.addAttribute("publishedPages", publishedPages);
-
         return "index";
     }
 
-    /**
-     * Отображает страницу "О нас" с динамическим контентом.
-     * Если страница не найдена или не опубликована - отображается пустой шаблон.
-     *
-     * @param model модель для передачи данных в представление
-     * @return имя шаблона страницы "О нас" ("about")
-     */
     @GetMapping("/about")
     public String about(Model model) {
         Optional<CustomPage> aboutPage = pageService.findPublishedPageByType(PageType.ABOUT);
-
-        // Передаем флаг наличия контента и саму страницу если она есть
         model.addAttribute("hasContent", aboutPage.isPresent());
         aboutPage.ifPresent(page -> {
             model.addAttribute("page", page);
             model.addAttribute("pageTitle", page.getTitle());
             model.addAttribute("metaDescription", page.getMetaDescription());
         });
-
-        // Если контента нет - устанавливаем значения по умолчанию
         if (aboutPage.isEmpty()) {
             model.addAttribute("pageTitle", "О нас");
             model.addAttribute("metaDescription", "Информация о нашей организации");
         }
-
         return "about";
     }
 
-    /**
-     * Отображает страницу "Наши проекты" с динамическим контентом.
-     * Если страница не найдена или не опубликована - отображается пустой шаблон.
-     *
-     * @param model модель для передачи данных в представление
-     * @return имя шаблона страницы "Наши проекты" ("projects")
-     */
     @GetMapping("/projects")
     public String projects(Model model) {
         Optional<CustomPage> projectsPage = pageService.findPublishedPageByType(PageType.PROJECTS);
-
         model.addAttribute("hasContent", projectsPage.isPresent());
         projectsPage.ifPresent(page -> {
             model.addAttribute("page", page);
             model.addAttribute("pageTitle", page.getTitle());
             model.addAttribute("metaDescription", page.getMetaDescription());
         });
-
         if (projectsPage.isEmpty()) {
             model.addAttribute("pageTitle", "Наши проекты");
             model.addAttribute("metaDescription", "Наши текущие и завершенные проекты");
         }
-
         return "projects";
     }
 
-    /**
-     * Отображает страницу "Галерея" с динамическим контентом.
-     * Если страница не найдена или не опубликована - отображается пустой шаблон.
-     *
-     * @param model модель для передачи данных в представление
-     * @return имя шаблона страницы "Галерея" ("gallery")
-     */
     @GetMapping("/gallery")
     public String gallery(Model model) {
         Optional<CustomPage> galleryPage = pageService.findPublishedPageByType(PageType.GALLERY);
-
         model.addAttribute("hasContent", galleryPage.isPresent());
         galleryPage.ifPresent(page -> {
             model.addAttribute("page", page);
             model.addAttribute("pageTitle", page.getTitle());
             model.addAttribute("metaDescription", page.getMetaDescription());
         });
-
         if (galleryPage.isEmpty()) {
             model.addAttribute("pageTitle", "Галерея");
             model.addAttribute("metaDescription", "Фотографии и видео наших мероприятий");
         }
-
         return "gallery";
     }
 
-    /**
-     * Отображает страницу "Меценатам" с динамическим контентом.
-     * Если страница не найдена или не опубликована - отображается пустой шаблон.
-     *
-     * @param model модель для передачи данных в представление
-     * @return имя шаблона страницы "Меценатам" ("patrons")
-     */
     @GetMapping("/patrons")
     public String patrons(Model model) {
         Optional<CustomPage> patronsPage = pageService.findPublishedPageByType(PageType.PATRONS);
-
         model.addAttribute("hasContent", patronsPage.isPresent());
         patronsPage.ifPresent(page -> {
             model.addAttribute("page", page);
             model.addAttribute("pageTitle", page.getTitle());
             model.addAttribute("metaDescription", page.getMetaDescription());
         });
-
         if (patronsPage.isEmpty()) {
             model.addAttribute("pageTitle", "Меценатам");
             model.addAttribute("metaDescription", "Информация для меценатов и партнеров");
         }
-
         return "patrons";
     }
 
-    /**
-     * Отображает страницу "Контакты" с динамическим контентом.
-     * Если страница не найдена или не опубликована - отображается пустой шаблон.
-     *
-     * @param model модель для передачи данных в представление
-     * @return имя шаблона страницы "Контакты" ("contact")
-     */
     @GetMapping("/contact")
     public String contact(Model model) {
         Optional<CustomPage> contactPage = pageService.findPublishedPageByType(PageType.CONTACT);
-
         model.addAttribute("hasContent", contactPage.isPresent());
         contactPage.ifPresent(page -> {
             model.addAttribute("page", page);
             model.addAttribute("pageTitle", page.getTitle());
             model.addAttribute("metaDescription", page.getMetaDescription());
         });
-
         if (contactPage.isEmpty()) {
             model.addAttribute("pageTitle", "Контакты");
             model.addAttribute("metaDescription", "Контактная информация организации");
         }
-
         return "contact";
     }
 
-    /**
-     * Универсальный обработчик для динамических страниц по slug.
-     * Используется для произвольных страниц созданных через админку.
-     *
-     * @param slug уникальный идентификатор страницы
-     * @param model модель для передачи данных в представление
-     * @return имя шаблона или страница 404 если не найдено
-     */
     @GetMapping("/pages/{slug}")
     public String showPublicPage(@PathVariable String slug, Model model) {
         Optional<CustomPage> page = pageService.findPageBySlugAndPublished(slug, true);
-
         if (page.isPresent()) {
             CustomPage foundPage = page.get();
             model.addAttribute("page", foundPage);
             model.addAttribute("pageTitle", foundPage.getTitle());
             model.addAttribute("metaDescription", foundPage.getMetaDescription());
             model.addAttribute("hasContent", true);
-
-            // Для кастомных страниц используем общий шаблон
             return "pages/view";
         } else {
-            // Страница не найдена или не опубликована
             return "error/404";
         }
     }
 
-    /**
-     * Отображает тестовую страницу для проверки системы фрагментов.
-     *
-     * <p>Страница предназначена для безопасного тестирования каждого фрагмента
-     * по отдельности перед их интеграцией в основные страницы сайта.
-     * Позволяет идентифицировать конкретный фрагмент вызывающий ошибки.</p>
-     *
-     * @return имя шаблона тестовой страницы ("test-fragments")
-     */
     @GetMapping("/test-fragments")
     public String testFragments() {
         return "test-fragments";
     }
 
-    /**
-     * Возвращает список всех опубликованных основных страниц сайта.
-     * Используется для навигации или карты сайта.
-     *
-     * @param model модель для передачи данных в представление
-     * @return список страниц
-     */
     @GetMapping("/sitemap")
     public String sitemap(Model model) {
         List<CustomPage> sitePages = pageService.findPublishedSitePages();
         model.addAttribute("sitePages", sitePages);
         return "sitemap";
+    }
+
+    // ================== НОВЫЕ МЕТОДЫ ДЛЯ КОМАНДЫ ==================
+
+    /**
+     * Отображает страницу "Наша команда" со списком активных участников.
+     */
+    @GetMapping("/team")
+    public String showTeamPage(Model model) {
+        try {
+            // Получаем активных членов команды, отсортированных по порядку
+            List<TeamMember> activeMembers = teamMemberService.findAllActiveOrderBySortOrder();
+
+            // Преобразуем в DTO для безопасного отображения
+            List<TeamMemberDTO> teamMembers = teamMemberMapper.toDTOList(activeMembers);
+
+            // Мета-данные для SEO
+            model.addAttribute("teamMembers", teamMembers);
+            model.addAttribute("pageTitle", "Наша команда");
+            model.addAttribute("metaDescription", "Команда организации 'ЛАДА' - талантливые специалисты, художники и организаторы");
+            model.addAttribute("teamSize", teamMembers.size());
+            model.addAttribute("hasContent", !teamMembers.isEmpty());
+
+            return "public/team/list";
+
+        } catch (Exception e) {
+            // Логируем ошибку
+            System.err.println("Ошибка при загрузке страницы команды: " + e.getMessage());
+            model.addAttribute("error", "Временные технические проблемы. Пожалуйста, попробуйте позже.");
+            return "error/500";
+        }
+    }
+
+    /**
+     * Отображает детальную страницу члена команды.
+     */
+    @GetMapping("/team/{id}")
+    public String showTeamMember(@PathVariable Long id, Model model) {
+        try {
+            Optional<TeamMember> teamMemberOpt = teamMemberService.findById(id);
+
+            // Проверяем существует ли член команды и активен ли он
+            if (teamMemberOpt.isEmpty()) {
+                model.addAttribute("errorTitle", "Член команды не найден");
+                model.addAttribute("errorMessage", "Запрошенный участник команды не существует.");
+                return "error/404";
+            }
+
+            TeamMember teamMember = teamMemberOpt.get();
+            if (!teamMember.isActive()) {
+                model.addAttribute("errorTitle", "Член команды не доступен");
+                model.addAttribute("errorMessage", "Данный участник команды временно не отображается на сайте.");
+                return "error/404";
+            }
+
+            // Преобразуем в DTO
+            TeamMemberDTO memberDTO = teamMemberMapper.toDTO(teamMember);
+
+            // Мета-данные для SEO
+            model.addAttribute("member", memberDTO);
+            model.addAttribute("pageTitle", memberDTO.getFullName() + " - " + memberDTO.getPosition());
+            model.addAttribute("metaDescription",
+                    memberDTO.getPosition() + " организации 'ЛАДА'. " +
+                            (memberDTO.getBio() != null && memberDTO.getBio().length() > 150 ?
+                                    memberDTO.getBio().substring(0, 150) + "..." :
+                                    "Член команды организации 'ЛАДА'."));
+            model.addAttribute("hasContent", true);
+
+            return "public/team/detail";
+
+        } catch (Exception e) {
+            System.err.println("Ошибка при загрузке страницы члена команды: " + e.getMessage());
+            model.addAttribute("error", "Временные технические проблемы. Пожалуйста, попробуйте позже.");
+            return "error/500";
+        }
+    }
+
+    /**
+     * Альтернативный вариант отображения команды - по алфавиту.
+     */
+    @GetMapping("/team/sorted-by-name")
+    public String showTeamSortedByName(Model model) {
+        try {
+            List<TeamMember> activeMembers = teamMemberService.findAllActiveOrderByName();
+            List<TeamMemberDTO> teamMembers = teamMemberMapper.toDTOList(activeMembers);
+
+            model.addAttribute("teamMembers", teamMembers);
+            model.addAttribute("pageTitle", "Наша команда (по алфавиту)");
+            model.addAttribute("metaDescription", "Команда организации 'ЛАДА' в алфавитном порядке");
+            model.addAttribute("teamSize", teamMembers.size());
+            model.addAttribute("sortedByName", true);
+            model.addAttribute("hasContent", !teamMembers.isEmpty());
+
+            return "public/team/list";
+
+        } catch (Exception e) {
+            System.err.println("Ошибка при загрузке команды по имени: " + e.getMessage());
+            return "redirect:/team";
+        }
+    }
+
+    /**
+     * Страница с ключевыми членами команды (руководство).
+     */
+    @GetMapping("/team/key-members")
+    public String showKeyTeamMembers(Model model) {
+        try {
+            List<TeamMember> keyMembers = teamMemberService.findKeyTeamMembers(10);
+            List<TeamMemberDTO> teamMembers = teamMemberMapper.toDTOList(keyMembers);
+
+            model.addAttribute("teamMembers", teamMembers);
+            model.addAttribute("pageTitle", "Ключевая команда");
+            model.addAttribute("metaDescription", "Руководство и ключевые специалисты организации 'ЛАДА'");
+            model.addAttribute("teamSize", teamMembers.size());
+            model.addAttribute("keyMembers", true);
+            model.addAttribute("hasContent", !teamMembers.isEmpty());
+
+            return "public/team/list";
+
+        } catch (Exception e) {
+            System.err.println("Ошибка при загрузке ключевых членов команды: " + e.getMessage());
+            return "redirect:/team";
+        }
     }
 }
