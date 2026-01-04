@@ -36,6 +36,7 @@ public class TeamMemberMapper {
         TeamMemberDTO dto = new TeamMemberDTO();
 
         // Основные данные для отображения
+        dto.setId(teamMember.getId());
         dto.setFullName(teamMember.getFullName());
         dto.setPosition(teamMember.getPosition());
         dto.setBio(teamMember.getBio());

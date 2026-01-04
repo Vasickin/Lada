@@ -15,6 +15,7 @@ public class TeamMemberDTO {
 
     // ================== ОСНОВНЫЕ ДАННЫЕ ДЛЯ ОТОБРАЖЕНИЯ ==================
 
+    private Long id;
     private String fullName;
     private String position;
     private String bio;
@@ -41,6 +42,10 @@ public class TeamMemberDTO {
 
     // ================== ГЕТТЕРЫ И СЕТТЕРЫ ==================
 
+    public Long getId() {
+        return id;
+    }
+
     public String getFullName() {
         return fullName;
     }
@@ -59,6 +64,10 @@ public class TeamMemberDTO {
 
     public String getBio() {
         return bio;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
     }
 
     public void setBio(String bio) {
