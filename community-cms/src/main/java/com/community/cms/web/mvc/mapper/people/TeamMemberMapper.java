@@ -41,6 +41,17 @@ public class TeamMemberMapper {
         dto.setPosition(teamMember.getPosition());
         dto.setBio(teamMember.getBio());
         dto.setAvatarPath(teamMember.getAvatarPath());
+
+        // ФИКС: Добавляем префикс к пути аватара
+        String avatarPath = teamMember.getAvatarPath();
+        if (avatarPath != null && !avatarPath.trim().isEmpty()) {
+            if (!avatarPath.startsWith("/uploads/") && !avatarPath.startsWith("uploads/")) {
+                dto.setAvatarPath("/uploads/" + avatarPath);
+            } else {
+                dto.setAvatarPath(avatarPath);
+            }
+        }
+
         dto.setInitials(teamMember.getInitials());
         dto.setSortOrder(teamMember.getSortOrder());
 
