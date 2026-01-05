@@ -7,14 +7,25 @@ import com.community.cms.domain.model.people.TeamMember;
 import com.community.cms.domain.service.people.TeamMemberService;
 import com.community.cms.web.mvc.dto.people.TeamMemberDTO;
 import com.community.cms.web.mvc.mapper.people.TeamMemberMapper;
+
+import com.community.cms.domain.model.content.Project;
+import com.community.cms.domain.model.content.Project.ProjectStatus;
+import com.community.cms.domain.service.content.ProjectService;
+import com.community.cms.domain.service.content.PhotoGalleryService;
+import com.community.cms.domain.service.people.PartnerService;
+import com.community.cms.web.mvc.dto.content.ProjectDTO;
+import com.community.cms.web.mvc.dto.content.PhotoDTO;
+import com.community.cms.web.mvc.mapper.content.ProjectMapper;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestParam;
 
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * Контроллер для главной страницы и публичных разделов сайта.
@@ -25,6 +36,10 @@ public class HomeController {
     private final CustomPageService pageService;
     private final TeamMemberService teamMemberService;
     private final TeamMemberMapper teamMemberMapper;
+    private final ProjectService projectService;
+    private final ProjectMapper projectMapper;
+    private final PhotoGalleryService photoGalleryService;
+    private final PartnerService partnerService;
 
     /**
      * Конструктор с внедрением зависимостей.
@@ -32,10 +47,18 @@ public class HomeController {
     @Autowired
     public HomeController(CustomPageService pageService,
                           TeamMemberService teamMemberService,
-                          TeamMemberMapper teamMemberMapper) {
+                          TeamMemberMapper teamMemberMapper,
+                          ProjectService projectService,
+                          ProjectMapper projectMapper,
+                          PhotoGalleryService photoGalleryService,
+                          PartnerService partnerService) {
         this.pageService = pageService;
         this.teamMemberService = teamMemberService;
         this.teamMemberMapper = teamMemberMapper;
+        this.projectService = projectService;
+        this.projectMapper = projectMapper;
+        this.photoGalleryService = photoGalleryService;
+        this.partnerService = partnerService;
     }
 
     // ================== СУЩЕСТВУЮЩИЕ МЕТОДЫ (БЕЗ ИЗМЕНЕНИЙ) ==================
@@ -63,20 +86,179 @@ public class HomeController {
         return "about";
     }
 
+    // ================== НОВАЯ СТРАНИЦА "НАШИ ПРОЕКТЫ" ==================
+
+    /**
+     * Новая красивая страница "Наши проекты" с фильтрацией.
+     * URL: /projects
+     */
     @GetMapping("/projects")
-    public String projects(Model model) {
-        Optional<CustomPage> projectsPage = pageService.findPublishedPageByType(PageType.PROJECTS);
-        model.addAttribute("hasContent", projectsPage.isPresent());
-        projectsPage.ifPresent(page -> {
-            model.addAttribute("page", page);
-            model.addAttribute("pageTitle", page.getTitle());
-            model.addAttribute("metaDescription", page.getMetaDescription());
-        });
-        if (projectsPage.isEmpty()) {
+    public String showProjectsList(Model model,
+                                   @RequestParam(required = false) String status,
+                                   @RequestParam(required = false) String category,
+                                   @RequestParam(required = false) Integer year,
+                                   @RequestParam(required = false) String search,
+                                   @RequestParam(defaultValue = "0") int page,
+                                   @RequestParam(defaultValue = "12") int size) {
+
+        try {
+            // ================== ПОДГОТОВКА ДАННЫХ ДЛЯ ФИЛЬТРОВ ==================
+
+            // Все категории для фильтра
+            List<String> allCategories = projectService.findAllDistinctCategories();
+            model.addAttribute("categories", allCategories);
+
+            // Все статусы для фильтра
+            List<ProjectStatus> allStatuses = Arrays.asList(ProjectStatus.values());
+            model.addAttribute("statuses", allStatuses);
+
+            // Все годы для фильтра (из событий проектов)
+            List<Integer> allYears = projectService.findAll().stream()
+                    .filter(p -> p.getEventDate() != null)
+                    .map(p -> p.getEventDate().getYear())
+                    .distinct()
+                    .sorted(Comparator.reverseOrder())
+                    .collect(Collectors.toList());
+            model.addAttribute("years", allYears);
+
+            // ================== КАРУСЕЛЬ СОБЫТИЙ ==================
+
+            // Получаем все активные проекты для карусели
+            List<Project> activeProjects = projectService.findAllActive();
+
+            // Перемешиваем в случайном порядке
+            List<Project> shuffledProjects = new ArrayList<>(activeProjects);
+            Collections.shuffle(shuffledProjects);
+
+            // Берем максимум 5 проектов для карусели
+            List<Project> carouselProjects = shuffledProjects.stream()
+                    .limit(5)
+                    .collect(Collectors.toList());
+
+            // Преобразуем в DTO для карусели
+            List<ProjectDTO> carouselDTOs = projectMapper.toCarouselDTOList(carouselProjects);
+            model.addAttribute("carouselProjects", carouselDTOs);
+
+            // ================== ФИЛЬТРАЦИЯ И ПОИСК ПРОЕКТОВ ==================
+
+            List<Project> filteredProjects = new ArrayList<>();
+
+            // Базовый список всех проектов (для фильтрации в памяти как в админке)
+            List<Project> allProjects = projectService.findAll();
+
+            // Применяем фильтры последовательно
+            for (Project project : allProjects) {
+                boolean include = true;
+
+                // Фильтр по статусу
+                if (status != null && !status.isEmpty()) {
+                    try {
+                        ProjectStatus filterStatus = ProjectStatus.valueOf(status.toUpperCase());
+                        if (project.getStatus() != filterStatus) {
+                            include = false;
+                        }
+                    } catch (IllegalArgumentException e) {
+                        // Неверный статус - игнорируем фильтр
+                    }
+                }
+
+                // Фильтр по категории
+                if (include && category != null && !category.isEmpty() && !category.equals("Все категории")) {
+                    if (!category.equals(project.getCategory())) {
+                        include = false;
+                    }
+                }
+
+                // Фильтр по году
+                if (include && year != null) {
+                    if (project.getEventDate() == null || project.getEventDate().getYear() != year) {
+                        include = false;
+                    }
+                }
+
+                // Поиск по названию и описанию
+                if (include && search != null && !search.trim().isEmpty()) {
+                    String searchLower = search.toLowerCase().trim();
+                    boolean foundInTitle = project.getTitle() != null &&
+                            project.getTitle().toLowerCase().contains(searchLower);
+                    boolean foundInDescription = project.getShortDescription() != null &&
+                            project.getShortDescription().toLowerCase().contains(searchLower);
+                    boolean foundInFullDescription = project.getFullDescription() != null &&
+                            project.getFullDescription().toLowerCase().contains(searchLower);
+
+                    if (!foundInTitle && !foundInDescription && !foundInFullDescription) {
+                        include = false;
+                    }
+                }
+
+                if (include) {
+                    filteredProjects.add(project);
+                }
+            }
+
+            // Сортируем по дате создания (новые сначала)
+            filteredProjects.sort(Comparator.comparing(Project::getCreatedAt).reversed());
+
+            // ================== ПАГИНАЦИЯ ==================
+
+            int totalItems = filteredProjects.size();
+            int totalPages = (int) Math.ceil((double) totalItems / size);
+
+            // Корректируем номер страницы
+            if (page < 0) page = 0;
+            if (page >= totalPages && totalPages > 0) page = totalPages - 1;
+
+            int start = page * size;
+            int end = Math.min(start + size, totalItems);
+
+            List<Project> pageContent;
+            if (start >= totalItems || filteredProjects.isEmpty()) {
+                pageContent = Collections.emptyList();
+            } else {
+                pageContent = filteredProjects.subList(start, end);
+            }
+
+            // Преобразуем в DTO для отображения
+            List<ProjectDTO> projectDTOs = projectMapper.toCardDTOList(pageContent);
+
+            // ================== ДОБАВЛЕНИЕ ДАННЫХ В МОДЕЛЬ ==================
+
+            // Основные данные
+            model.addAttribute("projects", projectDTOs);
+            model.addAttribute("totalItems", totalItems);
+            model.addAttribute("totalPages", totalPages);
+            model.addAttribute("currentPage", page);
+            model.addAttribute("pageSize", size);
+
+            // Параметры фильтров (для сохранения состояния формы)
+            model.addAttribute("selectedStatus", status);
+            model.addAttribute("selectedCategory", category);
+            model.addAttribute("selectedYear", year);
+            model.addAttribute("selectedSearch", search);
+
+            // SEO мета-данные
             model.addAttribute("pageTitle", "Наши проекты");
-            model.addAttribute("metaDescription", "Наши текущие и завершенные проекты");
+            model.addAttribute("metaDescription", "Список всех проектов организации 'ЛАДА'. Фильтруйте по категориям, статусу и году.");
+            model.addAttribute("hasContent", !projectDTOs.isEmpty());
+
+            return "public/projects/list";
+
+        } catch (Exception e) {
+            System.err.println("Ошибка при загрузке списка проектов: " + e.getMessage());
+            e.printStackTrace();
+
+            // Возвращаем пустые данные при ошибке
+            model.addAttribute("projects", new ArrayList<ProjectDTO>());
+            model.addAttribute("carouselProjects", new ArrayList<ProjectDTO>());
+            model.addAttribute("categories", new ArrayList<String>());
+            model.addAttribute("statuses", Arrays.asList(ProjectStatus.values()));
+            model.addAttribute("years", new ArrayList<Integer>());
+            model.addAttribute("error", "Временные технические проблемы. Пожалуйста, попробуйте позже.");
+            model.addAttribute("pageTitle", "Наши проекты");
+            model.addAttribute("metaDescription", "Список проектов организации 'ЛАДА'");
+
+            return "public/projects/list";
         }
-        return "projects";
     }
 
     @GetMapping("/gallery")
@@ -154,21 +336,93 @@ public class HomeController {
         return "sitemap";
     }
 
-    // ================== НОВЫЕ МЕТОДЫ ДЛЯ КОМАНДЫ ==================
+    // ================== ДЕТАЛЬНАЯ СТРАНИЦА ПРОЕКТА ==================
 
     /**
-     * Отображает страницу "Наша команда" со списком активных участников.
+     * Детальная страница проекта.
+     * URL: /projects/{slug}
      */
+    @GetMapping("/projects/{slug}")
+    public String showProjectDetail(@PathVariable String slug, Model model) {
+        try {
+            // Ищем проект по slug (только активные для публичного доступа)
+            Optional<Project> projectOpt = projectService.findBySlugForPublic(slug);
+
+            if (projectOpt.isEmpty()) {
+                model.addAttribute("errorTitle", "Проект не найден");
+                model.addAttribute("errorMessage", "Запрошенный проект не существует или недоступен.");
+                return "error/404";
+            }
+
+            Project project = projectOpt.get();
+
+            // Преобразуем в полный DTO
+            ProjectDTO projectDTO = projectMapper.toFullDTO(project);
+
+            // Загружаем ключевые фото через PhotoGalleryService (как в админке)
+            if (projectDTO.getKeyPhotoIds() != null && !projectDTO.getKeyPhotoIds().isEmpty()) {
+                try {
+                    List<PhotoDTO> keyPhotos = new ArrayList<>();
+
+                    // Используем PhotoGalleryService для получения фото (как в ProjectAdminController)
+                    // В реальности нужно реализовать метод для получения PhotoDTO по ID
+                    // Пока используем заглушку
+                    for (Long photoId : projectDTO.getKeyPhotoIds()) {
+                        // TODO: Реализовать получение PhotoDTO через существующий сервис
+                        PhotoDTO photoDTO = new PhotoDTO();
+                        photoDTO.setId(photoId);
+                        photoDTO.setFileName("photo-" + photoId + ".jpg");
+                        photoDTO.setWebPath("/images/projects/" + photoId + ".jpg");
+                        photoDTO.setThumbnailPath("/images/projects/thumbnails/" + photoId + ".jpg");
+                        keyPhotos.add(photoDTO);
+                    }
+
+                    projectDTO.setKeyPhotos(keyPhotos);
+                } catch (Exception e) {
+                    System.err.println("Ошибка при загрузке ключевых фото: " + e.getMessage());
+                    projectDTO.setKeyPhotos(new ArrayList<>());
+                }
+            }
+
+            // Похожие проекты (по категории)
+            List<Project> similarProjects = projectService.findSimilarProjects(
+                    project.getCategory(),
+                    project.getId(),
+                    3
+            );
+            List<ProjectDTO> similarProjectDTOs = projectMapper.toCardDTOList(similarProjects);
+
+            // ================== ДОБАВЛЕНИЕ ДАННЫХ В МОДЕЛЬ ==================
+
+            model.addAttribute("project", projectDTO);
+            model.addAttribute("similarProjects", similarProjectDTOs);
+
+            // SEO мета-данные
+            model.addAttribute("pageTitle", projectDTO.getEffectiveMetaTitle());
+            model.addAttribute("metaDescription", projectDTO.getEffectiveMetaDescription());
+            model.addAttribute("metaKeywords", projectDTO.getMetaKeywords());
+            model.addAttribute("ogImage", projectDTO.getEffectiveOgImagePath());
+
+            return "public/projects/detail";
+
+        } catch (Exception e) {
+            System.err.println("Ошибка при загрузке детальной страницы проекта: " + e.getMessage());
+            e.printStackTrace();
+
+            model.addAttribute("errorTitle", "Ошибка загрузки");
+            model.addAttribute("errorMessage", "Произошла ошибка при загрузке страницы проекта.");
+            return "error/500";
+        }
+    }
+
+    // ================== СУЩЕСТВУЮЩИЕ МЕТОДЫ ДЛЯ КОМАНДЫ (БЕЗ ИЗМЕНЕНИЙ) ==================
+
     @GetMapping("/team")
     public String showTeamPage(Model model) {
         try {
-            // Получаем активных членов команды, отсортированных по порядку
             List<TeamMember> activeMembers = teamMemberService.findAllActiveOrderBySortOrder();
-
-            // Преобразуем в DTO для безопасного отображения
             List<TeamMemberDTO> teamMembers = teamMemberMapper.toDTOList(activeMembers);
 
-            // Мета-данные для SEO
             model.addAttribute("teamMembers", teamMembers);
             model.addAttribute("pageTitle", "Наша команда");
             model.addAttribute("metaDescription", "Команда организации 'ЛАДА' - талантливые специалисты, художники и организаторы");
@@ -178,22 +432,17 @@ public class HomeController {
             return "public/team/list";
 
         } catch (Exception e) {
-            // Логируем ошибку
             System.err.println("Ошибка при загрузке страницы команды: " + e.getMessage());
             model.addAttribute("error", "Временные технические проблемы. Пожалуйста, попробуйте позже.");
             return "error/500";
         }
     }
 
-    /**
-     * Отображает детальную страницу члена команды.
-     */
     @GetMapping("/team/{id}")
     public String showTeamMember(@PathVariable Long id, Model model) {
         try {
             Optional<TeamMember> teamMemberOpt = teamMemberService.findById(id);
 
-            // Проверяем существует ли член команды и активен ли он
             if (teamMemberOpt.isEmpty()) {
                 model.addAttribute("errorTitle", "Член команды не найден");
                 model.addAttribute("errorMessage", "Запрошенный участник команды не существует.");
@@ -207,10 +456,8 @@ public class HomeController {
                 return "error/404";
             }
 
-            // Преобразуем в DTO
             TeamMemberDTO memberDTO = teamMemberMapper.toDTO(teamMember);
 
-            // Мета-данные для SEO
             model.addAttribute("member", memberDTO);
             model.addAttribute("pageTitle", memberDTO.getFullName() + " - " + memberDTO.getPosition());
             model.addAttribute("metaDescription",
@@ -229,9 +476,6 @@ public class HomeController {
         }
     }
 
-    /**
-     * Альтернативный вариант отображения команды - по алфавиту.
-     */
     @GetMapping("/team/sorted-by-name")
     public String showTeamSortedByName(Model model) {
         try {
@@ -253,9 +497,6 @@ public class HomeController {
         }
     }
 
-    /**
-     * Страница с ключевыми членами команды (руководство).
-     */
     @GetMapping("/team/key-members")
     public String showKeyTeamMembers(Model model) {
         try {

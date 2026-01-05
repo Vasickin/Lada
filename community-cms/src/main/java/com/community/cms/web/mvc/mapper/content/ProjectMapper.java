@@ -177,4 +177,57 @@ public class ProjectMapper {
                 .map(this::toCardDTO)
                 .collect(Collectors.toList());
     }
+
+    // ================== НОВЫЕ МЕТОДЫ ДЛЯ HomeController ==================
+
+    /**
+     * Создает полный DTO со всеми данными (команда, партнеры).
+     * Используется для детальной страницы.
+     */
+    public ProjectDTO toFullDTO(Project project) {
+        return toDTO(project); // toDTO уже включает команду и партнеров
+    }
+
+    /**
+     * Создает DTO для карусели (случайные проекты).
+     */
+    public ProjectDTO toCarouselDTO(Project project) {
+        if (project == null) {
+            return null;
+        }
+
+        ProjectDTO dto = new ProjectDTO();
+
+        // Поля для карусели
+        dto.setId(project.getId());
+        dto.setTitle(project.getTitle());
+        dto.setSlug(project.getSlug());
+        dto.setShortDescription(project.getShortDescription());
+        dto.setFeaturedImagePath(project.getFeaturedImagePath());
+        dto.setEventDate(project.getEventDate());
+        dto.setLocation(project.getLocation());
+        dto.setDetailUrl("/projects/" + project.getSlug());
+
+        // Ограничиваем описание для карусели
+        if (dto.getShortDescription() != null && dto.getShortDescription().length() > 150) {
+            dto.setShortDescription(dto.getShortDescription().substring(0, 147) + "...");
+        }
+
+        return dto;
+    }
+
+    /**
+     * Создает список DTO для карусели.
+     */
+    public List<ProjectDTO> toCarouselDTOList(List<Project> projects) {
+        if (projects == null) {
+            return new ArrayList<>();
+        }
+
+        return projects.stream()
+                .map(this::toCarouselDTO)
+                .collect(Collectors.toList());
+    }
+
+    // ================== КОНЕЦ НОВЫХ МЕТОДОВ ==================
 }
