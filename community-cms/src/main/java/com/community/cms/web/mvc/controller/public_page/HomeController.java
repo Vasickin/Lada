@@ -1,5 +1,6 @@
 package com.community.cms.web.mvc.controller.public_page;
 
+import com.community.cms.domain.model.content.PhotoGallery;
 import com.community.cms.domain.model.page.CustomPage;
 import com.community.cms.domain.enums.PageType;
 import com.community.cms.domain.service.page.CustomPageService;
@@ -38,6 +39,7 @@ public class HomeController {
     private final TeamMemberMapper teamMemberMapper;
     private final ProjectService projectService;
     private final ProjectMapper projectMapper;
+    private final PhotoGalleryService photoGalleryService;
 
     /**
      * Конструктор с внедрением зависимостей.
@@ -55,6 +57,7 @@ public class HomeController {
         this.teamMemberMapper = teamMemberMapper;
         this.projectService = projectService;
         this.projectMapper = projectMapper;
+        this.photoGalleryService = photoGalleryService;  // ЭТО СТРОКА ОТСУТСТВУЛА
     }
 
     // ================== СУЩЕСТВУЮЩИЕ МЕТОДЫ (БЕЗ ИЗМЕНЕНИЙ) ==================
@@ -259,19 +262,217 @@ public class HomeController {
 
     @GetMapping("/gallery")
     public String gallery(Model model) {
-        Optional<CustomPage> galleryPage = pageService.findPublishedPageByType(PageType.GALLERY);
-        model.addAttribute("hasContent", galleryPage.isPresent());
-        galleryPage.ifPresent(page -> {
-            model.addAttribute("page", page);
-            model.addAttribute("pageTitle", page.getTitle());
-            model.addAttribute("metaDescription", page.getMetaDescription());
-        });
-        if (galleryPage.isEmpty()) {
-            model.addAttribute("pageTitle", "Галерея");
-            model.addAttribute("metaDescription", "Фотографии и видео наших мероприятий");
-        }
-        return "gallery";
+        // Перенаправляем на новую фото-галерею
+        return "redirect:/photo-gallery";
     }
+
+    // В класс HomeController ДОБАВЛЯЕМ эти методы:
+
+// ================== ФОТО-ГАЛЕРЕЯ ==================
+
+    /**
+     * Новая красивая страница "Фото-галерея" с фильтрацией по году и категориям.
+     * URL: /photo-gallery
+     */
+    @GetMapping("/photo-gallery")
+    public String showPhotoGallery(Model model,
+                                   @RequestParam(required = false) Integer year,
+                                   @RequestParam(required = false) String category,
+                                   @RequestParam(defaultValue = "0") int page,
+                                   @RequestParam(defaultValue = "12") int size) {
+
+        try {
+            List<PhotoGallery> galleries;
+
+            // Фильтрация по году если указан
+            if (year != null) {
+                galleries = photoGalleryService.getPublishedPhotoGalleryItemsByYear(year);
+            } else {
+                galleries = photoGalleryService.getPublishedPhotoGalleryItems();
+            }
+
+            // Фильтрация по категории если указана
+            List<PhotoGalleryDTO> galleryDTOs = galleries.stream()
+                    .map(gallery -> {
+                        PhotoGalleryDTO dto = new PhotoGalleryDTO(
+                                gallery.getId(),
+                                gallery.getTitle(),
+                                gallery.getYear(),
+                                gallery.getDescription(),
+                                gallery.getImagesCount(),
+                                gallery.getPublished()
+                        );
+
+                        // ДОБАВЛЯЕМ изображения
+                        if (gallery.getImages() != null && !gallery.getImages().isEmpty()) {
+                            List<PhotoGalleryDTO> imageDTOs = gallery.getImages().stream()
+                                    .map(photo -> new PhotoGalleryDTO(
+                                            photo.getId(),
+                                            photo.getFileName(),
+                                            photo.getWebPath(),
+                                            photo.getWebPath(),
+                                            photo.getFileName(),
+                                            gallery.getId(),
+                                            gallery.getTitle(),
+                                            gallery.getYear(),
+                                            photo.getIsPrimary()
+                                    ))
+                                    .collect(Collectors.toList());
+                            dto.setImages(imageDTOs);
+                        }
+
+                        return dto;
+                    })
+                    .collect(Collectors.toList());
+
+            int totalPhotos = galleries.stream()
+                    .mapToInt(PhotoGallery::getImagesCount)
+                    .sum();
+
+            // ПАГИНАЦИЯ
+            int totalItems = galleryDTOs.size();
+            int totalPages = (int) Math.ceil((double) totalItems / size);
+
+
+            // Корректируем номер страницы
+            if (page < 0) page = 0;
+            if (page >= totalPages && totalPages > 0) page = totalPages - 1;
+
+            int start = page * size;
+            int end = Math.min(start + size, totalItems);
+
+            List<PhotoGalleryDTO> pageContent;
+            if (start >= totalItems || galleryDTOs.isEmpty()) {
+                pageContent = Collections.emptyList();
+            } else {
+                pageContent = galleryDTOs.subList(start, end);
+            }
+
+            // Получаем доступные года для фильтра
+            List<Integer> availableYears = photoGalleryService.getAvailableYears();
+
+            // Получаем все категории из галерей
+            List<String> allCategories = galleries.stream()
+                    .flatMap(gallery -> gallery.getCategoryNames().stream())
+                    .distinct()
+                    .sorted()
+                    .collect(Collectors.toList());
+
+            // Добавляем данные в модель
+            model.addAttribute("galleries", pageContent);
+            model.addAttribute("totalItems", totalItems);
+            model.addAttribute("totalPages", totalPages);
+            model.addAttribute("totalPhotos", totalPhotos);
+            model.addAttribute("currentPage", page);
+            model.addAttribute("pageSize", size);
+
+            model.addAttribute("availableYears", availableYears);
+            model.addAttribute("allCategories", allCategories);
+            model.addAttribute("selectedYear", year);
+            model.addAttribute("selectedCategory", category);
+
+            // SEO мета-данные
+            model.addAttribute("pageTitle", "Фото-галерея");
+            model.addAttribute("metaDescription",
+                    "Фотогалерея организации 'ЛАДА'. Все фотографии с мероприятий отсортированы по годам и категориям.");
+            model.addAttribute("hasContent", !pageContent.isEmpty());
+
+            return "public/photo-gallery/list";
+
+        } catch (Exception e) {
+            System.err.println("Ошибка при загрузке фото-галереи: " + e.getMessage());
+            e.printStackTrace();
+
+            model.addAttribute("galleries", new ArrayList<PhotoGalleryDTO>());
+            model.addAttribute("error", "Временные технические проблемы. Пожалуйста, попробуйте позже.");
+            model.addAttribute("pageTitle", "Фото-галерея");
+            model.addAttribute("metaDescription", "Фотогалерея организации 'ЛАДА'");
+
+            return "public/photo-gallery/list";
+        }
+    }
+
+    /**
+     * Детальная страница фото-галереи.
+     * URL: /photo-gallery/{id}
+     */
+    @GetMapping("/photo-gallery/{id}")
+    public String showGalleryDetail(@PathVariable Long id, Model model) {
+        try {
+            PhotoGallery gallery = photoGalleryService.getPhotoGalleryItemById(id);
+
+            // Проверяем что галерея опубликована
+            if (gallery.getPublished() == null || !gallery.getPublished()) {
+                model.addAttribute("errorTitle", "Галерея не найдена");
+                model.addAttribute("errorMessage", "Запрошенная галерея не существует или недоступна.");
+                return "error/404";
+            }
+
+            // Создаем DTO галереи
+            PhotoGalleryDTO galleryDTO = new PhotoGalleryDTO(
+                    gallery.getId(),
+                    gallery.getTitle(),
+                    gallery.getYear(),
+                    gallery.getDescription(),
+                    gallery.getImagesCount(),
+                    gallery.getPublished()
+            );
+
+            // Добавляем изображения в DTO
+            if (gallery.getImages() != null && !gallery.getImages().isEmpty()) {
+                List<PhotoGalleryDTO> imageDTOs = gallery.getImages().stream()
+                        .map(photo -> new PhotoGalleryDTO(
+                                photo.getId(),
+                                photo.getFileName(),
+                                photo.getWebPath(),
+                                photo.getWebPath(), // thumbnail используем тот же путь
+                                photo.getFileName(), // title фото
+                                gallery.getId(),
+                                gallery.getTitle(),
+                                gallery.getYear(),
+                                photo.getIsPrimary()
+                        ))
+                        .collect(Collectors.toList());
+                galleryDTO.setImages(imageDTOs);
+            }
+
+            // SEO мета-данные
+            model.addAttribute("gallery", galleryDTO);
+            model.addAttribute("pageTitle", gallery.getTitle() + " (" + gallery.getYear() + ")");
+            model.addAttribute("metaDescription",
+                    gallery.getDescription() != null && !gallery.getDescription().isEmpty() ?
+                            gallery.getDescription() :
+                            "Фото-галерея '" + gallery.getTitle() + "' за " + gallery.getYear() + " год."
+            );
+            model.addAttribute("hasContent", true);
+
+            return "public/photo-gallery/detail";
+
+        } catch (Exception e) {
+            System.err.println("Ошибка при загрузке детальной страницы галереи: " + e.getMessage());
+            e.printStackTrace();
+
+            model.addAttribute("errorTitle", "Ошибка загрузки");
+            model.addAttribute("errorMessage", "Произошла ошибка при загрузке страницы галереи.");
+            return "error/500";
+        }
+    }
+
+//    @GetMapping("/gallery")
+//    public String gallery(Model model) {
+//        Optional<CustomPage> galleryPage = pageService.findPublishedPageByType(PageType.GALLERY);
+//        model.addAttribute("hasContent", galleryPage.isPresent());
+//        galleryPage.ifPresent(page -> {
+//            model.addAttribute("page", page);
+//            model.addAttribute("pageTitle", page.getTitle());
+//            model.addAttribute("metaDescription", page.getMetaDescription());
+//        });
+//        if (galleryPage.isEmpty()) {
+//            model.addAttribute("pageTitle", "Галерея");
+//            model.addAttribute("metaDescription", "Фотографии и видео наших мероприятий");
+//        }
+//        return "gallery";
+//    }
 
     @GetMapping("/patrons")
     public String patrons(Model model) {
