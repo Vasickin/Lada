@@ -5,7 +5,6 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 /**
  * Data Transfer Object для галереи (PhotoGalleryItem).
  * Используется для передачи данных о галерее на frontend.
- *
  * Data Transfer Object for gallery (PhotoGalleryItem).
  * Used for transferring gallery data to frontend.
  *

@@ -5,9 +5,9 @@ import com.community.cms.domain.enums.PageType;
 import com.community.cms.domain.service.page.CustomPageService;
 import com.community.cms.domain.model.people.TeamMember;
 import com.community.cms.domain.service.people.TeamMemberService;
+import com.community.cms.web.mvc.dto.content.PhotoGalleryDTO;
 import com.community.cms.web.mvc.dto.people.TeamMemberDTO;
 import com.community.cms.web.mvc.mapper.people.TeamMemberMapper;
-
 import com.community.cms.domain.model.content.Project;
 import com.community.cms.domain.model.content.Project.ProjectStatus;
 import com.community.cms.domain.service.content.ProjectService;
@@ -17,6 +17,7 @@ import com.community.cms.web.mvc.dto.content.ProjectDTO;
 import com.community.cms.web.mvc.dto.content.PhotoDTO;
 import com.community.cms.web.mvc.mapper.content.ProjectMapper;
 
+import jakarta.annotation.Nonnull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -362,20 +363,7 @@ public class HomeController {
             // Загружаем ключевые фото через PhotoGalleryService (как в админке)
             if (projectDTO.getKeyPhotoIds() != null && !projectDTO.getKeyPhotoIds().isEmpty()) {
                 try {
-                    List<PhotoDTO> keyPhotos = new ArrayList<>();
-
-                    // Используем PhotoGalleryService для получения фото (как в ProjectAdminController)
-                    // В реальности нужно реализовать метод для получения PhotoDTO по ID
-                    // Пока используем заглушку
-                    for (Long photoId : projectDTO.getKeyPhotoIds()) {
-                        // TODO: Реализовать получение PhotoDTO через существующий сервис
-                        PhotoDTO photoDTO = new PhotoDTO();
-                        photoDTO.setId(photoId);
-                        photoDTO.setFileName("photo-" + photoId + ".jpg");
-                        photoDTO.setWebPath("/images/projects/" + photoId + ".jpg");
-                        photoDTO.setThumbnailPath("/images/projects/thumbnails/" + photoId + ".jpg");
-                        keyPhotos.add(photoDTO);
-                    }
+                    List<PhotoGalleryDTO> keyPhotos = getPhotoGalleryDTOS(projectDTO);
 
                     projectDTO.setKeyPhotos(keyPhotos);
                 } catch (Exception e) {
@@ -413,6 +401,23 @@ public class HomeController {
             model.addAttribute("errorMessage", "Произошла ошибка при загрузке страницы проекта.");
             return "error/500";
         }
+    }
+
+    @Nonnull
+    private static List<PhotoGalleryDTO> getPhotoGalleryDTOS(ProjectDTO projectDTO) {
+        List<PhotoGalleryDTO> keyPhotos = new ArrayList<>();
+
+        // Используем PhotoGalleryService для получения фото (как в ProjectAdminController)
+        // TODO: Реализовать получение PhotoGalleryDTO через существующий сервис
+        for (Long photoId : projectDTO.getKeyPhotoIds()) {
+            PhotoGalleryDTO photoDTO = new PhotoGalleryDTO();
+            photoDTO.setPhotoId(photoId);
+            photoDTO.setFileName("photo-" + photoId + ".jpg");
+            photoDTO.setWebPath("/images/projects/" + photoId + ".jpg");
+            photoDTO.setThumbnailPath("/images/projects/thumbnails/" + photoId + ".jpg");
+            keyPhotos.add(photoDTO);
+        }
+        return keyPhotos;
     }
 
     // ================== СУЩЕСТВУЮЩИЕ МЕТОДЫ ДЛЯ КОМАНДЫ (БЕЗ ИЗМЕНЕНИЙ) ==================

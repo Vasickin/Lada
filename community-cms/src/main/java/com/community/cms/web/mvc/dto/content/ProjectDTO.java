@@ -69,7 +69,7 @@ public class ProjectDTO {
     // ================== СВЯЗАННЫЕ ДАННЫЕ ==================
     private List<TeamMemberDTO> teamMembers;
     private Set<Partner> partners; // Используем сущность Partner напрямую
-    private List<PhotoDTO> keyPhotos;
+    private List<PhotoGalleryDTO> keyPhotos;
 
     // ================== ДЛЯ НАВИГАЦИИ ==================
     private String detailUrl; // Формат: "/projects/{slug}"
@@ -418,11 +418,11 @@ public class ProjectDTO {
         this.partners = partners;
     }
 
-    public List<PhotoDTO> getKeyPhotos() {
+    public List<PhotoGalleryDTO> getKeyPhotos() {
         return keyPhotos;
     }
 
-    public void setKeyPhotos(List<PhotoDTO> keyPhotos) {
+    public void setKeyPhotos(List<PhotoGalleryDTO> keyPhotos) {
         this.keyPhotos = keyPhotos;
     }
 

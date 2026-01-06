@@ -1,8 +1,7 @@
 package com.community.cms.web.mvc.controller.admin.content;
 
 import com.community.cms.domain.model.content.PhotoGallery;
-import com.community.cms.web.mvc.dto.content.GalleryDTO;
-import com.community.cms.web.mvc.dto.content.PhotoDTO;
+import com.community.cms.web.mvc.dto.content.PhotoGalleryDTO;
 import com.community.cms.domain.model.media.MediaFile;
 import com.community.cms.domain.model.content.Project;
 import com.community.cms.domain.model.people.TeamMember;
@@ -860,8 +859,8 @@ public class ProjectAdminController {
     // ================== УПРАВЛЕНИЕ ФОТО ИЗ ГАЛЕРЕЙ ==================
     @GetMapping("/available-photos")
     @ResponseBody
-    public List<PhotoDTO> getAvailablePhotos() {
-        List<PhotoDTO> result = new ArrayList<>();
+    public List<PhotoGalleryDTO> getAvailablePhotos() {
+        List<PhotoGalleryDTO> result = new ArrayList<>();
 
         try {
             List<PhotoGallery> galleries = photoGalleryService.getAllPhotoGalleryItems();
@@ -873,7 +872,7 @@ public class ProjectAdminController {
 
                 List<MediaFile> photos = gallery.getImages();
                 for (MediaFile photo : photos) {
-                    PhotoDTO dto = new PhotoDTO(
+                    PhotoGalleryDTO dto = new PhotoGalleryDTO(
                             photo.getId(),
                             photo.getFileName(),
                             photo.getWebPath(),
@@ -897,8 +896,8 @@ public class ProjectAdminController {
 
     @GetMapping("/available-galleries")
     @ResponseBody
-    public List<GalleryDTO> getAvailableGalleries() {
-        List<GalleryDTO> result = new ArrayList<>();
+    public List<PhotoGalleryDTO> getAvailableGalleries() {
+        List<PhotoGalleryDTO> result = new ArrayList<>();
 
         try {
             List<PhotoGallery> galleries = photoGalleryService.getAllPhotoGalleryItems();
@@ -908,7 +907,7 @@ public class ProjectAdminController {
                     continue;
                 }
 
-                GalleryDTO dto = new GalleryDTO(
+                PhotoGalleryDTO dto = new PhotoGalleryDTO(
                         gallery.getId(),
                         gallery.getTitle(),
                         gallery.getYear(),
@@ -930,15 +929,15 @@ public class ProjectAdminController {
 
     @GetMapping("/gallery/{galleryId}/photos")
     @ResponseBody
-    public List<PhotoDTO> getGalleryPhotos(@PathVariable Long galleryId) {
-        List<PhotoDTO> result = new ArrayList<>();
+    public List<PhotoGalleryDTO> getGalleryPhotos(@PathVariable Long galleryId) {
+        List<PhotoGalleryDTO> result = new ArrayList<>();
 
         try {
             PhotoGallery gallery = photoGalleryService.getPhotoGalleryItemById(galleryId);
             List<MediaFile> photos = gallery.getImages();
 
             for (MediaFile photo : photos) {
-                PhotoDTO dto = new PhotoDTO(
+                PhotoGalleryDTO dto = new PhotoGalleryDTO(
                         photo.getId(),
                         photo.getFileName(),
                         photo.getWebPath(),
