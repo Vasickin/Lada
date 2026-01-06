@@ -566,3 +566,8 @@ grep -r "@Valid\|BindingResult" src/main/java/com/community/cms/web/mvc/controll
 ```shell
 find src/main/java/com/community/cms/web/mvc/dto -name "*Form.java"
 ```
+
+### # Ищем ВСЕ использования
+```shell
+grep -r "PhotoDTO\|GalleryDTO" --include="*.java" src/main/java/
+```
