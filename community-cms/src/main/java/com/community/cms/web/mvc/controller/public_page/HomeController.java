@@ -14,7 +14,6 @@ import com.community.cms.domain.service.content.ProjectService;
 import com.community.cms.domain.service.content.PhotoGalleryService;
 import com.community.cms.domain.service.people.PartnerService;
 import com.community.cms.web.mvc.dto.content.ProjectDTO;
-import com.community.cms.web.mvc.dto.content.PhotoDTO;
 import com.community.cms.web.mvc.mapper.content.ProjectMapper;
 
 import jakarta.annotation.Nonnull;
@@ -39,8 +38,6 @@ public class HomeController {
     private final TeamMemberMapper teamMemberMapper;
     private final ProjectService projectService;
     private final ProjectMapper projectMapper;
-    private final PhotoGalleryService photoGalleryService;
-    private final PartnerService partnerService;
 
     /**
      * Конструктор с внедрением зависимостей.
@@ -58,8 +55,6 @@ public class HomeController {
         this.teamMemberMapper = teamMemberMapper;
         this.projectService = projectService;
         this.projectMapper = projectMapper;
-        this.photoGalleryService = photoGalleryService;
-        this.partnerService = partnerService;
     }
 
     // ================== СУЩЕСТВУЮЩИЕ МЕТОДЫ (БЕЗ ИЗМЕНЕНИЙ) ==================
