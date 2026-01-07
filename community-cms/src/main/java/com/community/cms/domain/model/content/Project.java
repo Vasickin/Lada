@@ -1,5 +1,6 @@
 package com.community.cms.domain.model.content;
 
+import com.community.cms.domain.model.people.Partner;
 import com.community.cms.domain.model.people.TeamMember;
 import com.community.cms.validation.VideoUrl;
 import jakarta.persistence.*;
@@ -845,5 +846,58 @@ public class Project {
 
     public void setTeamMembers(Set<TeamMember> teamMembers) {
         this.teamMembers = teamMembers;
+    }
+
+
+// В класс Project.java нужно добавить:
+
+    /**
+     * Партнеры, участвующие в проекте.
+     * Связь многие-ко-многим через промежуточную таблицу project_partner_associations.
+     */
+    @ManyToMany(mappedBy = "projects")
+    private Set<Partner> partners = new HashSet<>();
+
+// И соответствующие геттеры/сеттеры:
+
+    public Set<Partner> getPartners() {
+        return partners;
+    }
+
+    public void setPartners(Set<Partner> partners) {
+        this.partners = partners;
+    }
+
+    /**
+     * Добавляет партнера к проекту.
+     *
+     * @param partner партнер для добавления
+     */
+    public void addPartner(Partner partner) {
+        this.partners.add(partner);
+        partner.getProjects().add(this);
+    }
+
+    /**
+     * Удаляет партнера из проекта.
+     *
+     * @param partner партнер для удаления
+     * @return true если партнер был удален, false если не найден
+     */
+    public boolean removePartner(Partner partner) {
+        boolean removed = this.partners.remove(partner);
+        if (removed) {
+            partner.getProjects().remove(this);
+        }
+        return removed;
+    }
+
+    /**
+     * Получает количество партнеров проекта.
+     *
+     * @return количество партнеров
+     */
+    public int getPartnersCount() {
+        return partners != null ? partners.size() : 0;
     }
 }

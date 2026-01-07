@@ -4,12 +4,17 @@ import com.community.cms.domain.model.content.Project;
 import com.community.cms.domain.model.people.TeamMember;
 import com.community.cms.domain.service.content.ProjectService;
 import com.community.cms.domain.service.people.TeamMemberService;
+import com.community.cms.infrastructure.storage.FileStorageService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.util.List;
@@ -17,16 +22,6 @@ import java.util.Optional;
 
 /**
  * Контроллер административной панели для управления членами команды.
- *
- * <p>Предоставляет интерфейс для создания, редактирования, удаления
- * и управления членами команды организации "ЛАДА". Интегрирован с системой
- * проектов для назначения участников на проекты с указанием ролей.</p>
- *
- * @author Community CMS
- * @version 1.0
- * @since 2025
- * @see TeamMember
- * @see TeamMemberService
  */
 @Controller
 @RequestMapping("/admin/team-members")
@@ -34,59 +29,73 @@ public class TeamMemberAdminController {
 
     private final TeamMemberService teamMemberService;
     private final ProjectService projectService;
+    private final FileStorageService fileStorageService;
 
-    /**
-     * Конструктор с инъекцией зависимостей.
-     *
-     * @param teamMemberService сервис для работы с членами команды
-     * @param projectService сервис для работы с проектами
-     */
     @Autowired
     public TeamMemberAdminController(TeamMemberService teamMemberService,
-                                     ProjectService projectService) {
+                                     ProjectService projectService,
+                                     FileStorageService fileStorageService) {
         this.teamMemberService = teamMemberService;
         this.projectService = projectService;
+        this.fileStorageService = fileStorageService;
     }
 
-    // ================== СПИСОК ЧЛЕНОВ КОМАНДЫ ==================
+    // ================== СПИСОК ЧЛЕНОВ КОМАНДЫ С ФИЛЬТРАЦИЕЙ ==================
 
-    /**
-     * Отображает список всех членов команды.
-     *
-     * @param model модель для передачи данных в представление
-     * @return шаблон списка членов команды
-     */
     @GetMapping
-    public String listTeamMembers(Model model) {
-        List<TeamMember> teamMembers = teamMemberService.findAllActiveOrderBySortOrder();
-        model.addAttribute("teamMembers", teamMembers);
+    public String listTeamMembers(
+            @RequestParam(value = "search", required = false) String search,
+            @RequestParam(value = "status", required = false) String status,
+            @RequestParam(value = "hasAvatar", required = false) String hasAvatar,
+            @RequestParam(value = "page", defaultValue = "0") int page,
+            @RequestParam(value = "size", defaultValue = "20") int size,
+            Model model) {
+
+        Pageable pageable = PageRequest.of(page, size);
+        Page<TeamMember> teamMembersPage;
+
+        if (search != null && !search.trim().isEmpty()) {
+            teamMembersPage = teamMemberService.searchByNameOrPosition(search, pageable);
+        } else if ("ACTIVE".equals(status)) {
+            teamMembersPage = teamMemberService.findAllActive(pageable);
+        } else if ("INACTIVE".equals(status)) {
+            teamMembersPage = teamMemberService.findAllInactive(pageable);
+        } else if ("true".equals(hasAvatar)) {
+            teamMembersPage = teamMemberService.findWithAvatar(pageable);
+        } else if ("false".equals(hasAvatar)) {
+            teamMembersPage = teamMemberService.findWithoutAvatar(pageable);
+        } else {
+            teamMembersPage = teamMemberService.findAll(pageable);
+        }
+
+        model.addAttribute("teamMembersPage", teamMembersPage);
+        model.addAttribute("selectedSearch", search);
+        model.addAttribute("selectedStatus", status);
+        model.addAttribute("selectedHasAvatar", hasAvatar);
         model.addAttribute("title", "Управление командой");
+
         return "admin/team-members/list";
     }
 
-    /**
-     * Отображает список неактивных членов команды.
-     *
-     * @param model модель для передачи данных в представление
-     * @return шаблон списка неактивных членов команды
-     */
     @GetMapping("/inactive")
-    public String listInactiveTeamMembers(Model model) {
-        List<TeamMember> inactiveMembers = teamMemberService.findAllInactive();
-        model.addAttribute("teamMembers", inactiveMembers);
+    public String listInactiveTeamMembers(
+            @RequestParam(value = "page", defaultValue = "0") int page,
+            @RequestParam(value = "size", defaultValue = "20") int size,
+            Model model) {
+
+        Pageable pageable = PageRequest.of(page, size);
+        Page<TeamMember> teamMembersPage = teamMemberService.findAllInactive(pageable);
+
+        model.addAttribute("teamMembersPage", teamMembersPage);
+        model.addAttribute("selectedStatus", "INACTIVE");
         model.addAttribute("title", "Неактивные члены команды");
         model.addAttribute("showInactive", true);
+
         return "admin/team-members/list";
     }
 
     // ================== СОЗДАНИЕ ЧЛЕНА КОМАНДЫ ==================
 
-    /**
-     * Отображает форму создания нового члена команды.
-     *
-     * @param model модель для передачи данных в представление
-     * @return шаблон формы создания члена команды
-     */
     @GetMapping("/create")
     public String showCreateForm(Model model) {
         model.addAttribute("teamMember", new TeamMember());
@@ -95,16 +104,9 @@ public class TeamMemberAdminController {
         return "admin/team-members/create";
     }
 
-    /**
-     * Обрабатывает создание нового члена команды.
-     *
-     * @param teamMember создаваемый член команды
-     * @param bindingResult результаты валидации
-     * @param redirectAttributes атрибуты для редиректа
-     * @return редирект на список членов команды или форму с ошибками
-     */
     @PostMapping("/create")
     public String createTeamMember(@Valid @ModelAttribute("teamMember") TeamMember teamMember,
+                                   @RequestParam(value = "avatarFile", required = false) MultipartFile avatarFile,
                                    BindingResult bindingResult,
                                    RedirectAttributes redirectAttributes) {
         if (bindingResult.hasErrors()) {
@@ -112,6 +114,17 @@ public class TeamMemberAdminController {
         }
 
         try {
+            if (avatarFile != null && !avatarFile.isEmpty()) {
+                try {
+                    String fileName = fileStorageService.storeFile(avatarFile);
+                    teamMember.setAvatarPath(fileName);
+                } catch (Exception e) {
+                    redirectAttributes.addFlashAttribute("errorMessage",
+                            "Ошибка при загрузке аватарки: " + e.getMessage());
+                    return "redirect:/admin/team-members/create";
+                }
+            }
+
             TeamMember savedMember = teamMemberService.save(teamMember);
             redirectAttributes.addFlashAttribute("successMessage",
                     "Член команды '" + savedMember.getFullName() + "' успешно создан!");
@@ -125,14 +138,6 @@ public class TeamMemberAdminController {
 
     // ================== РЕДАКТИРОВАНИЕ ЧЛЕНА КОМАНДЫ ==================
 
-    /**
-     * Отображает форму редактирования члена команды.
-     *
-     * @param id идентификатор члена команды
-     * @param model модель для передачи данных в представление
-     * @param redirectAttributes атрибуты для редиректа
-     * @return шаблон формы редактирования или редирект с ошибкой
-     */
     @GetMapping("/edit/{id}")
     public String showEditForm(@PathVariable Long id,
                                Model model,
@@ -154,27 +159,19 @@ public class TeamMemberAdminController {
         return "admin/team-members/edit";
     }
 
-    /**
-     * Обрабатывает обновление члена команды.
-     *
-     * @param id идентификатор члена команды
-     * @param teamMember обновленные данные члена команды
-     * @param bindingResult результаты валидации
-     * @param redirectAttributes атрибуты для редиректа
-     * @return редирект на список членов команды или форму с ошибками
-     */
     @PostMapping("/edit/{id}")
     public String updateTeamMember(@PathVariable Long id,
                                    @Valid @ModelAttribute("teamMember") TeamMember teamMember,
+                                   @RequestParam(value = "avatarFile", required = false) MultipartFile avatarFile,
+                                   @RequestParam(value = "clearAvatar", defaultValue = "false") boolean clearAvatar,
                                    BindingResult bindingResult,
                                    RedirectAttributes redirectAttributes) {
         if (bindingResult.hasErrors()) {
-            teamMember.setId(id); // Сохраняем ID для формы
+            teamMember.setId(id);
             return "admin/team-members/edit";
         }
 
         try {
-            // Проверяем существование члена команды
             Optional<TeamMember> existingMemberOpt = teamMemberService.findById(id);
             if (existingMemberOpt.isEmpty()) {
                 redirectAttributes.addFlashAttribute("errorMessage",
@@ -182,10 +179,42 @@ public class TeamMemberAdminController {
                 return "redirect:/admin/team-members";
             }
 
-            // Сохраняем существующие связи с проектами
             TeamMember existingMember = existingMemberOpt.get();
+
+            if (clearAvatar) {
+                if (existingMember.getAvatarPath() != null && !existingMember.getAvatarPath().isEmpty()) {
+                    try {
+                        fileStorageService.deleteFile(existingMember.getAvatarPath());
+                    } catch (Exception e) {
+                        System.err.println("Ошибка при удалении аватарки: " + e.getMessage());
+                    }
+                }
+                teamMember.setAvatarPath(null);
+            }
+            else if (avatarFile != null && !avatarFile.isEmpty()) {
+                try {
+                    if (existingMember.getAvatarPath() != null && !existingMember.getAvatarPath().isEmpty()) {
+                        try {
+                            fileStorageService.deleteFile(existingMember.getAvatarPath());
+                        } catch (Exception e) {
+                            System.err.println("Ошибка при удалении старой аватарки: " + e.getMessage());
+                        }
+                    }
+
+                    String fileName = fileStorageService.storeFile(avatarFile);
+                    teamMember.setAvatarPath(fileName);
+                } catch (Exception e) {
+                    redirectAttributes.addFlashAttribute("errorMessage",
+                            "Ошибка при загрузке аватарки: " + e.getMessage());
+                    return "redirect:/admin/team-members/edit/" + id;
+                }
+            }
+            else {
+                teamMember.setAvatarPath(existingMember.getAvatarPath());
+            }
+
             teamMember.setProjects(existingMember.getProjects());
-            teamMember.setId(id); // Убедимся, что ID сохраняется
+            teamMember.setId(id);
 
             TeamMember updatedMember = teamMemberService.update(teamMember);
             redirectAttributes.addFlashAttribute("successMessage",
@@ -200,13 +229,6 @@ public class TeamMemberAdminController {
 
     // ================== УПРАВЛЕНИЕ АКТИВНОСТЬЮ ==================
 
-    /**
-     * Активирует члена команды.
-     *
-     * @param id идентификатор члена команды
-     * @param redirectAttributes атрибуты для редиректа
-     * @return редирект на список членов команды
-     */
     @PostMapping("/activate/{id}")
     public String activateTeamMember(@PathVariable Long id,
                                      RedirectAttributes redirectAttributes) {
@@ -221,13 +243,6 @@ public class TeamMemberAdminController {
         return "redirect:/admin/team-members";
     }
 
-    /**
-     * Деактивирует члена команды.
-     *
-     * @param id идентификатор члена команды
-     * @param redirectAttributes атрибуты для редиректа
-     * @return редирект на список членов команды
-     */
     @PostMapping("/deactivate/{id}")
     public String deactivateTeamMember(@PathVariable Long id,
                                        RedirectAttributes redirectAttributes) {
@@ -244,14 +259,6 @@ public class TeamMemberAdminController {
 
     // ================== УДАЛЕНИЕ ЧЛЕНА КОМАНДЫ ==================
 
-    /**
-     * Отображает страницу подтверждения удаления члена команды.
-     *
-     * @param id идентификатор члена команды
-     * @param model модель для передачи данных в представление
-     * @param redirectAttributes атрибуты для редиректа
-     * @return шаблон подтверждения удаления или редирект с ошибкой
-     */
     @GetMapping("/delete/{id}")
     public String showDeleteConfirmation(@PathVariable Long id,
                                          Model model,
@@ -268,20 +275,12 @@ public class TeamMemberAdminController {
         model.addAttribute("teamMember", teamMember);
         model.addAttribute("title", "Удаление члена команды: " + teamMember.getFullName());
 
-        // Проверяем участие в проектах
         int projectCount = teamMember.getProjectsCount();
         model.addAttribute("projectCount", projectCount);
 
         return "admin/team-members/delete";
     }
 
-    /**
-     * Обрабатывает удаление члена команды.
-     *
-     * @param id идентификатор члена команды
-     * @param redirectAttributes атрибуты для редиректа
-     * @return редирект на список членов команды
-     */
     @PostMapping("/delete/{id}")
     public String deleteTeamMember(@PathVariable Long id,
                                    RedirectAttributes redirectAttributes) {
@@ -296,11 +295,9 @@ public class TeamMemberAdminController {
             TeamMember teamMember = teamMemberOpt.get();
             String memberName = teamMember.getFullName();
 
-            // Удаляем связи с проектами перед удалением
             teamMember.getProjects().clear();
             teamMemberService.update(teamMember);
 
-            // Удаляем члена команды
             teamMemberService.deleteById(id);
 
             redirectAttributes.addFlashAttribute("successMessage",
@@ -314,14 +311,6 @@ public class TeamMemberAdminController {
 
     // ================== УПРАВЛЕНИЕ ПРОЕКТАМИ И РОЛЯМИ ==================
 
-    /**
-     * Отображает форму управления проектами члена команды.
-     *
-     * @param id идентификатор члена команды
-     * @param model модель для передачи данных в представление
-     * @param redirectAttributes атрибуты для редиректа
-     * @return шаблон управления проектами или редирект с ошибкой
-     */
     @GetMapping("/projects/{id}")
     public String manageProjects(@PathVariable Long id,
                                  Model model,
@@ -349,14 +338,6 @@ public class TeamMemberAdminController {
         return "admin/team-members/projects";
     }
 
-    /**
-     * Добавляет проект к члену команды.
-     *
-     * @param memberId идентификатор члена команды
-     * @param projectId идентификатор проекта
-     * @param redirectAttributes атрибуты для редиректа
-     * @return редирект на страницу управления проектами
-     */
     @PostMapping("/projects/{memberId}/add")
     public String addProjectToMember(@PathVariable Long memberId,
                                      @RequestParam Long projectId,
@@ -387,14 +368,6 @@ public class TeamMemberAdminController {
         return "redirect:/admin/team-members/projects/" + memberId;
     }
 
-    /**
-     * Удаляет проект у члена команды.
-     *
-     * @param memberId идентификатор члена команды
-     * @param projectId идентификатор проекта
-     * @param redirectAttributes атрибуты для редиректа
-     * @return редирект на страницу управления проектами
-     */
     @PostMapping("/projects/{memberId}/remove")
     public String removeProjectFromMember(@PathVariable Long memberId,
                                           @RequestParam Long projectId,
@@ -425,15 +398,6 @@ public class TeamMemberAdminController {
         return "redirect:/admin/team-members/projects/" + memberId;
     }
 
-    /**
-     * Устанавливает роль члена команды в проекте.
-     *
-     * @param memberId идентификатор члена команды
-     * @param projectId идентификатор проекта
-     * @param role роль в проекте
-     * @param redirectAttributes атрибуты для редиректа
-     * @return редирект на страницу управления проектами
-     */
     @PostMapping("/projects/{memberId}/role")
     public String setRoleForProject(@PathVariable Long memberId,
                                     @RequestParam Long projectId,
@@ -463,13 +427,6 @@ public class TeamMemberAdminController {
 
     // ================== ПОИСК И ФИЛЬТРАЦИЯ ==================
 
-    /**
-     * Поиск членов команды по имени или должности.
-     *
-     * @param searchTerm поисковый запрос
-     * @param model модель для передачи данных в представление
-     * @return шаблон списка с результатами поиска
-     */
     @GetMapping("/search")
     public String searchTeamMembers(@RequestParam String searchTerm, Model model) {
         List<TeamMember> searchResults = teamMemberService.searchByNameOrPosition(searchTerm);

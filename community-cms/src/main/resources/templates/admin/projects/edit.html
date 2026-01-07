@@ -178,6 +178,69 @@
         max-width: 100%;
     }
 }
+
+        /* Стили для Drag and Drop партнёров */
+
+/* Для левой колонки (Доступные партнёры) */
+#availablePartnersContainer .partner-draggable {
+    background-color: #e0f2fe; /* Светло-синий фон */
+    border: 1px solid #bae6fd; /* Синяя граница */
+}
+
+#availablePartnersContainer .partner-draggable:hover {
+    background-color: #bae6fd; /* Чуть темнее при наведении */
+    border-color: #7dd3fc;
+}
+
+#availablePartnersContainer .partner-draggable.selected {
+    background-color: #bae6fd; /* Мягкое выделение */
+    border: 2px solid #0ea5e9; /* Синяя граница выделения */
+    box-shadow: 0 2px 4px rgba(14, 165, 233, 0.2);
+}
+
+/* Для правой колонки (Партнёры проекта) */
+#projectPartnersContainer .partner-draggable {
+    background-color: #dcfce7; /* Светло-зеленый фон */
+    border: 1px solid #bbf7d0; /* Зеленая граница */
+    color: #166534; /* Темно-зеленый текст */
+}
+
+#projectPartnersContainer .partner-draggable:hover {
+    background-color: #bbf7d0; /* Чуть темнее при наведении */
+    border-color: #86efac;
+}
+
+#projectPartnersContainer .partner-draggable.selected {
+    background-color: #bbf7d0; /* Мягкое выделение */
+    border: 2px solid #22c55e; /* Зеленая граница выделения */
+    box-shadow: 0 2px 4px rgba(34, 197, 94, 0.2);
+}
+
+/* Общие стили для партнёров */
+.partner-draggable {
+    transition: all 0.2s ease;
+    cursor: pointer;
+}
+
+.partner-draggable.dragging {
+    opacity: 0.7;
+    transform: scale(0.98);
+}
+
+/* Для иконок в правой колонке */
+#projectPartnersContainer .partner-draggable .bi-handshake {
+    color: #22c55e; /* Зеленые иконки */
+}
+
+/* Для иконок в левой колонке */
+#availablePartnersContainer .partner-draggable .bi-building {
+    color: #0ea5e9; /* Синие иконки */
+}
+
+.partner-drop-zone-active {
+    background-color: rgba(14, 165, 233, 0.05) !important;
+    border: 2px dashed #0ea5e9 !important;
+}
     </style>
 </head>
 <body>
@@ -719,143 +782,62 @@
                                 </div>
                             </div>
 
+                                <!-- ===== ПАРТНЁРЫ ПРОЕКТА (DRAG AND DROP) ===== -->
+                                <div class="form-section">
+                                    <div class="d-flex justify-content-between align-items-center mb-3">
+                                        <h3 class="section-title mb-0">
+                                            <i class="bi bi-handshake me-2 text-primary"></i>
+                                            Партнёры проекта
+                                        </h3>
+                                        <div>
+            <span class="badge bg-primary">
+                <i class="bi bi-handshake"></i>
+                <span id="projectPartnersCount" th:text="${projectPartners != null ? projectPartners.size() : 0}">0</span>
+            </span>
+                                        </div>
+                                    </div>
 
-                            <!-- ===== ПАРТНЁРЫ ПРОЕКТА ===== -->
-                            <div class="form-section" th:if="${project.showPartners}">
-                                <h3 class="section-title">
-                                    <i class="bi bi-handshake me-2"></i>
-                                    Партнёры проекта
-                                    <span class="badge bg-info ms-2">
-            <i class="bi bi-building"></i>
-            <span th:text="${projectPartnersCount != null ? projectPartnersCount : 0}">0</span>
-        </span>
-                                </h3>
-
-                                <div class="row mb-3">
-                                    <div class="col-12">
-                                        <div class="card">
-                                            <div class="card-body">
-                                                <!-- Логотипы партнёров -->
-                                                <div th:if="${projectPartners != null && !projectPartners.isEmpty()}" class="mb-4">
-                                                    <h6 class="mb-3">
-                                                        <i class="bi bi-building-check me-1"></i>
-                                                        Партнёры проекта
-                                                    </h6>
-
-                                                    <div class="row g-3">
-                                                        <div class="col-6 col-md-4 col-lg-3" th:each="partner : ${projectPartners}">
-                                                            <div class="card border-0 text-center h-100">
-                                                                <div class="card-body">
-                                                                    <!-- Логотип партнёра -->
-                                                                    <div class="mb-3" style="height: 60px; display: flex; align-items: center; justify-content: center;">
-                                                                        <img th:if="${partner.logoPath != null}"
-                                                                             th:src="${partner.logoPath}"
-                                                                             style="max-height: 60px; max-width: 100%; object-fit: contain;"
-                                                                             th:alt="${partner.name}">
-                                                                        <div th:unless="${partner.logoPath != null}"
-                                                                             class="bg-light rounded d-flex align-items-center justify-content-center"
-                                                                             style="width: 100%; height: 60px;">
-                                                                            <i class="bi bi-building fs-3 text-muted"></i>
-                                                                        </div>
-                                                                    </div>
-
-                                                                    <!-- Информация -->
-                                                                    <h6 class="mb-1" th:text="${partner.name}"></h6>
-                                                                    <small class="text-muted d-block mb-1"
-                                                                           th:text="${partner.partnerType} ?: 'Партнёр'">
-                                                                    </small>
-
-                                                                    <!-- Статус -->
-                                                                    <span th:if="${partner.active}"
-                                                                          class="badge bg-success small">
-                                            Активен
-                                        </span>
-                                                                    <span th:unless="${partner.active}"
-                                                                          class="badge bg-secondary small">
-                                            Неактивен
-                                        </span>
+                                    <!-- Статистика -->
+                                    <div class="row mb-3">
+                                        <div class="col-12">
+                                            <div class="card">
+                                                <div class="card-body">
+                                                    <div class="row">
+                                                        <div class="col-md-4">
+                                                            <div class="d-flex align-items-center">
+                                                                <div class="bg-info rounded-circle p-2 me-3">
+                                                                    <i class="bi bi-building text-white"></i>
+                                                                </div>
+                                                                <div>
+                                                                    <h6 class="mb-0" id="allPartnersCount" th:text="${allPartners != null ? allPartners.size() : 0}">0</h6>
+                                                                    <small class="text-muted">Всего партнёров</small>
                                                                 </div>
                                                             </div>
                                                         </div>
-                                                    </div>
-                                                </div>
-
-                                                <!-- Если нет партнёров -->
-                                                <div th:if="${projectPartners == null || projectPartners.isEmpty()}" class="text-center py-4">
-                                                    <div class="mb-3">
-                                                        <i class="bi bi-handshake display-4 text-muted"></i>
-                                                    </div>
-                                                    <h6>Партнёры проекта не добавлены</h6>
-                                                    <p class="text-muted small mb-3">
-                                                        Добавьте партнёров проекта для отображения логотипов на странице
-                                                    </p>
-                                                </div>
-
-                                                <!-- Типы партнёрства -->
-                                                <div class="row g-3 mb-4">
-                                                    <div class="col-md-6">
-                                                        <div class="card border-0 bg-light">
-                                                            <div class="card-body">
-                                                                <h6 class="mb-2">
-                                                                    <i class="bi bi-award text-primary me-1"></i>
-                                                                    Типы партнёрства
-                                                                </h6>
-                                                                <ul class="small mb-0">
-                                                                    <li><strong>Генеральный партнёр</strong> - основной спонсор</li>
-                                                                    <li><strong>Спонсор</strong> - финансовая поддержка</li>
-                                                                    <li><strong>Информационный партнёр</strong> - медиаподдержка</li>
-                                                                    <li><strong>Организационный партнёр</strong> - помощь в организации</li>
-                                                                    <li><strong>Технический партнёр</strong> - техническая поддержка</li>
-                                                                </ul>
+                                                        <div class="col-md-4">
+                                                            <div class="d-flex align-items-center">
+                                                                <div class="bg-success rounded-circle p-2 me-3">
+                                                                    <i class="bi bi-handshake text-white"></i>
+                                                                </div>
+                                                                <div>
+                                                                    <h6 class="mb-0" id="selectedPartnersCount" th:text="${projectPartners != null ? projectPartners.size() : 0}">0</h6>
+                                                                    <small class="text-muted">Партнёров в проекте</small>
+                                                                </div>
                                                             </div>
                                                         </div>
-                                                    </div>
-                                                    <div class="col-md-6">
-                                                        <div class="card border-0 bg-light">
-                                                            <div class="card-body">
-                                                                <h6 class="mb-2">
-                                                                    <i class="bi bi-megaphone text-success me-1"></i>
-                                                                    Что даёт партнёрство?
-                                                                </h6>
-                                                                <ul class="small mb-0">
-                                                                    <li>Логотип на странице проекта</li>
-                                                                    <li>Упоминание в публикациях</li>
-                                                                    <li>Участие в мероприятиях</li>
-                                                                    <li>Реклама на ресурсах организации</li>
-                                                                    <li>Совместные PR-акции</li>
-                                                                </ul>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                </div>
-
-                                                <!-- Кнопки управления -->
-
-                                                <div class="mt-3 pt-3 border-top">
-                                                    <div class="row g-2">
-                                                        <div class="col-md-6">
-                                                            <div class="d-grid">
-                                                                <a th:href="@{/admin/projects/{id}/partners(id=${project.id})}"
-                                                                   class="btn btn-outline-primary">
-                                                                    <i class="bi bi-handshake me-1"></i>
-                                                                    <span th:if="${projectPartnersCount != null && projectPartnersCount > 0}">
-                                            Управление партнёрами (<span th:text="${projectPartnersCount}">0</span>)
-                                        </span>
-                                                                    <span th:unless="${projectPartnersCount != null && projectPartnersCount > 0}">
-                                            Добавить партнёров
-                                        </span>
-                                                                </a>
-                                                            </div>
-                                                        </div>
-                                                        <div class="col-md-6">
-                                                            <div class="d-grid">
-                                                                <button type="button" class="btn btn-outline-success">
-                                                                    <i class="bi bi-envelope me-1"></i>
-                                                                    Кнопка "Стать партнёром"
-                                                                </button>
-                                                                <small class="text-muted d-block mt-1">
-                                                                    Будет отображаться на публичной странице
-                                                                </small>
+                                                        <div class="col-md-4">
+                                                            <div class="d-flex align-items-center">
+                                                                <div class="bg-primary rounded-circle p-2 me-3">
+                                                                    <i class="bi bi-plus-circle text-white"></i>
+                                                                </div>
+                                                                <div>
+                                                                    <a th:href="@{/admin/partners/create}"
+                                                                       class="btn btn-link p-0 text-decoration-none"
+                                                                       target="_blank">
+                                                                        <h6 class="mb-0 text-primary">Добавить партнёра</h6>
+                                                                        <small class="text-muted">Откроется в новой вкладке</small>
+                                                                    </a>
+                                                                </div>
                                                             </div>
                                                         </div>
                                                     </div>
@@ -863,8 +845,184 @@
                                             </div>
                                         </div>
                                     </div>
+
+                                    <!-- DRAG AND DROP для партнеров -->
+                                    <div class="mt-4 pt-4 border-top">
+                                        <div class="d-flex justify-content-between align-items-center mb-3">
+                                            <h6 class="mb-0">
+                                                <i class="bi bi-arrows-move text-primary me-2"></i>
+                                                Управление партнёрами проекта
+                                            </h6>
+                                            <small class="text-muted">Перетаскивайте партнёров между колонками</small>
+                                        </div>
+
+                                        <div class="row">
+                                            <!-- Левая колонка: Доступные партнёры -->
+                                            <div class="col-md-5">
+                                                <div class="card h-100 border-info">
+                                                    <div class="card-header bg-info text-white">
+                                                        <h6 class="mb-0">
+                                                            <i class="bi bi-building me-1"></i>
+                                                            Доступные партнёры
+                                                            <span class="badge bg-light text-dark ms-2" id="availablePartnersCount" th:text="${availablePartners != null ? availablePartners.size() : 0}">0</span>
+                                                        </h6>
+                                                    </div>
+                                                    <div class="card-body"
+                                                         id="availablePartnersContainer"
+                                                         style="min-height: 250px; max-height: 350px; overflow-y: auto;">
+
+                                                        <div th:if="${availablePartners != null && !availablePartners.isEmpty()}">
+                                                            <div th:each="partner : ${availablePartners}"
+                                                                 class="partner-draggable mb-2 p-2 border rounded"
+                                                                 th:data-partner-id="${partner.id}"
+                                                                 th:id="'partner-' + ${partner.id}">
+                                                                <div class="d-flex align-items-center">
+                                                                    <div class="me-3">
+                                                                        <i class="bi bi-building fs-4"></i>
+                                                                    </div>
+                                                                    <div class="flex-grow-1">
+                                                                        <strong th:text="${partner.name}"></strong><br>
+                                                                        <small class="text-muted" th:text="${partner.type} ?: 'Тип не указан'"></small>
+                                                                    </div>
+                                                                    <div class="text-end">
+                                                                        <span class="badge bg-info">Доступен</span>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+
+                                                        <div th:if="${availablePartners == null || availablePartners.isEmpty()}"
+                                                             class="text-center py-4">
+                                                            <i class="bi bi-building display-6 text-muted"></i>
+                                                            <p class="mt-2">Все партнёры уже в проекте</p>
+                                                            <a th:href="@{/admin/partners/create}"
+                                                               class="btn btn-sm btn-outline-info"
+                                                               target="_blank">
+                                                                <i class="bi bi-plus-circle"></i> Создать партнёра
+                                                            </a>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <!-- Центральная колонка: Управление -->
+                                            <div class="col-md-2 d-flex flex-column align-items-center justify-content-center">
+                                                <div class="text-center">
+                                                    <i class="bi bi-arrow-right-circle fs-1 text-info mb-2"></i>
+                                                    <p class="small mb-1">Добавить в проект</p>
+
+                                                    <button type="button" class="btn btn-sm btn-outline-info mb-2" onclick="addSelectedPartnersToProject()">
+                                                        <i class="bi bi-arrow-right"></i> Выбранные
+                                                    </button>
+
+                                                    <div class="my-3 border-top pt-2">
+                                                        <i class="bi bi-arrow-left-circle fs-1 text-warning mb-2"></i>
+                                                        <p class="small mb-1">Убрать из проекта</p>
+                                                        <button type="button" class="btn btn-sm btn-outline-warning" onclick="removeSelectedPartnersFromProject()">
+                                                            <i class="bi bi-arrow-left"></i> Выбранные
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <!-- Правая колонка: Партнёры проекта -->
+                                            <div class="col-md-5">
+                                                <div class="card h-100 border-success">
+                                                    <div class="card-header bg-success text-white">
+                                                        <h6 class="mb-0">
+                                                            <i class="bi bi-handshake me-1"></i>
+                                                            Партнёры проекта
+                                                            <span class="badge bg-light text-dark ms-2" id="projectPartnersDragCount" th:text="${projectPartners != null ? projectPartners.size() : 0}">0</span>
+                                                        </h6>
+                                                    </div>
+                                                    <div class="card-body"
+                                                         id="projectPartnersContainer"
+                                                         style="min-height: 250px; max-height: 350px; overflow-y: auto;">
+
+                                                        <div th:if="${projectPartners != null && !projectPartners.isEmpty()}">
+                                                            <div th:each="partner : ${projectPartners}"
+                                                                 class="partner-draggable mb-2 p-2 border rounded"
+                                                                 th:data-partner-id="${partner.id}"
+                                                                 th:id="'project-partner-' + ${partner.id}">
+                                                                <div class="d-flex align-items-center">
+                                                                    <div class="me-3">
+                                                                        <i class="bi bi-handshake fs-4"></i>
+                                                                    </div>
+                                                                    <div class="flex-grow-1">
+                                                                        <strong th:text="${partner.name}"></strong><br>
+                                                                        <small class="text-muted" th:text="${partner.type} ?: 'Тип не указан'"></small>
+                                                                    </div>
+                                                                    <div class="text-end">
+                                                                        <span class="badge bg-success">В проекте</span>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+
+                                                        <div th:if="${projectPartners == null || projectPartners.isEmpty()}"
+                                                             id="emptyPartnersMessage" class="text-center py-4">
+                                                            <i class="bi bi-handshake display-6 text-muted"></i>
+                                                            <p class="mt-2">Нет партнёров в проекте</p>
+                                                            <p class="small text-muted">Добавьте партнёров</p>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <!-- Hidden inputs для синхронизации с формой -->
+                                        <input type="hidden" id="selectedPartnerIds" name="selectedPartnerIds" value="">
+
+                                        <!--  <input type="hidden" id="selectedPartnerIds" name="selectedPartnerIds"
+                                                 th:if="${projectPartners != null && !projectPartners.isEmpty()}"
+                                                 th:value="${#strings.listJoin(projectPartners.![id], ',')}">
+                                         -->
+
+                                        <!-- Превью выбранных партнёров -->
+                                        <div class="mt-4 pt-4 border-top">
+                                            <h6 class="mb-3">
+                                                <i class="bi bi-eye me-2 text-info"></i>
+                                                Предпросмотр партнёров проекта
+                                            </h6>
+
+                                            <div id="selectedPartnersPreview" class="row g-3">
+                                                <div class="col-12" th:unless="${projectPartners != null && !projectPartners.isEmpty()}">
+                                                    <div class="alert alert-light text-center py-4">
+                                                        <i class="bi bi-handshake display-4 text-muted mb-3"></i>
+                                                        <h6 class="text-muted">Партнёры не выбраны</h6>
+                                                        <p class="text-muted small mb-0">
+                                                            Добавьте партнёров в проект для отображения логотипов на странице
+                                                        </p>
+                                                    </div>
+                                                </div>
+
+                                                <div th:if="${projectPartners != null && !projectPartners.isEmpty()}"
+                                                     th:each="partner : ${projectPartners}"
+                                                     class="col-6 col-md-4 col-lg-3 mb-3">
+                                                    <div class="card h-100">
+                                                        <div class="card-body text-center">
+                                                            <div class="mb-3" style="height: 60px; display: flex; align-items: center; justify-content: center;">
+                                                                <i class="bi bi-building fs-1 text-info"></i>
+                                                            </div>
+                                                            <h6 class="mb-1" th:text="${partner.name}"></h6>
+                                                            <small class="text-muted" th:text="${partner.type} ?: 'Тип не указан'"></small>
+                                                            <span class="badge bg-success">В проекте</span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <!-- Информация о типах партнёрства -->
+                                        <div class="alert alert-info mt-3">
+                                            <i class="bi bi-info-circle me-2"></i>
+                                            <small>
+                                                Партнёры могут быть разных типов: Генеральный партнёр, Спонсор, Информационный партнёр и др.
+                                                Изменения сохранятся при нажатии "Обновить проект".
+                                            </small>
+                                        </div>
+                                    </div>
                                 </div>
-                            </div>
 
 
                             <!-- ===== ФОТОГРАФИИ ПРОЕКТА ===== -->
@@ -2768,6 +2926,485 @@ function updateSelectedPhotosCounter() {
 
     // Вызов при загрузке страницы
     document.addEventListener('DOMContentLoaded', autoPreviewIfUrlExists);
+</script>
+
+<!-- === JavaScript для Drag and Drop партнёров (РАБОЧАЯ ВЕРСИЯ) === -->
+<script>
+    // === Глобальные переменные ===
+    let draggedPartner = null;
+
+    // === ОСНОВНЫЕ ФУНКЦИИ ===
+
+    // Инициализация при загрузке страницы
+    document.addEventListener('DOMContentLoaded', function() {
+        console.log('Инициализация DnD для партнёров...');
+
+        // 1. Настраиваем перетаскивание
+        initPartnersDragAndDrop();
+
+        // 2. Инициализируем счетчики
+        updatePartnersCounters();
+
+        // 3. Инициализируем превью (только если есть контейнер)
+        if (document.getElementById('selectedPartnersPreview')) {
+            updatePartnersPreview();
+        }
+
+        // 4. Заполняем скрытое поле изначальными данными (для edit.html)
+        updatePartnersHiddenInput();
+    });
+
+    // Разрешить перетаскивание
+    function allowDropPartner(event) {
+        event.preventDefault();
+    }
+
+    // Начать перетаскивание
+    function dragPartner(event) {
+        draggedPartner = event.target;
+        event.dataTransfer.setData('text/plain', event.target.getAttribute('data-partner-id'));
+        event.target.classList.add('dragging');
+        console.log('Начато перетаскивание партнёра:', event.target.getAttribute('data-partner-id'));
+    }
+
+    // Завершить перетаскивание
+    function dropPartner(event) {
+        event.preventDefault();
+
+        // Убираем подсветку зоны drop
+        event.target.closest('#availablePartnersContainer, #projectPartnersContainer')?.classList.remove('partner-drop-zone-active');
+
+        // Получаем ID перетаскиваемого партнёра
+        const partnerId = event.dataTransfer.getData('text/plain');
+        console.log('Drop партнёра ID:', partnerId);
+
+        // Находим элемент партнёра
+        const draggedElement = document.querySelector(`[data-partner-id="${partnerId}"]`);
+        if (!draggedElement) {
+            console.error('Не найден элемент партнёра с ID:', partnerId);
+            return;
+        }
+
+        // Определяем целевую колонку
+        const targetContainer = event.target.closest('#availablePartnersContainer, #projectPartnersContainer');
+        if (!targetContainer) {
+            console.error('Не найдена целевая колонка');
+            return;
+        }
+
+        console.log('Перемещаем из:', draggedElement.parentElement.id, 'в:', targetContainer.id);
+
+        // Перемещаем партнёра
+        movePartnerToContainer(partnerId, targetContainer.id);
+
+        // Убираем класс dragging
+        document.querySelectorAll('.partner-draggable.dragging').forEach(el => {
+            el.classList.remove('dragging');
+        });
+    }
+
+    // Инициализация DnD
+    function initPartnersDragAndDrop() {
+        console.log('Настройка DnD для партнёров...');
+
+        // Настраиваем все элементы партнёров
+        document.querySelectorAll('.partner-draggable').forEach(item => {
+            // Устанавливаем атрибут draggable
+            item.setAttribute('draggable', 'true');
+
+            // Обработчик начала перетаскивания
+            item.addEventListener('dragstart', function(e) {
+                dragPartner(e);
+            });
+
+            // Обработчик конца перетаскивания
+            item.addEventListener('dragend', function() {
+                this.classList.remove('dragging');
+                draggedPartner = null;
+            });
+
+            // Клик для выделения
+            item.addEventListener('click', function(e) {
+                // Ctrl/Cmd для множественного выбора
+                if (!e.ctrlKey && !e.metaKey) {
+                    // Снимаем выделение со всех
+                    document.querySelectorAll('.partner-draggable.selected').forEach(el => {
+                        el.classList.remove('selected');
+                    });
+                }
+                this.classList.toggle('selected');
+                console.log('Выбран партнёр:', this.getAttribute('data-partner-id'));
+            });
+        });
+
+        // Настраиваем зоны drop (Доступные партнёры)
+        const availableContainer = document.getElementById('availablePartnersContainer');
+        if (availableContainer) {
+            availableContainer.addEventListener('dragover', function(e) {
+                e.preventDefault();
+                this.classList.add('partner-drop-zone-active');
+            });
+
+            availableContainer.addEventListener('dragleave', function() {
+                this.classList.remove('partner-drop-zone-active');
+            });
+
+            availableContainer.addEventListener('drop', function(e) {
+                dropPartner(e);
+            });
+        }
+
+        // Настраиваем зоны drop (Партнёры проекта)
+        const projectContainer = document.getElementById('projectPartnersContainer');
+        if (projectContainer) {
+            projectContainer.addEventListener('dragover', function(e) {
+                e.preventDefault();
+                this.classList.add('partner-drop-zone-active');
+            });
+
+            projectContainer.addEventListener('dragleave', function() {
+                this.classList.remove('partner-drop-zone-active');
+            });
+
+            projectContainer.addEventListener('drop', function(e) {
+                dropPartner(e);
+            });
+        }
+
+        console.log('DnD для партнёров настроен');
+    }
+
+    // Перемещение партнёра между колонками
+    function movePartnerToContainer(partnerId, targetContainerId) {
+        console.log(`movePartnerToContainer: ${partnerId} -> ${targetContainerId}`);
+
+        // Находим элемент партнёра
+        const partnerElement = document.querySelector(`[data-partner-id="${partnerId}"]`);
+        if (!partnerElement) {
+            console.error('Партнёр не найден:', partnerId);
+            return;
+        }
+
+        // Находим целевую колонку
+        const targetContainer = document.getElementById(targetContainerId);
+        if (!targetContainer) {
+            console.error('Целевая колонка не найдена:', targetContainerId);
+            return;
+        }
+
+        // Проверяем, не перемещаем ли мы в ту же колонку
+        if (partnerElement.parentElement === targetContainer) {
+            console.log('Партнёр уже в целевой колонке');
+            return;
+        }
+
+        // Определяем направление перемещения
+        const isMovingToProject = targetContainerId === 'projectPartnersContainer';
+
+        // Клонируем элемент с новыми стилями
+        const clonedElement = partnerElement.cloneNode(true);
+
+        // Очищаем классы выделения
+        clonedElement.classList.remove('selected', 'dragging');
+
+        // Меняем стили в зависимости от колонки
+        if (isMovingToProject) {
+            // Перемещаем в проект - зеленые стили
+            const icon = clonedElement.querySelector('.bi-building, .bi-handshake');
+            if (icon) {
+                icon.className = 'bi bi-handshake fs-4 text-success';
+            }
+
+            const badge = clonedElement.querySelector('.badge');
+            if (badge) {
+                badge.className = 'badge bg-success text-white';
+                badge.textContent = 'В проекте';
+            }
+
+            console.log(`Партнёр ${partnerId} перемещён в проект`);
+        } else {
+            // Перемещаем в доступные - синие стили
+            const icon = clonedElement.querySelector('.bi-building, .bi-handshake');
+            if (icon) {
+                icon.className = 'bi bi-building fs-4 text-info';
+            }
+
+            const badge = clonedElement.querySelector('.badge');
+            if (badge) {
+                badge.className = 'badge bg-info text-white';
+                badge.textContent = 'Доступен';
+            }
+
+            console.log(`Партнёр ${partnerId} перемещён в доступные`);
+        }
+
+        // Удаляем старый элемент
+        partnerElement.remove();
+
+        // Добавляем новый элемент в целевую колонку
+        targetContainer.appendChild(clonedElement);
+
+        // Реинициализируем события для нового элемента
+        initPartnerElementEvents(clonedElement);
+
+        // Обновляем UI
+        updatePartnersCounters();
+
+        // Обновляем сообщения о пустоте
+        updateEmptyMessages();
+
+        console.log('Партнёр успешно перемещён');
+    }
+
+    // Инициализация событий для элемента партнёра
+    function initPartnerElementEvents(element) {
+        element.setAttribute('draggable', 'true');
+
+        element.addEventListener('dragstart', function(e) {
+            dragPartner(e);
+        });
+
+        element.addEventListener('dragend', function() {
+            this.classList.remove('dragging');
+        });
+
+        element.addEventListener('click', function(e) {
+            if (!e.ctrlKey && !e.metaKey) {
+                document.querySelectorAll('.partner-draggable.selected').forEach(el => {
+                    el.classList.remove('selected');
+                });
+            }
+            this.classList.toggle('selected');
+        });
+    }
+
+    // Обновление счетчиков (УНИВЕРСАЛЬНАЯ ФУНКЦИЯ для create.html и edit.html)
+    function updatePartnersCounters() {
+        console.log('Обновление счетчиков партнёров...');
+
+        // Получаем контейнеры
+        const availableContainer = document.getElementById('availablePartnersContainer');
+        const projectContainer = document.getElementById('projectPartnersContainer');
+
+        // Считаем количество
+        const availableCount = availableContainer ?
+            availableContainer.querySelectorAll('.partner-draggable').length : 0;
+        const projectCount = projectContainer ?
+            projectContainer.querySelectorAll('.partner-draggable').length : 0;
+
+        console.log(`Доступно: ${availableCount}, В проекте: ${projectCount}`);
+
+        // === ОБНОВЛЯЕМ ВСЕ ВОЗМОЖНЫЕ ЭЛЕМЕНТЫ (с проверкой существования) ===
+
+        // 1. Счетчик доступных партнёров (есть в обеих страницах)
+        const availableCountElement = document.getElementById('availablePartnersCount');
+        if (availableCountElement) {
+            availableCountElement.textContent = availableCount;
+        }
+
+        // 2. Счетчик партнёров в DnD колонке (есть в обеих страницах)
+        const projectDragCountElement = document.getElementById('projectPartnersDragCount');
+        if (projectDragCountElement) {
+            projectDragCountElement.textContent = projectCount;
+        }
+
+        // 3. Общий счетчик выбранных партнёров (есть в обеих страницах)
+        const selectedCountElement = document.getElementById('selectedPartnersCount');
+        if (selectedCountElement) {
+            selectedCountElement.textContent = projectCount;
+        }
+
+        // 4. Счетчик в заголовке секции (ТОЛЬКО в edit.html)
+        const projectCountElement = document.getElementById('projectPartnersCount');
+        if (projectCountElement) {
+            projectCountElement.textContent = projectCount;
+        }
+
+        // 5. Обновляем превью
+        updatePartnersPreview();
+
+        // 6. Обновляем скрытое поле
+        updatePartnersHiddenInput();
+
+        console.log('Счетчики обновлены');
+    }
+
+    // Обновление сообщений о пустых колонках
+    function updateEmptyMessages() {
+        // Сообщение о пустых доступных партнёрах
+        const availableContainer = document.getElementById('availablePartnersContainer');
+        if (availableContainer) {
+            const hasAvailablePartners = availableContainer.querySelectorAll('.partner-draggable').length > 0;
+            const emptyMessage = availableContainer.querySelector('.text-center.py-4');
+            if (emptyMessage) {
+                emptyMessage.style.display = hasAvailablePartners ? 'none' : 'block';
+            }
+        }
+
+        // Сообщение о пустых партнёрах проекта
+        const projectContainer = document.getElementById('projectPartnersContainer');
+        if (projectContainer) {
+            const hasProjectPartners = projectContainer.querySelectorAll('.partner-draggable').length > 0;
+            const emptyMessage = document.getElementById('emptyPartnersMessage');
+            if (emptyMessage) {
+                emptyMessage.style.display = hasProjectPartners ? 'none' : 'block';
+            }
+        }
+    }
+
+    // Обновление скрытого поля с выбранными ID
+    function updatePartnersHiddenInput() {
+        const projectContainer = document.getElementById('projectPartnersContainer');
+        if (!projectContainer) {
+            console.log('Контейнер партнёров проекта не найден');
+            return;
+        }
+
+        // Собираем все ID партнёров в проекте
+        const selectedElements = projectContainer.querySelectorAll('[data-partner-id]');
+        const ids = Array.from(selectedElements).map(el => el.getAttribute('data-partner-id'));
+
+        console.log('Выбранные ID партнёров:', ids);
+
+        // Находим скрытое поле
+        let hiddenField = document.getElementById('selectedPartnerIds');
+
+        // Если поля нет - создаем его
+        if (!hiddenField) {
+            console.log('Создаем скрытое поле selectedPartnerIds');
+            hiddenField = document.createElement('input');
+            hiddenField.type = 'hidden';
+            hiddenField.id = 'selectedPartnerIds';
+            hiddenField.name = 'selectedPartnerIds';
+
+            // Добавляем поле в форму
+            const form = document.querySelector('form.needs-validation');
+            if (form) {
+                form.appendChild(hiddenField);
+            } else {
+                console.error('Форма не найдена');
+                return;
+            }
+        }
+
+        // Записываем ID через запятую
+        hiddenField.value = ids.join(',');
+        console.log('Скрытое поле обновлено:', hiddenField.value);
+    }
+
+    // Обновление превью партнёров
+    function updatePartnersPreview() {
+        const previewContainer = document.getElementById('selectedPartnersPreview');
+        if (!previewContainer) {
+            console.log('Контейнер превью партнёров не найден');
+            return;
+        }
+
+        // Получаем все партнёры в проекте
+        const projectContainer = document.getElementById('projectPartnersContainer');
+        if (!projectContainer) {
+            console.log('Контейнер партнёров проекта не найден для превью');
+            return;
+        }
+
+        const selectedElements = projectContainer.querySelectorAll('[data-partner-id]');
+
+        if (selectedElements.length === 0) {
+            // Показываем сообщение об отсутствии партнёров
+            previewContainer.innerHTML = `
+                <div class="col-12">
+                    <div class="alert alert-light text-center py-4">
+                        <i class="bi bi-handshake display-4 text-muted mb-3"></i>
+                        <h6 class="text-muted">Партнёры не выбраны</h6>
+                        <p class="text-muted small mb-0">
+                            Добавьте партнёров в проект для отображения логотипов на странице
+                        </p>
+                    </div>
+                </div>
+            `;
+            return;
+        }
+
+        // Создаем превью карточек
+        let html = '<div class="col-12 mb-2"><strong>Выбранные партнёры:</strong></div>';
+
+        selectedElements.forEach((element, index) => {
+            const partnerId = element.getAttribute('data-partner-id');
+            const name = element.querySelector('strong')?.textContent || `Партнёр ${partnerId}`;
+            const typeElement = element.querySelector('small.text-muted');
+            const type = typeElement ? typeElement.textContent : 'Тип не указан';
+
+            html += `
+                <div class="col-6 col-md-4 col-lg-3 mb-3">
+                    <div class="card h-100">
+                        <div class="card-body text-center">
+                            <div class="mb-3" style="height: 60px; display: flex; align-items: center; justify-content: center;">
+                                <i class="bi bi-handshake fs-1 text-success"></i>
+                            </div>
+                            <h6 class="mb-1">${escapeHtml(name)}</h6>
+                            <small class="text-muted d-block mb-2">${escapeHtml(type)}</small>
+                            <span class="badge bg-success">В проекте</span>
+                        </div>
+                    </div>
+                </div>
+            `;
+        });
+
+        previewContainer.innerHTML = html;
+        console.log('Превью обновлено, партнёров:', selectedElements.length);
+    }
+
+    // Функции для массового перемещения
+    function addSelectedPartnersToProject() {
+        console.log('Добавление выбранных партнёров в проект...');
+
+        const selected = document.querySelectorAll('#availablePartnersContainer .partner-draggable.selected');
+        console.log('Выбрано для добавления:', selected.length);
+
+        selected.forEach(partner => {
+            const partnerId = partner.getAttribute('data-partner-id');
+            console.log('Добавляем партнёра:', partnerId);
+            movePartnerToContainer(partnerId, 'projectPartnersContainer');
+        });
+    }
+
+    function removeSelectedPartnersFromProject() {
+        console.log('Удаление выбранных партнёров из проекта...');
+
+        const selected = document.querySelectorAll('#projectPartnersContainer .partner-draggable.selected');
+        console.log('Выбрано для удаления:', selected.length);
+
+        selected.forEach(partner => {
+            const partnerId = partner.getAttribute('data-partner-id');
+            console.log('Удаляем партнёра:', partnerId);
+            movePartnerToContainer(partnerId, 'availablePartnersContainer');
+        });
+    }
+
+    // Вспомогательная функция для экранирования HTML
+    function escapeHtml(text) {
+        if (!text) return '';
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    }
+
+    // Функция для отладки - показывает все партнёры
+    function debugShowPartners() {
+        console.log('=== DEBUG: Все партнёры ===');
+
+        const available = document.querySelectorAll('#availablePartnersContainer [data-partner-id]');
+        const project = document.querySelectorAll('#projectPartnersContainer [data-partner-id]');
+
+        console.log('Доступные партнёры:', available.length);
+        available.forEach(p => console.log('  ID:', p.getAttribute('data-partner-id')));
+
+        console.log('Партнёры в проекте:', project.length);
+        project.forEach(p => console.log('  ID:', p.getAttribute('data-partner-id')));
+
+        const hiddenField = document.getElementById('selectedPartnerIds');
+        console.log('Скрытое поле:', hiddenField ? hiddenField.value : 'не найдено');
+    }
 </script>
 </body>
 </html>
