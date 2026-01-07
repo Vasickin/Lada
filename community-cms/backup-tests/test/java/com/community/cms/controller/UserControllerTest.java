@@ -23,8 +23,8 @@ import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
 /**
- * Unit tests for UserController class.
- * Тесты для класса UserController.
+ * Unit tests for UserAdminController class.
+ * Тесты для класса UserAdminController.
  *
  * @author Vasickin
  * @version 1.0

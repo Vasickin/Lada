@@ -2,6 +2,7 @@ package com.community.cms;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.context.annotation.ComponentScan;
 
 /**
  * Главный класс Spring Boot приложения Community CMS.
@@ -21,10 +22,11 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
  *
  * @author Vasickin
  * @version 1.0
- * @since 2025
  * @see <a href="https://spring.io/projects/spring-boot">Spring Boot Documentation</a>
  */
+
 @SpringBootApplication
+@ComponentScan(basePackages = "com.community.cms")
 public class CmsApplication {
 
     /**

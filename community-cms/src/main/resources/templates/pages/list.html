@@ -64,7 +64,7 @@
             <div th:if="${param.success}"
                  class="alert alert-success alert-dismissible fade show"
                  role="alert">
-                <!-- Message from URL parameter like ?success=Page+created /
+                <!-- Message from URL parameter like ?success=CustomPage+created /
                      Сообщение из параметра URL например ?success=Страница+создана -->
                 <span th:text="${param.success}">Операция выполнена успешно</span>
                 <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
@@ -111,15 +111,15 @@
                         th:object="${page}" создает контекст страницы для этой строки
                     -->
                     <tr th:each="page : ${pages}" th:object="${page}">
-                        <!-- Page ID / ID страницы -->
+                        <!-- CustomPage ID / ID страницы -->
                         <td th:text="*{id}">1</td>
 
-                        <!-- Page title / Заголовок страницы -->
+                        <!-- CustomPage title / Заголовок страницы -->
                         <td>
                             <strong th:text="*{title}">Заголовок страницы</strong>
                         </td>
 
-                        <!-- Page slug (URL identifier) / Slug страницы (идентификатор URL) -->
+                        <!-- CustomPage slug (URL identifier) / Slug страницы (идентификатор URL) -->
                         <td>
                             <code th:text="*{slug}">page-slug</code>
                         </td>

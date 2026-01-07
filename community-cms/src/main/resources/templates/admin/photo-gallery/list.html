@@ -51,17 +51,19 @@
 
                     <!-- Кнопки навигации -->
                     <div class="d-flex gap-2 align-items-center">
-                        <a th:href="@{/admin}" class="btn btn-outline-secondary">
-                            <i class="bi bi-speedometer2 me-1"></i>
-                            <span>В админку</span>
-                        </a>
+                        <!-- ПЕРЕХОД НА САЙТ -->
                         <a th:href="@{/}" class="btn btn-outline-secondary">
-                            <i class="bi bi-house-door me-1"></i>
-                            <span>На главную</span>
+                            <i class="bi bi-house me-1"></i>На сайт
                         </a>
+
+                        <!-- КНОПКА УПРАВЛЕНИЕ ОСНОВНЫМИ СТРАНИЦАМИ -->
+                        <a th:href="@{/admin/site-pages}" class="btn btn-outline-success me-2">
+                            🌐 Управление основными страницами
+                        </a>
+
                         <a th:href="@{/admin/photo-gallery/create}" class="btn btn-primary">
                             <i class="bi bi-plus-circle me-1"></i>
-                            <span th:text="#{photo.gallery.create.new}">Создать новый элемент</span>
+                            <span th:text="#{photo.gallery.create.new}">Создать</span>
                         </a>
                     </div>
                 </div>

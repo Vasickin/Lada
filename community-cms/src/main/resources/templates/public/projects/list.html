@@ -1,0 +1,615 @@
+<!DOCTYPE html>
+<!--
+    PROJECTS PAGE WITH FRAGMENT SYSTEM INTEGRATION / СТРАНИЦА "ПРОЕКТЫ" С ИНТЕГРАЦИЕЙ СИСТЕМЫ ФРАГМЕНТОВ
+    Showcases organization's active and completed projects with filtering capabilities
+    Демонстрирует активные и завершенные проекты организации с возможностями фильтрации
+
+    Fragment Usage / Использование фрагментов:
+    - Header: Meta tags, SEO optimization, CSS styles
+    - Navigation: Main menu with active states and Spring Security
+    - Banner: Responsive header images with accessibility
+    - Footer: Complete contact information and links
+    - Scripts: JavaScript functionality and Bootstrap
+-->
+<html lang="ru" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+
+<!-- HEADER FRAGMENT INTEGRATION / ИНТЕГРАЦИЯ ФРАГМЕНТА ХЕДЕРА -->
+<head th:replace="fragments/header :: html-head('Наши проекты')">
+    <!-- Content will be replaced by header fragment / Контент будет заменен фрагментом хедера -->
+</head>
+
+<body>
+<!-- NAVIGATION FRAGMENT INTEGRATION / ИНТЕГРАЦИЯ ФРАГМЕНТА НАВИГАЦИИ -->
+<div th:replace="fragments/navigation :: main-navigation"></div>
+
+<!-- BANNER FRAGMENT INTEGRATION / ИНТЕГРАЦИЯ ФРАГМЕНТА БАННЕРА -->
+<div th:replace="fragments/banner :: header-banner('Общественная организация Лада - Наши проекты и инициативы')"></div>
+
+<!--
+    MAIN CONTENT SECTION / СЕКЦИЯ ОСНОВНОГО КОНТЕНТА
+    Projects showcase with filtering, categories, and detailed project cards
+    Витрина проектов с фильтрацией, категориями и детальными карточками проектов
+-->
+<main class="container my-5 py-4">
+    <!--
+        PAGE HEADER SECTION / СЕКЦИЯ ЗАГОЛОВКА СТРАНИЦЫ
+        Main title and description for the projects page
+        Основной заголовок и описание для страницы проектов
+    -->
+    <div class="row mb-5">
+    <div class="row">
+        <!--
+            ЛЕВАЯ КОЛОНКА: КАРТОЧКИ ПРОЕКТОВ
+            Основная область контента с отфильтрованными карточками проектов
+        -->
+        <div class="col-lg-8">
+            <!-- Page Header / Заголовок страницы -->
+            <div class="mb-5">
+                <h1 class="display-5 fw-bold text-primary mb-3">Наши проекты</h1>
+                <p class="lead text-muted">
+                    Откройте для себя разнообразие наших инициатив. От активных мероприятий
+                    до успешно завершенных проектов - каждый из них вносит вклад в развитие сообщества.
+                </p>
+                <div class="d-flex align-items-center gap-3 mt-3">
+                    <span class="badge bg-success fs-6">
+                        <span th:text="${totalItems ?: 0}">0</span> проектов
+                    </span>
+                    <span class="text-muted">
+                        <i class="bi bi-filter me-1"></i>
+                        Используйте фильтры справа для поиска
+                    </span>
+                </div>
+            </div>
+
+            <!-- Active Filters Display / Отображение активных фильтров -->
+            <div class="card border-0 shadow-sm mb-4"
+                 th:if="${selectedStatus != null or selectedCategory != null or selectedYear != null or selectedSearch != null}">
+                <div class="card-body p-3">
+                    <div class="d-flex align-items-center justify-content-between">
+                        <div>
+                            <span class="text-muted me-3">Активные фильтры:</span>
+                            <!-- Status Filter Badge / Бейдж фильтра статуса -->
+                            <span class="badge bg-primary me-2" th:if="${selectedStatus != null}">
+                    Статус:
+                    <span th:text="${selectedStatus}"></span>
+                    <a href="#" class="text-white ms-2" th:href="@{/projects}">
+                        <i class="bi bi-x"></i>
+                    </a>
+                </span>
+                            <!-- Category Filter Badge / Бейдж фильтра категории -->
+                            <span class="badge bg-info me-2" th:if="${selectedCategory != null and selectedCategory != 'Все категории'}">
+                    Категория:
+                    <span th:text="${selectedCategory}"></span>
+                    <a href="#" class="text-white ms-2"
+                       th:href="@{/projects(status=${selectedStatus}, year=${selectedYear}, search=${selectedSearch})}">
+                        <i class="bi bi-x"></i>
+                    </a>
+                </span>
+                            <!-- Year Filter Badge / Бейдж фильтра года -->
+                            <span class="badge bg-warning me-2" th:if="${selectedYear != null}">
+                    Год:
+                    <span th:text="${selectedYear}"></span>
+                    <a href="#" class="text-dark ms-2"
+                       th:href="@{/projects(status=${selectedStatus}, category=${selectedCategory}, search=${selectedSearch})}">
+                        <i class="bi bi-x"></i>
+                    </a>
+                </span>
+                            <!-- Search Filter Badge / Бейдж фильтра поиска -->
+                            <span class="badge bg-secondary me-2" th:if="${selectedSearch != null}">
+                    Поиск: "
+                    <span th:text="${selectedSearch}"></span>"
+                    <a href="#" class="text-white ms-2"
+                       th:href="@{/projects(status=${selectedStatus}, category=${selectedCategory}, year=${selectedYear})}">
+                        <i class="bi bi-x"></i>
+                    </a>
+                </span>
+                        </div>
+                        <a th:href="@{/projects}" class="btn btn-sm btn-outline-secondary">
+                            <i class="bi bi-x-circle me-1"></i> Сброс всех
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Projects Grid / Сетка проектов -->
+            <div class="row g-4">
+                <!-- Project Cards / Карточки проектов -->
+                <div class="col-12" th:if="${projects != null and !projects.isEmpty()}">
+                    <div class="row row-cols-1 row-cols-md-2 g-4">
+                        <div class="col" th:each="project : ${projects}">
+                            <div class="card border-0 shadow-sm h-100 project-card card-hover">
+                                <!-- Project Image / Изображение проекта -->
+                                <div class="position-relative" style="height: 200px; overflow: hidden;">
+                                    <img th:if="${project.featuredImagePath}"
+                                         th:src="${project.featuredImagePath}"
+                                         class="card-img-top h-100 object-fit-cover"
+                                         alt="Project image"
+                                         style="transition: transform 0.3s ease;">
+                                    <div th:unless="${project.featuredImagePath}"
+                                         class="h-100 d-flex align-items-center justify-content-center bg-light">
+                                        <i class="bi bi-image text-muted" style="font-size: 3rem;"></i>
+                                    </div>
+                                    <!-- Status Badge / Бейдж статуса -->
+                                    <div class="position-absolute top-0 end-0 m-3">
+    <span th:classappend="${project.currentlyActive} ? 'bg-success' : (${project.archived} ? 'bg-secondary' : 'bg-primary')"
+          class="badge">
+        <span th:text="${project.currentlyActive} ? 'Активный' : (${project.archived} ? 'Архивный' : 'Ежегодный')"></span>
+    </span>
+                                    </div>
+                                </div>
+
+                                <!-- Card Body / Тело карточки -->
+                                <div class="card-body">
+                                    <!-- Category Badge / Бейдж категории -->
+                                    <div class="mb-2">
+                                        <span class="badge bg-light text-dark border">
+                                            <i class="bi bi-tag me-1"></i>
+                                            <span th:text="${project.category}"></span>
+                                        </span>
+                                    </div>
+
+                                    <!-- Project Title / Название проекта -->
+                                    <h5 class="card-title fw-bold mb-2" style="min-height: 2.5rem;">
+                                        <a th:href="${project.detailUrl}" class="text-dark text-decoration-none">
+                                            <span th:text="${project.title}"></span>
+                                        </a>
+                                    </h5>
+
+                                    <!-- Project Description / Описание проекта -->
+                                    <p class="card-text text-muted mb-3" style="min-height: 4rem;">
+                                        <span th:text="${project.shortDescription != null ?
+                                                       (project.shortDescription.length() > 120 ?
+                                                        project.shortDescription.substring(0, 117) + '...' :
+                                                        project.shortDescription) :
+                                                       'Описание проекта недоступно'}"></span>
+                                    </p>
+
+                                    <!-- Project Dates and Location / Даты и место проекта -->
+                                    <div class="d-flex flex-column gap-2 mb-3">
+                                        <!-- Event Date / Дата события -->
+                                        <div th:if="${project.eventDate}" class="d-flex align-items-center">
+                                            <i class="bi bi-calendar-event text-primary me-2"></i>
+                                            <small class="text-muted">
+                                                <span th:text="${#temporals.format(project.eventDate, 'dd MMMM yyyy')}"></span>
+                                            </small>
+                                        </div>
+                                        <!-- Location / Место проведения -->
+                                        <div th:if="${project.location}" class="d-flex align-items-center">
+                                            <i class="bi bi-geo-alt text-primary me-2"></i>
+                                            <small class="text-muted" th:text="${project.location}"></small>
+                                        </div>
+                                    </div>
+
+                                    <!-- Action Button / Кнопка действия -->
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <a th:href="${project.detailUrl}"
+                                           class="btn btn-primary btn-sm">
+                                            <i class="bi bi-arrow-right me-1"></i> Подробнее
+                                        </a>
+                                        <!-- Additional Info / Дополнительная информация -->
+                                        <small class="text-muted">
+                                            <i class="bi bi-eye me-1"></i>
+                                            <span th:if="${project.hasVideo}">
+                                                <i class="bi bi-camera-video text-success ms-2"></i>
+                                            </span>
+                                            <span th:if="${project.hasKeyPhotos}">
+                                                <i class="bi bi-images text-info ms-2"></i>
+                                            </span>
+                                        </small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- No Projects Found / Проекты не найдены -->
+                <div class="col-12" th:if="${projects == null or projects.isEmpty()}">
+                    <div class="card border-0 shadow-sm">
+                        <div class="card-body text-center py-5">
+                            <i class="bi bi-inbox display-1 text-muted mb-4"></i>
+                            <h4 class="text-muted mb-3">Проекты не найдены</h4>
+                            <p class="text-muted mb-4">
+                                Попробуйте изменить параметры фильтрации или поиска
+                            </p>
+                            <a th:href="@{/projects}" class="btn btn-primary">
+                                <i class="bi bi-arrow-clockwise me-1"></i> Показать все проекты
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Pagination / Пагинация -->
+            <nav th:if="${totalPages > 1}" class="mt-5">
+                <ul class="pagination justify-content-center">
+                    <!-- Previous Page / Предыдущая страница -->
+                    <li class="page-item" th:classappend="${currentPage == 0} ? 'disabled'">
+                        <a class="page-link"
+                           th:href="@{/projects(page=${currentPage - 1},
+                                                 size=${pageSize},
+                                                 status=${selectedStatus},
+                                                 category=${selectedCategory},
+                                                 year=${selectedYear},
+                                                 search=${selectedSearch})}">
+                            <i class="bi bi-chevron-left"></i>
+                        </a>
+                    </li>
+
+                    <!-- Page Numbers / Номера страниц -->
+                    <li th:each="pageNum : ${#numbers.sequence(0, totalPages - 1)}"
+                        class="page-item" th:classappend="${pageNum == currentPage} ? 'active'">
+                        <a class="page-link"
+                           th:href="@{/projects(page=${pageNum},
+                                                 size=${pageSize},
+                                                 status=${selectedStatus},
+                                                 category=${selectedCategory},
+                                                 year=${selectedYear},
+                                                 search=${selectedSearch})}"
+                           th:text="${pageNum + 1}"></a>
+                    </li>
+
+                    <!-- Next Page / Следующая страница -->
+                    <li class="page-item" th:classappend="${currentPage == totalPages - 1} ? 'disabled'">
+                        <a class="page-link"
+                           th:href="@{/projects(page=${currentPage + 1},
+                                                 size=${pageSize},
+                                                 status=${selectedStatus},
+                                                 category=${selectedCategory},
+                                                 year=${selectedYear},
+                                                 search=${selectedSearch})}">
+                            <i class="bi bi-chevron-right"></i>
+                        </a>
+                    </li>
+                </ul>
+                <div class="text-center text-muted mt-2">
+                    Страница <span th:text="${currentPage + 1}"></span> из <span th:text="${totalPages}"></span>
+                </div>
+            </nav>
+        </div>
+
+        <!--
+            ПРАВАЯ КОЛОНКА: КАРУСЕЛЬ, КАЛЕНДАРЬ И ФИЛЬТРЫ
+            Боковая панель с каруселью, календарем и опциями фильтрации
+        -->
+        <div class="col-lg-4">
+            <!-- Carousel Section / Секция карусели -->
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-primary text-white py-3">
+                    <h5 class="mb-0">
+                        <i class="bi bi-star me-2"></i> События в центре внимания
+                    </h5>
+                </div>
+                <div class="card-body p-0">
+                    <!-- Carousel / Карусель -->
+                    <div th:if="${carouselProjects != null and !carouselProjects.isEmpty()}">
+                        <div id="projectCarousel" class="carousel slide" data-bs-ride="carousel">
+                            <div class="carousel-inner">
+                                <div th:each="project, iterStat : ${carouselProjects}"
+                                     th:classappend="${iterStat.first} ? 'carousel-item active' : 'carousel-item'">
+                                    <div class="p-3">
+                                        <!-- Carousel Image / Изображение карусели -->
+                                        <div style="height: 180px; overflow: hidden;" class="rounded mb-3">
+                                            <img th:if="${project.featuredImagePath}"
+                                                 th:src="${project.featuredImagePath}"
+                                                 class="img-fluid w-100 h-100 object-fit-cover"
+                                                 alt="Carousel image">
+                                            <div th:unless="${project.featuredImagePath}"
+                                                 class="h-100 d-flex align-items-center justify-content-center bg-light">
+                                                <i class="bi bi-image text-muted" style="font-size: 2rem;"></i>
+                                            </div>
+                                        </div>
+                                        <!-- Carousel Content / Контент карусели -->
+                                        <h6 class="fw-bold mb-2">
+                                            <a th:href="${project.detailUrl}" class="text-dark text-decoration-none">
+                                                <span th:text="${project.title}"></span>
+                                            </a>
+                                        </h6>
+                                        <p class="small text-muted mb-2">
+                                            <span th:text="${project.shortDescription != null ?
+                                                           (project.shortDescription.length() > 100 ?
+                                                            project.shortDescription.substring(0, 97) + '...' :
+                                                            project.shortDescription) : ''}"></span>
+                                        </p>
+                                        <!-- Location and Date / Место и дата -->
+                                        <div class="d-flex justify-content-between small">
+                                            <span th:if="${project.location}" class="text-muted">
+                                                <i class="bi bi-geo-alt me-1"></i>
+                                                <span th:text="${project.location}"></span>
+                                            </span>
+                                            <span th:if="${project.eventDate}" class="text-muted">
+                                                <i class="bi bi-calendar me-1"></i>
+                                                <span th:text="${#temporals.format(project.eventDate, 'dd.MM.yy')}"></span>
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- Carousel Controls / Управление каруселью -->
+                            <button class="carousel-control-prev" type="button" data-bs-target="#projectCarousel" data-bs-slide="prev">
+                                <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                                <span class="visually-hidden">Previous</span>
+                            </button>
+                            <button class="carousel-control-next" type="button" data-bs-target="#projectCarousel" data-bs-slide="next">
+                                <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                                <span class="visually-hidden">Next</span>
+                            </button>
+                        </div>
+                    </div>
+                    <!-- No Carousel Items / Нет элементов карусели -->
+                    <div th:unless="${carouselProjects != null and !carouselProjects.isEmpty()}" class="p-4 text-center">
+                        <i class="bi bi-calendar-x text-muted mb-3" style="font-size: 2rem;"></i>
+                        <p class="text-muted mb-0">Нет активных событий для отображения</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Filters Section / Секция фильтров -->
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-light py-3">
+                    <h5 class="mb-0">
+                        <i class="bi bi-funnel me-2"></i> Фильтры
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <!-- Filter Form / Форма фильтрации -->
+                    <form th:action="@{/projects}" method="get">
+                        <!-- Status Filter / Фильтр по статусу -->
+                        <div class="mb-3">
+                            <label for="statusFilter" class="form-label small fw-bold">
+                                <i class="bi bi-flag me-1"></i> Статус проекта
+                            </label>
+                            <select class="form-select form-select-sm" id="statusFilter" name="status">
+                                <option value="">Все статусы</option>
+                                <option th:each="status : ${statuses}"
+                                        th:value="${status.name()}"
+                                        th:text="${status.nameRu}"
+                                        th:selected="${selectedStatus == status.name()}">
+                                </option>
+                            </select>
+                        </div>
+
+                        <!-- Category Filter / Фильтр по категории -->
+                        <div class="mb-3">
+                            <label for="categoryFilter" class="form-label small fw-bold">
+                                <i class="bi bi-tag me-1"></i> Категория
+                            </label>
+                            <select class="form-select form-select-sm" id="categoryFilter" name="category">
+                                <option value="">Все категории</option>
+                                <option th:each="category : ${categories}"
+                                        th:value="${category}"
+                                        th:text="${category}"
+                                        th:selected="${selectedCategory == category}">
+                                </option>
+                            </select>
+                        </div>
+
+                        <!-- Year Filter / Фильтр по году -->
+                        <div class="mb-3">
+                            <label for="yearFilter" class="form-label small fw-bold">
+                                <i class="bi bi-calendar me-1"></i> Год события
+                            </label>
+                            <select class="form-select form-select-sm" id="yearFilter" name="year">
+                                <option value="">Все годы</option>
+                                <option th:each="year : ${years}"
+                                        th:value="${year}"
+                                        th:text="${year}"
+                                        th:selected="${selectedYear == year}">
+                                </option>
+                            </select>
+                        </div>
+
+                        <!-- Search Filter / Фильтр поиска -->
+                        <div class="mb-4">
+                            <label for="searchFilter" class="form-label small fw-bold">
+                                <i class="bi bi-search me-1"></i> Поиск по названию
+                            </label>
+                            <div class="input-group input-group-sm">
+                                <input type="text"
+                                       class="form-control"
+                                       id="searchFilter"
+                                       name="search"
+                                       th:value="${selectedSearch}"
+                                       placeholder="Введите название...">
+                                <button class="btn btn-outline-secondary" type="button" id="clearSearch">
+                                    <i class="bi bi-x"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Form Buttons / Кнопки формы -->
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary btn-sm">
+                                <i class="bi bi-filter me-1"></i> Применить фильтры
+                            </button>
+                            <a th:href="@{/projects}" class="btn btn-outline-secondary btn-sm">
+                                <i class="bi bi-arrow-clockwise me-1"></i> Сбросить все
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Calendar Section / Секция календаря -->
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-light py-3">
+                    <h5 class="mb-0">
+                        <i class="bi bi-calendar-month me-2"></i> Календарь событий
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="text-center mb-3">
+                        <div class="h4 text-primary fw-bold">
+                            [[${#dates.format(#dates.createNow(), 'MMMM yyyy')}]]
+                        </div>
+                        <small class="text-muted">Текущий месяц</small>
+                    </div>
+                    <!-- Simple Calendar Grid / Простая сетка календаря -->
+                    <div class="calendar-grid mb-3">
+                        <div class="row row-cols-7 g-1 mb-2">
+                            <div class="col text-center small text-muted">Пн</div>
+                            <div class="col text-center small text-muted">Вт</div>
+                            <div class="col text-center small text-muted">Ср</div>
+                            <div class="col text-center small text-muted">Чт</div>
+                            <div class="col text-center small text-muted">Пт</div>
+                            <div class="col text-center small text-muted">Сб</div>
+                            <div class="col text-center small text-muted">Вс</div>
+                        </div>
+                        <div class="row row-cols-7 g-1">
+                            <div th:each="day : ${#numbers.sequence(1, 31)}"
+                                 class="col text-center">
+                                <div class="calendar-day small py-1 rounded"
+                                     th:classappend="${day == #dates.day(#dates.createNow())} ? 'bg-primary text-white' : 'bg-light'">
+                                    [[${day}]]
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Upcoming Events / Предстоящие события -->
+                    <div class="mt-3">
+                        <h6 class="small fw-bold mb-2">Ближайшие события:</h6>
+                        <div class="list-group list-group-flush small">
+                            <div th:each="project : ${carouselProjects}"
+                                 th:if="${project.eventDate != null and project.eventDate.isAfter(#temporals.createToday())}"
+                                 class="list-group-item border-0 px-0 py-2">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <a th:href="${project.detailUrl}" class="text-decoration-none text-dark">
+                                        <span th:text="${project.title}"></span>
+                                    </a>
+                                    <span class="badge bg-light text-dark">
+                    [[${#temporals.format(project.eventDate, 'dd.MM')}]]
+                </span>
+                                </div>
+                            </div>
+                            <div th:if="${carouselProjects.?[#this.eventDate != null and #this.eventDate.isAfter(#temporals.createToday())].empty}"
+                                 class="list-group-item border-0 px-0 py-2 text-muted">
+                                <i class="bi bi-info-circle me-1"></i> Нет ближайших событий
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+
+<!-- ПОДВАЛ ОСТАВЛЯЕМ КАК ЕСТЬ -->
+<div th:replace="fragments/footer :: main-footer"></div>
+
+<!-- СКРИПТЫ ОСТАВЛЯЕМ КАК ЕСТЬ -->
+<div th:replace="fragments/scripts :: main-scripts"></div>
+
+<!--
+    ДОПОЛНИТЕЛЬНЫЙ JAVASCRIPT ДЛЯ СТРАНИЦЫ ПРОЕКТОВ
+-->
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        console.log('Projects list page initialized');
+
+        // Clear search button functionality / Функциональность кнопки очистки поиска
+        const clearSearchBtn = document.getElementById('clearSearch');
+        const searchInput = document.getElementById('searchFilter');
+
+        if (clearSearchBtn && searchInput) {
+            clearSearchBtn.addEventListener('click', function() {
+                searchInput.value = '';
+                searchInput.focus();
+            });
+        }
+
+        // Project card hover effects / Эффекты наведения на карточки проектов
+        const projectCards = document.querySelectorAll('.project-card');
+        projectCards.forEach(card => {
+            card.addEventListener('mouseenter', function() {
+                this.style.transform = 'translateY(-5px)';
+                this.style.boxShadow = '0 10px 20px rgba(0,0,0,0.1)';
+                this.style.transition = 'all 0.3s ease';
+
+                // Scale image on hover / Увеличение изображения при наведении
+                const img = this.querySelector('img');
+                if (img) {
+                    img.style.transform = 'scale(1.05)';
+                }
+            });
+
+            card.addEventListener('mouseleave', function() {
+                this.style.transform = 'translateY(0)';
+                this.style.boxShadow = '0 4px 6px rgba(0,0,0,0.05)';
+
+                // Reset image scale / Сброс увеличения изображения
+                const img = this.querySelector('img');
+                if (img) {
+                    img.style.transform = 'scale(1)';
+                }
+            });
+        });
+
+        // Auto-submit filters on change / Автоматическая отправка фильтров при изменении
+        const filters = ['statusFilter', 'categoryFilter', 'yearFilter'];
+        filters.forEach(filterId => {
+            const filter = document.getElementById(filterId);
+            if (filter) {
+                filter.addEventListener('change', function() {
+                    this.form.submit();
+                });
+            }
+        });
+
+        // Initialize Bootstrap carousel / Инициализация карусели Bootstrap
+        const carousel = document.getElementById('projectCarousel');
+        if (carousel) {
+            const bsCarousel = new bootstrap.Carousel(carousel, {
+                interval: 5000,
+                wrap: true
+            });
+        }
+    });
+</script>
+
+<!--
+    ДОПОЛНИТЕЛЬНЫЕ СТИЛИ
+-->
+<style>
+    .card-hover {
+        transition: all 0.3s ease;
+        border: 1px solid rgba(0,0,0,0.05);
+    }
+
+    .card-hover:hover {
+        border-color: var(--bs-primary);
+    }
+
+    .calendar-day {
+        transition: all 0.2s ease;
+        cursor: pointer;
+    }
+
+    .calendar-day:hover:not(.bg-primary) {
+        background-color: rgba(var(--bs-primary-rgb), 0.1) !important;
+    }
+
+    .object-fit-cover {
+        object-fit: cover;
+    }
+
+    /* Custom badge styles / Пользовательские стили бейджей */
+    .badge {
+        font-weight: 500;
+    }
+
+    /* Responsive adjustments / Адаптивные настройки */
+    @media (max-width: 992px) {
+        .calendar-grid {
+            display: none;
+        }
+    }
+
+    @media (max-width: 768px) {
+        .card-hover:hover {
+            transform: none !important;
+        }
+    }
+</style>
+</body>
+</html>
