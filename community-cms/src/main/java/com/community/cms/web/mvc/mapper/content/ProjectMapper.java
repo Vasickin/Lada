@@ -1,0 +1,233 @@
+package com.community.cms.web.mvc.mapper.content;
+
+import com.community.cms.domain.model.content.Project;
+import com.community.cms.domain.model.people.Partner;
+import com.community.cms.domain.model.people.TeamMember;
+import com.community.cms.web.mvc.dto.content.ProjectDTO;
+import com.community.cms.web.mvc.dto.people.TeamMemberDTO;
+import com.community.cms.web.mvc.mapper.people.TeamMemberMapper;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
+
+/**
+ * Маппер для преобразования Project Entity в ProjectDTO.
+ * Использует существующие сервисы из админки.
+ */
+@Component
+public class ProjectMapper {
+
+    private final TeamMemberMapper teamMemberMapper;
+
+    /**
+     * Конструктор с инъекцией зависимостей.
+     */
+    @Autowired
+    public ProjectMapper(TeamMemberMapper teamMemberMapper) {
+        this.teamMemberMapper = teamMemberMapper;
+    }
+
+    /**
+     * Преобразует Project Entity в ProjectDTO.
+     * Базовый метод - использует те же поля что и в админке.
+     */
+    public ProjectDTO toDTO(Project project) {
+        if (project == null) {
+            return null;
+        }
+
+        ProjectDTO dto = new ProjectDTO();
+
+        // Копируем ВСЕ поля из Project (как в админке)
+        dto.setId(project.getId());
+        dto.setTitle(project.getTitle());
+        dto.setSlug(project.getSlug());
+        dto.setShortDescription(project.getShortDescription());
+        dto.setFullDescription(project.getFullDescription());
+
+        dto.setStartDate(project.getStartDate());
+        dto.setEndDate(project.getEndDate());
+        dto.setEventDate(project.getEventDate());
+        dto.setLocation(project.getLocation());
+
+        // Для календаря
+        if (project.getEventDate() != null) {
+            dto.setEventYear(project.getEventDate().getYear());
+            dto.setEventMonth(project.getEventDate().getMonthValue());
+            dto.setEventDay(project.getEventDate().getDayOfMonth());
+        }
+
+        dto.setFeaturedImagePath(project.getFeaturedImagePath());
+        dto.setKeyPhotoIds(project.getKeyPhotoIds()); // ID фото как в админке
+        dto.setVideoUrl(project.getVideoUrl());
+        dto.setVideoPlatform(project.getVideoPlatform());
+
+        dto.setCategory(project.getCategory());
+        dto.setStatus(project.getStatus().name());
+
+        // Секции (как в админке)
+        dto.setShowDescription(project.isShowDescription());
+        dto.setShowPhotos(project.isShowPhotos());
+        dto.setShowVideos(project.isShowVideos());
+        dto.setShowTeam(project.isShowTeam());
+        dto.setShowParticipation(project.isShowParticipation());
+        dto.setShowPartners(project.isShowPartners());
+        dto.setShowRelated(project.isShowRelated());
+
+        dto.setMetaTitle(project.getMetaTitle());
+        dto.setMetaDescription(project.getMetaDescription());
+        dto.setMetaKeywords(project.getMetaKeywords());
+        dto.setOgImagePath(project.getOgImagePath());
+
+        // Вычисляемые поля (используем методы из Project)
+        dto.setCurrentlyActive(project.isCurrentlyActive());
+        dto.setAnnual(project.isAnnual());
+        dto.setArchived(project.isArchived());
+        dto.setHasVideo(project.hasVideo());
+        dto.setHasFeaturedImage(project.getFeaturedImagePath() != null && !project.getFeaturedImagePath().isEmpty());
+        dto.setHasKeyPhotos(project.hasKeyPhotos());
+        dto.setDisplayDate(project.getDisplayDate());
+
+        // URL для публичной части
+        dto.setDetailUrl("/projects/" + project.getSlug());
+
+        dto.setCreatedAt(project.getCreatedAt());
+        dto.setUpdatedAt(project.getUpdatedAt());
+
+        // Команда (преобразуем TeamMember в TeamMemberDTO через существующий маппер)
+        if (project.getTeamMembers() != null) {
+            List<TeamMemberDTO> teamMemberDTOs = project.getTeamMembers().stream()
+                    .filter(TeamMember::isActive)
+                    .map(teamMemberMapper::toDTO)
+                    .collect(Collectors.toList());
+            dto.setTeamMembers(teamMemberDTOs);
+        }
+
+        // Партнеры (используем сущность Partner как в админке)
+        if (project.getPartners() != null) {
+            Set<Partner> partners = new HashSet<>(project.getPartners());
+            dto.setPartners(partners);
+        }
+
+        // PhotoDTO для ключевых фото будет загружено отдельно через PhotoGalleryService
+        // (как в админке в методах getAvailablePhotos и т.д.)
+
+        return dto;
+    }
+
+    /**
+     * Преобразует список проектов.
+     */
+    public List<ProjectDTO> toDTOList(List<Project> projects) {
+        if (projects == null) {
+            return new ArrayList<>();
+        }
+
+        return projects.stream()
+                .map(this::toDTO)
+                .collect(Collectors.toList());
+    }
+
+    /**
+     * Создает DTO для карточки (минимум данных).
+     */
+    public ProjectDTO toCardDTO(Project project) {
+        if (project == null) {
+            return null;
+        }
+
+        ProjectDTO dto = new ProjectDTO();
+
+        // Только то, что нужно для карточки в списке
+        dto.setId(project.getId());
+        dto.setTitle(project.getTitle());
+        dto.setSlug(project.getSlug());
+        dto.setShortDescription(project.getShortDescription());
+        dto.setCategory(project.getCategory());
+        dto.setFeaturedImagePath(project.getFeaturedImagePath());
+        dto.setEventDate(project.getEventDate());
+        dto.setLocation(project.getLocation());
+        dto.setStatus(project.getStatus().name());
+        dto.setCurrentlyActive(project.isCurrentlyActive());
+        dto.setDetailUrl("/projects/" + project.getSlug());
+
+        if (project.getEventDate() != null) {
+            dto.setEventYear(project.getEventDate().getYear());
+            dto.setEventMonth(project.getEventDate().getMonthValue());
+            dto.setEventDay(project.getEventDate().getDayOfMonth());
+        }
+
+        return dto;
+    }
+
+    /**
+     * Список DTO для карточек.
+     */
+    public List<ProjectDTO> toCardDTOList(List<Project> projects) {
+        if (projects == null) {
+            return new ArrayList<>();
+        }
+
+        return projects.stream()
+                .map(this::toCardDTO)
+                .collect(Collectors.toList());
+    }
+
+    // ================== НОВЫЕ МЕТОДЫ ДЛЯ HomeController ==================
+
+    /**
+     * Создает полный DTO со всеми данными (команда, партнеры).
+     * Используется для детальной страницы.
+     */
+    public ProjectDTO toFullDTO(Project project) {
+        return toDTO(project); // toDTO уже включает команду и партнеров
+    }
+
+    /**
+     * Создает DTO для карусели (случайные проекты).
+     */
+    public ProjectDTO toCarouselDTO(Project project) {
+        if (project == null) {
+            return null;
+        }
+
+        ProjectDTO dto = new ProjectDTO();
+
+        // Поля для карусели
+        dto.setId(project.getId());
+        dto.setTitle(project.getTitle());
+        dto.setSlug(project.getSlug());
+        dto.setShortDescription(project.getShortDescription());
+        dto.setFeaturedImagePath(project.getFeaturedImagePath());
+        dto.setEventDate(project.getEventDate());
+        dto.setLocation(project.getLocation());
+        dto.setDetailUrl("/projects/" + project.getSlug());
+
+        // Ограничиваем описание для карусели
+        if (dto.getShortDescription() != null && dto.getShortDescription().length() > 150) {
+            dto.setShortDescription(dto.getShortDescription().substring(0, 147) + "...");
+        }
+
+        return dto;
+    }
+
+    /**
+     * Создает список DTO для карусели.
+     */
+    public List<ProjectDTO> toCarouselDTOList(List<Project> projects) {
+        if (projects == null) {
+            return new ArrayList<>();
+        }
+
+        return projects.stream()
+                .map(this::toCarouselDTO)
+                .collect(Collectors.toList());
+    }
+
+    // ================== КОНЕЦ НОВЫХ МЕТОДОВ ==================
+}
