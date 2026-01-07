@@ -1,185 +1,88 @@
 <!DOCTYPE html>
 <!--
     PHOTO GALLERY DETAIL PAGE / ДЕТАЛЬНАЯ СТРАНИЦА ФОТО-ГАЛЕРЕИ
-    Detailed view of single photo gallery with all images
-    Детальный просмотр отдельной фото-галереи со всеми изображениями
-
-    Fragment Usage / Использование фрагментов:
-    - Header: Meta tags, SEO optimization, CSS styles
-    - Navigation: Main menu with active states and Spring Security
-    - Banner: Responsive header images with accessibility
-    - Footer: Complete contact information and links
-    - Scripts: JavaScript functionality and Bootstrap
+    Detailed view of single photo gallery with working gallery
+    Детальный просмотр отдельной фото-галереи с рабочей галереей
 -->
 <html lang="ru" xmlns:th="http://www.thymeleaf.org"
       xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 
-<!-- HEADER FRAGMENT INTEGRATION / ИНТЕГРАЦИЯ ФРАГМЕНТА ХЕДЕРА -->
 <head th:replace="fragments/header :: html-head(${pageTitle})">
-    <!-- Content will be replaced by header fragment / Контент будет заменен фрагментом хедера -->
 </head>
 
 <body>
-<!-- NAVIGATION FRAGMENT INTEGRATION / ИНТЕГРАЦИЯ ФРАГМЕНТА НАВИГАЦИИ -->
 <div th:replace="fragments/navigation :: main-navigation"></div>
-
-<!-- BANNER FRAGMENT INTEGRATION / ИНТЕГРАЦИЯ ФРАГМЕНТА БАННЕРА -->
 <div th:replace="fragments/banner :: header-banner(${gallery.title} + ' - Фото-галерея')"></div>
 
-<!--
-    MAIN CONTENT SECTION / СЕКЦИЯ ОСНОВНОГО КОНТЕНТА
-    Detailed gallery view with images grid and gallery information
-    Детальный просмотр галереи с сеткой изображений и информацией о галерее
--->
 <main class="container my-5 py-4">
-    <!--
-        GALLERY HEADER SECTION / СЕКЦИЯ ЗАГОЛОВКА ГАЛЕРЕИ
-        Gallery title, year, description and navigation
-        Заголовок галереи, год, описание и навигация
-    -->
+    <!-- Back button -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <a href="javascript:history.back()" class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left me-2"></i> Назад к галереям
+            </a>
+        </div>
+    </div>
+
+    <!-- Gallery header -->
     <div class="row mb-5">
         <div class="col-12">
-            <!-- Back button -->
-            <div class="mb-4">
-                <a href="javascript:history.back()" class="btn btn-outline-secondary">
-                    <i class="fas fa-arrow-left me-2"></i> Назад к галереям
-                </a>
-            </div>
-
-            <!-- Gallery header -->
             <div class="card border-0 bg-light shadow-sm">
                 <div class="card-body p-4">
-                    <div class="row align-items-center">
-                        <div class="col-md-8">
-                            <h1 class="display-5 fw-bold mb-3" th:text="${gallery.title}">Название галереи</h1>
+                    <h1 class="display-5 fw-bold mb-3" th:text="${gallery.title}"></h1>
 
-                            <!-- Gallery meta info -->
-                            <div class="d-flex flex-wrap gap-3 mb-3">
-                                <span class="badge bg-primary p-2 fs-6">
-                                    <i class="fas fa-calendar me-2"></i>
-                                    <span th:text="${gallery.year}">2024</span>
-                                </span>
+                    <div class="d-flex flex-wrap gap-3 mb-3">
+                        <span class="badge bg-primary p-2 fs-6">
+                            <i class="fas fa-calendar me-2"></i>
+                            <span th:text="${gallery.year}"></span>
+                        </span>
 
-                                <span class="badge bg-success p-2 fs-6">
-                                    <i class="fas fa-images me-2"></i>
-                                    <span th:text="${gallery.imagesCount}">0</span> фото
-                                </span>
+                        <span class="badge bg-success p-2 fs-6">
+                            <i class="fas fa-images me-2"></i>
+                            <span th:text="${gallery.imagesCount}"></span> фото
+                        </span>
+                    </div>
 
-                                <span th:if="${gallery.published}" class="badge bg-info p-2 fs-6">
-                                    <i class="fas fa-eye me-2"></i> Опубликовано
-                                </span>
-                            </div>
-
-                            <!-- Gallery description -->
-                            <div th:if="${gallery.description != null and gallery.description != ''}"
-                                 class="mb-4">
-                                <p class="lead text-muted" th:text="${gallery.description}">
-                                    Описание галереи
-                                </p>
-                            </div>
-                        </div>
-
-                        <div class="col-md-4 text-md-end">
-                            <!-- Share buttons -->
-                            <div class="mb-3">
-                                <h6 class="text-muted mb-2">Поделиться:</h6>
-                                <div class="btn-group" role="group">
-                                    <button type="button" class="btn btn-outline-primary">
-                                        <i class="fab fa-vk"></i>
-                                    </button>
-                                    <button type="button" class="btn btn-outline-info">
-                                        <i class="fab fa-telegram"></i>
-                                    </button>
-                                    <button type="button" class="btn btn-outline-success">
-                                        <i class="fab fa-whatsapp"></i>
-                                    </button>
-                                    <button type="button" class="btn btn-outline-secondary"
-                                            onclick="copyUrlToClipboard()">
-                                        <i class="fas fa-link"></i>
-                                    </button>
-                                </div>
-                            </div>
-
-                            <!-- Download all (optional) -->
-                            <div th:if="${gallery.hasImages()}">
-                                <button class="btn btn-primary">
-                                    <i class="fas fa-download me-2"></i> Скачать все фото
-                                </button>
-                            </div>
-                        </div>
+                    <div th:if="${gallery.description}" class="mb-0">
+                        <p class="lead text-muted" th:text="${gallery.description}"></p>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 
-    <!--
-        GALLERY IMAGES SECTION / СЕКЦИЯ ИЗОБРАЖЕНИЙ ГАЛЕРЕИ
-        Grid of all gallery images with lightbox functionality
-        Сетка всех изображений галереи с функцией лайтбокса
-    -->
-    <div class="row mb-5">
+    <!-- Gallery images -->
+    <div class="row">
         <div class="col-12">
-            <!-- Images grid header -->
             <div class="d-flex justify-content-between align-items-center mb-4">
                 <h2 class="h4 fw-bold">
                     <i class="fas fa-images me-2 text-primary"></i>
                     Фотографии галереи
                 </h2>
 
-                <!-- Image counter -->
                 <div class="text-muted">
-                    <span th:text="${gallery.imagesCount}">0</span> фотографий
+                    <span th:text="${gallery.imagesCount}"></span> фотографий
                 </div>
             </div>
 
-            <!-- Images grid -->
+            <!-- Images grid (РАБОЧАЯ ГАЛЕРЕЯ как в админке) -->
             <div th:if="${gallery.hasImages()}">
-                <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 row-cols-xl-4 g-4">
-                    <!-- Image card template -->
-                    <div th:each="image, iter : ${gallery.images}" class="col">
-                        <div class="card gallery-image-card h-100 shadow-sm border-0">
-                            <!-- Image container -->
-                            <div class="image-container position-relative">
+                <div class="row g-3" id="publicGallery">
+                    <div th:each="image, iter : ${gallery.images}"
+                         class="col-md-3 col-6">
+                        <div class="thumbnail-container-public">
+                            <div class="gallery-thumbnail-public"
+                                 th:data-image-index="${iter.index}"
+                                 th:data-image-src="${image.webPath}"
+                                 th:data-image-title="${gallery.title} + ' - ' + ${image.fileName}">
                                 <img th:src="${image.webPath}"
                                      th:alt="${image.fileName}"
-                                     class="card-img-top gallery-detail-img"
-                                     loading="lazy"
-                                     data-bs-toggle="modal"
-                                     data-bs-target="#imageModal"
-                                     th:attr="data-bs-slide-to=${iter.index}"
-                                     onclick="showImageInModal(this.src, '[[${image.fileName}]]')">
-
-                                <!-- Primary image badge -->
-                                <span th:if="${image.isPrimary}"
-                                      class="badge bg-warning position-absolute top-0 start-0 m-2">
-                                    <i class="fas fa-star me-1"></i> Основное
-                                </span>
-
-                                <!-- Image overlay -->
-                                <div class="image-overlay">
-                                    <div class="overlay-content">
-                                        <button class="btn btn-light btn-sm"
-                                                data-bs-toggle="modal"
-                                                data-bs-target="#imageModal"
-                                                th:attr="data-bs-slide-to=${iter.index}">
-                                            <i class="fas fa-expand"></i>
-                                        </button>
-                                    </div>
-                                </div>
+                                     class="thumbnail-image-public">
                             </div>
-
-                            <!-- Image info -->
-                            <div class="card-body p-3">
-                                <div class="d-flex justify-content-between align-items-center">
-                                    <small class="text-muted text-truncate"
-                                           th:text="${image.fileName}">
-                                        image.jpg
-                                    </small>
-                                    <small class="text-muted">
-                                        <span th:text="${iter.index + 1}">1</span>/<span th:text="${gallery.imagesCount}">0</span>
-                                    </small>
-                                </div>
+                            <div class="thumbnail-info-public">
+                                <small class="thumbnail-filename-public">
+                                    <span th:text="${image.fileName}"></span>
+                                </small>
                             </div>
                         </div>
                     </div>
@@ -188,23 +91,15 @@
 
             <!-- No images message -->
             <div th:unless="${gallery.hasImages()}" class="text-center py-5 my-5">
-                <div class="empty-state-icon mb-4">
-                    <i class="fas fa-images fa-4x text-muted"></i>
-                </div>
+                <i class="fas fa-images fa-4x text-muted mb-4"></i>
                 <h3 class="text-muted mb-3">Нет изображений</h3>
-                <p class="text-muted mb-4">
-                    В этой галерее пока нет фотографий.
-                </p>
+                <p class="text-muted">В этой галерее пока нет фотографий.</p>
             </div>
         </div>
     </div>
 
-    <!--
-        GALLERY INFO SECTION / СЕКЦИЯ ИНФОРМАЦИИ О ГАЛЕРЕЕ
-        Additional information and metadata
-        Дополнительная информация и метаданные
-    -->
-    <div class="row">
+    <!-- Gallery info -->
+    <div class="row mt-5">
         <div class="col-12">
             <div class="card border-0 shadow-sm">
                 <div class="card-body p-4">
@@ -214,33 +109,7 @@
                     </h5>
 
                     <div class="row">
-                        <!-- Gallery stats -->
                         <div class="col-md-6 mb-3">
-                            <h6 class="text-muted mb-3">Статистика:</h6>
-                            <ul class="list-unstyled">
-                                <li class="mb-2">
-                                    <i class="fas fa-hashtag text-primary me-2"></i>
-                                    ID галереи: <span class="fw-bold" th:text="${gallery.id}">0</span>
-                                </li>
-                                <li class="mb-2">
-                                    <i class="fas fa-images text-success me-2"></i>
-                                    Количество фото: <span class="fw-bold" th:text="${gallery.imagesCount}">0</span>
-                                </li>
-                                <li class="mb-2">
-                                    <i class="fas fa-calendar text-info me-2"></i>
-                                    Год: <span class="fw-bold" th:text="${gallery.year}">2024</span>
-                                </li>
-                                <li th:if="${gallery.published != null}">
-                                    <i class="fas fa-eye text-warning me-2"></i>
-                                    Статус:
-                                    <span th:if="${gallery.published}" class="fw-bold text-success">Опубликовано</span>
-                                    <span th:unless="${gallery.published}" class="fw-bold text-secondary">Черновик</span>
-                                </li>
-                            </ul>
-                        </div>
-
-                        <!-- Navigation -->
-                        <div class="col-md-6">
                             <h6 class="text-muted mb-3">Навигация:</h6>
                             <div class="d-grid gap-2">
                                 <a th:href="@{/photo-gallery}" class="btn btn-outline-primary">
@@ -248,43 +117,10 @@
                                 </a>
                                 <a th:href="@{/photo-gallery/year/} + ${gallery.year}"
                                    class="btn btn-outline-success">
-                                    <i class="fas fa-calendar me-2"></i> Галереи <span th:text="${gallery.year}">2024</span> года
+                                    <i class="fas fa-calendar me-2"></i> Галереи <span th:text="${gallery.year}"></span> года
                                 </a>
-                                <button class="btn btn-outline-secondary" onclick="window.print()">
-                                    <i class="fas fa-print me-2"></i> Распечатать
-                                </button>
                             </div>
                         </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!--
-        IMAGE MODAL / МОДАЛЬНОЕ ОКНО ДЛЯ ИЗОБРАЖЕНИЙ
-        Bootstrap modal for fullscreen image viewing
-        Модальное окно Bootstrap для полноэкранного просмотра изображений
-    -->
-    <div class="modal fade" id="imageModal" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered modal-xl">
-            <div class="modal-content bg-dark border-0">
-                <div class="modal-header border-0">
-                    <button type="button" class="btn-close btn-close-white"
-                            data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body text-center p-0">
-                    <img id="modalImage" src="" class="img-fluid" alt="">
-                </div>
-                <div class="modal-footer border-0 justify-content-between">
-                    <div class="text-white" id="modalImageName">image.jpg</div>
-                    <div>
-                        <button class="btn btn-light me-2" onclick="downloadCurrentImage()">
-                            <i class="fas fa-download"></i>
-                        </button>
-                        <a id="modalImageLink" href="#" class="btn btn-light" target="_blank">
-                            <i class="fas fa-external-link-alt"></i>
-                        </a>
                     </div>
                 </div>
             </div>
@@ -293,183 +129,429 @@
 </main>
 
 <!--
-    FOOTER FRAGMENT INTEGRATION / ИНТЕГРАЦИЯ ФРАГМЕНТА ФУТЕРА
-    Footer with contact information, social links and copyright
-    Футер с контактной информацией, ссылками на соцсети и копирайтом
+    МОДАЛЬНОЕ ОКНО ГАЛЕРЕИ (как в админке, но проще)
 -->
-<footer th:replace="fragments/footer :: main-footer"></footer>
+<div id="publicGalleryModal" class="public-gallery-modal">
+    <!-- Оверлей -->
+    <div class="public-modal-overlay" id="publicModalOverlay"></div>
 
-<!--
-    SCRIPTS FRAGMENT INTEGRATION / ИНТЕГРАЦИЯ ФРАГМЕНТА СКРИПТОВ
-    JavaScript libraries, Bootstrap JS and custom scripts
-    JavaScript библиотеки, Bootstrap JS и пользовательские скрипты
--->
+    <!-- Кнопка закрытия -->
+    <button class="public-modal-close-btn" id="publicModalCloseBtn">
+        <i class="fas fa-times"></i>
+    </button>
+
+    <!-- Контейнер -->
+    <div class="public-modal-container">
+        <!-- Навигация -->
+        <button class="public-modal-nav-btn public-modal-prev-btn" id="publicPrevBtn">
+            <i class="fas fa-chevron-left"></i>
+        </button>
+
+        <!-- Изображение -->
+        <div class="public-modal-image-container">
+            <div class="public-image-wrapper" id="publicImageWrapper">
+                <img id="publicModalImage"
+                     src=""
+                     alt=""
+                     class="public-modal-image">
+
+                <!-- Загрузчик -->
+                <div class="public-modal-loader" id="publicModalLoader">
+                    <div class="public-spinner"></div>
+                </div>
+
+                <!-- Информация -->
+                <div class="public-image-info">
+                    <div class="public-image-title" id="publicImageTitle"></div>
+                    <div class="public-image-counter" id="publicImageCounter"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Навигация -->
+        <button class="public-modal-nav-btn public-modal-next-btn" id="publicNextBtn">
+            <i class="fas fa-chevron-right"></i>
+        </button>
+    </div>
+</div>
+
+<footer th:replace="fragments/footer :: main-footer"></footer>
 <div th:replace="fragments/scripts :: main-scripts"></div>
 
-<!--
-    CUSTOM GALLERY DETAIL STYLES AND SCRIPTS / ПОЛЬЗОВАТЕЛЬСКИЕ СТИЛИ И СКРИПТЫ
-    Additional styling and functionality for gallery detail page
-    Дополнительные стили и функциональность для детальной страницы галереи
--->
+<!-- Стили галереи -->
 <style>
-    /* Gallery image card styles */
-    .gallery-image-card {
-        transition: all 0.3s ease;
-        border-radius: 10px;
+    /* ========== ПРЕВЬЮШКИ ========== */
+    .thumbnail-container-public {
+        position: relative;
+        border-radius: 8px;
         overflow: hidden;
+        transition: transform 0.3s ease;
+        cursor: pointer;
+        background: #f8f9fa;
     }
 
-    .gallery-image-card:hover {
+    .thumbnail-container-public:hover {
         transform: translateY(-5px);
-        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15) !important;
+        box-shadow: 0 10px 20px rgba(0,0,0,0.15);
     }
 
-    .gallery-image-card .image-container {
+    .gallery-thumbnail-public {
+        display: block;
         height: 200px;
         overflow: hidden;
-        background-color: #f8f9fa;
     }
 
-    .gallery-image-card .gallery-detail-img {
+    .thumbnail-image-public {
         width: 100%;
         height: 100%;
         object-fit: cover;
-        cursor: pointer;
         transition: transform 0.5s ease;
     }
 
-    .gallery-image-card:hover .gallery-detail-img {
+    .thumbnail-container-public:hover .thumbnail-image-public {
         transform: scale(1.05);
     }
 
-    .gallery-image-card .image-overlay {
+    .thumbnail-info-public {
+        padding: 10px;
+        background: white;
+    }
+
+    .thumbnail-filename-public {
+        color: #666;
+        font-size: 0.85rem;
+        display: block;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    /* ========== МОДАЛЬНОЕ ОКНО ========== */
+    .public-gallery-modal {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: 9999;
+    }
+
+    .public-gallery-modal.active {
+        display: block;
+    }
+
+    .public-modal-overlay {
         position: absolute;
         top: 0;
         left: 0;
-        right: 0;
-        bottom: 0;
-        background: rgba(0, 0, 0, 0.3);
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.95);
+    }
+
+    .public-modal-close-btn {
+        position: absolute;
+        top: 20px;
+        right: 20px;
+        width: 50px;
+        height: 50px;
+        background: rgba(255, 255, 255, 0.1);
+        border: none;
+        border-radius: 50%;
+        color: white;
+        font-size: 1.5rem;
+        cursor: pointer;
+        z-index: 10001;
         display: flex;
         align-items: center;
         justify-content: center;
-        opacity: 0;
-        transition: opacity 0.3s ease;
+        transition: background 0.3s ease;
     }
 
-    .gallery-image-card:hover .image-overlay {
-        opacity: 1;
+    .public-modal-close-btn:hover {
+        background: rgba(255, 255, 255, 0.2);
     }
 
-    /* Badge styles */
-    .badge {
-        font-weight: 500;
+    .public-modal-container {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
     }
 
-    /* Modal styles */
-    #imageModal .modal-content {
-        background: rgba(0, 0, 0, 0.9);
+    .public-modal-nav-btn {
+        position: absolute;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 60px;
+        height: 60px;
+        background: rgba(255, 255, 255, 0.1);
+        border: none;
+        border-radius: 50%;
+        color: white;
+        font-size: 1.5rem;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: background 0.3s ease;
+        z-index: 10000;
     }
 
-    #imageModal img {
-        max-height: 70vh;
+    .public-modal-prev-btn {
+        left: 20px;
+    }
+
+    .public-modal-next-btn {
+        right: 20px;
+    }
+
+    .public-modal-nav-btn:hover {
+        background: rgba(255, 255, 255, 0.2);
+    }
+
+    .public-modal-image-container {
+        width: 100%;
+        height: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .public-image-wrapper {
+        position: relative;
+        max-width: 90%;
+        max-height: 90%;
+    }
+
+    .public-modal-image {
+        max-width: 100%;
+        max-height: 80vh;
         object-fit: contain;
+        border-radius: 4px;
+        display: none;
     }
 
-    /* Responsive adjustments */
+    .public-modal-image.loaded {
+        display: block;
+    }
+
+    .public-modal-loader {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        display: none;
+    }
+
+    .public-spinner {
+        width: 40px;
+        height: 40px;
+        border: 3px solid rgba(255, 255, 255, 0.1);
+        border-top-color: white;
+        border-radius: 50%;
+        animation: public-spin 1s linear infinite;
+    }
+
+    @keyframes public-spin {
+        to { transform: rotate(360deg); }
+    }
+
+    .public-image-info {
+        position: absolute;
+        bottom: -50px;
+        left: 0;
+        right: 0;
+        text-align: center;
+        color: white;
+    }
+
+    .public-image-title {
+        font-size: 1.1rem;
+        margin-bottom: 5px;
+    }
+
+    .public-image-counter {
+        font-size: 0.9rem;
+        opacity: 0.8;
+    }
+
+    /* Адаптивность */
     @media (max-width: 768px) {
-        .gallery-image-card .image-container {
-            height: 180px;
+        .gallery-thumbnail-public {
+            height: 150px;
         }
 
-        .display-5 {
-            font-size: 2rem;
+        .public-modal-nav-btn {
+            width: 50px;
+            height: 50px;
+            font-size: 1.2rem;
+        }
+
+        .public-modal-prev-btn {
+            left: 10px;
+        }
+
+        .public-modal-next-btn {
+            right: 10px;
         }
     }
 
     @media (max-width: 576px) {
-        .gallery-image-card .image-container {
-            height: 150px;
+        .gallery-thumbnail-public {
+            height: 120px;
         }
 
-        .row-cols-md-2 {
-            grid-template-columns: repeat(1, 1fr) !important;
-        }
-    }
-
-    /* Print styles */
-    @media print {
-        .btn, .badge, .modal, footer {
-            display: none !important;
-        }
-
-        .card {
-            border: 1px solid #ddd !important;
-            box-shadow: none !important;
+        .col-md-3 {
+            width: 50%;
         }
     }
 </style>
 
+<!-- JavaScript галереи -->
 <script>
-    // Image modal functionality
-    function showImageInModal(imageSrc, imageName) {
-        document.getElementById('modalImage').src = imageSrc;
-        document.getElementById('modalImageName').textContent = imageName;
-        document.getElementById('modalImageLink').href = imageSrc;
-    }
+    // Глобальные переменные
+    let publicGalleryImages = [];
+    let currentPublicImageIndex = 0;
 
-    // Copy URL to clipboard
-    function copyUrlToClipboard() {
-        const url = window.location.href;
-        navigator.clipboard.writeText(url).then(() => {
-            // Show success message (you can add a toast notification here)
-            alert('Ссылка скопирована в буфер обмена!');
-        }).catch(err => {
-            console.error('Ошибка копирования: ', err);
-        });
-    }
+    // Элементы
+    const publicModal = document.getElementById('publicGalleryModal');
+    const publicModalOverlay = document.getElementById('publicModalOverlay');
+    const publicModalCloseBtn = document.getElementById('publicModalCloseBtn');
+    const publicPrevBtn = document.getElementById('publicPrevBtn');
+    const publicNextBtn = document.getElementById('publicNextBtn');
+    const publicModalImage = document.getElementById('publicModalImage');
+    const publicModalLoader = document.getElementById('publicModalLoader');
+    const publicImageTitle = document.getElementById('publicImageTitle');
+    const publicImageCounter = document.getElementById('publicImageCounter');
 
-    // Download current image from modal
-    function downloadCurrentImage() {
-        const imageSrc = document.getElementById('modalImage').src;
-        const imageName = document.getElementById('modalImageName').textContent;
-
-        const link = document.createElement('a');
-        link.href = imageSrc;
-        link.download = imageName;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-    }
-
-    // Keyboard navigation for modal
-    document.addEventListener('keydown', function(event) {
-        const modal = document.getElementById('imageModal');
-        if (modal.classList.contains('show')) {
-            if (event.key === 'Escape') {
-                bootstrap.Modal.getInstance(modal).hide();
-            } else if (event.key === 'ArrowRight') {
-                // Next image (to be implemented with carousel)
-            } else if (event.key === 'ArrowLeft') {
-                // Previous image (to be implemented with carousel)
-            }
-        }
+    // Инициализация при загрузке страницы
+    document.addEventListener('DOMContentLoaded', function() {
+        initPublicGallery();
+        setupPublicModalHandlers();
     });
 
-    // Initialize tooltips
-    document.addEventListener('DOMContentLoaded', function() {
-        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
-        var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
-            return new bootstrap.Tooltip(tooltipTriggerEl);
-        });
+    // Инициализация галереи
+    function initPublicGallery() {
+        publicGalleryImages = [];
 
-        // Add loading state to images
-        document.querySelectorAll('.gallery-detail-img').forEach(function(img) {
-            img.addEventListener('load', function() {
-                this.classList.add('loaded');
+        // Собираем все превьюшки
+        document.querySelectorAll('.gallery-thumbnail-public').forEach((element, index) => {
+            publicGalleryImages.push({
+                index: index,
+                src: element.getAttribute('data-image-src'),
+                title: element.getAttribute('data-image-title'),
+                element: element
             });
         });
-    });
-</script>
 
+        console.log('Загружено изображений:', publicGalleryImages.length);
+    }
+
+    // Настройка обработчиков
+    function setupPublicModalHandlers() {
+        // Клик на превьюшку
+        document.querySelectorAll('.gallery-thumbnail-public').forEach(element => {
+            element.addEventListener('click', function() {
+                const index = parseInt(this.getAttribute('data-image-index'));
+                showPublicImage(index);
+            });
+        });
+
+        // Закрытие
+        publicModalOverlay.addEventListener('click', closePublicModal);
+        publicModalCloseBtn.addEventListener('click', closePublicModal);
+
+        // Навигация
+        publicPrevBtn.addEventListener('click', function() {
+            if (currentPublicImageIndex > 0) {
+                showPublicImage(currentPublicImageIndex - 1);
+            }
+        });
+
+        publicNextBtn.addEventListener('click', function() {
+            if (currentPublicImageIndex < publicGalleryImages.length - 1) {
+                showPublicImage(currentPublicImageIndex + 1);
+            }
+        });
+
+        // Клавиши
+        document.addEventListener('keydown', function(e) {
+            if (!publicModal.classList.contains('active')) return;
+
+            switch(e.key) {
+                case 'Escape':
+                    closePublicModal();
+                    break;
+                case 'ArrowLeft':
+                    if (currentPublicImageIndex > 0) {
+                        showPublicImage(currentPublicImageIndex - 1);
+                    }
+                    break;
+                case 'ArrowRight':
+                    if (currentPublicImageIndex < publicGalleryImages.length - 1) {
+                        showPublicImage(currentPublicImageIndex + 1);
+                    }
+                    break;
+            }
+        });
+    }
+
+    // Показать изображение
+    function showPublicImage(index) {
+        if (index < 0 || index >= publicGalleryImages.length) return;
+
+        currentPublicImageIndex = index;
+        const image = publicGalleryImages[index];
+
+        // Показываем загрузчик
+        publicModalImage.classList.remove('loaded');
+        publicModalLoader.style.display = 'block';
+
+        // Устанавливаем информацию
+        publicImageTitle.textContent = image.title;
+        publicImageCounter.textContent = `${index + 1} / ${publicGalleryImages.length}`;
+
+        // Загружаем изображение
+        const img = new Image();
+        img.onload = function() {
+            publicModalImage.src = image.src;
+            publicModalImage.alt = image.title;
+
+            // Показываем модалку
+            publicModal.classList.add('active');
+            document.body.style.overflow = 'hidden';
+
+            // Скрываем загрузчик и показываем изображение
+            setTimeout(() => {
+                publicModalLoader.style.display = 'none';
+                publicModalImage.classList.add('loaded');
+            }, 300);
+        };
+
+        img.onerror = function() {
+            publicModalLoader.style.display = 'none';
+            publicModalImage.src = '';
+            publicModalImage.alt = 'Ошибка загрузки';
+            publicImageTitle.textContent = 'Ошибка загрузки изображения';
+        };
+
+        img.src = image.src;
+    }
+
+    // Закрыть модалку
+    function closePublicModal() {
+        publicModal.classList.remove('active');
+        document.body.style.overflow = '';
+        publicModalImage.classList.remove('loaded');
+        publicModalImage.src = '';
+    }
+</script>
 </body>
 </html>
