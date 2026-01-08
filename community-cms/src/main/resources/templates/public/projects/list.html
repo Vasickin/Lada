@@ -567,7 +567,7 @@
 
 <script src="/js/script.js"></script>
 
-<!-- ОТЛАДКА - ВСТАВЬ ЗДЕСЬ: -->
+<!-- ОТЛАДКА ДЛЯ ФОТО В КАРТОЧКАХ -->
 <script th:inline="javascript">
     /*<![CDATA[*/
         document.addEventListener('DOMContentLoaded', function() {
@@ -597,6 +597,29 @@
     /*]]>*/
 </script>
 
+<!-- ОТЛАДКА ДЛЯ КАРУСЕЛИ -->
+<script th:inline="javascript">
+    /*<![CDATA[*/
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('=== ОТЛАДКА КАРУСЕЛИ ===');
 
+            var carouselProjects = [[${carouselProjects}]];
+            if (carouselProjects && carouselProjects.length > 0) {
+                carouselProjects.forEach(function(project, index) {
+                    console.log('--- Карусель Проект ' + (index + 1) + ' ---');
+                    console.log('Название:', project.title);
+                    console.log('ID:', project.id);
+                    console.log('keyPhotoIds:', project.keyPhotoIds);
+                    console.log('keyPhotos:', project.keyPhotos);
+                    if (project.keyPhotos && project.keyPhotos[0]) {
+                        console.log('Первое фото путь:', project.keyPhotos[0].webPath);
+                    }
+                });
+            } else {
+                console.log('Нет проектов в карусели');
+            }
+        });
+    /*]]>*/
+</script>
 </body>
 </html>

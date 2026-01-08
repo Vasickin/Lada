@@ -215,6 +215,13 @@ public class ProjectMapper {
         dto.setLocation(project.getLocation());
         dto.setDetailUrl("/projects/" + project.getSlug());
 
+        dto.setKeyPhotoIds(project.getKeyPhotoIds());
+        dto.setHasKeyPhotos(project.hasKeyPhotos());
+
+        // Загружаем фото для карусели
+        List<PhotoGalleryDTO> keyPhotos = loadKeyPhotosForProject(project);
+        dto.setKeyPhotos(keyPhotos);
+
         // Ограничиваем описание для карусели
         if (dto.getShortDescription() != null && dto.getShortDescription().length() > 150) {
             dto.setShortDescription(dto.getShortDescription().substring(0, 147) + "...");
