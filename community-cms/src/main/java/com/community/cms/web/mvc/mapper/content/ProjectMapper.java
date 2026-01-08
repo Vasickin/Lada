@@ -3,6 +3,8 @@ package com.community.cms.web.mvc.mapper.content;
 import com.community.cms.domain.model.content.Project;
 import com.community.cms.domain.model.people.Partner;
 import com.community.cms.domain.model.people.TeamMember;
+import com.community.cms.domain.service.content.PhotoGalleryService;
+import com.community.cms.web.mvc.dto.content.PhotoGalleryDTO;
 import com.community.cms.web.mvc.dto.content.ProjectDTO;
 import com.community.cms.web.mvc.dto.people.TeamMemberDTO;
 import com.community.cms.web.mvc.mapper.people.TeamMemberMapper;
@@ -23,13 +25,15 @@ import java.util.stream.Collectors;
 public class ProjectMapper {
 
     private final TeamMemberMapper teamMemberMapper;
+    private final PhotoGalleryService photoGalleryService;
 
     /**
      * Конструктор с инъекцией зависимостей.
      */
     @Autowired
-    public ProjectMapper(TeamMemberMapper teamMemberMapper) {
+    public ProjectMapper(TeamMemberMapper teamMemberMapper, PhotoGalleryService photoGalleryService) {
         this.teamMemberMapper = teamMemberMapper;
+        this.photoGalleryService = photoGalleryService;
     }
 
     /**
@@ -156,6 +160,9 @@ public class ProjectMapper {
         dto.setCurrentlyActive(project.isCurrentlyActive());
         dto.setDetailUrl("/projects/" + project.getSlug());
 
+        dto.setKeyPhotoIds(project.getKeyPhotoIds());  // ← ЭТО
+        dto.setHasKeyPhotos(project.hasKeyPhotos());   // ← И ЭТО
+
         if (project.getEventDate() != null) {
             dto.setEventYear(project.getEventDate().getYear());
             dto.setEventMonth(project.getEventDate().getMonthValue());
@@ -229,5 +236,44 @@ public class ProjectMapper {
                 .collect(Collectors.toList());
     }
 
-    // ================== КОНЕЦ НОВЫХ МЕТОДОВ ==================
+    // ================== МЕТОД ДЛЯ ЗАГРУЗКИ ФОТО ==================
+
+    /**
+     * Загружает PhotoGalleryDTO по ID фотографии.
+     * Пока используем заглушки, потом заменим на реальные данные.
+     */
+    private PhotoGalleryDTO loadPhotoGalleryDTO(Long photoId) {
+        try {
+            return photoGalleryService.getPhotoDTOById(photoId);
+        } catch (Exception e) {
+            System.err.println("Ошибка при загрузке фото ID=" + photoId + ": " + e.getMessage());
+            // Простая заглушка
+            return new PhotoGalleryDTO(
+                    photoId,
+                    "photo-" + photoId + ".jpg",
+                    "/images/placeholder.jpg",
+                    "/images/placeholder.jpg",
+                    "Фото " + photoId,
+                    null, null, null, false
+            );
+        }
+    }
+
+    /**
+     * Загружает ключевые фото для проекта.
+     */
+    public List<PhotoGalleryDTO> loadKeyPhotosForProject(Project project) {
+        List<PhotoGalleryDTO> keyPhotos = new ArrayList<>();
+
+        if (project != null && project.getKeyPhotoIds() != null) {
+            for (Long photoId : project.getKeyPhotoIds()) {
+                PhotoGalleryDTO photoDTO = loadPhotoGalleryDTO(photoId);
+                if (photoDTO != null) {
+                    keyPhotos.add(photoDTO);
+                }
+            }
+        }
+
+        return keyPhotos;
+    }
 }
