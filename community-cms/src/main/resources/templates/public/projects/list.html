@@ -563,5 +563,40 @@
         }
     }
 </style>
+
+
+<script src="/js/script.js"></script>
+
+<!-- ОТЛАДКА - ВСТАВЬ ЗДЕСЬ: -->
+<script th:inline="javascript">
+    /*<![CDATA[*/
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('=== ОТЛАДКА ПРОЕКТОВ ===');
+            console.log('Всего проектов: ', [[${#lists.size(projects)}]]);
+
+            var projects = [[${projects}]];
+            if (projects && projects.length > 0) {
+                projects.forEach(function(project, index) {
+                    console.log('--- Проект ' + (index + 1) + ' ---');
+                    console.log('Название:', project.title);
+                    console.log('ID проекта:', project.id);
+                    console.log('keyPhotoIds (ID фото):', project.keyPhotoIds);
+                    console.log('hasKeyPhotos:', project.hasKeyPhotos);
+                    console.log('keyPhotos (объекты):', project.keyPhotos);
+                    console.log('featuredImagePath:', project.featuredImagePath);
+                    console.log('Есть ли keyPhotos[0]?:', project.keyPhotos && project.keyPhotos[0]);
+                    if (project.keyPhotos && project.keyPhotos[0]) {
+                        console.log('Первое фото:', project.keyPhotos[0]);
+                        console.log('Путь к первому фото:', project.keyPhotos[0].webPath);
+                    }
+                });
+            } else {
+                console.log('Нет проектов для отображения');
+            }
+        });
+    /*]]>*/
+</script>
+
+
 </body>
 </html>
