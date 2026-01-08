@@ -859,8 +859,8 @@ public class ProjectAdminController {
     // ================== УПРАВЛЕНИЕ ФОТО ИЗ ГАЛЕРЕЙ ==================
     @GetMapping("/available-photos")
     @ResponseBody
-    public List<PhotoGalleryDTO> getAvailablePhotos() {
-        List<PhotoGalleryDTO> result = new ArrayList<>();
+    public List<Map<String, Object>> getAvailablePhotos() {
+        List<Map<String, Object>> result = new ArrayList<>();
 
         try {
             List<PhotoGallery> galleries = photoGalleryService.getAllPhotoGalleryItems();
@@ -872,21 +872,18 @@ public class ProjectAdminController {
 
                 List<MediaFile> photos = gallery.getImages();
                 for (MediaFile photo : photos) {
-                    PhotoGalleryDTO dto = new PhotoGalleryDTO(
-                            photo.getId(),
-                            photo.getFileName(),
-                            photo.getWebPath(),
-                            photo.getWebPath(),
-                            photo.getFileName(),
-                            gallery.getId(),
-                            gallery.getTitle(),
-                            gallery.getYear(),
-                            photo.getIsPrimary()
-                    );
-                    result.add(dto);
+                    Map<String, Object> photoMap = new HashMap<>();
+                    photoMap.put("id", photo.getId()); // ← ВАЖНО: id, а не photoId!
+                    photoMap.put("fileName", photo.getFileName());
+                    photoMap.put("webPath", photo.getWebPath());
+                    photoMap.put("thumbnailPath", photo.getWebPath());
+                    photoMap.put("galleryId", gallery.getId());
+                    photoMap.put("galleryTitle", gallery.getTitle());
+                    photoMap.put("galleryYear", gallery.getYear());
+                    photoMap.put("isPrimary", photo.getIsPrimary());
+                    result.add(photoMap);
                 }
             }
-
         } catch (Exception e) {
             System.err.println("Ошибка загрузки фото: " + e.getMessage());
         }
@@ -929,30 +926,27 @@ public class ProjectAdminController {
 
     @GetMapping("/gallery/{galleryId}/photos")
     @ResponseBody
-    public List<PhotoGalleryDTO> getGalleryPhotos(@PathVariable Long galleryId) {
-        List<PhotoGalleryDTO> result = new ArrayList<>();
+    public List<Map<String, Object>> getGalleryPhotos(@PathVariable Long galleryId) {
+        List<Map<String, Object>> result = new ArrayList<>();
 
         try {
             PhotoGallery gallery = photoGalleryService.getPhotoGalleryItemById(galleryId);
             List<MediaFile> photos = gallery.getImages();
 
             for (MediaFile photo : photos) {
-                PhotoGalleryDTO dto = new PhotoGalleryDTO(
-                        photo.getId(),
-                        photo.getFileName(),
-                        photo.getWebPath(),
-                        photo.getWebPath(),
-                        photo.getFileName(),
-                        gallery.getId(),
-                        gallery.getTitle(),
-                        gallery.getYear(),
-                        photo.getIsPrimary()
-                );
-                result.add(dto);
+                Map<String, Object> photoMap = new HashMap<>();
+                photoMap.put("id", photo.getId()); // ← ОБЯЗАТЕЛЬНО id для фронтенда!
+                photoMap.put("photoId", photo.getId()); // и photoId для совместимости
+                photoMap.put("fileName", photo.getFileName());
+                photoMap.put("webPath", photo.getWebPath());
+                photoMap.put("thumbnailPath", photo.getWebPath());
+                photoMap.put("galleryId", gallery.getId());
+                photoMap.put("galleryTitle", gallery.getTitle());
+                photoMap.put("galleryYear", gallery.getYear());
+                photoMap.put("isPrimary", photo.getIsPrimary());
+                result.add(photoMap);
             }
 
-        } catch (EntityNotFoundException e) {
-            System.err.println("Галерея не найдена: " + galleryId);
         } catch (Exception e) {
             System.err.println("Ошибка получения фото галереи " + galleryId + ": " + e.getMessage());
         }

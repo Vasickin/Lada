@@ -2050,6 +2050,21 @@ function updateProjectMembersCount() {
                 return response.json();
             })
             .then(photos => {
+
+            console.log('=== СТРУКТУРА ДАННЫХ ОТ СЕРВЕРА ===');
+            console.log('Количество фото:', photos.length);
+
+            if (photos.length > 0) {
+                console.log('Первое фото (полная структура):', photos[0]);
+                console.log('Все ключи первого фото:', Object.keys(photos[0]));
+                console.log('ID первого фото (photo.id):', photos[0].id);
+                console.log('photoId первого фото:', photos[0].photoId);
+                console.log('Проверка существования полей:');
+                console.log('  - photos[0].id существует?', photos[0].hasOwnProperty('id'));
+                console.log('  - photos[0].photoId существует?', photos[0].hasOwnProperty('photoId'));
+                console.log('  - photos[0].effectiveId существует?', photos[0].hasOwnProperty('effectiveId'));
+            }
+
                 currentGalleryPhotos = photos;
                 console.log(`Загружено фото: ${currentGalleryPhotos.length}`);
 
@@ -2204,9 +2219,22 @@ function updateProjectMembersCount() {
             return;
         }
 
+            // ВОТ СЮДА ДОБАВЬ ОТЛАДКУ:
+    console.log('=== ПРИ ОТОБРАЖЕНИИ ФОТО ===');
+    console.log('currentGalleryPhotos:', currentGalleryPhotos);
+
         let html = '';
 
         currentGalleryPhotos.forEach(photo => {
+
+         console.log('Фото для отображения:', {
+            все_поля: photo,
+            id_значение: photo.id,
+            photoId_значение: photo.photoId,
+            какой_id_будет_использован: photo.id || photo.photoId
+        });
+
+
             const isSelected = selectedPhotos.some(sp => sp.id === photo.id);
             const isPrimary = photo.isPrimary ? 'border-warning' : '';
             const selectedClass = isSelected ? 'selected-photo' : '';
