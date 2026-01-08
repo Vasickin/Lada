@@ -2,7 +2,10 @@ package com.community.cms.domain.service.content;
 
 import com.community.cms.domain.model.content.Project;
 import com.community.cms.domain.model.content.Project.ProjectStatus;
+import com.community.cms.domain.model.people.Partner;
+import com.community.cms.domain.model.people.TeamMember;
 import com.community.cms.domain.repository.content.ProjectRepository;
+import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
@@ -13,6 +16,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -93,7 +98,7 @@ public class ProjectService {
             @CacheEvict(value = "project-by-id", key = "#project.id"),
             @CacheEvict(value = "project-by-slug", key = "#project.slug"),
             @CacheEvict(value = {"projects-list", "projects-by-category"}, allEntries = true),
-            @CacheEvict(value = "project-categories", allEntries = true)  // ← ДОБАВИТЬ
+            @CacheEvict(value = "project-categories", allEntries = true)
     })
     public Project update(Project project) {
         validateProject(project);
@@ -141,15 +146,68 @@ public class ProjectService {
     /**
      * Удаляет проект по ID.
      * Очищает все связанные кэши.
+     * <p>
+     * ВНИМАНИЕ: Перед удалением проекта очищаются все связи ManyToMany
+     * с партнерами и командой, чтобы избежать нарушения ограничений внешнего ключа.
+     * </p>
      *
      * @param id идентификатор проекта для удаления
+     * @throws EntityNotFoundException если проект не найден
      */
     @Caching(evict = {
             @CacheEvict(value = "project-by-id", key = "#id"),
             @CacheEvict(value = {"projects-list", "projects-by-category"}, allEntries = true),
-            @CacheEvict(value = "project-categories", allEntries = true)  // ← ДОБАВИТЬ
+            @CacheEvict(value = "project-categories", allEntries = true)
     })
     public void deleteById(Long id) {
+        // 1. Находим проект
+        Project project = projectRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Проект не найден с ID: " + id));
+
+        // 2. Получаем slug для очистки кэша (до изменения проекта)
+        String slug = project.getSlug();
+
+        // 3. Очищаем связь с партнерами (основная проблема!)
+        if (project.getPartners() != null && !project.getPartners().isEmpty()) {
+            // Используем итератор для безопасного удаления
+            Iterator<Partner> partnerIterator = project.getPartners().iterator();
+            while (partnerIterator.hasNext()) {
+                Partner partner = partnerIterator.next();
+                // Удаляем проект из коллекции партнера
+                if (partner.getProjects() != null) {
+                    partner.getProjects().remove(project);
+                }
+                // Удаляем партнера из коллекции проекта
+                partnerIterator.remove();
+            }
+        }
+
+        // 4. Очищаем связь с командой
+        if (project.getTeamMembers() != null && !project.getTeamMembers().isEmpty()) {
+            Iterator<TeamMember> memberIterator = project.getTeamMembers().iterator();
+            while (memberIterator.hasNext()) {
+                TeamMember member = memberIterator.next();
+                // Удаляем проект из коллекции члена команды
+                if (member.getProjects() != null) {
+                    member.getProjects().remove(project);
+                }
+                // Удаляем члена команды из коллекции проекта
+                memberIterator.remove();
+            }
+        }
+
+        // 5. Очищаем ключевые фото (ElementCollection)
+        if (project.getKeyPhotoIds() != null) {
+            project.getKeyPhotoIds().clear();
+        }
+
+        // 6. Сохраняем проект с очищенными коллекциями
+        projectRepository.save(project);
+
+        // 7. Очищаем кэш по slug (если нужно)
+        // @CacheEvict уже обработает это
+
+        // 8. Теперь удаляем сам проект
         projectRepository.deleteById(id);
     }
 
@@ -314,7 +372,7 @@ public class ProjectService {
                 .replaceAll("\\s+", " "); // заменяем множественные пробелы на один
     }
 
-    // ================== ПАГИНАЦИЯ С ФИЛЬТРАЦИЕЙ ==================
+    // ================== ПАГИНАЦИЯ С ФИЛьТРАЦИЕЙ ==================
 
     /**
      * Находит активные проекты с пагинацией.
