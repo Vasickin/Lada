@@ -255,6 +255,18 @@ public class HomeController {
             model.addAttribute("selectedYear", year);
             model.addAttribute("selectedSearch", search);
 
+            // ================== СТАТИСТИКА ПРОЕКТОВ ==================
+
+            long totalProjectsCount = projectService.countAll();
+            long activeProjectsCount = projectService.countActive(); // Уже есть метод
+            long annualProjectsCount = projectService.countAnnual(); // Новый метод
+            long archivedProjectsCount = projectService.countArchived(); // Новый метод
+
+            model.addAttribute("totalProjectsCount", totalProjectsCount);
+            model.addAttribute("activeProjectsCount", activeProjectsCount);
+            model.addAttribute("annualProjectsCount", annualProjectsCount);
+            model.addAttribute("archivedProjectsCount", archivedProjectsCount);
+
             // SEO мета-данные
             model.addAttribute("pageTitle", "Наши проекты");
             model.addAttribute("metaDescription", "Список всех проектов организации 'ЛАДА'. Фильтруйте по категориям, статусу и году.");

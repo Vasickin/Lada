@@ -437,6 +437,49 @@ public class ProjectService {
 
     // ================== ПОЛУЧЕНИЕ ПОПУЛЯРНЫХ И ИЗБРАННЫХ ПРОЕКТОВ ==================
 
+    // Добавить эти методы в ProjectService.java:
+
+    /**
+     * Подсчитывает общее количество проектов.
+     * Используется для статистики на сайте.
+     *
+     * @return общее количество проектов
+     */
+    @Transactional(readOnly = true)
+    public long countAll() {
+        return projectRepository.count();
+    }
+
+    /**
+     * Подсчитывает количество ежегодных проектов.
+     *
+     * @return количество ежегодных проектов
+     */
+    @Transactional(readOnly = true)
+    public long countAnnual() {
+        return countByStatus(ProjectStatus.ANNUAL);
+    }
+
+    /**
+     * Подсчитывает количество архивных проектов.
+     *
+     * @return количество архивных проектов
+     */
+    @Transactional(readOnly = true)
+    public long countArchived() {
+        return countByStatus(ProjectStatus.ARCHIVED);
+    }
+
+    /**
+     * Подсчитывает количество неархивных проектов (активные + ежегодные).
+     *
+     * @return количество неархивных проектов
+     */
+    @Transactional(readOnly = true)
+    public long countNonArchived() {
+        return countByStatus(ProjectStatus.ACTIVE) + countByStatus(ProjectStatus.ANNUAL);
+    }
+
     /**
      * Находит последние N активных проектов.
      * Используется для главной страницы.

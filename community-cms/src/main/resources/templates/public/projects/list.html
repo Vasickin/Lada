@@ -330,6 +330,35 @@
                 </div>
             </div>
 
+            <!-- Statistics Section -->
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-light py-3">
+                    <h5 class="mb-0">
+                        <i class="bi bi-graph-up me-2"></i> Статистика проектов
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="list-group list-group-flush">
+                        <div class="list-group-item border-0 px-0 py-2 d-flex justify-content-between">
+                            <span>Все проекты:</span>
+                            <span class="fw-bold" th:text="${totalProjectsCount}">0</span>
+                        </div>
+                        <div class="list-group-item border-0 px-0 py-2 d-flex justify-content-between">
+                            <span>Активные проекты:</span>
+                            <span class="fw-bold text-success" th:text="${activeProjectsCount}">0</span>
+                        </div>
+                        <div class="list-group-item border-0 px-0 py-2 d-flex justify-content-between">
+                            <span>Ежегодные проекты:</span>
+                            <span class="fw-bold text-primary" th:text="${annualProjectsCount}">0</span>
+                        </div>
+                        <div class="list-group-item border-0 px-0 py-2 d-flex justify-content-between">
+                            <span>Архивные проекты:</span>
+                            <span class="fw-bold text-secondary" th:text="${archivedProjectsCount}">0</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <!-- Filters Section -->
             <div class="card border-0 shadow-sm mb-4">
                 <div class="card-header bg-light py-3">
