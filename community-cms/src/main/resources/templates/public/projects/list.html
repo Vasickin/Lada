@@ -253,7 +253,7 @@
                                      th:classappend="${iterStat.first} ? 'carousel-item active' : 'carousel-item'">
                                     <div class="p-3">
                                         <!-- Carousel Image -->
-                                        <div style="height: 180px; overflow: hidden;" class="rounded mb-3">
+                                        <div class="ratio rounded mb-3" style="--bs-aspect-ratio: 141.4%;">
                                             <!-- Есть ключевые фото -->
                                             <div th:if="${project.keyPhotos != null and !project.keyPhotos.isEmpty()}">
                                                 <img th:src="${project.keyPhotos[0].webPath}"
