@@ -15,17 +15,20 @@
         <div class="col-12">
             <h1 class="display-5 fw-bold text-primary mb-3">Наши проекты</h1>
             <p class="lead text-muted">
-                Откройте для себя разнообразие наших инициатив. От активных мероприятий
-                до успешно завершенных проектов - каждый из них вносит вклад в развитие сообщества.
+                От первого снега «Снегурочки» до летнего бриза «Балтийской волны» — весь год в ритме нашего праздника.
+                Создаем пространство, где традиции встречаются с талантом, а душевность — с размахом.
+                Добро пожаловать в нашу творческую вселенную!
             </p>
             <div class="d-flex align-items-center gap-3 mt-3">
                 <span class="badge bg-success fs-6">
                     <span th:text="${totalItems ?: 0}">0</span> проектов
                 </span>
+                <!--
                 <span class="text-muted">
                     <i class="bi bi-filter me-1"></i>
                     Используйте фильтры справа для поиска
                 </span>
+                -->
             </div>
         </div>
     </div>
@@ -82,38 +85,44 @@
                                 <div class="row g-0 h-100">
 
                                     <!-- ЛЕВАЯ ЧАСТЬ: БАННЕР (A4 формат) -->
-                                    <div class="col-md-4 col-lg-3 position-relative h-100">
-                                        <div class="h-100 w-100" style="overflow: hidden;">
-                                            <!-- Есть ключевые фото -->
-                                            <div th:if="${project.keyPhotos != null and !project.keyPhotos.isEmpty()}" class="h-100">
-                                                <img th:src="${project.keyPhotos[0].webPath}"
-                                                     class="h-100 w-100 object-fit-cover"
-                                                     style="aspect-ratio: 1/1.414; transition: transform 0.3s ease;"
-                                                     th:alt="${project.title}">
-                                            </div>
+                                    <div class="col-md-4 col-lg-3 h-100">
+                                        <div class="h-100 d-flex align-items-center p-3"> <!-- Добавили p-3 для отступов -->
+                                            <div class="w-100 h-100 position-relative"
+                                                 style="overflow: hidden; border-radius: 6px; box-shadow: 0 2px 8px rgba(0,0,0,0.15);">
 
-                                            <!-- Нет ключевых фото, но есть обложка -->
-                                            <div th:if="${project.keyPhotos == null or project.keyPhotos.isEmpty()}" class="h-100">
-                                                <div th:if="${project.featuredImagePath != null and project.featuredImagePath != ''}" class="h-100">
-                                                    <img th:src="${project.featuredImagePath}"
+                                                <!-- Есть ключевые фото -->
+                                                <div th:if="${project.keyPhotos != null and !project.keyPhotos.isEmpty()}" class="h-100">
+                                                    <img th:src="${project.keyPhotos[0].webPath}"
                                                          class="h-100 w-100 object-fit-cover"
-                                                         style="aspect-ratio: 1/1.414; transition: transform 0.3s ease;"
+                                                         style="aspect-ratio: 1/1.414;"
                                                          th:alt="${project.title}">
                                                 </div>
-                                                <div th:if="${project.featuredImagePath == null or project.featuredImagePath == ''}"
-                                                     class="h-100 d-flex align-items-center justify-content-center bg-light">
-                                                    <i class="bi bi-image text-muted" style="font-size: 3rem;"></i>
-                                                </div>
-                                            </div>
-                                        </div>
 
-                                        <!-- Status Badge -->
-                                        <div class="position-absolute top-0 end-0 m-2">
-                                            <span th:switch="${project.status}">
-                                                <span th:case="'ARCHIVED'" class="badge bg-secondary">Архивный</span>
-                                                <span th:case="'ANNUAL'" class="badge bg-primary">Ежегодный</span>
-                                                <span th:case="'ACTIVE'" class="badge bg-success">Активный</span>
-                                            </span>
+                                                <!-- Нет ключевых фото, но есть обложка -->
+                                                <div th:if="${project.keyPhotos == null or project.keyPhotos.isEmpty()}" class="h-100">
+                                                    <div th:if="${project.featuredImagePath != null and project.featuredImagePath != ''}" class="h-100">
+                                                        <img th:src="${project.featuredImagePath}"
+                                                             class="h-100 w-100 object-fit-cover"
+                                                             style="aspect-ratio: 1/1.414;"
+                                                             th:alt="${project.title}">
+                                                    </div>
+                                                    <div th:if="${project.featuredImagePath == null or project.featuredImagePath == ''}"
+                                                         class="h-100 d-flex align-items-center justify-content-center bg-light">
+                                                        <i class="bi bi-image text-muted" style="font-size: 2rem;"></i>
+                                                    </div>
+                                                </div>
+
+                                                <!-- Status Badge -->
+                                                <!--
+                                                <div class="position-absolute top-0 end-0 m-2">
+                                                    <span th:switch="${project.status}">
+                                                        <span th:case="'ARCHIVED'" class="badge bg-secondary">Архивный</span>
+                                                        <span th:case="'ANNUAL'" class="badge bg-primary">Ежегодный</span>
+                                                        <span th:case="'ACTIVE'" class="badge bg-success">Активный</span>
+                                                    </span>
+                                                </div>
+                                                -->
+                                            </div>
                                         </div>
                                     </div>
 
@@ -131,7 +140,7 @@
                                                 <!-- Status Badge -->
                                                 <!-- <div class="position-absolute top-0 end-0 m-2"> -->
                                                     <span th:switch="${project.status}">
-                                                        <span th:case="'ARCHIVED'" class="badge bg-secondary">Архивный</span>
+                                                        <span th:case="'ARCHIVED'" class="badge bg-secondary">След времени</span>
                                                         <span th:case="'ANNUAL'" class="badge bg-primary">Ежегодный</span>
                                                         <span th:case="'ACTIVE'" class="badge bg-success">Активный</span>
                                                     </span>
@@ -260,7 +269,7 @@
         <div class="col-lg-4">
             <!-- Carousel Section -->
             <div class="card border-0 shadow-sm mb-4">
-                <div class="card-header bg-primary text-white py-3">
+                <div class="card-header bg-light py-3">
                     <h5 class="mb-0">
                         <i class="bi bi-star me-2"></i> События в центре внимания
                     </h5>
@@ -318,6 +327,9 @@
                                                 <span th:text="${#temporals.format(project.eventDate, 'dd.MM.yy')}"></span>
                                             </span>
                                         </div>
+                                        <a th:href="${project.detailUrl}" class="btn btn-primary btn-sm">
+                                            <i class="bi bi-arrow-right me-1"></i> Подробнее
+                                        </a>
                                     </div>
                                 </div>
                             </div>
