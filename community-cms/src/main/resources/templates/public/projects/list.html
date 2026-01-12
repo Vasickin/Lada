@@ -109,10 +109,11 @@
 
                                         <!-- Status Badge -->
                                         <div class="position-absolute top-0 end-0 m-2">
-                                <span th:classappend="${project.currentlyActive} ? 'bg-success' : (${project.archived} ? 'bg-secondary' : 'bg-primary')"
-                                      class="badge">
-                                    <span th:text="${project.currentlyActive} ? 'Активный' : (${project.archived} ? 'Архивный' : 'Ежегодный')"></span>
-                                </span>
+                                            <span th:switch="${project.status}">
+                                                <span th:case="'ARCHIVED'" class="badge bg-secondary">Архивный</span>
+                                                <span th:case="'ANNUAL'" class="badge bg-primary">Ежегодный</span>
+                                                <span th:case="'ACTIVE'" class="badge bg-success">Активный</span>
+                                            </span>
                                         </div>
                                     </div>
 
@@ -122,10 +123,19 @@
 
                                             <!-- Верхняя строка: Категория -->
                                             <div class="mb-2">
-                                    <span class="badge bg-light text-dark border">
-                                        <i class="bi bi-tag me-1"></i>
-                                        <span th:text="${project.category}"></span>
-                                    </span>
+                                                <span class="badge bg-light text-dark border">
+                                                    <i class="bi bi-tag me-1"></i>
+                                                    <span th:text="${project.category}"></span>
+                                                </span>
+
+                                                <!-- Status Badge -->
+                                                <!-- <div class="position-absolute top-0 end-0 m-2"> -->
+                                                    <span th:switch="${project.status}">
+                                                        <span th:case="'ARCHIVED'" class="badge bg-secondary">Архивный</span>
+                                                        <span th:case="'ANNUAL'" class="badge bg-primary">Ежегодный</span>
+                                                        <span th:case="'ACTIVE'" class="badge bg-success">Активный</span>
+                                                    </span>
+                                                <!-- </div> -->
                                             </div>
 
                                             <!-- Project Title -->
