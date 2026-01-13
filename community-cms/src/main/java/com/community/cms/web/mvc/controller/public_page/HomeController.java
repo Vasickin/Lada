@@ -17,7 +17,6 @@ import com.community.cms.domain.service.people.PartnerService;
 import com.community.cms.web.mvc.dto.content.ProjectDTO;
 import com.community.cms.web.mvc.mapper.content.ProjectMapper;
 
-import jakarta.annotation.Nonnull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -57,7 +56,7 @@ public class HomeController {
         this.teamMemberMapper = teamMemberMapper;
         this.projectService = projectService;
         this.projectMapper = projectMapper;
-        this.photoGalleryService = photoGalleryService;  // ЭТО СТРОКА ОТСУТСТВУЛА
+        this.photoGalleryService = photoGalleryService;
     }
 
     // ================== СУЩЕСТВУЮЩИЕ МЕТОДЫ (БЕЗ ИЗМЕНЕНИЙ) ==================
@@ -338,7 +337,7 @@ public class HomeController {
             model.addAttribute("pageTitle", projectDTO.getEffectiveMetaTitle());
             model.addAttribute("metaDescription", projectDTO.getEffectiveMetaDescription());
             model.addAttribute("metaKeywords", projectDTO.getMetaKeywords());
-            model.addAttribute("ogImage", projectDTO.getEffectiveOgImagePath());
+            model.addAttribute("image", projectDTO.getEffectiveOgImagePath());
 
             return "public/projects/detail";
 
@@ -550,21 +549,6 @@ public class HomeController {
         }
     }
 
-//    @GetMapping("/gallery")
-//    public String gallery(Model model) {
-//        Optional<CustomPage> galleryPage = pageService.findPublishedPageByType(PageType.GALLERY);
-//        model.addAttribute("hasContent", galleryPage.isPresent());
-//        galleryPage.ifPresent(page -> {
-//            model.addAttribute("page", page);
-//            model.addAttribute("pageTitle", page.getTitle());
-//            model.addAttribute("metaDescription", page.getMetaDescription());
-//        });
-//        if (galleryPage.isEmpty()) {
-//            model.addAttribute("pageTitle", "Галерея");
-//            model.addAttribute("metaDescription", "Фотографии и видео наших мероприятий");
-//        }
-//        return "gallery";
-//    }
 
     @GetMapping("/patrons")
     public String patrons(Model model) {

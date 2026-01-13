@@ -330,11 +330,11 @@
                             <div class="text-center p-3">
                                 <!-- Логотип партнера -->
                                 <div class="mb-3" style="height: 80px;">
-                                    <img th:if="${partner.logoPath != null}"
-                                         th:src="${partner.logoPath}"
+                                    <img th:if="${partner.getLogoUrl != null}"
+                                         th:src="${partner.getLogoUrl}"
                                          th:alt="${partner.name}"
                                          class="img-fluid h-100 object-fit-contain">
-                                    <div th:unless="${partner.logoPath != null}"
+                                    <div th:unless="${partner.getLogoUrl != null}"
                                          class="h-100 bg-light d-flex align-items-center justify-content-center rounded">
                                         <span class="fw-bold text-muted" th:text="${partner.name}">
                                             Партнер
