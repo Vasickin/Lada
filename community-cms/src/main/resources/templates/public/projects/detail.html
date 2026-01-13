@@ -155,6 +155,7 @@
                         </div>
 
                         <!-- Миниатюры -->
+                        <!--
                         <div class="row g-2 mt-3">
                             <div th:each="photo, iterStat : ${project.keyPhotos}" class="col-3">
                                 <a href="javascript:void(0)"
@@ -167,6 +168,7 @@
                                 </a>
                             </div>
                         </div>
+                        -->
                     </div>
                 </div>
             </section>
@@ -521,8 +523,8 @@
                                 <!-- Миниатюра -->
                                 <div class="flex-shrink-0 me-3">
                                     <div style="width: 60px; height: 60px; overflow: hidden;" class="rounded">
-                                        <img th:if="${similar.keyPhotos != null} and ${!#lists.isEmpty(similar.keyPhotos)}"
-                                             th:src="${similar.keyPhotos[0].thumbnailPath ?: similar.keyPhotos[0].webPath}"
+                                        <img th:if="${similar.keyPhotos != null and !similar.keyPhotos.isEmpty() and similar.keyPhotos[0].webPath != null}"
+                                             th:src="${similar.keyPhotos[0].webPath}"
                                              th:alt="${similar.title}"
                                              class="img-fluid w-100 h-100 object-fit-cover">
                                         <div th:unless="${similar.keyPhotos != null} and ${!#lists.isEmpty(similar.keyPhotos)}"
