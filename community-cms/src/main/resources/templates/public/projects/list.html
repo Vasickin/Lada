@@ -324,7 +324,7 @@
                                             </span>
                                             <span th:if="${project.eventDate}" class="text-muted">
                                                 <i class="bi bi-calendar me-1"></i>
-                                                <span th:text="${#temporals.format(project.eventDate, 'dd.MM.yy')}"></span>
+                                                <span th:text="${#temporals.format(project.eventDate, 'dd.MM.yyyy')}"></span>
                                             </span>
                                         </div>
                                         <a th:href="${project.detailUrl}" class="btn btn-primary btn-sm">
@@ -682,5 +682,261 @@
         });
     /*]]>*/
 </script>
+
+<!-- ЭФФЕКТ ПЛАВНОГО ОТКРЫТИЯ СТРАНИЦЫ -->
+<!--
+<script>
+    // Минимальный прелоадер
+    (function() {
+        // Создаём прелоадер
+        const preloader = document.createElement('div');
+        preloader.id = 'simplePreloader';
+        preloader.innerHTML = `
+            <style>
+                #simplePreloader {
+                    position: fixed;
+                    top: 0;
+                    left: 0;
+                    width: 100%;
+                    height: 100%;
+                    background: #2c3e50;
+                    display: flex;
+                    justify-content: center;
+                    align-items: center;
+                    z-index: 9999;
+                    transition: opacity 0.5s ease;
+                }
+                .loader-content {
+                    text-align: center;
+                    color: white;
+                }
+                .spinner {
+                    width: 50px;
+                    height: 50px;
+                    border: 3px solid rgba(255,255,255,0.3);
+                    border-radius: 50%;
+                    border-top-color: #9b59b6;
+                    animation: spin 1s ease-in-out infinite;
+                    margin: 0 auto 20px;
+                }
+                @keyframes spin { to { transform: rotate(360deg); } }
+            </style>
+            <div class="loader-content">
+                <div class="spinner"></div>
+                <p>Загружаем вдохновение...</p>
+            </div>
+        `;
+
+        document.body.appendChild(preloader);
+
+        // Скрываем прелоадер после загрузки
+        window.addEventListener('load', function() {
+            setTimeout(function() {
+                preloader.style.opacity = '0';
+                setTimeout(function() {
+                    preloader.style.display = 'none';
+
+                    // Плавное появление контента
+                    document.body.style.opacity = '0';
+                    document.body.style.transition = 'opacity 0.5s ease';
+                    setTimeout(() => {
+                        document.body.style.opacity = '1';
+                    }, 50);
+
+                }, 500);
+            }, 800);
+        });
+    })();
+</script>
+-->
+<!-- ================================================================== -->
+
+
+<!-- ==== ЭФФЕКТ ПАРЕЛОАДЕР В ВИДЕ ПАЛИТРЫ ==== -->
+<!--
+<style>
+    /* Прелоадер в виде палитры */
+    .palette-preloader {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: #2c3e50;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 9999;
+    }
+
+    .palette {
+        position: relative;
+        width: 200px;
+        height: 200px;
+    }
+
+    .color-circle {
+        position: absolute;
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        opacity: 0;
+        animation: paintDrop 1.5s ease-in-out forwards;
+    }
+
+    .color-circle:nth-child(1) {
+        background: #e74c3c;
+        top: 20px;
+        left: 20px;
+        animation-delay: 0.2s;
+    }
+
+    .color-circle:nth-child(2) {
+        background: #3498db;
+        top: 20px;
+        right: 20px;
+        animation-delay: 0.4s;
+    }
+
+    .color-circle:nth-child(3) {
+        background: #2ecc71;
+        bottom: 20px;
+        left: 20px;
+        animation-delay: 0.6s;
+    }
+
+    .color-circle:nth-child(4) {
+        background: #f39c12;
+        bottom: 20px;
+        right: 20px;
+        animation-delay: 0.8s;
+    }
+
+    .color-circle:nth-child(5) {
+        background: #9b59b6;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        animation-delay: 1s;
+    }
+
+    .palette-center {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        text-align: center;
+        color: white;
+        z-index: 10;
+    }
+
+    @keyframes paintDrop {
+        0% {
+            opacity: 0;
+            transform: scale(0) translateY(-100px);
+        }
+        70% {
+            opacity: 1;
+            transform: scale(1.1) translateY(10px);
+        }
+        100% {
+            opacity: 1;
+            transform: scale(1) translateY(0);
+        }
+    }
+
+    .fade-out {
+        animation: fadeOut 0.8s ease forwards;
+    }
+
+    @keyframes fadeOut {
+        to {
+            opacity: 0;
+            visibility: hidden;
+        }
+    }
+
+    /* Появление контента кистью */
+    .reveal-item {
+        opacity: 0;
+        transform: translateY(20px);
+        transition: all 0.8s cubic-bezier(0.19, 1, 0.22, 1);
+    }
+
+    .reveal-active {
+        opacity: 1;
+        transform: translateY(0);
+    }
+
+    /* Эффект мазка для фона */
+    .paint-stroke {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(45deg, #ff6b6b, #4ecdc4, #45b7d1, #96ceb4, #ffeaa7);
+        background-size: 400% 400%;
+        z-index: -1;
+        animation: paintFlow 15s ease infinite;
+        opacity: 0.1;
+    }
+
+    @keyframes paintFlow {
+        0%, 100% { background-position: 0% 50%; }
+        50% { background-position: 100% 50%; }
+    }
+</style>
+
+<div class="palette-preloader" id="preloader">
+    <div class="palette">
+        <div class="color-circle"></div>
+        <div class="color-circle"></div>
+        <div class="color-circle"></div>
+        <div class="color-circle"></div>
+        <div class="color-circle"></div>
+        <div class="palette-center">
+            <i class="fas fa-paint-brush" style="font-size: 40px; margin-bottom: 10px;"></i>
+            <p>Готовим палитру...</p>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Поэлементное появление контента
+    document.addEventListener('DOMContentLoaded', function() {
+        const items = document.querySelectorAll('.reveal-item');
+
+        const revealOnScroll = function() {
+            items.forEach(item => {
+                if (item.getBoundingClientRect().top < window.innerHeight - 100) {
+                    item.classList.add('reveal-active');
+                }
+            });
+        };
+
+        // После загрузки скрываем прелоадер
+        window.addEventListener('load', function() {
+            const preloader = document.getElementById('preloader');
+
+            // Анимация завершения прелоадера
+            setTimeout(() => {
+                preloader.classList.add('fade-out');
+
+                // Удаляем через 1 секунду
+                setTimeout(() => {
+                    preloader.style.display = 'none';
+
+                    // Запускаем появление контента
+                    revealOnScroll();
+                    window.addEventListener('scroll', revealOnScroll);
+
+                }, 800);
+            }, 1500);
+        });
+    });
+</script>
+-->
+<!-- ========================================================= -->
 </body>
 </html>

@@ -238,7 +238,6 @@ public class HomeController {
                     projectDTO.setKeyPhotos(keyPhotos);
                 }
             }
-// ======   ==============================================================
 
             // ================== ДОБАВЛЕНИЕ ДАННЫХ В МОДЕЛЬ ==================
 
@@ -289,6 +288,67 @@ public class HomeController {
             model.addAttribute("metaDescription", "Список проектов организации 'ЛАДА'");
 
             return "public/projects/list";
+        }
+    }
+
+    // ================== ДЕТАЛЬНАЯ СТРАНИЦА ПРОЕКТА ==================
+
+    /**
+     * Детальная страница проекта.
+     * URL: /projects/{slug}
+     */
+    @GetMapping("/projects/{slug}")
+    public String showProjectDetail(@PathVariable String slug, Model model) {
+        try {
+            Optional<Project> projectOpt = projectService.findBySlugForPublic(slug);
+
+            if (projectOpt.isEmpty()) {
+                model.addAttribute("errorTitle", "Проект не найден");
+                model.addAttribute("errorMessage", "Запрошенный проект не существует или недоступен.");
+                return "error/404";
+            }
+
+            Project project = projectOpt.get();
+
+            // ИСПОЛЬЗУЕМ НОВЫЙ МЕТОД для детальной страницы
+            ProjectDTO projectDTO = projectMapper.toDetailDTO(project);
+
+            // ЗАГРУЗКА ПОХОЖИХ ПРОЕКТОВ
+            List<Project> similarProjects = projectService.findSimilarProjects(
+                    project.getCategory(),
+                    project.getId(),
+                    3
+            );
+            List<ProjectDTO> similarProjectDTOs = projectMapper.toCardDTOList(similarProjects);
+
+            // ЗАГРУЖАЕМ КЛЮЧЕВЫЕ ФОТО ДЛЯ ПОХОЖИХ ПРОЕКТОВ
+            for (ProjectDTO similarDTO : similarProjectDTOs) {
+                Optional<Project> similarProjectOpt = projectService.findById(similarDTO.getId());
+                if (similarProjectOpt.isPresent()) {
+                    List<PhotoGalleryDTO> keyPhotos = projectMapper.loadKeyPhotosForProject(similarProjectOpt.get());
+                    similarDTO.setKeyPhotos(keyPhotos);
+                }
+            }
+
+            // ДОБАВЛЯЕМ В МОДЕЛЬ
+            model.addAttribute("project", projectDTO);
+            model.addAttribute("similarProjects", similarProjectDTOs);
+
+            // SEO мета-данные
+            model.addAttribute("pageTitle", projectDTO.getEffectiveMetaTitle());
+            model.addAttribute("metaDescription", projectDTO.getEffectiveMetaDescription());
+            model.addAttribute("metaKeywords", projectDTO.getMetaKeywords());
+            model.addAttribute("ogImage", projectDTO.getEffectiveOgImagePath());
+
+            return "public/projects/detail";
+
+        } catch (Exception e) {
+            System.err.println("Ошибка при загрузке детальной страницы проекта: " + e.getMessage());
+            e.printStackTrace();
+
+            model.addAttribute("errorTitle", "Ошибка загрузки");
+            model.addAttribute("errorMessage", "Произошла ошибка при загрузке страницы проекта.");
+            return "error/500";
         }
     }
 
@@ -565,88 +625,24 @@ public class HomeController {
         return "sitemap";
     }
 
-    // ================== ДЕТАЛЬНАЯ СТРАНИЦА ПРОЕКТА ==================
 
-    /**
-     * Детальная страница проекта.
-     * URL: /projects/{slug}
-     */
-    @GetMapping("/projects/{slug}")
-    public String showProjectDetail(@PathVariable String slug, Model model) {
-        try {
-            // Ищем проект по slug (только активные для публичного доступа)
-            Optional<Project> projectOpt = projectService.findBySlugForPublic(slug);
 
-            if (projectOpt.isEmpty()) {
-                model.addAttribute("errorTitle", "Проект не найден");
-                model.addAttribute("errorMessage", "Запрошенный проект не существует или недоступен.");
-                return "error/404";
-            }
-
-            Project project = projectOpt.get();
-
-            // Преобразуем в полный DTO
-            ProjectDTO projectDTO = projectMapper.toFullDTO(project);
-
-            // Загружаем ключевые фото через PhotoGalleryService (как в админке)
-            if (projectDTO.getKeyPhotoIds() != null && !projectDTO.getKeyPhotoIds().isEmpty()) {
-                try {
-                    List<PhotoGalleryDTO> keyPhotos = getPhotoGalleryDTOS(projectDTO);
-
-                    projectDTO.setKeyPhotos(keyPhotos);
-                } catch (Exception e) {
-                    System.err.println("Ошибка при загрузке ключевых фото: " + e.getMessage());
-                    projectDTO.setKeyPhotos(new ArrayList<>());
-                }
-            }
-
-            // Похожие проекты (по категории)
-            List<Project> similarProjects = projectService.findSimilarProjects(
-                    project.getCategory(),
-                    project.getId(),
-                    3
-            );
-            List<ProjectDTO> similarProjectDTOs = projectMapper.toCardDTOList(similarProjects);
-
-            // ================== ДОБАВЛЕНИЕ ДАННЫХ В МОДЕЛЬ ==================
-
-            model.addAttribute("project", projectDTO);
-            model.addAttribute("similarProjects", similarProjectDTOs);
-
-            // SEO мета-данные
-            model.addAttribute("pageTitle", projectDTO.getEffectiveMetaTitle());
-            model.addAttribute("metaDescription", projectDTO.getEffectiveMetaDescription());
-            model.addAttribute("metaKeywords", projectDTO.getMetaKeywords());
-            model.addAttribute("ogImage", projectDTO.getEffectiveOgImagePath());
-
-            return "public/projects/detail";
-
-        } catch (Exception e) {
-            System.err.println("Ошибка при загрузке детальной страницы проекта: " + e.getMessage());
-            e.printStackTrace();
-
-            model.addAttribute("errorTitle", "Ошибка загрузки");
-            model.addAttribute("errorMessage", "Произошла ошибка при загрузке страницы проекта.");
-            return "error/500";
-        }
-    }
-
-    @Nonnull
-    private static List<PhotoGalleryDTO> getPhotoGalleryDTOS(ProjectDTO projectDTO) {
-        List<PhotoGalleryDTO> keyPhotos = new ArrayList<>();
-
-        // Используем PhotoGalleryService для получения фото (как в ProjectAdminController)
-        // TODO: Реализовать получение PhotoGalleryDTO через существующий сервис
-        for (Long photoId : projectDTO.getKeyPhotoIds()) {
-            PhotoGalleryDTO photoDTO = new PhotoGalleryDTO();
-            photoDTO.setPhotoId(photoId);
-            photoDTO.setFileName("photo-" + photoId + ".jpg");
-            photoDTO.setWebPath("/images/projects/" + photoId + ".jpg");
-            photoDTO.setThumbnailPath("/images/projects/thumbnails/" + photoId + ".jpg");
-            keyPhotos.add(photoDTO);
-        }
-        return keyPhotos;
-    }
+//    @Nonnull
+//    private static List<PhotoGalleryDTO> getPhotoGalleryDTOS(ProjectDTO projectDTO) {
+//        List<PhotoGalleryDTO> keyPhotos = new ArrayList<>();
+//
+//        // Используем PhotoGalleryService для получения фото (как в ProjectAdminController)
+//        // TODO: Реализовать получение PhotoGalleryDTO через существующий сервис
+//        for (Long photoId : projectDTO.getKeyPhotoIds()) {
+//            PhotoGalleryDTO photoDTO = new PhotoGalleryDTO();
+//            photoDTO.setPhotoId(photoId);
+//            photoDTO.setFileName("photo-" + photoId + ".jpg");
+//            photoDTO.setWebPath("/images/projects/" + photoId + ".jpg");
+//            photoDTO.setThumbnailPath("/images/projects/thumbnails/" + photoId + ".jpg");
+//            keyPhotos.add(photoDTO);
+//        }
+//        return keyPhotos;
+//    }
 
     // ================== СУЩЕСТВУЮЩИЕ МЕТОДЫ ДЛЯ КОМАНДЫ (БЕЗ ИЗМЕНЕНИЙ) ==================
 

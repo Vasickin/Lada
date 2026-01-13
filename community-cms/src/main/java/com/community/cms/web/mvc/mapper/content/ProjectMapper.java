@@ -192,7 +192,7 @@ public class ProjectMapper {
      * Используется для детальной страницы.
      */
     public ProjectDTO toFullDTO(Project project) {
-        return toDTO(project); // toDTO уже включает команду и партнеров
+        return toDetailDTO(project); // ИЗМЕНЯЕМ: теперь делегируем toDetailDTO
     }
 
     /**
@@ -247,23 +247,41 @@ public class ProjectMapper {
 
     /**
      * Загружает PhotoGalleryDTO по ID фотографии.
-     * Пока используем заглушки, потом заменим на реальные данные.
+     * Использует PhotoGalleryService безопасным образом.
      */
     private PhotoGalleryDTO loadPhotoGalleryDTO(Long photoId) {
         try {
-            return photoGalleryService.getPhotoDTOById(photoId);
+            // Используем существующий метод сервиса
+            PhotoGalleryDTO photoDTO = photoGalleryService.getPhotoDTOById(photoId);
+
+            // Убедимся, что thumbnailPath всегда есть
+            if (photoDTO != null) {
+                if (photoDTO.getThumbnailPath() == null || photoDTO.getThumbnailPath().isEmpty()) {
+                    photoDTO.setThumbnailPath(photoDTO.getWebPath());
+                }
+            }
+
+            return photoDTO;
         } catch (Exception e) {
             System.err.println("Ошибка при загрузке фото ID=" + photoId + ": " + e.getMessage());
-            // Простая заглушка
-            return new PhotoGalleryDTO(
-                    photoId,
-                    "photo-" + photoId + ".jpg",
-                    "/images/placeholder.jpg",
-                    "/images/placeholder.jpg",
-                    "Фото " + photoId,
-                    null, null, null, false
-            );
+
+            // Возвращаем DTO-заглушку с корректными полями
+            return createFallbackPhotoDTO(photoId);
         }
+    }
+
+    /**
+     * Создает DTO-заглушку для фото.
+     * Отдельный метод для повторного использования.
+     */
+    private PhotoGalleryDTO createFallbackPhotoDTO(Long photoId) {
+        PhotoGalleryDTO fallback = new PhotoGalleryDTO();
+        fallback.setPhotoId(photoId);
+        fallback.setFileName("photo-" + photoId + ".jpg");
+        fallback.setWebPath("/images/placeholder.jpg");
+        fallback.setThumbnailPath("/images/placeholder.jpg");
+        fallback.setTitle("Фото " + photoId);
+        return fallback;
     }
 
     /**
@@ -282,5 +300,32 @@ public class ProjectMapper {
         }
 
         return keyPhotos;
+    }
+
+    // Ищем в ProjectMapper.java после метода toCarouselDTOList() (примерно строка 155)
+
+    // ================== МЕТОД ДЛЯ ДЕТАЛЬНОЙ СТРАНИЦЫ ==================
+
+    /**
+     * Создает DTO для детальной страницы проекта.
+     * Включает все данные: ключевые фото, команду, партнеры.
+     * Отдельный метод, чтобы не ломать существующую логику toDTO().
+     */
+    public ProjectDTO toDetailDTO(Project project) {
+        if (project == null) {
+            return null;
+        }
+
+        // Используем базовый toDTO() для основных полей
+        ProjectDTO dto = toDTO(project);
+
+        // ДОПОЛНИТЕЛЬНО загружаем ключевые фото только для детальной страницы
+        List<PhotoGalleryDTO> keyPhotos = loadKeyPhotosForProject(project);
+        dto.setKeyPhotos(keyPhotos);
+
+        // Убедимся, что вычисляемые поля правильно установлены
+        dto.setHasKeyPhotos(keyPhotos != null && !keyPhotos.isEmpty());
+
+        return dto;
     }
 }
