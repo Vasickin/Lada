@@ -269,7 +269,7 @@
                                     <!-- Краткая биография -->
                                     <p class="small text-muted mb-3"
                                        th:if="${member.bio != null} and ${#strings.length(member.bio) > 0}"
-                                       th:text="${#strings.substring(member.bio, 0, 100)} + '...'">
+                                       th:text="${#strings.abbreviate(member.bio, 100)} + '...'">
                                         Краткое описание
                                     </p>
 
