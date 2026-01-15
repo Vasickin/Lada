@@ -520,6 +520,11 @@ public class ProjectService {
         return projectRepository.findSimilarProjects(category, excludeId, limit);
     }
 
+    @Transactional(readOnly = true)
+    public List<Project> findSimilarProjectsAllStatuses(String category, Long excludeId, int limit) {
+        return projectRepository.findSimilarProjectsAllStatuses(category, excludeId, limit);
+    }
+
     // ================== СТАТИСТИКА ==================
 
     /**

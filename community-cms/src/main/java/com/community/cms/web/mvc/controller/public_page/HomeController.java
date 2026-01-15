@@ -128,9 +128,9 @@ public class HomeController {
             List<Project> shuffledProjects = new ArrayList<>(activeProjects);
             Collections.shuffle(shuffledProjects);
 
-            // Берем максимум 5 проектов для карусели
+            // Берем максимум 10 проектов для карусели
             List<Project> carouselProjects = shuffledProjects.stream()
-                    .limit(5)
+                    .limit(10)
                     .collect(Collectors.toList());
 
             // Преобразуем в DTO для карусели
@@ -299,7 +299,7 @@ public class HomeController {
     @GetMapping("/projects/{slug}")
     public String showProjectDetail(@PathVariable String slug, Model model) {
         try {
-            Optional<Project> projectOpt = projectService.findBySlugForPublic(slug);
+            Optional<Project> projectOpt = projectService.findBySlug(slug);
 
             if (projectOpt.isEmpty()) {
                 model.addAttribute("errorTitle", "Проект не найден");
@@ -313,10 +313,10 @@ public class HomeController {
             ProjectDTO projectDTO = projectMapper.toDetailDTO(project);
 
             // ЗАГРУЗКА ПОХОЖИХ ПРОЕКТОВ
-            List<Project> similarProjects = projectService.findSimilarProjects(
+            List<Project> similarProjects = projectService.findSimilarProjectsAllStatuses(
                     project.getCategory(),
                     project.getId(),
-                    3
+                    30
             );
             List<ProjectDTO> similarProjectDTOs = projectMapper.toCardDTOList(similarProjects);
 

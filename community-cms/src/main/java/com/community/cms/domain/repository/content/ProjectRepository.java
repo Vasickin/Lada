@@ -396,6 +396,15 @@ public interface ProjectRepository extends JpaRepository<Project, Long> {
                                       Pageable pageable);
 
     /**
+     * Похожие проекты для публичной части (все статусы)
+     */
+    @Query("SELECT p FROM Project p WHERE p.category = :category AND p.id <> :excludeId " +
+            "ORDER BY p.createdAt DESC")
+    Page<Project> findSimilarProjectsAllStatuses(@Param("category") String category,
+                                                 @Param("excludeId") Long excludeId,
+                                                 Pageable pageable);
+
+    /**
      * Находит похожие проекты по категории (удобный метод).
      * ИСПРАВЛЕНИЕ: Обертка над методом с Pageable
      *
@@ -407,6 +416,11 @@ public interface ProjectRepository extends JpaRepository<Project, Long> {
     default List<Project> findSimilarProjects(String category, Long excludeId, int limit) {
         Pageable pageable = PageRequest.of(0, limit);
         return findSimilarProjects(category, excludeId, pageable).getContent();
+    }
+
+    default List<Project> findSimilarProjectsAllStatuses(String category, Long excludeId, int limit) {
+        Pageable pageable = PageRequest.of(0, limit);
+        return findSimilarProjectsAllStatuses(category, excludeId, pageable).getContent();
     }
 
     /**
