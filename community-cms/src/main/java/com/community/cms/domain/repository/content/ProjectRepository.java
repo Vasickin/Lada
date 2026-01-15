@@ -120,7 +120,7 @@ public interface ProjectRepository extends JpaRepository<Project, Long> {
      *
      * @return список уникальных категорий
      */
-    @Query("SELECT DISTINCT p.category FROM Project p WHERE p.status <> 'ARCHIVED' ORDER BY p.category")
+    @Query("SELECT DISTINCT p.category FROM Project p WHERE p.category IS NOT NULL ORDER BY p.category")
     List<String> findAllDistinctCategories();
 
     // ================== ФИЛЬТРАЦИЯ ПО ДАТАМ ==================
