@@ -145,13 +145,13 @@ public interface ProjectRepository extends JpaRepository<Project, Long> {
      * Находит проекты, которые активны в указанный период.
      * Проект считается активным если:
      * - startDate ≤ date ≤ endDate (если даты указаны)
-     * - status = ACTIVE или ANNUAL
+     * - status = ACTIVE или ANNUAL, или ARCHIVED
      *
      * @param date дата для проверки
      * @return список проектов активных на указанную дату
      */
     @Query("SELECT p FROM Project p WHERE " +
-            "p.status IN ('ACTIVE', 'ANNUAL') AND " +
+            "p.status IN ('ACTIVE', 'ANNUAL', 'ARCHIVED') AND " +
             "(p.startDate IS NULL OR p.startDate <= :date) AND " +
             "(p.endDate IS NULL OR p.endDate >= :date)")
     List<Project> findActiveOnDate(@Param("date") LocalDate date);

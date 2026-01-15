@@ -195,7 +195,9 @@ public class HomeController {
             }
 
             // Сортируем по дате создания (новые сначала)
-            filteredProjects.sort(Comparator.comparing(Project::getCreatedAt).reversed());
+            filteredProjects.sort(Comparator
+                    .comparing(Project::getEventDate, Comparator.nullsLast(Comparator.reverseOrder()))
+                    .thenComparing(Project::getCreatedAt, Comparator.reverseOrder()));
 
             // ================== ПАГИНАЦИЯ ==================
 
