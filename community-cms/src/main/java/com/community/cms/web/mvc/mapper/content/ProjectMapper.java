@@ -328,4 +328,133 @@ public class ProjectMapper {
 
         return dto;
     }
+
+    // ================== МЕТОДЫ ДЛЯ ПУБЛИЧНОЙ ЧАСТИ (без авторизации) ==================
+
+    /**
+     * Загружает ключевые фото для проекта с ПУБЛИЧНЫМИ путями.
+     * Используется в публичной части сайта.
+     */
+    public List<PhotoGalleryDTO> loadPublicKeyPhotosForProject(Project project) {
+        List<PhotoGalleryDTO> keyPhotos = loadKeyPhotosForProject(project);
+
+        if (keyPhotos != null) {
+            for (PhotoGalleryDTO photo : keyPhotos) {
+                // Преобразуем путь контроллера в публичный путь
+                String publicPath = convertToPublicPath(photo.getWebPath());
+                photo.setPublicWebPath(publicPath);
+            }
+        }
+
+        return keyPhotos;
+    }
+
+    /**
+     * Создает DTO для карточки проекта с ПУБЛИЧНЫМИ путями.
+     */
+    public ProjectDTO toPublicCardDTO(Project project) {
+        ProjectDTO dto = toCardDTO(project);
+
+        // Загружаем ключевые фото с публичными путями
+        List<PhotoGalleryDTO> keyPhotos = loadPublicKeyPhotosForProject(project);
+        dto.setKeyPhotos(keyPhotos);
+
+        return dto;
+    }
+
+    /**
+     * Список DTO для карточек с ПУБЛИЧНЫМИ путями.
+     */
+    public List<ProjectDTO> toPublicCardDTOList(List<Project> projects) {
+        if (projects == null) {
+            return new ArrayList<>();
+        }
+
+        return projects.stream()
+                .map(this::toPublicCardDTO)
+                .collect(Collectors.toList());
+    }
+
+    /**
+     * Создает DTO для карусели с ПУБЛИЧНЫМИ путями.
+     */
+    public ProjectDTO toPublicCarouselDTO(Project project) {
+        ProjectDTO dto = toCarouselDTO(project);
+
+        // Обновляем пути к фото на публичные
+        if (dto.getKeyPhotos() != null) {
+            for (PhotoGalleryDTO photo : dto.getKeyPhotos()) {
+                String publicPath = convertToPublicPath(photo.getWebPath());
+                photo.setPublicWebPath(publicPath);
+            }
+        }
+
+        return dto;
+    }
+
+    /**
+     * Список DTO для карусели с ПУБЛИЧНЫМИ путями.
+     */
+    public List<ProjectDTO> toPublicCarouselDTOList(List<Project> projects) {
+        if (projects == null) {
+            return new ArrayList<>();
+        }
+
+        return projects.stream()
+                .map(this::toPublicCarouselDTO)
+                .collect(Collectors.toList());
+    }
+
+    /**
+     * Создает ПОЛНЫЙ DTO для детальной страницы с ПУБЛИЧНЫМИ путями.
+     */
+    public ProjectDTO toPublicDetailDTO(Project project) {
+        ProjectDTO dto = toDetailDTO(project);
+
+        // Обновляем пути к фото на публичные
+        if (dto.getKeyPhotos() != null) {
+            for (PhotoGalleryDTO photo : dto.getKeyPhotos()) {
+                String publicPath = convertToPublicPath(photo.getWebPath());
+                photo.setPublicWebPath(publicPath);
+            }
+        }
+
+        return dto;
+    }
+
+    /**
+     * Преобразует путь контроллера в публичный статический путь.
+     * Безопасно работает с любыми форматами путей.
+     */
+    private String convertToPublicPath(String webPath) {
+        if (webPath == null || webPath.isEmpty()) {
+            return "/images/placeholder.jpg";
+        }
+
+        // Если путь уже публичный (/uploads/), оставляем как есть
+        if (webPath.startsWith("/uploads/")) {
+            return webPath;
+        }
+
+        // Преобразуем путь контроллера (/admin/photo-gallery/image/filename)
+        // в публичный путь (/uploads/filename)
+        if (webPath.startsWith("/admin/photo-gallery/image/")) {
+            String filename = webPath.substring("/admin/photo-gallery/image/".length());
+
+            // Удаляем параметры запроса если есть
+            if (filename.contains("?")) {
+                filename = filename.substring(0, filename.indexOf("?"));
+            }
+
+            return "/uploads/" + filename;
+        }
+
+        // Если это относительный путь без /uploads/, добавляем префикс
+        if (!webPath.startsWith("/") && !webPath.startsWith("http")) {
+            return "/uploads/" + webPath;
+        }
+
+        // Для других путей возвращаем как есть
+        return webPath;
+    }
 }

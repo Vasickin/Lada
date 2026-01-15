@@ -92,7 +92,7 @@
 
                                                 <!-- Есть ключевые фото -->
                                                 <div th:if="${project.keyPhotos != null and !project.keyPhotos.isEmpty()}" class="h-100">
-                                                    <img th:src="${project.keyPhotos[0].webPath}"
+                                                    <img th:src="${project.keyPhotos[0].publicWebPath}"
                                                          class="h-100 w-100 object-fit-cover"
                                                          style="aspect-ratio: 1/1.414;"
                                                          th:alt="${project.title}">
@@ -285,7 +285,7 @@
                                         <div class="ratio rounded mb-3" style="--bs-aspect-ratio: 141.4%;">
                                             <!-- Есть ключевые фото -->
                                             <div th:if="${project.keyPhotos != null and !project.keyPhotos.isEmpty()}">
-                                                <img th:src="${project.keyPhotos[0].webPath}"
+                                                <img th:src="${project.keyPhotos[0].publicWebPath}"
                                                      class="img-fluid w-100 h-100 object-fit-cover"
                                                      th:alt="${project.title}">
                                             </div>

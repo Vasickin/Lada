@@ -71,7 +71,15 @@ public class SecurityConfig {
                         // PUBLIC PAGES / ПУБЛИЧНЫЕ СТРАНИЦЫ
                         // About and Contact pages are public / Страницы "О нас" и "Контакты" публичные
                         //
-                        .requestMatchers("/about", "/contact", "/projects", "/projects/{slug}", "/gallery", "/patrons", "/team").permitAll()
+                        .requestMatchers("/about",
+                                "/contact",
+                                "/projects",
+                                "/projects/{slug}",
+                                "/gallery",
+                                "/photo-gallery",
+                                "/photo-gallery/{id}",
+                                "/patrons",
+                                "/team").permitAll()
 
                         //
                         // PUBLIC PAGE VIEWING / ПУБЛИЧНЫЙ ПРОСМОТР СТРАНИЦ

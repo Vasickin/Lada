@@ -134,7 +134,7 @@ public class HomeController {
                     .collect(Collectors.toList());
 
             // Преобразуем в DTO для карусели
-            List<ProjectDTO> carouselDTOs = projectMapper.toCarouselDTOList(carouselProjects);
+            List<ProjectDTO> carouselDTOs = projectMapper.toPublicCarouselDTOList(carouselProjects);
             model.addAttribute("carouselProjects", carouselDTOs);
 
             // ================== ФИЛЬТРАЦИЯ И ПОИСК ПРОЕКТОВ ==================
@@ -219,26 +219,26 @@ public class HomeController {
             }
 
             // Преобразуем в DTO для отображения
-            List<ProjectDTO> projectDTOs = projectMapper.toCardDTOList(pageContent);
+            List<ProjectDTO> projectDTOs = projectMapper.toPublicCardDTOList(pageContent);
 
-            for (int i = 0; i < projectDTOs.size(); i++) {
-                ProjectDTO projectDTO = projectDTOs.get(i);
-                if (i < pageContent.size()) {
-                    Project project = pageContent.get(i);
-                    List<PhotoGalleryDTO> keyPhotos = projectMapper.loadKeyPhotosForProject(project);
-                    projectDTO.setKeyPhotos(keyPhotos);
-                }
-            }
-
-            // ============ ЗАГРУЗКА КЛЮЧЕВЫХ ФОТО ДЛЯ КАЖДОГО ПРОЕКТА ============
-            for (ProjectDTO projectDTO : projectDTOs) {
-                // Получаем проект по ID для загрузки фото
-                Optional<Project> projectOpt = projectService.findById(projectDTO.getId());
-                if (projectOpt.isPresent()) {
-                    List<PhotoGalleryDTO> keyPhotos = projectMapper.loadKeyPhotosForProject(projectOpt.get());
-                    projectDTO.setKeyPhotos(keyPhotos);
-                }
-            }
+//            for (int i = 0; i < projectDTOs.size(); i++) {
+//                ProjectDTO projectDTO = projectDTOs.get(i);
+//                if (i < pageContent.size()) {
+//                    Project project = pageContent.get(i);
+//                    List<PhotoGalleryDTO> keyPhotos = projectMapper.loadKeyPhotosForProject(project);
+//                    projectDTO.setKeyPhotos(keyPhotos);
+//                }
+//            }
+//
+//            // ============ ЗАГРУЗКА КЛЮЧЕВЫХ ФОТО ДЛЯ КАЖДОГО ПРОЕКТА ============
+//            for (ProjectDTO projectDTO : projectDTOs) {
+//                // Получаем проект по ID для загрузки фото
+//                Optional<Project> projectOpt = projectService.findById(projectDTO.getId());
+//                if (projectOpt.isPresent()) {
+//                    List<PhotoGalleryDTO> keyPhotos = projectMapper.loadKeyPhotosForProject(projectOpt.get());
+//                    projectDTO.setKeyPhotos(keyPhotos);
+//                }
+//            }
 
             // ================== ДОБАВЛЕНИЕ ДАННЫХ В МОДЕЛЬ ==================
 
@@ -312,7 +312,7 @@ public class HomeController {
             Project project = projectOpt.get();
 
             // ИСПОЛЬЗУЕМ НОВЫЙ МЕТОД для детальной страницы
-            ProjectDTO projectDTO = projectMapper.toDetailDTO(project);
+            ProjectDTO projectDTO = projectMapper.toPublicDetailDTO(project);
 
             // ЗАГРУЗКА ПОХОЖИХ ПРОЕКТОВ
             List<Project> similarProjects = projectService.findSimilarProjectsAllStatuses(
@@ -320,16 +320,16 @@ public class HomeController {
                     project.getId(),
                     30
             );
-            List<ProjectDTO> similarProjectDTOs = projectMapper.toCardDTOList(similarProjects);
+            List<ProjectDTO> similarProjectDTOs = projectMapper.toPublicCardDTOList(similarProjects);
 
             // ЗАГРУЖАЕМ КЛЮЧЕВЫЕ ФОТО ДЛЯ ПОХОЖИХ ПРОЕКТОВ
-            for (ProjectDTO similarDTO : similarProjectDTOs) {
-                Optional<Project> similarProjectOpt = projectService.findById(similarDTO.getId());
-                if (similarProjectOpt.isPresent()) {
-                    List<PhotoGalleryDTO> keyPhotos = projectMapper.loadKeyPhotosForProject(similarProjectOpt.get());
-                    similarDTO.setKeyPhotos(keyPhotos);
-                }
-            }
+//            for (ProjectDTO similarDTO : similarProjectDTOs) {
+//                Optional<Project> similarProjectOpt = projectService.findById(similarDTO.getId());
+//                if (similarProjectOpt.isPresent()) {
+//                    List<PhotoGalleryDTO> keyPhotos = projectMapper.loadKeyPhotosForProject(similarProjectOpt.get());
+//                    similarDTO.setKeyPhotos(keyPhotos);
+//                }
+//            }
 
             // ДОБАВЛЯЕМ В МОДЕЛЬ
             model.addAttribute("project", projectDTO);
