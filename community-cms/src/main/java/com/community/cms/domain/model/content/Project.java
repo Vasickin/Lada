@@ -900,4 +900,88 @@ public class Project {
     public int getPartnersCount() {
         return partners != null ? partners.size() : 0;
     }
+
+    // В Project.java добавляем новые методы:
+
+    /**
+     * Извлекает ID видео из URL для встраивания.
+     * Использует ТОЧНО такую же логику как в админке.
+     *
+     * @return ID видео или null если не удалось извлечь
+     */
+    public String getVideoEmbedId() {
+        if (!hasVideo()) {
+            return null;
+        }
+
+        String url = this.videoUrl.trim();
+        String platform = getVideoPlatform();
+
+        try {
+            switch (platform) {
+                case "youtube":
+                    // Паттерны из админки: extractYouTubeId()
+                    if (url.contains("youtube.com/watch?v=")) {
+                        return url.substring(url.indexOf("v=") + 2).split("&")[0];
+                    } else if (url.contains("youtu.be/")) {
+                        return url.substring(url.indexOf("youtu.be/") + 9).split("[?&]")[0];
+                    } else if (url.contains("youtube.com/embed/")) {
+                        return url.substring(url.indexOf("embed/") + 6).split("[?&]")[0];
+                    } else if (url.contains("youtube.com/v/")) {
+                        return url.substring(url.indexOf("v/") + 2).split("[?&]")[0];
+                    }
+                    break;
+
+                case "vimeo":
+                    // Паттерн из админки: extractVimeoId()
+                    String vimeoId = url.replaceAll(".*vimeo\\.com/(\\d+).*", "$1");
+                    if (!vimeoId.equals(url) && vimeoId.matches("\\d+")) {
+                        return vimeoId;
+                    }
+                    break;
+
+                case "rutube":
+                    // Паттерны из админки: extractRutubeId()
+                    if (url.contains("rutube.ru/video/")) {
+                        String idPart = url.substring(url.indexOf("video/") + 6);
+                        return idPart.split("/")[0].split("\\?")[0];
+                    } else if (url.contains("rutube.ru/play/embed/")) {
+                        String idPart = url.substring(url.indexOf("embed/") + 6);
+                        return idPart.split("/")[0].split("\\?")[0];
+                    } else if (url.contains("rutube.ru/shorts/")) {
+                        String idPart = url.substring(url.indexOf("shorts/") + 7);
+                        return idPart.split("/")[0].split("\\?")[0];
+                    }
+                    break;
+            }
+        } catch (Exception e) {
+            System.err.println("Ошибка при извлечении ID видео: " + e.getMessage());
+        }
+
+        return null;
+    }
+
+    /**
+     * Получает embed URL для iframe (ТОЧНО как в админке).
+     * @return embed URL или null если не удалось создать
+     */
+    public String getVideoEmbedUrl() {
+        String platform = getVideoPlatform();
+        String videoId = getVideoEmbedId();
+
+        if (videoId == null) {
+            return null;
+        }
+
+        switch (platform) {
+            case "youtube":
+                return "https://www.youtube.com/embed/" + videoId;
+            case "vimeo":
+                return "https://player.vimeo.com/video/" + videoId;
+            case "rutube":
+                return "https://rutube.ru/play/embed/" + videoId;
+            default:
+                return null;
+        }
+    }
 }

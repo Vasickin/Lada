@@ -70,6 +70,7 @@ public class ProjectMapper {
         dto.setKeyPhotoIds(project.getKeyPhotoIds()); // ID фото как в админке
         dto.setVideoUrl(project.getVideoUrl());
         dto.setVideoPlatform(project.getVideoPlatform());
+        dto.setVideoEmbedUrl(project.getVideoEmbedUrl());
 
         dto.setCategory(project.getCategory());
         dto.setStatus(project.getStatus().name());

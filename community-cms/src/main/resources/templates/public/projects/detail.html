@@ -198,31 +198,45 @@
                     </h2>
                 </div>
                 <div class="card-body">
-                    <div class="ratio ratio-16x9">
-                        <!-- YouTube -->
-                        <div th:if="${project.videoPlatform == 'youtube'}">
-                            <iframe th:src="|https://www.youtube.com/embed/${#strings.substringAfterLast(project.videoUrl, 'v=')}|"
-                                    title="YouTube video player"
-                                    frameborder="0"
-                                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                                    allowfullscreen></iframe>
-                        </div>
-                        <!-- Vimeo -->
-                        <div th:if="${project.videoPlatform == 'vimeo'}">
-                            <iframe th:src="|https://player.vimeo.com/video/${#strings.substringAfterLast(project.videoUrl, '/')}|"
-                                    frameborder="0"
-                                    allow="autoplay; fullscreen; picture-in-picture"
-                                    allowfullscreen></iframe>
-                        </div>
-                        <!-- Другие платформы -->
-                        <div th:if="${project.videoPlatform != 'youtube' and project.videoPlatform != 'vimeo'}">
+                    <!-- Используем новый метод getVideoEmbedUrl() -->
+                    <div class="ratio ratio-16x9" th:if="${project.videoEmbedUrl != null}">
+                        <iframe th:src="${project.videoEmbedUrl}"
+                                frameborder="0"
+                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                allowfullscreen
+                                style="border-radius: 8px;">
+                        </iframe>
+                    </div>
+
+                    <!-- Если embed URL не удалось создать (неизвестная платформа или ошибка) -->
+                    <div th:if="${project.videoEmbedUrl == null}" class="text-center py-4">
+                        <div class="alert alert-warning">
+                            <i class="bi bi-exclamation-triangle me-2"></i>
+                            <strong>Видео не может быть встроено на страницу</strong>
+                            <p class="mb-0 mt-2">
+                                Вы можете посмотреть его по ссылке:
+                            </p>
                             <a th:href="${project.videoUrl}"
                                target="_blank"
-                               class="btn btn-primary btn-lg d-block w-100 h-100 d-flex align-items-center justify-content-center">
-                                <i class="bi bi-play-circle fs-1 me-3"></i>
-                                <span>Смотреть видео на внешней платформе</span>
+                               class="btn btn-primary mt-2">
+                                <i class="bi bi-play-circle me-2"></i> Смотреть видео на внешней платформе
                             </a>
                         </div>
+                    </div>
+
+                    <!-- Ссылка на оригинальное видео -->
+                    <div class="mt-3 text-center">
+                        <a th:href="${project.videoUrl}"
+                           target="_blank"
+                           class="text-decoration-none small text-muted">
+                            <i class="bi bi-box-arrow-up-right me-1"></i> Открыть оригинал на
+                            <span th:switch="${project.videoPlatform}">
+                    <span th:case="'youtube'">YouTube</span>
+                    <span th:case="'vimeo'">Vimeo</span>
+                    <span th:case="'rutube'">Rutube</span>
+                    <span th:case="'unknown'">внешней платформе</span>
+                </span>
+                        </a>
                     </div>
                 </div>
             </section>
