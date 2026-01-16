@@ -119,10 +119,11 @@
                 <div class="card-body p-0">
                     <div th:if="${#lists.size(project.keyPhotos) == 1}" class="p-4">
                         <!-- Одно фото -->
-                        <img th:src="${project.keyPhotos[0].publicWebPath}"
-                             th:alt="${project.title}"
-                             class="img-fluid rounded-3 w-100"
-                             style="max-height: 500px; object-fit: cover;">
+                        <div class="single-image-container">
+                            <img th:src="${project.keyPhotos[0].publicWebPath}"
+                                 th:alt="${project.title}"
+                                 class="single-project-image">
+                        </div>
                     </div>
                     <div th:if="${#lists.size(project.keyPhotos) > 1}" class="p-4">
                         <!-- Несколько фото - слайдер -->
@@ -138,10 +139,12 @@
                             <div class="carousel-inner rounded-3">
                                 <div th:each="photo, iterStat : ${project.keyPhotos}"
                                      th:classappend="${iterStat.first} ? 'carousel-item active' : 'carousel-item'">
-                                    <img th:src="${photo.publicWebPath}"
-                                         th:alt="${photo.title ?: project.title}"
-                                         class="d-block w-100"
-                                         style="height: 500px; object-fit: cover;">
+                                    <div class="carousel-image-container">
+                                        <img th:src="${photo.publicWebPath}"
+                                             th:alt="${photo.title ?: project.title}"
+                                             class="carousel-image">
+                                        <div class="image-gradient"></div>
+                                    </div>
                                 </div>
                             </div>
                             <button class="carousel-control-prev" type="button" data-bs-target="#projectGallery" data-bs-slide="prev">
@@ -641,10 +644,6 @@
         color: var(--bs-primary);
     }
 
-    .carousel-item img {
-        object-fit: cover;
-    }
-
     .list-group-item-action {
         border-left: 3px solid transparent;
         transition: all 0.2s ease;
@@ -661,10 +660,100 @@
             font-size: 2rem;
         }
 
-        .carousel-item img {
-            height: 300px !important;
-        }
     }
+
+    /* ================== ОБНОВЛЕННЫЙ СЛАЙДЕР ================== */
+
+/* Контейнер для фото с градиентом */
+.carousel-image-container {
+    position: relative;
+    height: 500px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(90deg,
+        rgba(248,249,250,0.9) 0%,
+        rgba(233,236,239,0.7) 20%,
+        rgba(233,236,239,0.7) 80%,
+        rgba(248,249,250,0.9) 100%);
+    overflow: hidden;
+}
+
+/* Само изображение */
+.carousel-image {
+    max-width: 100%;
+    max-height: 100%;
+    width: auto;
+    height: auto;
+    object-fit: contain; /* Важно: вмещает целиком */
+    display: block;
+    margin: 0 auto;
+}
+
+/* Дополнительный градиент поверх (опционально) */
+.image-gradient {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(90deg,
+        rgba(255,255,255,0.4) 0%,
+        rgba(255,255,255,0) 10%,
+        rgba(255,255,255,0) 90%,
+        rgba(255,255,255,0.4) 100%);
+    pointer-events: none;
+    z-index: 1;
+}
+
+/* Индикаторы карусели - поднять повыше */
+#projectGallery .carousel-indicators {
+    bottom: -50px; /* Опустить ниже если мешает */
+    z-index: 2;
+}
+
+/* Кнопки навигации */
+#projectGallery .carousel-control-prev,
+#projectGallery .carousel-control-next {
+    z-index: 2;
+}
+
+/* Для одного фото тоже обновляем */
+#gallery .img-fluid {
+    object-fit: contain !important;
+    background: linear-gradient(90deg,
+        rgba(248,249,250,0.9) 0%,
+        rgba(233,236,239,0.7) 20%,
+        rgba(233,236,239,0.7) 80%,
+        rgba(248,249,250,0.9) 100%);
+    padding: 20px;
+    border-radius: 12px;
+}
+
+    /* Контейнер для одного фото */
+.single-image-container {
+    height: 500px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(90deg,
+        rgba(248,249,250,0.9) 0%,
+        rgba(233,236,239,0.7) 20%,
+        rgba(233,236,239,0.7) 80%,
+        rgba(248,249,250,0.9) 100%);
+    border-radius: 12px;
+    padding: 20px;
+}
+
+/* Изображение для одного фото */
+.single-project-image {
+    max-width: 100%;
+    max-height: 100%;
+    width: auto;
+    height: auto;
+    object-fit: contain;
+    border-radius: 8px;
+}
 </style>
 
 </body>
