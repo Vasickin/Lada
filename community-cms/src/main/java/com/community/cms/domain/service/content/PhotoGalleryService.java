@@ -911,4 +911,24 @@ public class PhotoGalleryService {
                 null, null, null, false
         );
     }
+
+    /**
+     * Преобразует путь контроллера в публичный путь.
+     */
+    private String convertToPublicPath(String webPath) {
+        if (webPath == null || webPath.isEmpty()) {
+            return "/images/placeholder.jpg";
+        }
+
+        if (webPath.startsWith("/uploads/")) {
+            return webPath; // Уже публичный
+        }
+
+        if (webPath.startsWith("/admin/photo-gallery/image/")) {
+            String filename = webPath.substring("/admin/photo-gallery/image/".length());
+            return "/uploads/" + filename;
+        }
+
+        return webPath;
+    }
 }

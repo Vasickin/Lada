@@ -78,8 +78,8 @@
                         <div class="gallery-thumb-card">
                             <div class="gallery-thumb-inner"
                                  th:data-image-index="${iter.index}"
-                                 th:data-image-src="${image.webPath}">
-                                <img th:src="${image.webPath}"
+                                 th:data-image-src="${image.publicWebPath}">
+                                <img th:src="${image.publicWebPath != null ? image.publicWebPath : image.webPath}"
                                      th:alt="${gallery.title}"
                                      class="gallery-thumb-img">
 

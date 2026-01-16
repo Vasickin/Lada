@@ -399,17 +399,31 @@ public class HomeController {
                         // ДОБАВЛЯЕМ изображения
                         if (gallery.getImages() != null && !gallery.getImages().isEmpty()) {
                             List<PhotoGalleryDTO> imageDTOs = gallery.getImages().stream()
-                                    .map(photo -> new PhotoGalleryDTO(
-                                            photo.getId(),
-                                            photo.getFileName(),
-                                            photo.getWebPath(),
-                                            photo.getWebPath(),
-                                            photo.getFileName(),
-                                            gallery.getId(),
-                                            gallery.getTitle(),
-                                            gallery.getYear(),
-                                            photo.getIsPrimary()
-                                    ))
+                                    .map(photo -> {
+                                        // Создаем DTO
+                                        PhotoGalleryDTO photoDTO = new PhotoGalleryDTO(
+                                                photo.getId(),
+                                                photo.getFileName(),
+                                                photo.getWebPath(),   // webPath для админки
+                                                photo.getWebPath(),   // thumbnailPath для админки
+                                                photo.getFileName(),
+                                                gallery.getId(),
+                                                gallery.getTitle(),
+                                                gallery.getYear(),
+                                                photo.getIsPrimary()
+                                        );
+
+                                        // ДОБАВЛЯЕМ публичный путь
+                                        String publicPath = photo.getWebPath();
+                                        if (publicPath.startsWith("/admin/photo-gallery/image/")) {
+                                            String filename = publicPath.substring("/admin/photo-gallery/image/".length());
+                                            photoDTO.setPublicWebPath("/uploads/" + filename);
+                                        } else {
+                                            photoDTO.setPublicWebPath(publicPath);
+                                        }
+
+                                        return photoDTO;
+                                    })
                                     .collect(Collectors.toList());
                             dto.setImages(imageDTOs);
                         }
@@ -514,17 +528,31 @@ public class HomeController {
             // Добавляем изображения в DTO
             if (gallery.getImages() != null && !gallery.getImages().isEmpty()) {
                 List<PhotoGalleryDTO> imageDTOs = gallery.getImages().stream()
-                        .map(photo -> new PhotoGalleryDTO(
-                                photo.getId(),
-                                photo.getFileName(),
-                                photo.getWebPath(),
-                                photo.getWebPath(), // thumbnail используем тот же путь
-                                photo.getFileName(), // title фото
-                                gallery.getId(),
-                                gallery.getTitle(),
-                                gallery.getYear(),
-                                photo.getIsPrimary()
-                        ))
+                        .map(photo -> {
+                            // Создаем DTO
+                            PhotoGalleryDTO photoDTO = new PhotoGalleryDTO(
+                                    photo.getId(),
+                                    photo.getFileName(),
+                                    photo.getWebPath(),
+                                    photo.getWebPath(),
+                                    photo.getFileName(),
+                                    gallery.getId(),
+                                    gallery.getTitle(),
+                                    gallery.getYear(),
+                                    photo.getIsPrimary()
+                            );
+
+                            // ДОБАВЛЯЕМ публичный путь
+                            String publicPath = photo.getWebPath();
+                            if (publicPath != null && publicPath.startsWith("/admin/photo-gallery/image/")) {
+                                String filename = publicPath.substring("/admin/photo-gallery/image/".length());
+                                photoDTO.setPublicWebPath("/uploads/" + filename);
+                            } else {
+                                photoDTO.setPublicWebPath(publicPath);
+                            }
+
+                            return photoDTO;
+                        })
                         .collect(Collectors.toList());
                 galleryDTO.setImages(imageDTOs);
             }

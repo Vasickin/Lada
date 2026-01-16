@@ -934,16 +934,7 @@ public class ProjectAdminController {
             List<MediaFile> photos = gallery.getImages();
 
             for (MediaFile photo : photos) {
-                Map<String, Object> photoMap = new HashMap<>();
-                photoMap.put("id", photo.getId()); // ← ОБЯЗАТЕЛЬНО id для фронтенда!
-                photoMap.put("photoId", photo.getId()); // и photoId для совместимости
-                photoMap.put("fileName", photo.getFileName());
-                photoMap.put("webPath", photo.getWebPath());
-                photoMap.put("thumbnailPath", photo.getWebPath());
-                photoMap.put("galleryId", gallery.getId());
-                photoMap.put("galleryTitle", gallery.getTitle());
-                photoMap.put("galleryYear", gallery.getYear());
-                photoMap.put("isPrimary", photo.getIsPrimary());
+                Map<String, Object> photoMap = getStringObjectMap(photo, gallery);
                 result.add(photoMap);
             }
 
@@ -952,6 +943,21 @@ public class ProjectAdminController {
         }
 
         return result;
+    }
+
+    @Nonnull
+    private static Map<String, Object> getStringObjectMap(MediaFile photo, PhotoGallery gallery) {
+        Map<String, Object> photoMap = new HashMap<>();
+        photoMap.put("id", photo.getId()); // ← ОБЯЗАТЕЛЬНО id для фронтенда!
+        photoMap.put("photoId", photo.getId()); // и photoId для совместимости
+        photoMap.put("fileName", photo.getFileName());
+        photoMap.put("webPath", photo.getWebPath());
+        photoMap.put("thumbnailPath", photo.getWebPath());
+        photoMap.put("galleryId", gallery.getId());
+        photoMap.put("galleryTitle", gallery.getTitle());
+        photoMap.put("galleryYear", gallery.getYear());
+        photoMap.put("isPrimary", photo.getIsPrimary());
+        return photoMap;
     }
 
     @GetMapping("/debug-search")
