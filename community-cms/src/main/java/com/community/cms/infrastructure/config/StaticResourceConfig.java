@@ -48,5 +48,9 @@ public class StaticResourceConfig implements WebMvcConfigurer {
                 .setCachePeriod(3600);
 
         System.out.println("Resource handler added successfully!");
+
+        registry.addResourceHandler("/static/**")
+                .addResourceLocations("classpath:/static/")
+                .setCachePeriod(3600);
     }
 }

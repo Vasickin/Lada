@@ -645,17 +645,172 @@
         border-radius: 8px;
     }
 
-    .project-description p {
-        line-height: 1.6;
-        margin-bottom: 1rem;
+/* Основные стили для контента */
+    .project-description {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+        font-size: 1.125rem; /* 18px */
+        line-height: 1.7;
+        color: #333;
+        overflow-wrap: break-word;
+        word-wrap: break-word;
     }
 
-    .project-description h2,
-    .project-description h3,
-    .project-description h4 {
-        margin-top: 1.5rem;
-        margin-bottom: 1rem;
-        color: var(--bs-primary);
+    /* Заголовки */
+    .project-description h1 {
+        font-size: 2rem;
+        margin: 2rem 0 1rem;
+        color: #2c3e50;
+        font-weight: 600;
+        border-bottom: 3px solid #3498db;
+        padding-bottom: 0.5rem;
+    }
+
+    .project-description h2 {
+        font-size: 1.75rem;
+        margin: 1.75rem 0 0.875rem;
+        color: #2c3e50;
+        font-weight: 600;
+        border-bottom: 2px solid #eee;
+        padding-bottom: 0.4rem;
+    }
+
+    .project-description h3 {
+        font-size: 1.5rem;
+        margin: 1.5rem 0 0.75rem;
+        color: #34495e;
+        font-weight: 600;
+    }
+
+    /* Параграфы */
+    .project-description p {
+        margin-bottom: 0rem;
+        text-align: justify;
+        /*padding-left: -1.5em;*/
+        /*text-indent: 1.5em;*/
+    }
+
+    /* Убираем отступ у первого параграфа */
+    .project-description > p:first-child {
+        margin-top: 0;
+    }
+
+    /* Списки */
+    .project-description ul,
+    .project-description ol {
+        margin-bottom: 1.5rem;
+        padding-left: 2rem;
+    }
+
+    .project-description li {
+        margin-bottom: 0.5rem;
+        line-height: 1.6;
+    }
+
+    /* Маркированный список с синими точками */
+    .project-description ul {
+        list-style-type: none;
+    }
+
+    .project-description ul li::before {
+        content: "•";
+        color: #3498db;
+        font-weight: bold;
+        display: inline-block;
+        width: 1em;
+        margin-left: -1em;
+    }
+
+    /* Нумерованный список с синими цифрами */
+    .project-description ol {
+        counter-reset: item;
+        list-style-type: none;
+    }
+
+    .project-description ol li::before {
+        content: counter(item) ".";
+        counter-increment: item;
+        color: #3498db;
+        font-weight: bold;
+        display: inline-block;
+        width: 2em;
+        margin-left: -2em;
+    }
+
+    /* Форматирование текста */
+    .project-description strong,
+    .project-description b {
+        font-weight: 700;
+        color: #2c3e50;
+    }
+
+    .project-description em,
+    .project-description i {
+        font-style: italic;
+    }
+
+    .project-description u {
+        text-decoration: underline;
+        text-decoration-color: #3498db;
+    }
+
+    /* Ссылки */
+    .project-description a {
+        color: #3498db;
+        text-decoration: none;
+        border-bottom: 1px solid RGBA(52, 152, 219, 0.3);
+        transition: all 0.2s ease;
+        padding-bottom: 1px;
+    }
+
+    .project-description a:hover {
+        color: #2980b9;
+        border-bottom-color: #2980b9;
+    }
+
+    /* Цитаты */
+    .project-description blockquote {
+        border-left: 4px solid #3498db;
+        margin: 1.5rem 0;
+        padding: 1rem 1.5rem;
+        background-color: #f8f9fa;
+        font-style: italic;
+        color: #555;
+    }
+
+    .project-description blockquote p:last-child {
+        margin-bottom: 0;
+    }
+
+    /* Адаптивность для мобильных */
+    @media (max-width: 768px) {
+        .project-description {
+            font-size: 1rem; /* 16px на мобильных */
+            line-height: 1.6;
+        }
+
+        .project-description h1 {
+            font-size: 1.75rem;
+        }
+
+        .project-description h2 {
+            font-size: 1.5rem;
+        }
+
+        .project-description h3 {
+            font-size: 1.25rem;
+        }
+
+        .project-description ul,
+        .project-description ol {
+            padding-left: 1.5rem;
+        }
+    }
+
+    /* Для очень длинных слов - предотвращаем выход за границы */
+    .project-description {
+        overflow-wrap: break-word;
+        word-wrap: break-word;
+        hyphens: auto;
     }
 
     .list-group-item-action {
