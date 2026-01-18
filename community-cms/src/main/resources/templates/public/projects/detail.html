@@ -687,6 +687,8 @@
         text-align: justify;
         /*padding-left: -1.5em;*/
         /*text-indent: 1.5em;*/
+        white-space: pre-wrap;
+        word-wrap: break-word;
     }
 
     /* Убираем отступ у первого параграфа */
@@ -813,6 +815,36 @@
         hyphens: auto;
     }
 
+    /* СТИЛИ ВЫРАВНИВАНИЯ ТЕКСТА (Quill alignment) */
+.project-description .ql-align-left {
+    text-align: left !important;
+}
+
+.project-description .ql-align-center {
+    text-align: center !important;
+}
+
+.project-description .ql-align-right {
+    text-align: right !important;
+}
+
+.project-description .ql-align-justify {
+    text-align: justify !important;
+}
+
+/* Для заголовков и параграфов с выравниванием */
+.project-description p.ql-align-center,
+.project-description h2.ql-align-center,
+.project-description h3.ql-align-center {
+    text-align: center !important;
+}
+
+.project-description p.ql-align-right,
+.project-description h2.ql-align-right,
+.project-description h3.ql-align-right {
+    text-align: right !important;
+}
+
     .list-group-item-action {
         border-left: 3px solid transparent;
         transition: all 0.2s ease;
@@ -830,7 +862,7 @@
         }
     }
 
-    /* ================== ОБНОВЛЕННЫЙ СЛАЙДЕР ================== */
+    /* ==== СЛАЙДЕР ==== */
 
 /* Контейнер для фото с градиентом */
 .carousel-image-container {
@@ -840,10 +872,10 @@
     align-items: center;
     justify-content: center;
     background: linear-gradient(90deg,
-        rgba(248,249,250,0.9) 0%,
-        rgba(233,236,239,0.7) 20%,
-        rgba(233,236,239,0.7) 80%,
-        rgba(248,249,250,0.9) 100%);
+        RGBA(248,249,250,0.9) 0%,
+        RGBA(233,236,239,0.7) 20%,
+        RGBA(233,236,239,0.7) 80%,
+        RGBA(248,249,250,0.9) 100%);
     overflow: hidden;
 }
 
@@ -866,10 +898,10 @@
     right: 0;
     bottom: 0;
     background: linear-gradient(90deg,
-        rgba(255,255,255,0.4) 0%,
-        rgba(255,255,255,0) 10%,
-        rgba(255,255,255,0) 90%,
-        rgba(255,255,255,0.4) 100%);
+        RGBA(255,255,255,0.4) 0%,
+        RGBA(255,255,255,0) 10%,
+        RGBA(255,255,255,0) 90%,
+        RGBA(255,255,255,0.4) 100%);
     pointer-events: none;
     z-index: 1;
 }
@@ -890,10 +922,10 @@
 #gallery .img-fluid {
     object-fit: contain !important;
     background: linear-gradient(90deg,
-        rgba(248,249,250,0.9) 0%,
-        rgba(233,236,239,0.7) 20%,
-        rgba(233,236,239,0.7) 80%,
-        rgba(248,249,250,0.9) 100%);
+        RGBA(248,249,250,0.9) 0%,
+        RGBA(233,236,239,0.7) 20%,
+        RGBA(233,236,239,0.7) 80%,
+        RGBA(248,249,250,0.9) 100%);
     padding: 20px;
     border-radius: 12px;
 }
@@ -905,10 +937,10 @@
     align-items: center;
     justify-content: center;
     background: linear-gradient(90deg,
-        rgba(248,249,250,0.9) 0%,
-        rgba(233,236,239,0.7) 20%,
-        rgba(233,236,239,0.7) 80%,
-        rgba(248,249,250,0.9) 100%);
+        RGBA(248,249,250,0.9) 0%,
+        RGBA(233,236,239,0.7) 20%,
+        RGBA(233,236,239,0.7) 80%,
+        RGBA(248,249,250,0.9) 100%);
     border-radius: 12px;
     padding: 20px;
 }
