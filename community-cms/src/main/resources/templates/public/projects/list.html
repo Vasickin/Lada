@@ -3,6 +3,258 @@
       xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 
 <head th:replace="fragments/header :: html-head('Наши проекты')">
+
+<!-- ================================================================================== -->
+    <!-- ==== КАЛЕНДАРЬ СОБЫТИЙ ==== -->
+    <style>
+    /* Навигация */
+    .calendar-nav-btn {
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    border-radius: 50% !important;
+    }
+
+    .calendar-year, .calendar-month {
+    min-width: 80px;
+    text-align: center;
+    margin: 0 10px;
+    }
+
+    /* Дни недели */
+    .calendar-weekdays .col {
+    aspect-ratio: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    color: #6c757d;
+    padding: 2px !important;
+    font-size: 0.85rem;
+    }
+
+    /* Ячейки календаря */
+    .calendar-cell {
+    aspect-ratio: 1;
+    padding: 2px !important;
+    }
+
+    /* Дни */
+    .calendar-day {
+    height: 100%;
+    width: 100%;
+    border-radius: 8px;
+    transition: all 0.2s ease;
+    cursor: pointer;
+    font-size: 0.9rem;
+    font-weight: 500;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    border: 2px solid transparent;
+    }
+
+    /* Обычные дни */
+    .calendar-day:not(.empty-day):not(.current-day):not(.has-event) {
+    background-color: #f8f9fa;
+    border: 1px solid #e9ecef;
+    color: #212529;
+    }
+
+    /* Пустые дни (вне месяца) */
+    .calendar-day.empty-day {
+    cursor: default;
+    background-color: transparent !important;
+    border: 1px solid transparent !important;
+    visibility: visible; /* Изменено с hidden на visible */
+    opacity: 0.3;
+}
+
+    /* Текущий день */
+    .calendar-day.current-day {
+    background-color: var(--bs-primary) !important;
+    color: white !important;
+    font-weight: bold;
+    border: 2px solid var(--bs-primary) !important;
+    box-shadow: 0 0 10px RGBA(var(--bs-primary-rgb), 0.5);
+    }
+
+    /* Выбранный день */
+    .calendar-day.selected-day {
+    background-color: var(--bs-warning) !important;
+    color: #000 !important;
+    font-weight: bold;
+    border: 2px solid var(--bs-warning) !important;
+    transform: scale(1.1);
+    z-index: 10;
+    position: relative;
+    }
+
+    /* Ховер эффект */
+    .calendar-day:not(.empty-day):hover {
+    background-color: RGBA(var(--bs-primary-rgb), 0.15) !important;
+    transform: scale(1.05);
+    z-index: 5;
+    position: relative;
+    box-shadow: 0 3px 8px rgba(0,0,0,0.15);
+    }
+
+    /* Прошедшие события */
+    .calendar-day.has-event.past-event {
+    background-color: #e9ecef !important;
+    border: 2px solid #6c757d !important;
+    color: #6c757d !important;
+    }
+
+    /* Текущие события */
+    .calendar-day.has-event.current-event {
+    background-color: var(--bs-info) !important;
+    border: 2px solid var(--bs-info) !important;
+    color: white !important;
+    }
+
+    /* Будущие события */
+    .calendar-day.has-event.future-event {
+    background-color: #d1e7dd !important;
+    border: 2px solid var(--bs-success) !important;
+    color: var(--bs-success-dark) !important;
+    font-weight: bold;
+    }
+
+    /* Адаптивность */
+    @media (max-width: 768px) {
+    .calendar-year, .calendar-month {
+    font-size: 1.1rem;
+    min-width: 60px;
+    margin: 0 5px;
+    }
+
+    .calendar-day {
+    font-size: 0.8rem;
+    }
+
+    .calendar-nav-btn {
+    width: 32px;
+    height: 32px;
+    }
+
+    .calendar-weekdays .col {
+    font-size: 0.75rem;
+    }
+    }
+
+    @media (max-width: 576px) {
+    .calendar-day {
+    font-size: 0.7rem;
+    border-radius: 4px;
+    }
+
+    .calendar-nav-btn {
+    width: 28px;
+    height: 28px;
+    }
+
+    .calendar-year, .calendar-month {
+    font-size: 1rem;
+    min-width: 50px;
+    }
+    }
+
+        /* В блоке стилей календаря добавь: */
+
+/* Дни текущего месяца */
+.calendar-day.current-month {
+    background-color: #f8f9fa;
+    border: 1px solid #e9ecef;
+    color: #212529;
+    font-weight: 500;
+}
+
+/* Дни других месяцев (предыдущего/следующего) */
+.calendar-day.other-month {
+    background-color: #f8f9fa;
+    border: 1px solid #e9ecef;
+    color: #adb5bd !important;
+    opacity: 0.6;
+    font-weight: 400;
+}
+
+/* Текущий день (сегодня) */
+.calendar-day.current-day {
+    background-color: var(--bs-primary) !important;
+    color: white !important;
+    font-weight: bold;
+    border: 2px solid var(--bs-primary) !important;
+    box-shadow: 0 0 10px RGBA(var(--bs-primary-rgb), 0.5);
+}
+
+/* Текущий день в другом месяце */
+.calendar-day.other-month.current-day {
+    background-color: var(--bs-primary) !important;
+    color: white !important;
+    opacity: 1;
+}
+
+/* Выбранный день */
+.calendar-day.selected-day {
+    background-color: var(--bs-warning) !important;
+    color: #000 !important;
+    font-weight: bold;
+    border: 2px solid var(--bs-warning) !important;
+    transform: scale(1.05);
+    z-index: 10;
+    position: relative;
+}
+
+/* События */
+.calendar-day.has-event.past-event {
+    background-color: #e9ecef !important;
+    border: 2px solid #6c757d !important;
+    color: #6c757d !important;
+}
+
+.calendar-day.has-event.current-event {
+    background-color: var(--bs-info) !important;
+    border: 2px solid var(--bs-info) !important;
+    color: white !important;
+}
+
+.calendar-day.has-event.future-event {
+    background-color: #d1e7dd !important;
+    border: 2px solid var(--bs-success) !important;
+    color: var(--bs-success) !important;
+}
+
+/* Ховер эффект */
+.calendar-day.current-month:hover,
+.calendar-day.other-month:hover {
+    background-color: RGBA(var(--bs-primary-rgb), 0.15) !important;
+    transform: scale(1.05);
+    z-index: 5;
+    position: relative;
+    box-shadow: 0 3px 8px RGBA(0,0,0,0.15);
+    opacity: 1;
+}
+
+        /* Центрирование дат в ячейках календаря */
+.calendar-cell {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.calendar-day {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    width: 100%;
+    height: 100%;
+    text-align: center;
+}
+    </style>
 </head>
 
 <body>
@@ -223,40 +475,53 @@
             <!-- Pagination -->
             <nav th:if="${totalPages > 1}" class="mt-5">
                 <ul class="pagination justify-content-center">
-                    <li class="page-item" th:classappend="${currentPage == 0} ? 'disabled'">
+                    <!-- Кнопка "Назад" -->
+                    <li class="page-item" th:classappend="${currentPage == 0} ? 'disabled' : ''">
                         <a class="page-link"
                            th:href="@{/projects(page=${currentPage - 1},
-                                                 size=${pageSize},
-                                                 status=${selectedStatus},
-                                                 category=${selectedCategory},
-                                                 year=${selectedYear},
-                                                 search=${selectedSearch})}">
-                            <i class="bi bi-chevron-left"></i>
+                                 size=${pageSize},
+                                 status=${selectedStatus},
+                                 category=${selectedCategory},
+                                 year=${selectedYear},
+                                 search=${selectedSearch})}"
+                           th:if="${currentPage > 0}">
+                            <i class="bi bi-chevron-left"></i> &laquo;
                         </a>
+                        <span class="page-link" th:if="${currentPage == 0}" style="cursor: not-allowed; opacity: 0.6;">
+                <i class="bi bi-chevron-left"></i> &laquo;
+            </span>
                     </li>
 
+                    <!-- Номера страниц -->
                     <li th:each="pageNum : ${#numbers.sequence(0, totalPages - 1)}"
-                        class="page-item" th:classappend="${pageNum == currentPage} ? 'active'">
+                        class="page-item"
+                        th:classappend="${pageNum == currentPage} ? 'active' : ''">
                         <a class="page-link"
                            th:href="@{/projects(page=${pageNum},
-                                                 size=${pageSize},
-                                                 status=${selectedStatus},
-                                                 category=${selectedCategory},
-                                                 year=${selectedYear},
-                                                 search=${selectedSearch})}"
-                           th:text="${pageNum + 1}"></a>
+                                 size=${pageSize},
+                                 status=${selectedStatus},
+                                 category=${selectedCategory},
+                                 year=${selectedYear},
+                                 search=${selectedSearch})}"
+                           th:text="${pageNum + 1}">
+                        </a>
                     </li>
 
-                    <li class="page-item" th:classappend="${currentPage == totalPages - 1} ? 'disabled'">
+                    <!-- Кнопка "Вперед" -->
+                    <li class="page-item" th:classappend="${currentPage == totalPages - 1} ? 'disabled' : ''">
                         <a class="page-link"
                            th:href="@{/projects(page=${currentPage + 1},
-                                                 size=${pageSize},
-                                                 status=${selectedStatus},
-                                                 category=${selectedCategory},
-                                                 year=${selectedYear},
-                                                 search=${selectedSearch})}">
-                            <i class="bi bi-chevron-right"></i>
+                                 size=${pageSize},
+                                 status=${selectedStatus},
+                                 category=${selectedCategory},
+                                 year=${selectedYear},
+                                 search=${selectedSearch})}"
+                           th:if="${currentPage < totalPages - 1}">
+                            &raquo; <i class="bi bi-chevron-right"></i>
                         </a>
+                        <span class="page-link" th:if="${currentPage == totalPages - 1}" style="cursor: not-allowed; opacity: 0.6;">
+                &raquo; <i class="bi bi-chevron-right"></i>
+            </span>
                     </li>
                 </ul>
                 <div class="text-center text-muted mt-2">
@@ -461,6 +726,8 @@
                 </div>
             </div>
 
+
+
             <!-- Calendar Section -->
             <div class="card border-0 shadow-sm">
                 <div class="card-header bg-light py-3">
@@ -469,33 +736,57 @@
                     </h5>
                 </div>
                 <div class="card-body">
-                    <div class="text-center mb-3">
-                        <div class="h4 text-primary fw-bold">
-                            [[${#dates.format(#dates.createNow(), 'MMMM yyyy')}]]
+                    <!-- Навигация: Год и Месяц -->
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <!-- Навигация годом -->
+                        <div class="d-flex align-items-center">
+                            <button type="button" class="btn btn-sm btn-outline-secondary calendar-nav-btn"
+                                    onclick="changeCalendarYear(-1)" title="Предыдущий год">
+                                <i class="bi bi-chevron-left"></i>
+                            </button>
+                            <h4 class="mx-3 mb-0 calendar-year" id="calendarYear">
+                                [[${#dates.format(#dates.createNow(), 'yyyy')}]]
+                            </h4>
+                            <button type="button" class="btn btn-sm btn-outline-secondary calendar-nav-btn"
+                                    onclick="changeCalendarYear(1)" title="Следующий год">
+                                <i class="bi bi-chevron-right"></i>
+                            </button>
                         </div>
-                        <small class="text-muted">Текущий месяц</small>
+
+                        <!-- Навигация месяцем -->
+                        <div class="d-flex align-items-center">
+                            <button type="button" class="btn btn-sm btn-outline-secondary calendar-nav-btn"
+                                    onclick="changeCalendarMonth(-1)" title="Предыдущий месяц">
+                                <i class="bi bi-chevron-left"></i>
+                            </button>
+                            <h4 class="mx-3 mb-0 calendar-month" id="calendarMonth">
+                                [[${#dates.format(#dates.createNow(), 'MMMM')}]]
+                            </h4>
+                            <button type="button" class="btn btn-sm btn-outline-secondary calendar-nav-btn"
+                                    onclick="changeCalendarMonth(1)" title="Следующий месяц">
+                                <i class="bi bi-chevron-right"></i>
+                            </button>
+                        </div>
                     </div>
-                    <div class="calendar-grid mb-3">
-                        <div class="row row-cols-7 g-1 mb-2">
-                            <div class="col text-center small text-muted">Пн</div>
-                            <div class="col text-center small text-muted">Вт</div>
-                            <div class="col text-center small text-muted">Ср</div>
-                            <div class="col text-center small text-muted">Чт</div>
-                            <div class="col text-center small text-muted">Пт</div>
-                            <div class="col text-center small text-muted">Сб</div>
-                            <div class="col text-center small text-muted">Вс</div>
-                        </div>
-                        <div class="row row-cols-7 g-1">
-                            <div th:each="day : ${#numbers.sequence(1, 31)}"
-                                 class="col text-center">
-                                <div class="calendar-day small py-1 rounded"
-                                     th:classappend="${day == #dates.day(#dates.createNow())} ? 'bg-primary text-white' : 'bg-light'">
-                                    [[${day}]]
-                                </div>
-                            </div>
-                        </div>
+
+                    <!-- Дни недели -->
+                    <div class="row row-cols-7 g-0 mb-2 calendar-weekdays">
+                        <div class="col text-center small fw-bold">Пн</div>
+                        <div class="col text-center small fw-bold">Вт</div>
+                        <div class="col text-center small fw-bold">Ср</div>
+                        <div class="col text-center small fw-bold">Чт</div>
+                        <div class="col text-center small fw-bold">Пт</div>
+                        <div class="col text-center small fw-bold">Сб</div>
+                        <div class="col text-center small fw-bold">Вс</div>
                     </div>
-                    <div class="mt-3">
+
+                    <!-- Сетка календаря -->
+                    <div id="calendarGrid">
+                        <!-- JavaScript сгенерирует календарь здесь -->
+                    </div>
+
+                    <!-- Ближайшие события -->
+                    <div class="mt-4">
                         <h6 class="small fw-bold mb-2">Ближайшие события:</h6>
                         <div class="list-group list-group-flush small">
                             <div th:each="project : ${carouselProjects}"
@@ -506,8 +797,8 @@
                                         <span th:text="${project.title}"></span>
                                     </a>
                                     <span class="badge bg-light text-dark">
-                                        [[${#temporals.format(project.eventDate, 'dd.MM')}]]
-                                    </span>
+                            [[${#temporals.format(project.eventDate, 'dd.MM.yyyy')}]]
+                        </span>
                                 </div>
                             </div>
                             <div th:if="${carouselProjects.?[#this.eventDate != null and #this.eventDate.isAfter(#temporals.createToday())].empty}"
@@ -518,6 +809,8 @@
                     </div>
                 </div>
             </div>
+
+
         </div>
     </div>
 </main>
@@ -544,7 +837,7 @@
         projectCards.forEach(card => {
             card.addEventListener('mouseenter', function() {
                 this.style.transform = 'translateY(-5px)';
-                this.style.boxShadow = '0 10px 20px rgba(0,0,0,0.1)';
+                this.style.boxShadow = '0 10px 20px RGBA(0,0,0,0.1)';
                 this.style.transition = 'all 0.3s ease';
 
                 const img = this.querySelector('img');
@@ -556,7 +849,7 @@
 
             card.addEventListener('mouseleave', function() {
                 this.style.transform = 'translateY(0)';
-                this.style.boxShadow = '0 4px 6px rgba(0,0,0,0.05)';
+                this.style.boxShadow = '0 4px 6px RGBA(0,0,0,0.05)';
 
                 const img = this.querySelector('img');
                 if (img) {
@@ -588,7 +881,7 @@
 <style>
     .card-hover {
         transition: all 0.3s ease;
-        border: 1px solid rgba(0,0,0,0.05);
+        border: 1px solid RGBA(0,0,0,0.05);
     }
 
     .card-hover:hover {
@@ -601,7 +894,7 @@
     }
 
     .calendar-day:hover:not(.bg-primary) {
-        background-color: rgba(var(--bs-primary-rgb), 0.1) !important;
+        background-color: RGBA(var(--bs-primary-rgb), 0.1) !important;
     }
 
     .object-fit-cover {
@@ -625,9 +918,9 @@
     }
 </style>
 
-
+<!--
 <script src="/js/script.js"></script>
-
+-->
 <!-- ОТЛАДКА ДЛЯ ФОТО В КАРТОЧКАХ -->
 <script th:inline="javascript">
     /*<![CDATA[*/
@@ -683,260 +976,205 @@
     /*]]>*/
 </script>
 
-<!-- ЭФФЕКТ ПЛАВНОГО ОТКРЫТИЯ СТРАНИЦЫ -->
-<!--
+
+<!-- ==== КАЛЕНДАРЬ СОБЫТИЙ ==== -->
 <script>
-    // Минимальный прелоадер
-    (function() {
-        // Создаём прелоадер
-        const preloader = document.createElement('div');
-        preloader.id = 'simplePreloader';
-        preloader.innerHTML = `
-            <style>
-                #simplePreloader {
-                    position: fixed;
-                    top: 0;
-                    left: 0;
-                    width: 100%;
-                    height: 100%;
-                    background: #2c3e50;
-                    display: flex;
-                    justify-content: center;
-                    align-items: center;
-                    z-index: 9999;
-                    transition: opacity 0.5s ease;
-                }
-                .loader-content {
-                    text-align: center;
-                    color: white;
-                }
-                .spinner {
-                    width: 50px;
-                    height: 50px;
-                    border: 3px solid rgba(255,255,255,0.3);
-                    border-radius: 50%;
-                    border-top-color: #9b59b6;
-                    animation: spin 1s ease-in-out infinite;
-                    margin: 0 auto 20px;
-                }
-                @keyframes spin { to { transform: rotate(360deg); } }
-            </style>
-            <div class="loader-content">
-                <div class="spinner"></div>
-                <p>Загружаем вдохновение...</p>
-            </div>
-        `;
+    // Календарь
+    let currentCalendarDate = new Date();
 
-        document.body.appendChild(preloader);
-
-        // Скрываем прелоадер после загрузки
-        window.addEventListener('load', function() {
-            setTimeout(function() {
-                preloader.style.opacity = '0';
-                setTimeout(function() {
-                    preloader.style.display = 'none';
-
-                    // Плавное появление контента
-                    document.body.style.opacity = '0';
-                    document.body.style.transition = 'opacity 0.5s ease';
-                    setTimeout(() => {
-                        document.body.style.opacity = '1';
-                    }, 50);
-
-                }, 500);
-            }, 800);
-        });
-    })();
-</script>
--->
-<!-- ================================================================== -->
-
-
-<!-- ==== ЭФФЕКТ ПАРЕЛОАДЕР В ВИДЕ ПАЛИТРЫ ==== -->
-<!--
-<style>
-    /* Прелоадер в виде палитры */
-    .palette-preloader {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: #2c3e50;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        z-index: 9999;
-    }
-
-    .palette {
-        position: relative;
-        width: 200px;
-        height: 200px;
-    }
-
-    .color-circle {
-        position: absolute;
-        width: 60px;
-        height: 60px;
-        border-radius: 50%;
-        opacity: 0;
-        animation: paintDrop 1.5s ease-in-out forwards;
-    }
-
-    .color-circle:nth-child(1) {
-        background: #e74c3c;
-        top: 20px;
-        left: 20px;
-        animation-delay: 0.2s;
-    }
-
-    .color-circle:nth-child(2) {
-        background: #3498db;
-        top: 20px;
-        right: 20px;
-        animation-delay: 0.4s;
-    }
-
-    .color-circle:nth-child(3) {
-        background: #2ecc71;
-        bottom: 20px;
-        left: 20px;
-        animation-delay: 0.6s;
-    }
-
-    .color-circle:nth-child(4) {
-        background: #f39c12;
-        bottom: 20px;
-        right: 20px;
-        animation-delay: 0.8s;
-    }
-
-    .color-circle:nth-child(5) {
-        background: #9b59b6;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        animation-delay: 1s;
-    }
-
-    .palette-center {
-        position: absolute;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        text-align: center;
-        color: white;
-        z-index: 10;
-    }
-
-    @keyframes paintDrop {
-        0% {
-            opacity: 0;
-            transform: scale(0) translateY(-100px);
-        }
-        70% {
-            opacity: 1;
-            transform: scale(1.1) translateY(10px);
-        }
-        100% {
-            opacity: 1;
-            transform: scale(1) translateY(0);
-        }
-    }
-
-    .fade-out {
-        animation: fadeOut 0.8s ease forwards;
-    }
-
-    @keyframes fadeOut {
-        to {
-            opacity: 0;
-            visibility: hidden;
-        }
-    }
-
-    /* Появление контента кистью */
-    .reveal-item {
-        opacity: 0;
-        transform: translateY(20px);
-        transition: all 0.8s cubic-bezier(0.19, 1, 0.22, 1);
-    }
-
-    .reveal-active {
-        opacity: 1;
-        transform: translateY(0);
-    }
-
-    /* Эффект мазка для фона */
-    .paint-stroke {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: linear-gradient(45deg, #ff6b6b, #4ecdc4, #45b7d1, #96ceb4, #ffeaa7);
-        background-size: 400% 400%;
-        z-index: -1;
-        animation: paintFlow 15s ease infinite;
-        opacity: 0.1;
-    }
-
-    @keyframes paintFlow {
-        0%, 100% { background-position: 0% 50%; }
-        50% { background-position: 100% 50%; }
-    }
-</style>
-
-<div class="palette-preloader" id="preloader">
-    <div class="palette">
-        <div class="color-circle"></div>
-        <div class="color-circle"></div>
-        <div class="color-circle"></div>
-        <div class="color-circle"></div>
-        <div class="color-circle"></div>
-        <div class="palette-center">
-            <i class="fas fa-paint-brush" style="font-size: 40px; margin-bottom: 10px;"></i>
-            <p>Готовим палитру...</p>
-        </div>
-    </div>
-</div>
-
-<script>
-    // Поэлементное появление контента
+    // Инициализация календаря при загрузке страницы
     document.addEventListener('DOMContentLoaded', function() {
-        const items = document.querySelectorAll('.reveal-item');
+        updateCalendarDisplay();
+        generateCalendarGrid();
 
-        const revealOnScroll = function() {
-            items.forEach(item => {
-                if (item.getBoundingClientRect().top < window.innerHeight - 100) {
-                    item.classList.add('reveal-active');
-                }
+        // Добавляем обработчики для навигации
+        document.querySelectorAll('.calendar-nav-btn').forEach(btn => {
+            btn.addEventListener('click', function(e) {
+                e.stopPropagation();
             });
-        };
-
-        // После загрузки скрываем прелоадер
-        window.addEventListener('load', function() {
-            const preloader = document.getElementById('preloader');
-
-            // Анимация завершения прелоадера
-            setTimeout(() => {
-                preloader.classList.add('fade-out');
-
-                // Удаляем через 1 секунду
-                setTimeout(() => {
-                    preloader.style.display = 'none';
-
-                    // Запускаем появление контента
-                    revealOnScroll();
-                    window.addEventListener('scroll', revealOnScroll);
-
-                }, 800);
-            }, 1500);
         });
     });
+
+    function changeCalendarYear(delta) {
+        currentCalendarDate.setFullYear(currentCalendarDate.getFullYear() + delta);
+        updateCalendarDisplay();
+        generateCalendarGrid();
+    }
+
+    function changeCalendarMonth(delta) {
+        currentCalendarDate.setMonth(currentCalendarDate.getMonth() + delta);
+        updateCalendarDisplay();
+        generateCalendarGrid();
+    }
+
+    function updateCalendarDisplay() {
+        const yearElement = document.getElementById('calendarYear');
+        const monthElement = document.getElementById('calendarMonth');
+
+        if (yearElement && monthElement) {
+            const year = currentCalendarDate.getFullYear();
+            const month = currentCalendarDate.toLocaleDateString('ru-RU', { month: 'long' });
+
+            yearElement.textContent = year;
+            monthElement.textContent = month.charAt(0).toUpperCase() + month.slice(1);
+        }
+    }
+
+    function generateCalendarGrid() {
+    const year = currentCalendarDate.getFullYear();
+    const month = currentCalendarDate.getMonth();
+    const today = new Date();
+
+    // Получаем первый и последний день текущего месяца
+    const firstDay = new Date(year, month, 1);
+    const lastDay = new Date(year, month + 1, 0);
+
+    // Получаем последний день предыдущего месяца
+    const prevMonthLastDay = new Date(year, month, 0);
+
+    // Настраиваем день недели (Пн=0, Вс=6)
+    let firstDayOfWeek = firstDay.getDay();
+    firstDayOfWeek = firstDayOfWeek === 0 ? 6 : firstDayOfWeek - 1;
+
+    const daysInMonth = lastDay.getDate();
+    const daysInPrevMonth = prevMonthLastDay.getDate();
+    const calendarGrid = document.getElementById('calendarGrid');
+
+    if (!calendarGrid) {
+        console.error('Не найден элемент calendarGrid');
+        return;
+    }
+
+    let html = '';
+    const totalWeeks = Math.ceil((firstDayOfWeek + daysInMonth) / 7);
+
+    // Создаем только необходимое количество недель
+    for (let week = 0; week < totalWeeks; week++) {
+        html += '<div class="row row-cols-7 g-0">';
+
+        for (let weekday = 0; weekday < 7; weekday++) {
+            let dayNumber, dayClass = 'calendar-day other-month', dateStr;
+            let isToday = false;
+            let isCurrentMonth = true;
+
+            const cellIndex = week * 7 + weekday;
+
+            if (cellIndex < firstDayOfWeek) {
+                // Дни предыдущего месяца
+                dayNumber = daysInPrevMonth - firstDayOfWeek + cellIndex + 1;
+                const prevMonth = month === 0 ? 11 : month - 1;
+                const prevYear = month === 0 ? year - 1 : year;
+                dateStr = `${prevYear}-${(prevMonth + 1).toString().padStart(2, '0')}-${dayNumber.toString().padStart(2, '0')}`;
+                isCurrentMonth = false;
+            }
+            else if (cellIndex - firstDayOfWeek + 1 > daysInMonth) {
+                // Дни следующего месяца
+                dayNumber = cellIndex - firstDayOfWeek - daysInMonth + 1;
+                const nextMonth = month === 11 ? 0 : month + 1;
+                const nextYear = month === 11 ? year + 1 : year;
+                dateStr = `${nextYear}-${(nextMonth + 1).toString().padStart(2, '0')}-${dayNumber.toString().padStart(2, '0')}`;
+                isCurrentMonth = false;
+            }
+            else {
+                // Дни текущего месяца
+                dayNumber = cellIndex - firstDayOfWeek + 1;
+                dateStr = `${year}-${(month + 1).toString().padStart(2, '0')}-${dayNumber.toString().padStart(2, '0')}`;
+                dayClass = 'calendar-day current-month';
+
+                // Проверяем, сегодня ли это
+                isToday = today.getFullYear() === year &&
+                           today.getMonth() === month &&
+                           today.getDate() === dayNumber;
+            }
+
+            // Проверяем, есть ли события на эту дату
+            const eventType = checkIfDateHasEvent(dateStr);
+
+            // Корректируем классы
+            if (isToday) {
+                dayClass += ' current-day';
+            }
+            if (eventType && isCurrentMonth) {
+                dayClass += ` has-event ${eventType}-event`;
+            }
+
+            // Форматируем отображение дня (без 0 перед числами от 1 до 9)
+            const displayDay = dayNumber; // Просто число без ведущего нуля
+
+            html += `
+                <div class="col calendar-cell">
+                    <div class="${dayClass}"
+                         data-date="${dateStr}"
+                         data-current-month="${isCurrentMonth}"
+                         onclick="handleDayClick('${dateStr}', ${isCurrentMonth})"
+                         style="display: flex; align-items: center; justify-content: center; height: 100%;">
+                        ${displayDay}
+                    </div>
+                </div>`;
+        }
+
+        html += '</div>';
+    }
+
+    calendarGrid.innerHTML = html;
+}
+
+    function checkIfDateHasEvent(dateStr) {
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+
+        const dateObj = new Date(dateStr);
+        dateObj.setHours(0, 0, 0, 0);
+
+        // Заглушка для демонстрации - случайные события
+        const demoEvents = [
+            {date: new Date(today.getFullYear(), today.getMonth(), 5), type: 'past'},
+            {date: new Date(today.getFullYear(), today.getMonth(), 10), type: 'past'},
+            {date: new Date(today.getFullYear(), today.getMonth(), 15), type: 'past'},
+            {date: new Date(today.getFullYear(), today.getMonth(), 20), type: 'future'},
+            {date: new Date(today.getFullYear(), today.getMonth(), 25), type: 'future'},
+            {date: new Date(today.getFullYear(), today.getMonth(), 28), type: 'future'}
+        ];
+
+        // Проверяем, есть ли событие на эту дату
+        for (const event of demoEvents) {
+            event.date.setHours(0, 0, 0, 0);
+            if (event.date.getTime() === dateObj.getTime()) {
+                return event.type; // 'past', 'future'
+            }
+        }
+
+        // Если дата сегодняшняя
+        if (dateObj.getTime() === today.getTime()) {
+            return 'current';
+        }
+
+        return null; // Нет событий на эту дату
+    }
+
+    function handleDayClick(dateStr, isCurrentMonth) {
+        console.log('Клик по дате:', dateStr, 'Текущий месяц:', isCurrentMonth);
+
+        // Снимаем выделение со всех дней
+        document.querySelectorAll('.calendar-day').forEach(day => {
+            day.classList.remove('selected-day');
+        });
+
+        // Выделяем кликнутый день
+        const clickedDay = document.querySelector(`[data-date="${dateStr}"]`);
+        if (clickedDay) {
+            clickedDay.classList.add('selected-day');
+
+            // Если кликнули на день не текущего месяца, меняем месяц
+            if (!isCurrentMonth) {
+                const dateObj = new Date(dateStr);
+                currentCalendarDate = new Date(dateObj.getFullYear(), dateObj.getMonth(), 1);
+                updateCalendarDisplay();
+                generateCalendarGrid();
+            }
+        }
+    }
 </script>
--->
-<!-- ========================================================= -->
+
 </body>
 </html>
