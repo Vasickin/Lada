@@ -571,3 +571,9 @@ find src/main/java/com/community/cms/web/mvc/dto -name "*Form.java"
 ```shell
 grep -r "PhotoDTO\|GalleryDTO" --include="*.java" src/main/java/
 ```
+
+### Посмотрите какие внешние ресурсы используете
+```shell
+grep -r "https://" src/main/resources/templates/
+grep -r "http://" src/main/resources/templates/
+```
