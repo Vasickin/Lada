@@ -6,292 +6,60 @@
 
 <!-- ================================================================================== -->
     <!-- ==== КАЛЕНДАРЬ СОБЫТИЙ ==== -->
+    <!-- ==== КАЛЕНДАРЬ СОБЫТИЙ ==== -->
     <style>
-    /* Навигация */
-    .calendar-nav-btn {
-    width: 36px;
-    height: 36px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 0;
-    border-radius: 50% !important;
-    }
+        /* СУПЕР-СИЛЬНЫЕ СТИЛИ КАЛЕНДАРЯ (основной уровень) */
+        #calendarGrid .calendar-cell .calendar-day.has-event.future-event {
+            background-color: #d4edda !important;
+            border: 2px solid #28a745 !important;
+            color: #155724 !important;
+        }
 
-    .calendar-year, .calendar-month {
-    min-width: 80px;
-    text-align: center;
-    margin: 0 10px;
-    }
+        #calendarGrid .calendar-cell .calendar-day.has-event.past-event {
+            background-color: #f8f9fa !important;
+            border: 2px solid #6c757d !important;
+            color: #495057 !important;
+        }
 
-    /* Дни недели */
-    .calendar-weekdays .col {
-    aspect-ratio: 1;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-weight: bold;
-    color: #6c757d;
-    padding: 2px !important;
-    font-size: 0.85rem;
-    }
+        #calendarGrid .calendar-cell .calendar-day.has-event.current-event {
+            background-color: #cce5ff !important;
+            border: 2px solid #007bff !important;
+            color: #004085 !important;
+        }
 
-    /* Ячейки календаря */
-    .calendar-cell {
-    aspect-ratio: 1;
-    padding: 2px !important;
-    }
+        /* СЕГОДНЯШНИЙ ДЕНЬ (без события) */
+        #calendarGrid .calendar-cell .calendar-day.current-day:not(.has-event) {
+            background-color: #e3f2fd !important;
+            color: #1976d2 !important;
+            border: 2px solid #1976d2 !important;
+            font-weight: bold;
+        }
 
-    /* Дни */
-    .calendar-day {
-    height: 100%;
-    width: 100%;
-    border-radius: 8px;
-    transition: all 0.2s ease;
-    cursor: pointer;
-    font-size: 0.9rem;
-    font-weight: 500;
-    display: flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-    border: 2px solid transparent;
-    }
+        /* ОСНОВНЫЕ СТИЛИ ЯЧЕЕК */
+        #calendarGrid .calendar-cell .calendar-day {
+            width: 100%; height: 100%; border-radius: 8px; cursor: pointer;
+            display: flex !important; align-items: center !important; justify-content: center !important;
+            font-size: 0.9rem; font-weight: 500; position: relative;
+            border: 1px solid #e0e0e0 !important;
+            background-color: #ffffff !important;
+            color: #333333 !important;
+            transition: all 0.2s ease;
+        }
 
-    /* Обычные дни */
-    .calendar-day:not(.empty-day):not(.current-day):not(.has-event) {
-    background-color: #f8f9fa;
-    border: 1px solid #e9ecef;
-    color: #212529;
-    }
+        /* ИНДИКАТОР СОБЫТИЙ */
+        #calendarGrid .calendar-cell .calendar-day .event-indicator {
+            position: absolute; bottom: 4px; right: 4px;
+            width: 6px; height: 6px; border-radius: 50%;
+            background-color: #dc3545; z-index: 2;
+        }
 
-    /* Пустые дни (вне месяца) */
-    .calendar-day.empty-day {
-    cursor: default;
-    background-color: transparent !important;
-    border: 1px solid transparent !important;
-    visibility: visible; /* Изменено с hidden на visible */
-    opacity: 0.3;
-}
-
-    /* Текущий день */
-    .calendar-day.current-day {
-    background-color: var(--bs-primary) !important;
-    color: white !important;
-    font-weight: bold;
-    border: 2px solid var(--bs-primary) !important;
-    box-shadow: 0 0 10px RGBA(var(--bs-primary-rgb), 0.5);
-    }
-
-    /* Выбранный день */
-    .calendar-day.selected-day {
-    background-color: var(--bs-warning) !important;
-    color: #000 !important;
-    font-weight: bold;
-    border: 2px solid var(--bs-warning) !important;
-    transform: scale(1.1);
-    z-index: 10;
-    position: relative;
-    }
-
-    /* Ховер эффект */
-    .calendar-day:not(.empty-day):hover {
-    background-color: RGBA(var(--bs-primary-rgb), 0.15) !important;
-    transform: scale(1.05);
-    z-index: 5;
-    position: relative;
-    box-shadow: 0 3px 8px rgba(0,0,0,0.15);
-    }
-
-    /* Прошедшие события */
-    .calendar-day.has-event.past-event {
-    background-color: #e9ecef !important;
-    border: 2px solid #6c757d !important;
-    color: #6c757d !important;
-    }
-
-    /* Текущие события */
-    .calendar-day.has-event.current-event {
-    background-color: var(--bs-info) !important;
-    border: 2px solid var(--bs-info) !important;
-    color: white !important;
-    }
-
-    /* Будущие события */
-    .calendar-day.has-event.future-event {
-    background-color: #d1e7dd !important;
-    border: 2px solid var(--bs-success) !important;
-    color: var(--bs-success-dark) !important;
-    font-weight: bold;
-    }
-
-    /* Индикатор события (точка) */
-.event-indicator {
-    position: absolute;
-    bottom: 4px;
-    right: 4px;
-    width: 6px;
-    height: 6px;
-    border-radius: 50%;
-    background-color: #ff6b6b;
-    z-index: 2;
-}
-
-/* Для нескольких событий */
-.calendar-day.multiple-events .event-indicator {
-    background-color: #ff4757;
-    width: 8px;
-    height: 8px;
-}
-
-/* Цвета для событий (обновленные) */
-.calendar-day.has-event.past-event {
-    background-color: #f1f3f4 !important;
-    border: 2px solid #bdc3c7 !important;
-    color: #7f8c8d !important;
-}
-
-.calendar-day.has-event.current-event {
-    background-color: #d0ebff !important;
-    border: 2px solid #339af0 !important;
-    color: #1971c2 !important;
-}
-
-.calendar-day.has-event.future-event {
-    background-color: #d3f9d8 !important;
-    border: 2px solid #51cf66 !important;
-    color: #2b8a3e !important;
-}
-
-    /* Адаптивность */
-    @media (max-width: 768px) {
-    .calendar-year, .calendar-month {
-    font-size: 1.1rem;
-    min-width: 60px;
-    margin: 0 5px;
-    }
-
-    .calendar-day {
-    font-size: 0.8rem;
-    }
-
-    .calendar-nav-btn {
-    width: 32px;
-    height: 32px;
-    }
-
-    .calendar-weekdays .col {
-    font-size: 0.75rem;
-    }
-    }
-
-    @media (max-width: 576px) {
-    .calendar-day {
-    font-size: 0.7rem;
-    border-radius: 4px;
-    }
-
-    .calendar-nav-btn {
-    width: 28px;
-    height: 28px;
-    }
-
-    .calendar-year, .calendar-month {
-    font-size: 1rem;
-    min-width: 50px;
-    }
-    }
-
-        /* В блоке стилей календаря добавь: */
-
-/* Дни текущего месяца */
-.calendar-day.current-month {
-    background-color: #f8f9fa;
-    border: 1px solid #e9ecef;
-    color: #212529;
-    font-weight: 500;
-}
-
-/* Дни других месяцев (предыдущего/следующего) */
-.calendar-day.other-month {
-    background-color: #f8f9fa;
-    border: 1px solid #e9ecef;
-    color: #adb5bd !important;
-    opacity: 0.6;
-    font-weight: 400;
-}
-
-/* Текущий день (сегодня) */
-.calendar-day.current-day {
-    background-color: var(--bs-primary) !important;
-    color: white !important;
-    font-weight: bold;
-    border: 2px solid var(--bs-primary) !important;
-    box-shadow: 0 0 10px RGBA(var(--bs-primary-rgb), 0.5);
-}
-
-/* Текущий день в другом месяце */
-.calendar-day.other-month.current-day {
-    background-color: var(--bs-primary) !important;
-    color: white !important;
-    opacity: 1;
-}
-
-/* Выбранный день */
-.calendar-day.selected-day {
-    background-color: var(--bs-warning) !important;
-    color: #000 !important;
-    font-weight: bold;
-    border: 2px solid var(--bs-warning) !important;
-    transform: scale(1.05);
-    z-index: 10;
-    position: relative;
-}
-
-/* События */
-.calendar-day.has-event.past-event {
-    background-color: #e9ecef !important;
-    border: 2px solid #6c757d !important;
-    color: #6c757d !important;
-}
-
-.calendar-day.has-event.current-event {
-    background-color: var(--bs-info) !important;
-    border: 2px solid var(--bs-info) !important;
-    color: white !important;
-}
-
-.calendar-day.has-event.future-event {
-    background-color: #d1e7dd !important;
-    border: 2px solid var(--bs-success) !important;
-    color: var(--bs-success) !important;
-}
-
-/* Ховер эффект */
-.calendar-day.current-month:hover,
-.calendar-day.other-month:hover {
-    background-color: RGBA(var(--bs-primary-rgb), 0.15) !important;
-    transform: scale(1.05);
-    z-index: 5;
-    position: relative;
-    box-shadow: 0 3px 8px RGBA(0,0,0,0.15);
-    opacity: 1;
-}
-
-        /* Центрирование дат в ячейках календаря */
-.calendar-cell {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.calendar-day {
-    display: flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-    width: 100%;
-    height: 100%;
-    text-align: center;
-}
+        /* ХОВЕР ЭФФЕКТ */
+        #calendarGrid .calendar-cell .calendar-day:hover {
+            background-color: rgba(0,123,255,0.1) !important;
+            transform: scale(1.05);
+            z-index: 5;
+            box-shadow: 0 3px 8px rgba(0,0,0,0.15);
+        }
     </style>
 </head>
 
@@ -1193,6 +961,17 @@
                     }
                 }
 
+                let inlineStyle = '';
+if (dateEvents.length > 0) {
+    if (eventType === 'future') {
+        inlineStyle = 'style="background-color: green !important; border: 2px solid darkgreen !important;"';
+    } else if (eventType === 'past') {
+        inlineStyle = 'style="background-color: gray !important; border: 2px solid darkgray !important;"';
+    } else if (eventType === 'current') {
+        inlineStyle = 'style="background-color: blue !important; border: 2px solid darkblue !important;"';
+    }
+}
+
                 html += `
                     <div class="col calendar-cell">
                         <div class="${dayClass}"
@@ -1245,6 +1024,39 @@
             }
         }
     }
+
+    // В конце скрипта добавьте
+function addCalendarStyles() {
+    const styleId = 'calendar-forced-styles';
+    if (document.getElementById(styleId)) return;
+
+    const style = document.createElement('style');
+    style.id = styleId;
+    style.textContent = `
+        .calendar-day.has-event.future-event {
+            background-color: #d4edda !important;
+            border: 2px solid #28a745 !important;
+            color: #155724 !important;
+        }
+        .calendar-day.has-event.past-event {
+            background-color: #f8f9fa !important;
+            border: 2px solid #6c757d !important;
+            color: #495057 !important;
+        }
+        .calendar-day.has-event.current-event {
+            background-color: #cce5ff !important;
+            border: 2px solid #007bff !important;
+            color: #004085 !important;
+        }
+    `;
+    document.head.appendChild(style);
+    console.log('Форсированные стили добавлены');
+}
+
+// Вызовите после генерации календаря
+document.addEventListener('DOMContentLoaded', function() {
+    addCalendarStyles();
+});
 </script>
 
 </body>
