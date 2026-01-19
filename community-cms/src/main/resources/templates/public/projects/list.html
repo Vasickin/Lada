@@ -124,6 +124,44 @@
     font-weight: bold;
     }
 
+    /* Индикатор события (точка) */
+.event-indicator {
+    position: absolute;
+    bottom: 4px;
+    right: 4px;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background-color: #ff6b6b;
+    z-index: 2;
+}
+
+/* Для нескольких событий */
+.calendar-day.multiple-events .event-indicator {
+    background-color: #ff4757;
+    width: 8px;
+    height: 8px;
+}
+
+/* Цвета для событий (обновленные) */
+.calendar-day.has-event.past-event {
+    background-color: #f1f3f4 !important;
+    border: 2px solid #bdc3c7 !important;
+    color: #7f8c8d !important;
+}
+
+.calendar-day.has-event.current-event {
+    background-color: #d0ebff !important;
+    border: 2px solid #339af0 !important;
+    color: #1971c2 !important;
+}
+
+.calendar-day.has-event.future-event {
+    background-color: #d3f9d8 !important;
+    border: 2px solid #51cf66 !important;
+    color: #2b8a3e !important;
+}
+
     /* Адаптивность */
     @media (max-width: 768px) {
     .calendar-year, .calendar-month {
@@ -275,12 +313,6 @@
                 <span class="badge bg-success fs-6">
                     <span th:text="${totalItems ?: 0}">0</span> проектов
                 </span>
-                <!--
-                <span class="text-muted">
-                    <i class="bi bi-filter me-1"></i>
-                    Используйте фильтры справа для поиска
-                </span>
-                -->
             </div>
         </div>
     </div>
@@ -313,6 +345,13 @@
                                     <i class="bi bi-x"></i>
                                 </a>
                             </span>
+                            <span class="badge bg-success me-2" th:if="${selectedDate != null}">
+    Дата: <span th:text="${selectedDate}"></span>
+    <a href="#" class="text-white ms-2"
+       th:href="@{/projects(status=${selectedStatus}, category=${selectedCategory}, year=${selectedYear}, search=${selectedSearch})}">
+        <i class="bi bi-x"></i>
+    </a>
+</span>
                             <span class="badge bg-secondary me-2" th:if="${selectedSearch != null}">
                                 Поиск: "<span th:text="${selectedSearch}"></span>"
                                 <a href="#" class="text-white ms-2"
@@ -364,16 +403,6 @@
                                                     </div>
                                                 </div>
 
-                                                <!-- Status Badge -->
-                                                <!--
-                                                <div class="position-absolute top-0 end-0 m-2">
-                                                    <span th:switch="${project.status}">
-                                                        <span th:case="'ARCHIVED'" class="badge bg-secondary">Архивный</span>
-                                                        <span th:case="'ANNUAL'" class="badge bg-primary">Ежегодный</span>
-                                                        <span th:case="'ACTIVE'" class="badge bg-success">Активный</span>
-                                                    </span>
-                                                </div>
-                                                -->
                                             </div>
                                         </div>
                                     </div>
@@ -502,6 +531,7 @@
                                  status=${selectedStatus},
                                  category=${selectedCategory},
                                  year=${selectedYear},
+                                 date=${selectedDate},
                                  search=${selectedSearch})}"
                            th:text="${pageNum + 1}">
                         </a>
@@ -697,6 +727,18 @@
                             </select>
                         </div>
 
+                        <div class="mb-3">
+                            <label for="dateFilter" class="form-label small fw-bold">
+                                <i class="bi bi-calendar-day me-1"></i> Конкретная дата
+                            </label>
+                            <input type="text"
+                                   class="form-control form-control-sm"
+                                   id="dateFilter"
+                                   name="date"
+                                   th:value="${selectedDate}"
+                                   placeholder="дд.мм.гггг">
+                        </div>
+
                         <div class="mb-4">
                             <label for="searchFilter" class="form-label small fw-bold">
                                 <i class="bi bi-search me-1"></i> Поиск по названию
@@ -785,6 +827,8 @@
                         <!-- JavaScript сгенерирует календарь здесь -->
                     </div>
 
+
+
                     <!-- Ближайшие события -->
                     <div class="mt-4">
                         <h6 class="small fw-bold mb-2">Ближайшие события:</h6>
@@ -809,7 +853,6 @@
                     </div>
                 </div>
             </div>
-
 
         </div>
     </div>
@@ -1020,140 +1063,160 @@
         }
     }
 
-    function generateCalendarGrid() {
-    const year = currentCalendarDate.getFullYear();
-    const month = currentCalendarDate.getMonth();
-    const today = new Date();
+    // Функция для загрузки событий
+    async function loadCalendarEvents(year, month) {
+        try {
+            const response = await fetch(`/api/calendar/events?year=${year}&month=${month}`);
 
-    // Получаем первый и последний день текущего месяца
-    const firstDay = new Date(year, month, 1);
-    const lastDay = new Date(year, month + 1, 0);
-
-    // Получаем последний день предыдущего месяца
-    const prevMonthLastDay = new Date(year, month, 0);
-
-    // Настраиваем день недели (Пн=0, Вс=6)
-    let firstDayOfWeek = firstDay.getDay();
-    firstDayOfWeek = firstDayOfWeek === 0 ? 6 : firstDayOfWeek - 1;
-
-    const daysInMonth = lastDay.getDate();
-    const daysInPrevMonth = prevMonthLastDay.getDate();
-    const calendarGrid = document.getElementById('calendarGrid');
-
-    if (!calendarGrid) {
-        console.error('Не найден элемент calendarGrid');
-        return;
-    }
-
-    let html = '';
-    const totalWeeks = Math.ceil((firstDayOfWeek + daysInMonth) / 7);
-
-    // Создаем только необходимое количество недель
-    for (let week = 0; week < totalWeeks; week++) {
-        html += '<div class="row row-cols-7 g-0">';
-
-        for (let weekday = 0; weekday < 7; weekday++) {
-            let dayNumber, dayClass = 'calendar-day other-month', dateStr;
-            let isToday = false;
-            let isCurrentMonth = true;
-
-            const cellIndex = week * 7 + weekday;
-
-            if (cellIndex < firstDayOfWeek) {
-                // Дни предыдущего месяца
-                dayNumber = daysInPrevMonth - firstDayOfWeek + cellIndex + 1;
-                const prevMonth = month === 0 ? 11 : month - 1;
-                const prevYear = month === 0 ? year - 1 : year;
-                dateStr = `${prevYear}-${(prevMonth + 1).toString().padStart(2, '0')}-${dayNumber.toString().padStart(2, '0')}`;
-                isCurrentMonth = false;
-            }
-            else if (cellIndex - firstDayOfWeek + 1 > daysInMonth) {
-                // Дни следующего месяца
-                dayNumber = cellIndex - firstDayOfWeek - daysInMonth + 1;
-                const nextMonth = month === 11 ? 0 : month + 1;
-                const nextYear = month === 11 ? year + 1 : year;
-                dateStr = `${nextYear}-${(nextMonth + 1).toString().padStart(2, '0')}-${dayNumber.toString().padStart(2, '0')}`;
-                isCurrentMonth = false;
-            }
-            else {
-                // Дни текущего месяца
-                dayNumber = cellIndex - firstDayOfWeek + 1;
-                dateStr = `${year}-${(month + 1).toString().padStart(2, '0')}-${dayNumber.toString().padStart(2, '0')}`;
-                dayClass = 'calendar-day current-month';
-
-                // Проверяем, сегодня ли это
-                isToday = today.getFullYear() === year &&
-                           today.getMonth() === month &&
-                           today.getDate() === dayNumber;
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
             }
 
-            // Проверяем, есть ли события на эту дату
-            const eventType = checkIfDateHasEvent(dateStr);
+            const events = await response.json();
+            console.log(`Загружено ${events.length} событий для ${year}-${month}:`, events);
+            return events;
 
-            // Корректируем классы
-            if (isToday) {
-                dayClass += ' current-day';
-            }
-            if (eventType && isCurrentMonth) {
-                dayClass += ` has-event ${eventType}-event`;
-            }
-
-            // Форматируем отображение дня (без 0 перед числами от 1 до 9)
-            const displayDay = dayNumber; // Просто число без ведущего нуля
-
-            html += `
-                <div class="col calendar-cell">
-                    <div class="${dayClass}"
-                         data-date="${dateStr}"
-                         data-current-month="${isCurrentMonth}"
-                         onclick="handleDayClick('${dateStr}', ${isCurrentMonth})"
-                         style="display: flex; align-items: center; justify-content: center; height: 100%;">
-                        ${displayDay}
-                    </div>
-                </div>`;
+        } catch (error) {
+            console.error('Ошибка загрузки событий календаря:', error);
+            return [];
         }
-
-        html += '</div>';
     }
 
-    calendarGrid.innerHTML = html;
-}
-
-    function checkIfDateHasEvent(dateStr) {
+    // Асинхронная функция генерации календаря
+    async function generateCalendarGrid() {
+        const year = currentCalendarDate.getFullYear();
+        const month = currentCalendarDate.getMonth() + 1; // 1-12 для API
         const today = new Date();
-        today.setHours(0, 0, 0, 0);
 
-        const dateObj = new Date(dateStr);
-        dateObj.setHours(0, 0, 0, 0);
+        // Загружаем события для текущего месяца
+        const calendarEvents = await loadCalendarEvents(year, month);
 
-        // Заглушка для демонстрации - случайные события
-        const demoEvents = [
-            {date: new Date(today.getFullYear(), today.getMonth(), 5), type: 'past'},
-            {date: new Date(today.getFullYear(), today.getMonth(), 10), type: 'past'},
-            {date: new Date(today.getFullYear(), today.getMonth(), 15), type: 'past'},
-            {date: new Date(today.getFullYear(), today.getMonth(), 20), type: 'future'},
-            {date: new Date(today.getFullYear(), today.getMonth(), 25), type: 'future'},
-            {date: new Date(today.getFullYear(), today.getMonth(), 28), type: 'future'}
-        ];
+        // Получаем первый и последний день текущего месяца
+        const firstDay = new Date(year, month - 1, 1);
+        const lastDay = new Date(year, month, 0);
 
-        // Проверяем, есть ли событие на эту дату
-        for (const event of demoEvents) {
-            event.date.setHours(0, 0, 0, 0);
-            if (event.date.getTime() === dateObj.getTime()) {
-                return event.type; // 'past', 'future'
+        // Получаем последний день предыдущего месяца
+        const prevMonthLastDay = new Date(year, month - 1, 0);
+
+        // Настраиваем день недели (Пн=0, Вс=6)
+        let firstDayOfWeek = firstDay.getDay();
+        firstDayOfWeek = firstDayOfWeek === 0 ? 6 : firstDayOfWeek - 1;
+
+        const daysInMonth = lastDay.getDate();
+        const daysInPrevMonth = prevMonthLastDay.getDate();
+        const calendarGrid = document.getElementById('calendarGrid');
+
+        if (!calendarGrid) {
+            console.error('Не найден элемент calendarGrid');
+            return;
+        }
+
+        let html = '';
+        const totalWeeks = Math.ceil((firstDayOfWeek + daysInMonth) / 7);
+
+        // Создаем только необходимое количество недель
+        for (let week = 0; week < totalWeeks; week++) {
+            html += '<div class="row row-cols-7 g-0">';
+
+            for (let weekday = 0; weekday < 7; weekday++) {
+                let dayNumber, dayClass = 'calendar-day other-month', dateStr;
+                let isToday = false;
+                let isCurrentMonth = true;
+
+                const cellIndex = week * 7 + weekday;
+
+                if (cellIndex < firstDayOfWeek) {
+                    // Дни предыдущего месяца
+                    dayNumber = daysInPrevMonth - firstDayOfWeek + cellIndex + 1;
+                    const prevMonth = month === 1 ? 12 : month - 1;
+                    const prevYear = month === 1 ? year - 1 : year;
+                    dateStr = `${prevYear}-${prevMonth.toString().padStart(2, '0')}-${dayNumber.toString().padStart(2, '0')}`;
+                    isCurrentMonth = false;
+                }
+                else if (cellIndex - firstDayOfWeek + 1 > daysInMonth) {
+                    // Дни следующего месяца
+                    dayNumber = cellIndex - firstDayOfWeek - daysInMonth + 1;
+                    const nextMonth = month === 12 ? 1 : month + 1;
+                    const nextYear = month === 12 ? year + 1 : year;
+                    dateStr = `${nextYear}-${nextMonth.toString().padStart(2, '0')}-${dayNumber.toString().padStart(2, '0')}`;
+                    isCurrentMonth = false;
+                }
+                else {
+                    // Дни текущего месяца
+                    dayNumber = cellIndex - firstDayOfWeek + 1;
+                    dateStr = `${year}-${month.toString().padStart(2, '0')}-${dayNumber.toString().padStart(2, '0')}`;
+                    dayClass = 'calendar-day current-month';
+
+                    // Проверяем, сегодня ли это
+                    isToday = today.getFullYear() === year &&
+                               today.getMonth() === month - 1 &&
+                               today.getDate() === dayNumber;
+                }
+
+                // Проверяем, есть ли события на эту дату
+                const dateEvents = calendarEvents.filter(e => e.eventDate === dateStr);
+                let eventType = null;
+
+                if (dateEvents.length > 0) {
+                    // Определяем тип события (берем первый)
+                    eventType = dateEvents[0].type; // 'past', 'current', 'future'
+                } else if (isToday) {
+                    eventType = 'current';
+                }
+
+                // Корректируем классы
+                if (isToday) {
+                    dayClass += ' current-day';
+                }
+                if (eventType && isCurrentMonth) {
+                    dayClass += ` has-event ${eventType}-event`;
+
+                    // Для нескольких событий добавляем класс
+                    if (dateEvents.length > 1) {
+                        dayClass += ' multiple-events';
+                    }
+                }
+
+                // Форматируем отображение дня (без 0 перед числами от 1 до 9)
+                const displayDay = dayNumber;
+
+                // Создаем текст для тултипа
+                let tooltipText = '';
+                if (dateEvents.length > 0) {
+                    if (dateEvents.length === 1) {
+                        tooltipText = `${dateEvents[0].title}\nКатегория: ${dateEvents[0].category}`;
+                    } else {
+                        tooltipText = `${dateEvents.length} события:\n`;
+                        dateEvents.forEach((event, index) => {
+                            tooltipText += `${index + 1}. ${event.title}\n`;
+                        });
+                    }
+                }
+
+                html += `
+                    <div class="col calendar-cell">
+                        <div class="${dayClass}"
+                             data-date="${dateStr}"
+                             data-current-month="${isCurrentMonth}"
+                             data-events-count="${dateEvents.length}"
+                             onclick="handleDayClick('${dateStr}', ${isCurrentMonth}, ${dateEvents.length})"
+                             style="display: flex; align-items: center; justify-content: center; height: 100%; position: relative;"
+                             ${dateEvents.length > 0 ? `title="${tooltipText}"` : ''}>
+                            ${displayDay}
+                            ${dateEvents.length > 0 ? `<span class="event-indicator"></span>` : ''}
+                        </div>
+                    </div>`;
             }
+
+            html += '</div>';
         }
 
-        // Если дата сегодняшняя
-        if (dateObj.getTime() === today.getTime()) {
-            return 'current';
-        }
-
-        return null; // Нет событий на эту дату
+        calendarGrid.innerHTML = html;
     }
 
-    function handleDayClick(dateStr, isCurrentMonth) {
-        console.log('Клик по дате:', dateStr, 'Текущий месяц:', isCurrentMonth);
+    // Функция обработки клика по дате
+    function handleDayClick(dateStr, isCurrentMonth, eventsCount) {
+        console.log('Клик по дате:', dateStr, 'Текущий месяц:', isCurrentMonth, 'Событий:', eventsCount);
 
         // Снимаем выделение со всех дней
         document.querySelectorAll('.calendar-day').forEach(day => {
@@ -1164,6 +1227,14 @@
         const clickedDay = document.querySelector(`[data-date="${dateStr}"]`);
         if (clickedDay) {
             clickedDay.classList.add('selected-day');
+
+            // Если есть события, переходим на страницу с фильтром по дате
+            if (eventsCount > 0) {
+                const dateObj = new Date(dateStr);
+                const formattedDate = `${dateObj.getDate().toString().padStart(2, '0')}.${(dateObj.getMonth() + 1).toString().padStart(2, '0')}.${dateObj.getFullYear()}`;
+                window.location.href = `/projects?date=${formattedDate}`;
+                return; // Прерываем выполнение - переход на другую страницу
+            }
 
             // Если кликнули на день не текущего месяца, меняем месяц
             if (!isCurrentMonth) {

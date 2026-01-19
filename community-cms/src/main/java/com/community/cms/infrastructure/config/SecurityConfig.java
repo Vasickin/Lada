@@ -79,7 +79,8 @@ public class SecurityConfig {
                                 "/photo-gallery",
                                 "/photo-gallery/{id}",
                                 "/patrons",
-                                "/team").permitAll()
+                                "/team",
+                                "/api/calendar/events").permitAll()
 
                         //
                         // PUBLIC PAGE VIEWING / ПУБЛИЧНЫЙ ПРОСМОТР СТРАНИЦ

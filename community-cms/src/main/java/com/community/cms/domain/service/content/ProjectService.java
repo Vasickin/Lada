@@ -651,4 +651,17 @@ public class ProjectService {
     public void clearAllCache() {
         // Метод аннотирован @CacheEvict, кэш будет очищен автоматически
     }
+
+    /**
+     * Находит проекты по диапазону дат событий.
+     * Используется для календаря мероприятий.
+     *
+     * @param startDate начало периода
+     * @param endDate конец периода
+     * @return список проектов с событиями в указанный период
+     */
+    @Transactional(readOnly = true)
+    public List<Project> findByEventDateBetween(LocalDate startDate, LocalDate endDate) {
+        return projectRepository.findByEventDateBetween(startDate, endDate);
+    }
 }

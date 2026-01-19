@@ -18,12 +18,17 @@ import com.community.cms.web.mvc.dto.content.ProjectDTO;
 import com.community.cms.web.mvc.mapper.content.ProjectMapper;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -97,7 +102,8 @@ public class HomeController {
                                    @RequestParam(required = false) Integer year,
                                    @RequestParam(required = false) String search,
                                    @RequestParam(defaultValue = "0") int page,
-                                   @RequestParam(defaultValue = "12") int size) {
+                                   @RequestParam(defaultValue = "12") int size,
+                                   @RequestParam(required = false) String date) {
 
         try {
             // ================== ПОДГОТОВКА ДАННЫХ ДЛЯ ФИЛЬТРОВ ==================
@@ -171,6 +177,22 @@ public class HomeController {
                 if (include && year != null) {
                     if (project.getEventDate() == null || project.getEventDate().getYear() != year) {
                         include = false;
+                    }
+                }
+
+                // Фильтр по конкретной дате
+                if (include && date != null && !date.trim().isEmpty()) {
+                    try {
+                        // Парсим дату формата "dd.MM.yyyy"
+                        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy");
+                        LocalDate filterDate = LocalDate.parse(date, formatter);
+
+                        if (project.getEventDate() == null || !project.getEventDate().equals(filterDate)) {
+                            include = false;
+                        }
+                    } catch (Exception e) {
+                        // Неверный формат даты - игнорируем фильтр
+                        System.err.println("Неверный формат даты: " + date + ", ошибка: " + e.getMessage());
                     }
                 }
 
@@ -253,6 +275,7 @@ public class HomeController {
             model.addAttribute("selectedStatus", status);
             model.addAttribute("selectedCategory", category);
             model.addAttribute("selectedYear", year);
+            model.addAttribute("selectedDate", date);
             model.addAttribute("selectedSearch", search);
 
             // ================== СТАТИСТИКА ПРОЕКТОВ ==================
@@ -350,6 +373,75 @@ public class HomeController {
             model.addAttribute("errorTitle", "Ошибка загрузки");
             model.addAttribute("errorMessage", "Произошла ошибка при загрузке страницы проекта.");
             return "error/500";
+        }
+    }
+
+    // ================== API ДЛЯ КАЛЕНДАРЯ ==================
+
+    /**
+     * API для получения событий календаря по месяцу.
+     * URL: /api/calendar/events?year=2024&month=5
+     * month: 1-12
+     */
+    @GetMapping("/api/calendar/events")
+    @ResponseBody
+    public ResponseEntity<?> getCalendarEvents(
+            @RequestParam int year,
+            @RequestParam int month,
+            @RequestParam(required = false) String status) {
+
+        try {
+            // Рассчитываем диапазон дат для месяца
+            LocalDate startDate = LocalDate.of(year, month, 1);
+            LocalDate endDate = startDate.withDayOfMonth(startDate.lengthOfMonth());
+
+            // Получаем проекты в этом диапазоне через сервис
+            List<Project> projects = projectService.findByEventDateBetween(startDate, endDate);
+
+            // Фильтруем по статусу если указан
+            if (status != null && !status.isEmpty()) {
+                try {
+                    ProjectStatus filterStatus = ProjectStatus.valueOf(status.toUpperCase());
+                    projects = projects.stream()
+                            .filter(p -> p.getStatus() == filterStatus)
+                            .collect(Collectors.toList());
+                } catch (IllegalArgumentException e) {
+                    // Неверный статус - игнорируем фильтр
+                }
+            }
+
+            // Преобразуем в DTO для календаря (упрощенный DTO)
+            List<Map<String, Object>> calendarEvents = new ArrayList<>();
+            for (Project project : projects) {
+                Map<String, Object> event = new HashMap<>();
+                event.put("id", project.getId());
+                event.put("title", project.getTitle());
+                event.put("eventDate", project.getEventDate().toString()); // ISO формат: "2024-05-15"
+                event.put("category", project.getCategory());
+                event.put("status", project.getStatus().name());
+                event.put("slug", project.getSlug());
+                event.put("detailUrl", "/projects/" + project.getSlug());
+
+                // Определяем тип события: past, current, future
+                LocalDate today = LocalDate.now();
+                if (project.getEventDate().isBefore(today)) {
+                    event.put("type", "past");
+                } else if (project.getEventDate().isEqual(today)) {
+                    event.put("type", "current");
+                } else {
+                    event.put("type", "future");
+                }
+
+                calendarEvents.add(event);
+            }
+
+            return ResponseEntity.ok(calendarEvents);
+
+        } catch (Exception e) {
+            System.err.println("Ошибка при получении событий календаря: " + e.getMessage());
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("error", "Ошибка при получении событий календаря"));
         }
     }
 
