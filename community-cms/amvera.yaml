@@ -1,0 +1,45 @@
+# amvera.yaml
+type: java
+runtime: java17
+entrypoint: java
+
+# Команда запуска приложения с cloud профилем
+cmd: 
+  - -jar
+  - target/community-cms-*.jar
+  - --spring.profiles.active=cloud
+
+# Настройки сборки
+build:
+  builder: maven
+  buildCmd: mvn clean package -DskipTests
+  artifacts: target/*.jar
+  nodeVersion: 16
+
+# Настройки запуска
+run:
+  # Монтируем папку Data для постоянного хранения файлов
+  persistenceMount: /data
+  ports:
+    - 8080:8080
+  
+  # Переменные окружения (часть можно установить здесь, часть в панели Amvera)
+  env:
+    PORT: 8080
+    JAVA_OPTS: "-Xms512m -Xmx1024m -XX:+UseG1GC -XX:+UseStringDeduplication"
+    
+    # Эти переменные НЕ устанавливаем здесь, их нужно будет установить в панели Amvera:
+    # DB_URL, DB_USERNAME, DB_PASSWORD
+
+# Ресурсы (можно начать с минимума)
+resources:
+  cpu: 1000m    # 1 vCPU
+  memory: 1024Mi # 1 GB RAM
+  disk: 2048Mi   # 2 GB диска (для загрузок и логов)
+
+# Здоровье приложения (опционально, но рекомендуется)
+healthCheck:
+  path: /actuator/health  # Нужно будет добавить Spring Boot Actuator
+  port: 8080
+  initialDelay: 60
+  period: 30
