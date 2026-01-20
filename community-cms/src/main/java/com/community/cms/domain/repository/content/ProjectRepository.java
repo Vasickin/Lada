@@ -120,7 +120,7 @@ public interface ProjectRepository extends JpaRepository<Project, Long> {
      *
      * @return список уникальных категорий
      */
-    @Query("SELECT DISTINCT p.category FROM Project p WHERE p.status <> 'ARCHIVED' ORDER BY p.category")
+    @Query("SELECT DISTINCT p.category FROM Project p WHERE p.category IS NOT NULL ORDER BY p.category")
     List<String> findAllDistinctCategories();
 
     // ================== ФИЛЬТРАЦИЯ ПО ДАТАМ ==================
@@ -145,13 +145,13 @@ public interface ProjectRepository extends JpaRepository<Project, Long> {
      * Находит проекты, которые активны в указанный период.
      * Проект считается активным если:
      * - startDate ≤ date ≤ endDate (если даты указаны)
-     * - status = ACTIVE или ANNUAL
+     * - status = ACTIVE или ANNUAL, или ARCHIVED
      *
      * @param date дата для проверки
      * @return список проектов активных на указанную дату
      */
     @Query("SELECT p FROM Project p WHERE " +
-            "p.status IN ('ACTIVE', 'ANNUAL') AND " +
+            "p.status IN ('ACTIVE', 'ANNUAL', 'ARCHIVED') AND " +
             "(p.startDate IS NULL OR p.startDate <= :date) AND " +
             "(p.endDate IS NULL OR p.endDate >= :date)")
     List<Project> findActiveOnDate(@Param("date") LocalDate date);
@@ -396,6 +396,15 @@ public interface ProjectRepository extends JpaRepository<Project, Long> {
                                       Pageable pageable);
 
     /**
+     * Похожие проекты для публичной части (все статусы)
+     */
+    @Query("SELECT p FROM Project p WHERE p.category = :category AND p.id <> :excludeId " +
+            "ORDER BY p.createdAt DESC")
+    Page<Project> findSimilarProjectsAllStatuses(@Param("category") String category,
+                                                 @Param("excludeId") Long excludeId,
+                                                 Pageable pageable);
+
+    /**
      * Находит похожие проекты по категории (удобный метод).
      * ИСПРАВЛЕНИЕ: Обертка над методом с Pageable
      *
@@ -407,6 +416,11 @@ public interface ProjectRepository extends JpaRepository<Project, Long> {
     default List<Project> findSimilarProjects(String category, Long excludeId, int limit) {
         Pageable pageable = PageRequest.of(0, limit);
         return findSimilarProjects(category, excludeId, pageable).getContent();
+    }
+
+    default List<Project> findSimilarProjectsAllStatuses(String category, Long excludeId, int limit) {
+        Pageable pageable = PageRequest.of(0, limit);
+        return findSimilarProjectsAllStatuses(category, excludeId, pageable).getContent();
     }
 
     /**

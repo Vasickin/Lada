@@ -37,6 +37,7 @@ public class ProjectDTO {
     private List<Long> keyPhotoIds;
     private String videoUrl;
     private String videoPlatform; // "youtube", "vimeo", "rutube", "none", "unknown"
+    private String videoEmbedUrl;
 
     // ================== КАТЕГОРИЯ И СТАТУС ==================
     private String category;
@@ -448,6 +449,14 @@ public class ProjectDTO {
 
     public void setUpdatedAt(LocalDateTime updatedAt) {
         this.updatedAt = updatedAt;
+    }
+
+    public String getVideoEmbedUrl() {
+        return videoEmbedUrl;
+    }
+
+    public void setVideoEmbedUrl(String videoEmbedUrl) {
+        this.videoEmbedUrl = videoEmbedUrl;
     }
 
     // ================== ВСПОМОГАТЕЛЬНЫЕ МЕТОДЫ ==================

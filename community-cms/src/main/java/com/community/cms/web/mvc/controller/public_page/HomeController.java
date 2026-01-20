@@ -17,14 +17,18 @@ import com.community.cms.domain.service.people.PartnerService;
 import com.community.cms.web.mvc.dto.content.ProjectDTO;
 import com.community.cms.web.mvc.mapper.content.ProjectMapper;
 
-import jakarta.annotation.Nonnull;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -57,7 +61,7 @@ public class HomeController {
         this.teamMemberMapper = teamMemberMapper;
         this.projectService = projectService;
         this.projectMapper = projectMapper;
-        this.photoGalleryService = photoGalleryService;  // ЭТО СТРОКА ОТСУТСТВУЛА
+        this.photoGalleryService = photoGalleryService;
     }
 
     // ================== СУЩЕСТВУЮЩИЕ МЕТОДЫ (БЕЗ ИЗМЕНЕНИЙ) ==================
@@ -98,7 +102,8 @@ public class HomeController {
                                    @RequestParam(required = false) Integer year,
                                    @RequestParam(required = false) String search,
                                    @RequestParam(defaultValue = "0") int page,
-                                   @RequestParam(defaultValue = "12") int size) {
+                                   @RequestParam(defaultValue = "12") int size,
+                                   @RequestParam(required = false) String date) {
 
         try {
             // ================== ПОДГОТОВКА ДАННЫХ ДЛЯ ФИЛЬТРОВ ==================
@@ -129,13 +134,13 @@ public class HomeController {
             List<Project> shuffledProjects = new ArrayList<>(activeProjects);
             Collections.shuffle(shuffledProjects);
 
-            // Берем максимум 5 проектов для карусели
+            // Берем максимум 10 проектов для карусели
             List<Project> carouselProjects = shuffledProjects.stream()
-                    .limit(5)
+                    .limit(10)
                     .collect(Collectors.toList());
 
             // Преобразуем в DTO для карусели
-            List<ProjectDTO> carouselDTOs = projectMapper.toCarouselDTOList(carouselProjects);
+            List<ProjectDTO> carouselDTOs = projectMapper.toPublicCarouselDTOList(carouselProjects);
             model.addAttribute("carouselProjects", carouselDTOs);
 
             // ================== ФИЛЬТРАЦИЯ И ПОИСК ПРОЕКТОВ ==================
@@ -175,6 +180,22 @@ public class HomeController {
                     }
                 }
 
+                // Фильтр по конкретной дате
+                if (include && date != null && !date.trim().isEmpty()) {
+                    try {
+                        // Парсим дату формата "dd.MM.yyyy"
+                        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy");
+                        LocalDate filterDate = LocalDate.parse(date, formatter);
+
+                        if (project.getEventDate() == null || !project.getEventDate().equals(filterDate)) {
+                            include = false;
+                        }
+                    } catch (Exception e) {
+                        // Неверный формат даты - игнорируем фильтр
+                        System.err.println("Неверный формат даты: " + date + ", ошибка: " + e.getMessage());
+                    }
+                }
+
                 // Поиск по названию и описанию
                 if (include && search != null && !search.trim().isEmpty()) {
                     String searchLower = search.toLowerCase().trim();
@@ -196,7 +217,9 @@ public class HomeController {
             }
 
             // Сортируем по дате создания (новые сначала)
-            filteredProjects.sort(Comparator.comparing(Project::getCreatedAt).reversed());
+            filteredProjects.sort(Comparator
+                    .comparing(Project::getEventDate, Comparator.nullsLast(Comparator.reverseOrder()))
+                    .thenComparing(Project::getCreatedAt, Comparator.reverseOrder()));
 
             // ================== ПАГИНАЦИЯ ==================
 
@@ -218,7 +241,26 @@ public class HomeController {
             }
 
             // Преобразуем в DTO для отображения
-            List<ProjectDTO> projectDTOs = projectMapper.toCardDTOList(pageContent);
+            List<ProjectDTO> projectDTOs = projectMapper.toPublicCardDTOList(pageContent);
+
+//            for (int i = 0; i < projectDTOs.size(); i++) {
+//                ProjectDTO projectDTO = projectDTOs.get(i);
+//                if (i < pageContent.size()) {
+//                    Project project = pageContent.get(i);
+//                    List<PhotoGalleryDTO> keyPhotos = projectMapper.loadKeyPhotosForProject(project);
+//                    projectDTO.setKeyPhotos(keyPhotos);
+//                }
+//            }
+//
+//            // ============ ЗАГРУЗКА КЛЮЧЕВЫХ ФОТО ДЛЯ КАЖДОГО ПРОЕКТА ============
+//            for (ProjectDTO projectDTO : projectDTOs) {
+//                // Получаем проект по ID для загрузки фото
+//                Optional<Project> projectOpt = projectService.findById(projectDTO.getId());
+//                if (projectOpt.isPresent()) {
+//                    List<PhotoGalleryDTO> keyPhotos = projectMapper.loadKeyPhotosForProject(projectOpt.get());
+//                    projectDTO.setKeyPhotos(keyPhotos);
+//                }
+//            }
 
             // ================== ДОБАВЛЕНИЕ ДАННЫХ В МОДЕЛЬ ==================
 
@@ -233,7 +275,20 @@ public class HomeController {
             model.addAttribute("selectedStatus", status);
             model.addAttribute("selectedCategory", category);
             model.addAttribute("selectedYear", year);
+            model.addAttribute("selectedDate", date);
             model.addAttribute("selectedSearch", search);
+
+            // ================== СТАТИСТИКА ПРОЕКТОВ ==================
+
+            long totalProjectsCount = projectService.countAll();
+            long activeProjectsCount = projectService.countActive(); // Уже есть метод
+            long annualProjectsCount = projectService.countAnnual(); // Новый метод
+            long archivedProjectsCount = projectService.countArchived(); // Новый метод
+
+            model.addAttribute("totalProjectsCount", totalProjectsCount);
+            model.addAttribute("activeProjectsCount", activeProjectsCount);
+            model.addAttribute("annualProjectsCount", annualProjectsCount);
+            model.addAttribute("archivedProjectsCount", archivedProjectsCount);
 
             // SEO мета-данные
             model.addAttribute("pageTitle", "Наши проекты");
@@ -257,6 +312,136 @@ public class HomeController {
             model.addAttribute("metaDescription", "Список проектов организации 'ЛАДА'");
 
             return "public/projects/list";
+        }
+    }
+
+    // ================== ДЕТАЛЬНАЯ СТРАНИЦА ПРОЕКТА ==================
+
+    /**
+     * Детальная страница проекта.
+     * URL: /projects/{slug}
+     */
+    @GetMapping("/projects/{slug}")
+    public String showProjectDetail(@PathVariable String slug, Model model) {
+        try {
+            Optional<Project> projectOpt = projectService.findBySlug(slug);
+
+            if (projectOpt.isEmpty()) {
+                model.addAttribute("errorTitle", "Проект не найден");
+                model.addAttribute("errorMessage", "Запрошенный проект не существует или недоступен.");
+                return "error/404";
+            }
+
+            Project project = projectOpt.get();
+
+            // ИСПОЛЬЗУЕМ НОВЫЙ МЕТОД для детальной страницы
+            ProjectDTO projectDTO = projectMapper.toPublicDetailDTO(project);
+
+            // ЗАГРУЗКА ПОХОЖИХ ПРОЕКТОВ
+            List<Project> similarProjects = projectService.findSimilarProjectsAllStatuses(
+                    project.getCategory(),
+                    project.getId(),
+                    30
+            );
+            List<ProjectDTO> similarProjectDTOs = projectMapper.toPublicCardDTOList(similarProjects);
+
+            // ЗАГРУЖАЕМ КЛЮЧЕВЫЕ ФОТО ДЛЯ ПОХОЖИХ ПРОЕКТОВ
+//            for (ProjectDTO similarDTO : similarProjectDTOs) {
+//                Optional<Project> similarProjectOpt = projectService.findById(similarDTO.getId());
+//                if (similarProjectOpt.isPresent()) {
+//                    List<PhotoGalleryDTO> keyPhotos = projectMapper.loadKeyPhotosForProject(similarProjectOpt.get());
+//                    similarDTO.setKeyPhotos(keyPhotos);
+//                }
+//            }
+
+            // ДОБАВЛЯЕМ В МОДЕЛЬ
+            model.addAttribute("project", projectDTO);
+            model.addAttribute("similarProjects", similarProjectDTOs);
+
+            // SEO мета-данные
+            model.addAttribute("pageTitle", projectDTO.getEffectiveMetaTitle());
+            model.addAttribute("metaDescription", projectDTO.getEffectiveMetaDescription());
+            model.addAttribute("metaKeywords", projectDTO.getMetaKeywords());
+            model.addAttribute("image", projectDTO.getEffectiveOgImagePath());
+
+            return "public/projects/detail";
+
+        } catch (Exception e) {
+            System.err.println("Ошибка при загрузке детальной страницы проекта: " + e.getMessage());
+            e.printStackTrace();
+
+            model.addAttribute("errorTitle", "Ошибка загрузки");
+            model.addAttribute("errorMessage", "Произошла ошибка при загрузке страницы проекта.");
+            return "error/500";
+        }
+    }
+
+    // ================== API ДЛЯ КАЛЕНДАРЯ ==================
+
+    /**
+     * API для получения событий календаря по месяцу.
+     * URL: /api/calendar/events?year=2024&month=5
+     * month: 1-12
+     */
+    @GetMapping("/api/calendar/events")
+    @ResponseBody
+    public ResponseEntity<?> getCalendarEvents(
+            @RequestParam int year,
+            @RequestParam int month,
+            @RequestParam(required = false) String status) {
+
+        try {
+            // Рассчитываем диапазон дат для месяца
+            LocalDate startDate = LocalDate.of(year, month, 1);
+            LocalDate endDate = startDate.withDayOfMonth(startDate.lengthOfMonth());
+
+            // Получаем проекты в этом диапазоне через сервис
+            List<Project> projects = projectService.findByEventDateBetween(startDate, endDate);
+
+            // Фильтруем по статусу если указан
+            if (status != null && !status.isEmpty()) {
+                try {
+                    ProjectStatus filterStatus = ProjectStatus.valueOf(status.toUpperCase());
+                    projects = projects.stream()
+                            .filter(p -> p.getStatus() == filterStatus)
+                            .collect(Collectors.toList());
+                } catch (IllegalArgumentException e) {
+                    // Неверный статус - игнорируем фильтр
+                }
+            }
+
+            // Преобразуем в DTO для календаря (упрощенный DTO)
+            List<Map<String, Object>> calendarEvents = new ArrayList<>();
+            for (Project project : projects) {
+                Map<String, Object> event = new HashMap<>();
+                event.put("id", project.getId());
+                event.put("title", project.getTitle());
+                event.put("eventDate", project.getEventDate().toString()); // ISO формат: "2024-05-15"
+                event.put("category", project.getCategory());
+                event.put("status", project.getStatus().name());
+                event.put("slug", project.getSlug());
+                event.put("detailUrl", "/projects/" + project.getSlug());
+
+                // Определяем тип события: past, current, future
+                LocalDate today = LocalDate.now();
+                if (project.getEventDate().isBefore(today)) {
+                    event.put("type", "past");
+                } else if (project.getEventDate().isEqual(today)) {
+                    event.put("type", "current");
+                } else {
+                    event.put("type", "future");
+                }
+
+                calendarEvents.add(event);
+            }
+
+            return ResponseEntity.ok(calendarEvents);
+
+        } catch (Exception e) {
+            System.err.println("Ошибка при получении событий календаря: " + e.getMessage());
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("error", "Ошибка при получении событий календаря"));
         }
     }
 
@@ -306,17 +491,31 @@ public class HomeController {
                         // ДОБАВЛЯЕМ изображения
                         if (gallery.getImages() != null && !gallery.getImages().isEmpty()) {
                             List<PhotoGalleryDTO> imageDTOs = gallery.getImages().stream()
-                                    .map(photo -> new PhotoGalleryDTO(
-                                            photo.getId(),
-                                            photo.getFileName(),
-                                            photo.getWebPath(),
-                                            photo.getWebPath(),
-                                            photo.getFileName(),
-                                            gallery.getId(),
-                                            gallery.getTitle(),
-                                            gallery.getYear(),
-                                            photo.getIsPrimary()
-                                    ))
+                                    .map(photo -> {
+                                        // Создаем DTO
+                                        PhotoGalleryDTO photoDTO = new PhotoGalleryDTO(
+                                                photo.getId(),
+                                                photo.getFileName(),
+                                                photo.getWebPath(),   // webPath для админки
+                                                photo.getWebPath(),   // thumbnailPath для админки
+                                                photo.getFileName(),
+                                                gallery.getId(),
+                                                gallery.getTitle(),
+                                                gallery.getYear(),
+                                                photo.getIsPrimary()
+                                        );
+
+                                        // ДОБАВЛЯЕМ публичный путь
+                                        String publicPath = photo.getWebPath();
+                                        if (publicPath.startsWith("/admin/photo-gallery/image/")) {
+                                            String filename = publicPath.substring("/admin/photo-gallery/image/".length());
+                                            photoDTO.setPublicWebPath("/uploads/" + filename);
+                                        } else {
+                                            photoDTO.setPublicWebPath(publicPath);
+                                        }
+
+                                        return photoDTO;
+                                    })
                                     .collect(Collectors.toList());
                             dto.setImages(imageDTOs);
                         }
@@ -421,17 +620,31 @@ public class HomeController {
             // Добавляем изображения в DTO
             if (gallery.getImages() != null && !gallery.getImages().isEmpty()) {
                 List<PhotoGalleryDTO> imageDTOs = gallery.getImages().stream()
-                        .map(photo -> new PhotoGalleryDTO(
-                                photo.getId(),
-                                photo.getFileName(),
-                                photo.getWebPath(),
-                                photo.getWebPath(), // thumbnail используем тот же путь
-                                photo.getFileName(), // title фото
-                                gallery.getId(),
-                                gallery.getTitle(),
-                                gallery.getYear(),
-                                photo.getIsPrimary()
-                        ))
+                        .map(photo -> {
+                            // Создаем DTO
+                            PhotoGalleryDTO photoDTO = new PhotoGalleryDTO(
+                                    photo.getId(),
+                                    photo.getFileName(),
+                                    photo.getWebPath(),
+                                    photo.getWebPath(),
+                                    photo.getFileName(),
+                                    gallery.getId(),
+                                    gallery.getTitle(),
+                                    gallery.getYear(),
+                                    photo.getIsPrimary()
+                            );
+
+                            // ДОБАВЛЯЕМ публичный путь
+                            String publicPath = photo.getWebPath();
+                            if (publicPath != null && publicPath.startsWith("/admin/photo-gallery/image/")) {
+                                String filename = publicPath.substring("/admin/photo-gallery/image/".length());
+                                photoDTO.setPublicWebPath("/uploads/" + filename);
+                            } else {
+                                photoDTO.setPublicWebPath(publicPath);
+                            }
+
+                            return photoDTO;
+                        })
                         .collect(Collectors.toList());
                 galleryDTO.setImages(imageDTOs);
             }
@@ -458,21 +671,6 @@ public class HomeController {
         }
     }
 
-//    @GetMapping("/gallery")
-//    public String gallery(Model model) {
-//        Optional<CustomPage> galleryPage = pageService.findPublishedPageByType(PageType.GALLERY);
-//        model.addAttribute("hasContent", galleryPage.isPresent());
-//        galleryPage.ifPresent(page -> {
-//            model.addAttribute("page", page);
-//            model.addAttribute("pageTitle", page.getTitle());
-//            model.addAttribute("metaDescription", page.getMetaDescription());
-//        });
-//        if (galleryPage.isEmpty()) {
-//            model.addAttribute("pageTitle", "Галерея");
-//            model.addAttribute("metaDescription", "Фотографии и видео наших мероприятий");
-//        }
-//        return "gallery";
-//    }
 
     @GetMapping("/patrons")
     public String patrons(Model model) {
@@ -533,88 +731,24 @@ public class HomeController {
         return "sitemap";
     }
 
-    // ================== ДЕТАЛЬНАЯ СТРАНИЦА ПРОЕКТА ==================
 
-    /**
-     * Детальная страница проекта.
-     * URL: /projects/{slug}
-     */
-    @GetMapping("/projects/{slug}")
-    public String showProjectDetail(@PathVariable String slug, Model model) {
-        try {
-            // Ищем проект по slug (только активные для публичного доступа)
-            Optional<Project> projectOpt = projectService.findBySlugForPublic(slug);
 
-            if (projectOpt.isEmpty()) {
-                model.addAttribute("errorTitle", "Проект не найден");
-                model.addAttribute("errorMessage", "Запрошенный проект не существует или недоступен.");
-                return "error/404";
-            }
-
-            Project project = projectOpt.get();
-
-            // Преобразуем в полный DTO
-            ProjectDTO projectDTO = projectMapper.toFullDTO(project);
-
-            // Загружаем ключевые фото через PhotoGalleryService (как в админке)
-            if (projectDTO.getKeyPhotoIds() != null && !projectDTO.getKeyPhotoIds().isEmpty()) {
-                try {
-                    List<PhotoGalleryDTO> keyPhotos = getPhotoGalleryDTOS(projectDTO);
-
-                    projectDTO.setKeyPhotos(keyPhotos);
-                } catch (Exception e) {
-                    System.err.println("Ошибка при загрузке ключевых фото: " + e.getMessage());
-                    projectDTO.setKeyPhotos(new ArrayList<>());
-                }
-            }
-
-            // Похожие проекты (по категории)
-            List<Project> similarProjects = projectService.findSimilarProjects(
-                    project.getCategory(),
-                    project.getId(),
-                    3
-            );
-            List<ProjectDTO> similarProjectDTOs = projectMapper.toCardDTOList(similarProjects);
-
-            // ================== ДОБАВЛЕНИЕ ДАННЫХ В МОДЕЛЬ ==================
-
-            model.addAttribute("project", projectDTO);
-            model.addAttribute("similarProjects", similarProjectDTOs);
-
-            // SEO мета-данные
-            model.addAttribute("pageTitle", projectDTO.getEffectiveMetaTitle());
-            model.addAttribute("metaDescription", projectDTO.getEffectiveMetaDescription());
-            model.addAttribute("metaKeywords", projectDTO.getMetaKeywords());
-            model.addAttribute("ogImage", projectDTO.getEffectiveOgImagePath());
-
-            return "public/projects/detail";
-
-        } catch (Exception e) {
-            System.err.println("Ошибка при загрузке детальной страницы проекта: " + e.getMessage());
-            e.printStackTrace();
-
-            model.addAttribute("errorTitle", "Ошибка загрузки");
-            model.addAttribute("errorMessage", "Произошла ошибка при загрузке страницы проекта.");
-            return "error/500";
-        }
-    }
-
-    @Nonnull
-    private static List<PhotoGalleryDTO> getPhotoGalleryDTOS(ProjectDTO projectDTO) {
-        List<PhotoGalleryDTO> keyPhotos = new ArrayList<>();
-
-        // Используем PhotoGalleryService для получения фото (как в ProjectAdminController)
-        // TODO: Реализовать получение PhotoGalleryDTO через существующий сервис
-        for (Long photoId : projectDTO.getKeyPhotoIds()) {
-            PhotoGalleryDTO photoDTO = new PhotoGalleryDTO();
-            photoDTO.setPhotoId(photoId);
-            photoDTO.setFileName("photo-" + photoId + ".jpg");
-            photoDTO.setWebPath("/images/projects/" + photoId + ".jpg");
-            photoDTO.setThumbnailPath("/images/projects/thumbnails/" + photoId + ".jpg");
-            keyPhotos.add(photoDTO);
-        }
-        return keyPhotos;
-    }
+//    @Nonnull
+//    private static List<PhotoGalleryDTO> getPhotoGalleryDTOS(ProjectDTO projectDTO) {
+//        List<PhotoGalleryDTO> keyPhotos = new ArrayList<>();
+//
+//        // Используем PhotoGalleryService для получения фото (как в ProjectAdminController)
+//        // TODO: Реализовать получение PhotoGalleryDTO через существующий сервис
+//        for (Long photoId : projectDTO.getKeyPhotoIds()) {
+//            PhotoGalleryDTO photoDTO = new PhotoGalleryDTO();
+//            photoDTO.setPhotoId(photoId);
+//            photoDTO.setFileName("photo-" + photoId + ".jpg");
+//            photoDTO.setWebPath("/images/projects/" + photoId + ".jpg");
+//            photoDTO.setThumbnailPath("/images/projects/thumbnails/" + photoId + ".jpg");
+//            keyPhotos.add(photoDTO);
+//        }
+//        return keyPhotos;
+//    }
 
     // ================== СУЩЕСТВУЮЩИЕ МЕТОДЫ ДЛЯ КОМАНДЫ (БЕЗ ИЗМЕНЕНИЙ) ==================
 

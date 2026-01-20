@@ -369,6 +369,22 @@ public class MediaFile {
         return "/admin/photo-gallery/image/" + filename;
     }
 
+    /**
+     * Получает ПУБЛИЧНЫЙ веб-путь для изображения.
+     * Gets PUBLIC web path for image.
+     * Доступен без авторизации через статические ресурсы.
+     * Accessible without authorization through static resources.
+     *
+     * @return публичный веб-путь / public web path
+     */
+    public String getPublicWebPath() {
+        String filename = getFilenameFromPath();
+        if (filename.isEmpty()) {
+            return "";
+        }
+        return "/uploads/" + filename; // ← Новый метод для публичного доступа
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;

@@ -7,6 +7,7 @@ import com.community.cms.domain.repository.media.MediaFileRepository;
 import com.community.cms.domain.repository.content.PhotoGalleryRepository;
 import com.community.cms.domain.repository.media.PublicationCategoryRepository;
 import com.community.cms.infrastructure.storage.FileStorageService;
+import com.community.cms.web.mvc.dto.content.PhotoGalleryDTO;
 import jakarta.persistence.EntityNotFoundException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -844,7 +845,7 @@ public class PhotoGalleryService {
 
     // ========== КЛАСС СТАТИСТИКИ ==========
 
-    /**
+        /**
          * Класс статистики фото-галереи.
          * Photo gallery statistics class.
          */
@@ -859,4 +860,75 @@ public class PhotoGalleryService {
                 );
             }
         }
+
+    // ========== МЕТОД ДЛЯ ПОЛУЧЕНИЯ ФОТО ДЛЯ ПРОЕКТОВ ==========
+
+    /**
+     * Получает PhotoGalleryDTO по ID медиафайла.
+     * Используется для отображения ключевых фото в проектах.
+     */
+    @Transactional(readOnly = true)
+    public PhotoGalleryDTO getPhotoDTOById(Long mediaFileId) {
+        try {
+            // 1. Ищем медиафайл в базе
+            MediaFile mediaFile = mediaFileRepository.findById(mediaFileId)
+                    .orElseThrow(() -> new EntityNotFoundException("Медиафайл не найден. ID: " + mediaFileId));
+
+            // 2. Создаем DTO используя существующий конструктор
+            PhotoGalleryDTO dto = new PhotoGalleryDTO(
+                    mediaFile.getId(),           // photoId
+                    mediaFile.getFileName(),     // fileName
+                    mediaFile.getWebPath(),      // webPath
+                    mediaFile.getFilenameFromPath(), // thumbnailPath
+                    mediaFile.getFileName(),     // title
+                    null,                        // galleryId - не знаем
+                    null,                        // galleryTitle - не знаем
+                    null,                        // galleryYear - не знаем
+                    false                        // isPrimary
+            );
+
+            logger.info("Загружен медиафайл ID {}: {}", mediaFileId, dto.getWebPath());
+            return dto;
+
+        } catch (Exception e) {
+            logger.error("Ошибка при получении медиафайла по ID {}: {}", mediaFileId, e.getMessage());
+
+            // 3. Возвращаем заглушку при ошибке
+            return createFallbackPhotoDTO(mediaFileId);
+        }
+    }
+
+    /**
+     * Создает заглушку для фото если оно не найдено.
+     */
+    private PhotoGalleryDTO createFallbackPhotoDTO(Long photoId) {
+        return new PhotoGalleryDTO(
+                photoId,
+                "photo-" + photoId + ".jpg",
+                "/images/placeholder.jpg",
+                "/images/placeholder.jpg",
+                "Фото " + photoId,
+                null, null, null, false
+        );
+    }
+
+    /**
+     * Преобразует путь контроллера в публичный путь.
+     */
+    private String convertToPublicPath(String webPath) {
+        if (webPath == null || webPath.isEmpty()) {
+            return "/images/placeholder.jpg";
+        }
+
+        if (webPath.startsWith("/uploads/")) {
+            return webPath; // Уже публичный
+        }
+
+        if (webPath.startsWith("/admin/photo-gallery/image/")) {
+            String filename = webPath.substring("/admin/photo-gallery/image/".length());
+            return "/uploads/" + filename;
+        }
+
+        return webPath;
+    }
 }

@@ -190,8 +190,8 @@
                             </div>
 
                             <!-- Actual image if available -->
-                            <img th:if="${gallery.hasImages()}"
-                                 th:src="${gallery.getFirstImagePath()}"
+                            <img th:if="${gallery.hasImages() and gallery.images[0].publicWebPath != null}"
+                                 th:src="${gallery.images[0].publicWebPath}"
                                  class="card-img-top gallery-img"
                                  th:alt="${gallery.title}"
                                  loading="lazy">

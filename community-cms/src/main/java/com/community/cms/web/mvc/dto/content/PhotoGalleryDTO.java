@@ -31,6 +31,9 @@ public class PhotoGalleryDTO {
     // Для списка изображений в галерее
     private List<PhotoGalleryDTO> images;
 
+    // Для отображения изображений в проектах на публичной странице
+    private String publicWebPath;
+
     // ================== КОНСТРУКТОРЫ ==================
 
     public PhotoGalleryDTO() {}
@@ -176,6 +179,20 @@ public class PhotoGalleryDTO {
     public String getImagePathById(Long imageId) {
         PhotoGalleryDTO image = getImageById(imageId);
         return image != null ? image.getWebPath() : null;
+    }
+
+    /**
+     * Метод для изображений на публичной странице проекты
+     */
+    public String getPublicWebPath() {
+        return publicWebPath;
+    }
+
+    /**
+     * Метод для изображений на публичной странице проекты
+     */
+    public void setPublicWebPath(String publicWebPath) {
+        this.publicWebPath = publicWebPath;
     }
 
     // ================== ВСПОМОГАТЕЛЬНЫЕ МЕТОДЫ ==================
