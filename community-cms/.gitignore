@@ -34,3 +34,25 @@ application.properties# Backup files
 uploads/
 ../uploads/
 
+
+# ================================
+# Amvera/Docker files
+# ================================
+amvera.yaml
+.dockerignore
+Dockerfile
+
+# Cloud configuration
+application-cloud.properties
+
+# Local IDE files for Amvera branch
+.vscode/
+.idea/amvera/
+
+# Temporary files
+*.tmp
+*.temp
+
+# Backup files (except those we need)
+*.backup
+*.bak
