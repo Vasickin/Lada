@@ -34,19 +34,15 @@ application.properties# Backup files
 uploads/
 ../uploads/
 
-
 # ================================
-# Amvera/Docker files
+# Amvera/Docker files (EXCEPT CONFIGURATION FILES!)
 # ================================
-amvera.yaml
+# NOTE: amvera.yaml and application-cloud.properties are NOT ignored!
+# They are required for deployment.
 .dockerignore
 Dockerfile
 
-# Cloud configuration
-application-cloud.properties
-
 # Local IDE files for Amvera branch
-.vscode/
 .idea/amvera/
 
 # Temporary files
